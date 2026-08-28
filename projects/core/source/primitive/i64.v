@@ -50,6 +50,10 @@ imply i64 {
         !(self < rhs)
     }
 
+    prefix `-`(self): Self {
+        __i64_neg(self)
+    }
+
     bit_and(self, rhs: Self): Self {
         __i64_and(self, rhs)
     }
@@ -72,10 +76,13 @@ imply i64 {
 }
 
 [intrinsic("i64.add")]
-private micro __i64_add(lhs: i64, rhs: i64): i64 { }
+private micro __i64_add(lhs: i64, rhs: i64): i64;
 
 [intrinsic("i64.sub")]
 private micro __i64_sub(lhs: i64, rhs: i64): i64 { }
+
+[intrinsic("i64.neg")]
+private micro __i64_neg(self: i64): i64 { }
 
 [intrinsic("i64.mul")]
 private micro __i64_mul(lhs: i64, rhs: i64): i64 { }

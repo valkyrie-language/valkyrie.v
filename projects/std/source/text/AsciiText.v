@@ -2,11 +2,11 @@ namespace std.text;
 
 ⍝ [AsciiText] 是一个 ascii 文本，它只包含 ascii 字符集
 structure AsciiText {
-    _bytes: [u8] 
+    _bytes: [u8]
 }
 
-structure AsciiIterator {
-    _text: AsciiText
+class AsciiIterator {
+    _text: &AsciiText
     _offset: usize
 }
 
@@ -27,9 +27,7 @@ imply AsciiText: Text {
 
     micro to_utf8(self) -> utf8 {
         # 安全性： 任何合法的 ascii 文本都可以转换为 utf8 文本
-        unsafe {
-            Utf8Text::from_bytes(self._bytes)
-        }
+        return Utf8Text::from_bytes(self._bytes)
     }
 
     micro to_utf16(self) -> utf16 {
@@ -70,10 +68,10 @@ imply AsciiIterator: std::iterator::Iterator {
 
     micro next(mut self): Option<char> {
         if !self.has_next() {
-            return None
+            return option_none::<char>()
         }
 
-        let value: char = self._text._bytes[self._offset] as char
+        let value: char = self._text._bytes⁅self._offset⁆ as char
         self._offset = self._offset + 1
         return Some(value)
     }
