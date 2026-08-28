@@ -1,6 +1,6 @@
 # VOA 博客数据层 — 文章 + 评论 + 标签
 
-struct Post {
+class Post {
     slug: string
     title: string
     excerpt: string
@@ -12,7 +12,7 @@ struct Post {
     cover_image: string
 }
 
-struct Comment {
+class Comment {
     id: string
     post_slug: string
     author: string
@@ -21,7 +21,7 @@ struct Comment {
     avatar: string
 }
 
-struct StaticPath {
+class StaticPath {
     slug: string
 }
 
@@ -30,7 +30,7 @@ let _posts: list = [
         slug: "introducing-voa"
         title: "VOA 全栈框架正式发布"
         excerpt: "我们很高兴地宣布 VOA —— 一个纯 GGScript + AWSL 的全栈框架，类似 Next.js 但不写一行 C#。"
-        content: "VOA 是 Valkyrie Omni App 的缩写，它将 GGScript 的表达力和 AWSL 的组件化完美结合。\n\n## 核心特性\n\n- **文件系统路由**：pages/ 目录即路由\n- **多种渲染模式**：SSR / SSG / ISR / CSR\n- **声明式副作用**：useState / useEffect / useMemo\n- **中间件管道**：洋葱模型请求处理\n- **HMR 热替换**：< 200ms 即时更新\n\n## 为什么不用 C#？\n\nVOA 框架本身是纯 Valkyrie 代码。C# 仅参与构建工具链和 HMR 调试服务。"
+        content: "VOA 是 Valkyrie Omni App 的缩写，它将 GGScript 的表达力和 AWSL 的组件化完美结合。\n\n## 核心特性\n\n- **文件系统路由**：pages/ 目录即路由\n- **多种渲染模式**：SSR / SSG / ISR / CSR\n- **声明式副作用**：let mut 可变状态 / onMount 生命周期\n- **中间件管道**：洋葱模型请求处理\n- **HMR 热替换**：< 200ms 即时更新\n\n## 为什么不用 C#？\n\nVOA 框架本身是纯 Valkyrie 代码。C# 仅参与构建工具链和 HMR 调试服务。"
         author: "Asgard 团队"
         date: "2027-02-01"
         tags: ["voa", "框架", "发布"]
@@ -52,7 +52,7 @@ let _posts: list = [
         slug: "ssr-ssg-isp"
         title: "SSR vs SSG vs ISR：如何选择渲染模式？"
         excerpt: "深入对比三种服务端渲染策略的优缺点，以及 VOA 中的最佳实践。"
-        content: "选择正确的渲染模式对性能和用户体验至关重要。\n\n## SSR（服务端渲染）\n\n每次请求时在服务器生成 HTML。适合个性化内容、实时数据。\n\n## SSG（静态站点生成）\n\n构建时生成 HTML。适合博客、文档等不常变化的内容。\n\n## ISR（增量静态再生成）\n\n结合 SSG 的性能和 SSR 的时效性。设置 revalidate 时间，后台重新生成。\n\n## VOA 中的配置\n\n在 voa.config.v 中按路由设置渲染模式：\n\n```\nroutes: [\n  { path: \"/\", mode: \"ssg\" },\n  { path: \"/dashboard\", mode: \"ssr\" },\n  { path: \"/products\", mode: \"isr\", revalidate: 3600 }\n]\n```"
+        content: "选择正确的渲染模式对性能和用户体验至关重要。\n\n## SSR（服务端渲染）\n\n每次请求时在服务器生成 HTML。适合个性化内容、实时数据。\n\n## SSG（静态站点生成）\n\n构建时生成 HTML。适合博客、文档等不常变化的内容。\n\n## ISR（增量静态再生成）\n\n结合 SSG 的性能和 SSR 的时效性。设置 revalidate 时间，后台重新生成。\n\n## VOA 中的配置\n\n在 asgard.config.v 中按路由设置渲染模式：\n\n```\nroutes: [\n  { path: \"/\", mode: \"ssg\" },\n  { path: \"/dashboard\", mode: \"ssr\" },\n  { path: \"/products\", mode: \"isr\", revalidate: 3600 }\n]\n```"
         author: "Asgard 团队"
         date: "2027-02-10"
         tags: ["ssr", "ssg", "isr", "性能"]
@@ -143,7 +143,7 @@ micro get_static_paths(): list {
     return paths
 }
 
-micro push_back(lst: list, item: any): list {
+micro push_back<T>(lst: list, item: T): list {
     return lst
 }
 
