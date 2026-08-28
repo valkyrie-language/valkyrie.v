@@ -11,13 +11,18 @@
  *   5. v1 / v2 可比较
  *
  * 流程：
- *   1. 用外部 seed 编译器编译 valkyrie.v/projects/legion.tools → v1
+ *   1. 用外部 seed 编译器编译 valkyrie.v/projects/legion._/projects/legion.tools → v1
  *   2. 验证 v1 产物的 `--version` / `--help`
  *   3. 严格使用 `legion.tools` 产出的 `legion.exe` 再次编译同一份源码 → v2
  *   4. 比对 v1 与 v2 的产物
  *
  * 用法：
  *   node scripts/bootstrap-clr.mjs [--legion <path>] [--output <dir>] [--verbose]
+ *
+ * seed 优先级：
+ *   1. --legion / LEGION_PATH
+ *   2. valkyrie.rs 构建的 legion.exe（target/release 或 target/debug）
+ *   3. NyarVM.cs 自动构建的上一代 legion
  *
  * 当前状态：
  *   - 本脚本用于“诚实失败”的真实验收，不再把半完成状态记为成功
@@ -27,89 +32,65 @@
 import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
-import crypto from 'crypto';
+import { fileURLToPath } from 'url';
 
-const SCRIPT_DIR = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]):\//, '$1:/'));
-const ROOT_DIR = path.resolve(SCRIPT_DIR, '..');
+/// Windows 上 `fs.rmSync` 可能因文件锁或只读属性抛出 EPERM。
+/// 此函数先尝试 `fs.rmSync`，失败后回退到 `cmd /c rmdir /s /q`。
+function robustRmSync(target) {
+    if (!fs.existsSync(target)) {
+        return;
+    }
+    try {
+        fs.rmSync(target, { recursive: true, force: true });
+    } catch {
+        execSync(`cmd /c rmdir /s /q "${target}"`, { stdio: 'ignore' });
+    }
+}
+
+import {
+    BOOTSTRAP_PROJECT,
+    BOOTSTRAP_TRACKS,
+    collectFiles,
+    computeDirHash,
+    computeFileHash,
+    createGate,
+    createL2ReportSkeleton,
+    findLegion,
+    l2GateNamesForTrack,
+    printGateSummary,
+    repoRootFrom,
+    resolveClrArtifactDir,
+    resolveClrEntry,
+    resolveLegionLauncher,
+    runCommand,
+    shortenText,
+    validateModuleSystem,
+    writeReport,
+} from './bootstrap-lib.mjs';
+
+const TRACK = BOOTSTRAP_TRACKS.clr;
+
+const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
+const ROOT_DIR = repoRootFrom(SCRIPT_DIR);
+const VALKYRIE_RS_DIR = path.resolve(ROOT_DIR, '..', 'valkyrie.rs');
 const NYARVM_DIR = path.resolve(ROOT_DIR, '..', 'NyarVM.cs');
 const LEGION_CSPROJ = path.join(NYARVM_DIR, 'tools', 'legion', 'Legion.CLI.csproj');
 const LEVEL2_SKIPPED_REASON = '由于上游门禁未通过，`v1.clr -> v2.clr` 未执行。';
 
-// ─────────────────────────────────────────────────────────────
-// 配置
-// ─────────────────────────────────────────────────────────────
-
-const BOOTSTRAP_PROJECT = 'projects/legion.tools';
 const BOOTSTRAP_PROJECT_DIR = path.join(ROOT_DIR, BOOTSTRAP_PROJECT);
-const REMOVED_MICRO_COMPILER_PROJECT = 'projects/micro_compiler';
-const TARGET_TRIPLE = 'clr-microsoft-unknown-managed';
+const TARGET_TRIPLE = TRACK.targetTriple;
 const MODULE_GUARD_SKIPPED_REASON = '由于模块系统前置门未通过，`seed -> v1.clr` 未执行。';
 
-// ─────────────────────────────────────────────────────────────
-// 工具函数
-// ─────────────────────────────────────────────────────────────
-
-function runCommand(command, options = {}) {
-    try {
-        const result = execSync(command, {
-            encoding: 'utf8',
-            timeout: options.timeout || 300000,
-            cwd: options.cwd,
-            stdio: options.silent ? 'pipe' : 'inherit',
-        });
-        return { success: true, stdout: result || '' };
-    } catch (error) {
-        return {
-            success: false,
-            stdout: error.stdout || '',
-            stderr: error.stderr || error.message || '',
-        };
-    }
-}
-
-function legionLauncherCandidates(baseDir) {
-    return [
-        path.join(baseDir, 'legion.exe'),
-        path.join(baseDir, 'legion'),
-        path.join(baseDir, 'legion.dll'),
-    ];
-}
-
-function resolveLegionLauncher(baseDir) {
-    for (const candidate of legionLauncherCandidates(baseDir)) {
-        if (fs.existsSync(candidate)) {
-            return candidate;
-        }
-    }
-
-    return null;
-}
-
-function findLegion() {
-    const envPath = process.env.LEGION_PATH;
-    if (envPath && fs.existsSync(envPath)) {
-        return envPath;
-    }
-
-    const candidates = [
-        ...legionLauncherCandidates(path.join(ROOT_DIR, 'dist', 'legion')),
-        ...legionLauncherCandidates(path.join(ROOT_DIR, 'dist', 'legion-tool')),
-        ...legionLauncherCandidates(path.join(NYARVM_DIR, 'tools', 'legion', 'publish')),
-        ...legionLauncherCandidates(path.join(NYARVM_DIR, 'tools', 'legion', '.artifacts', 'bin', 'Release', 'net10.0')),
-        ...legionLauncherCandidates(path.join(NYARVM_DIR, 'tools', 'legion', '.artifacts', 'bin', 'Debug', 'net10.0')),
-        ...legionLauncherCandidates(path.join(NYARVM_DIR, 'tools', 'legion', 'bin', 'Release', 'net10.0')),
-        ...legionLauncherCandidates(path.join(NYARVM_DIR, 'tools', 'legion', 'bin', 'Debug', 'net10.0')),
-    ];
-    for (const c of candidates) {
-        if (fs.existsSync(c)) {
-            return c;
-        }
-    }
-    return null;
+function readClrEntry(targetDir) {
+    const { legionExe, legionMsil } = resolveClrEntry(targetDir);
+    return {
+        legionExe,
+        legionMsil: legionMsil || (legionExe ? path.join(targetDir, `${path.basename(legionExe).replace(/\.(exe|dll)$/i, '')}.msil`) : path.join(targetDir, 'legion.msil')),
+    };
 }
 
 function ensurePreviousLegion(outputRoot, verbose) {
-    const existing = findLegion();
+    const existing = findLegion(ROOT_DIR, VALKYRIE_RS_DIR, NYARVM_DIR);
     if (existing) {
         return existing;
     }
@@ -141,196 +122,6 @@ function ensurePreviousLegion(outputRoot, verbose) {
     return resolveLegionLauncher(toolOutputDir);
 }
 
-function collectFiles(dir, extensions) {
-    const results = [];
-    if (!fs.existsSync(dir)) {
-        return results;
-    }
-    const extSet = new Set(extensions.map(e => e.toLowerCase()));
-    for (const entry of fs.readdirSync(dir, { withFileTypes: true, recursive: true })) {
-        if (!entry.isFile()) {
-            continue;
-        }
-        const ext = path.extname(entry.name).toLowerCase();
-        if (extSet.has(ext)) {
-            results.push(path.join(entry.parentPath || entry.path, entry.name));
-        }
-    }
-    return results.sort();
-}
-
-function computeFileHash(filePath) {
-    const content = fs.readFileSync(filePath);
-    return crypto.createHash('sha256').update(content).digest('hex');
-}
-
-function computeDirHash(dir, extensions) {
-    const files = collectFiles(dir, extensions);
-    if (files.length === 0) {
-        return null;
-    }
-    const hash = crypto.createHash('sha256');
-    for (const file of files) {
-        hash.update(path.relative(dir, file));
-        hash.update('\0');
-        hash.update(computeFileHash(file));
-        hash.update('\0');
-    }
-    return hash.digest('hex');
-}
-
-function shortenText(value, maxChars = 240) {
-    const text = String(value || '').trim();
-    if (text.length <= maxChars) {
-        return text;
-    }
-    return `${text.slice(0, maxChars)}...`;
-}
-
-function createGate(name, status, detail) {
-    return { name, status, detail };
-}
-
-function printGateSummary(gates) {
-    console.log('\n══════════════════════════════════════════════════');
-    console.log('  门级状态');
-    console.log('══════════════════════════════════════════════════\n');
-
-    for (const gate of gates) {
-        console.log(`- ${gate.name}：${gate.status}`);
-        if (gate.detail) {
-            console.log(`  ${gate.detail}`);
-        }
-    }
-}
-
-function writeReport(outputRoot, payload) {
-    fs.mkdirSync(outputRoot, { recursive: true });
-    const reportPath = path.join(outputRoot, 'bootstrap-report.json');
-    fs.writeFileSync(reportPath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
-    return reportPath;
-}
-
-function escapeRegex(value) {
-    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-function hasWorkspaceDependency(manifestText, dependencyName) {
-    const pattern = new RegExp(`"${escapeRegex(dependencyName)}"\\s*:\\s*\\{[\\s\\S]*?version\\s*:\\s*"workspace"`, 'm');
-    return pattern.test(manifestText);
-}
-
-function workspaceIncludesMember(workspaceText, memberPath) {
-    const pattern = new RegExp(`"${escapeRegex(memberPath)}"`);
-    return pattern.test(workspaceText);
-}
-
-function validateModuleSystem(verbose) {
-    console.log('\n══════════════════════════════════════════════════');
-    console.log('  模块系统前置门');
-    console.log('══════════════════════════════════════════════════\n');
-
-    const paths = {
-        workspaceManifest: path.join(ROOT_DIR, 'legions.von'),
-        legionToolsManifest: path.join(ROOT_DIR, 'projects', 'legion.tools', 'legion.von'),
-        nyarManifest: path.join(ROOT_DIR, 'projects', 'nyar', 'legion.von'),
-        stdManifest: path.join(ROOT_DIR, 'projects', 'std', 'legion.von'),
-        buildContext: path.join(ROOT_DIR, 'projects', 'legion.tools', 'source', 'build_context.v'),
-    };
-    const removedMicroCompilerDir = path.join(ROOT_DIR, 'projects', 'micro_compiler');
-
-    const errors = [];
-    for (const [name, filePath] of Object.entries(paths)) {
-        if (!fs.existsSync(filePath)) {
-            errors.push(`缺少必要文件：${name} -> ${filePath}`);
-        }
-    }
-    if (errors.length > 0) {
-        return { success: false, errors };
-    }
-
-    const workspaceText = fs.readFileSync(paths.workspaceManifest, 'utf8');
-    const legionToolsText = fs.readFileSync(paths.legionToolsManifest, 'utf8');
-    const nyarText = fs.readFileSync(paths.nyarManifest, 'utf8');
-    const stdText = fs.readFileSync(paths.stdManifest, 'utf8');
-    const buildContextText = fs.readFileSync(paths.buildContext, 'utf8');
-
-    if (!/name\s*:\s*"legion\.tools"/.test(legionToolsText)) {
-        errors.push('`projects/legion.tools/legion.von` 的 `name` 不是 `legion.tools`');
-    }
-    if (!/auto_link\s*:\s*\{[\s\S]*?core\s*:\s*true[\s\S]*?std\s*:\s*false[\s\S]*?\}/m.test(legionToolsText)) {
-        errors.push('`legion.tools` 未保持 `auto_link: { core: true, std: false }`');
-    }
-    for (const dependencyName of ['nyar', 'std', 'std.data.text.von']) {
-        if (!hasWorkspaceDependency(legionToolsText, dependencyName)) {
-            errors.push(`` + '`legion.tools` 缺少显式 workspace 依赖：' + dependencyName);
-        }
-    }
-
-    if (!/name\s*:\s*"nyar"/.test(nyarText)) {
-        errors.push('`projects/nyar/legion.von` 的 `name` 不是 `nyar`');
-    }
-    if (!/auto_link\s*:\s*\{[\s\S]*?core\s*:\s*true[\s\S]*?std\s*:\s*true[\s\S]*?\}/m.test(nyarText)) {
-        errors.push('`nyar` 未保持 `auto_link: { core: true, std: true }`');
-    }
-    if (!/name\s*:\s*"std"/.test(stdText)) {
-        errors.push('`projects/std/legion.von` 的 `name` 不是 `std`');
-    }
-
-    for (const memberPath of ['projects/legion.tools', 'projects/nyar', 'projects/std', 'examples/test.module_system']) {
-        if (!workspaceIncludesMember(workspaceText, memberPath)) {
-            errors.push(`workspace 未显式包含成员：${memberPath}`);
-        }
-    }
-    if (workspaceIncludesMember(workspaceText, REMOVED_MICRO_COMPILER_PROJECT)) {
-        errors.push(`workspace 仍包含已废弃项目：${REMOVED_MICRO_COMPILER_PROJECT}`);
-    }
-    if (fs.existsSync(removedMicroCompilerDir)) {
-        errors.push(`已废弃作弊工程仍存在：${removedMicroCompilerDir}`);
-    }
-
-    if (!buildContextText.includes('using nyar;')) {
-        errors.push('`build_context.v` 未显式 `using nyar;`');
-    }
-    for (const requiredSymbol of [
-        'micro legion_parse_canonical_target(target: utf8) -> CanonicalTarget {',
-        'return parse_target(canonical)',
-        'return format_target(parsed)',
-        'return default_target()',
-    ]) {
-        if (!buildContextText.includes(requiredSymbol)) {
-            errors.push(`build_context 缺少模块系统契约片段：${requiredSymbol}`);
-        }
-    }
-
-    if (verbose) {
-        console.log(`workspace manifest: ${paths.workspaceManifest}`);
-        console.log(`legion.tools manifest: ${paths.legionToolsManifest}`);
-        console.log(`nyar manifest: ${paths.nyarManifest}`);
-        console.log(`std manifest: ${paths.stdManifest}`);
-        console.log(`build context: ${paths.buildContext}`);
-    }
-
-    if (errors.length > 0) {
-        console.log('模块系统前置门失败：');
-        for (const error of errors) {
-            console.log(`  - ${error}`);
-        }
-        return { success: false, errors };
-    }
-
-    console.log('模块系统前置门通过：');
-    console.log('  - `legion.tools` 已显式依赖 `nyar`、`std`、`std.data.text.von`');
-    console.log('  - workspace 已显式包含 `legion.tools` / `nyar` / `std` / `test.module_system`');
-    console.log('  - `micro_compiler` 已从 workspace 与源码树中移除');
-    console.log('  - `build_context.v` 通过 `using nyar;` 显式导入跨模块类型与函数');
-    return {
-        success: true,
-        errors: [],
-        detail: '`legion.tools -> nyar/std` 模块依赖、workspace 成员、`micro_compiler` 清退与显式导入契约均已满足',
-    };
-}
-
 // ─────────────────────────────────────────────────────────────
 // Level 1：源码 → v1.clr
 // ─────────────────────────────────────────────────────────────
@@ -343,9 +134,8 @@ function compileV1(legionPath, outputDir, verbose) {
     console.log(`上一代编译器：${legionPath}`);
     console.log(`源码项目：${BOOTSTRAP_PROJECT_DIR}`);
     console.log(`输出目录：${outputDir}\n`);
-    const targetDir = path.join(outputDir, TARGET_TRIPLE);
-    const legionExe = path.join(targetDir, 'legion.exe');
-    const legionMsil = path.join(targetDir, 'legion.msil');
+    let targetDir = resolveClrArtifactDir(outputDir, TARGET_TRIPLE);
+    let { legionExe, legionMsil } = readClrEntry(targetDir);
 
     // 验证上一代编译器可用
     const versionCheck = runCommand(`"${legionPath}" --version`, { silent: true, timeout: 10000 });
@@ -357,8 +147,8 @@ function compileV1(legionPath, outputDir, verbose) {
             stage: 'previous_compiler_check',
             error: shortenText(versionCheck.stderr || versionCheck.stdout || '上一代编译器不可用'),
             outputDir: targetDir,
-            legionExe,
-            legionMsil,
+            legionExe: legionExe || path.join(targetDir, 'legion.exe'),
+            legionMsil: legionMsil || path.join(targetDir, 'legion.msil'),
             artifacts: [],
             hash: null,
             runtime: {
@@ -370,9 +160,7 @@ function compileV1(legionPath, outputDir, verbose) {
     console.log(`上一代编译器版本：${versionCheck.stdout.trim()}`);
 
     // 清理旧产物
-    if (fs.existsSync(outputDir)) {
-        fs.rmSync(outputDir, { recursive: true, force: true });
-    }
+    robustRmSync(outputDir);
 
     // 执行编译
     console.log('\n编译中...');
@@ -380,6 +168,9 @@ function compileV1(legionPath, outputDir, verbose) {
         `"${legionPath}" build "${BOOTSTRAP_PROJECT_DIR}" --target clr -o "${outputDir}"`,
         { cwd: ROOT_DIR, timeout: 300000 }
     );
+
+    targetDir = resolveClrArtifactDir(outputDir, TARGET_TRIPLE);
+    ({ legionExe, legionMsil } = readClrEntry(targetDir));
 
     if (!buildResult.success) {
         console.error('错误：v1 编译失败');
@@ -391,8 +182,8 @@ function compileV1(legionPath, outputDir, verbose) {
             stage: 'source_to_v1',
             error: shortenText(buildResult.stderr || buildResult.stdout || 'v1 编译失败'),
             outputDir: targetDir,
-            legionExe,
-            legionMsil,
+            legionExe: legionExe || path.join(targetDir, 'legion.exe'),
+            legionMsil: legionMsil || path.join(targetDir, 'legion.msil'),
             artifacts: [],
             hash: null,
             runtime: {
@@ -403,15 +194,15 @@ function compileV1(legionPath, outputDir, verbose) {
     }
 
     // 检查产物
-    if (!fs.existsSync(legionExe)) {
-        console.error(`错误：v1 产物不存在：${legionExe}`);
+    if (!legionExe || !fs.existsSync(legionExe)) {
+        console.error(`错误：v1 产物不存在：${path.join(targetDir, 'legion.exe')}（或 legion__main_legion.exe）`);
         return {
             success: false,
             stage: 'v1_artifact',
-            error: `v1 产物不存在：${legionExe}`,
+            error: `v1 产物不存在：${path.join(targetDir, 'legion.exe')}`,
             outputDir: targetDir,
-            legionExe,
-            legionMsil,
+            legionExe: path.join(targetDir, 'legion.exe'),
+            legionMsil: legionMsil || path.join(targetDir, 'legion.msil'),
             artifacts: [],
             hash: null,
             runtime: {
@@ -472,18 +263,18 @@ function compileV2(v1Result, outputDir, verbose) {
     console.log(`源码项目：${BOOTSTRAP_PROJECT_DIR}`);
     console.log(`输出目录：${outputDir}\n`);
 
-    if (fs.existsSync(outputDir)) {
-        fs.rmSync(outputDir, { recursive: true, force: true });
-    }
+    robustRmSync(outputDir);
 
     const buildResult = runCommand(
         `dotnet "${v1Result.legionExe}" build "${BOOTSTRAP_PROJECT_DIR}" --target clr -o "${outputDir}"`,
-        { cwd: ROOT_DIR, timeout: 300000 }
+        {
+            cwd: ROOT_DIR,
+            timeout: 600000,
+        }
     );
 
-    const targetDir = path.join(outputDir, TARGET_TRIPLE);
-    const legionExe = path.join(targetDir, 'legion.exe');
-    const legionMsil = path.join(targetDir, 'legion.msil');
+    const targetDir = resolveClrArtifactDir(outputDir, TARGET_TRIPLE);
+    const { legionExe, legionMsil } = readClrEntry(targetDir);
 
     if (!buildResult.success) {
         console.error('错误：v2 编译失败');
@@ -495,22 +286,22 @@ function compileV2(v1Result, outputDir, verbose) {
             stage: 'v1_to_v2',
             error: shortenText(buildResult.stderr || buildResult.stdout || 'v2 编译失败'),
             outputDir: targetDir,
-            legionExe,
-            legionMsil,
+            legionExe: legionExe || path.join(targetDir, 'legion.exe'),
+            legionMsil: legionMsil || path.join(targetDir, 'legion.msil'),
             artifacts: [],
             hash: null,
         };
     }
 
-    if (!fs.existsSync(legionExe)) {
-        console.error(`错误：v2 产物不存在：${legionExe}`);
+    if (!legionExe || !fs.existsSync(legionExe)) {
+        console.error(`错误：v2 产物不存在：${path.join(targetDir, 'legion.exe')}（或 legion__main_legion.exe）`);
         return {
             success: false,
             stage: 'v2_artifact',
-            error: `v2 产物不存在：${legionExe}`,
+            error: `v2 产物不存在：${path.join(targetDir, 'legion.exe')}`,
             outputDir: targetDir,
-            legionExe,
-            legionMsil,
+            legionExe: path.join(targetDir, 'legion.exe'),
+            legionMsil: legionMsil || path.join(targetDir, 'legion.msil'),
             artifacts: [],
             hash: null,
         };
@@ -522,6 +313,22 @@ function compileV2(v1Result, outputDir, verbose) {
         console.log(`  ${path.relative(targetDir, artifact)}`);
     }
 
+    // 硬门禁：二跳产物必须可运行
+    console.log('\n验证 v2 产物可运行...');
+    const v2VersionCheck = runCommand(`dotnet "${legionExe}" --version`, { silent: true, timeout: 10000 });
+    if (v2VersionCheck.success) {
+        console.log(`  v2 --version：${v2VersionCheck.stdout.trim()}`);
+    } else {
+        console.error(`  警告：v2 --version 失败：${v2VersionCheck.stderr?.slice(0, 300)}`);
+    }
+
+    const v2HelpCheck = runCommand(`dotnet "${legionExe}" --help`, { silent: true, timeout: 10000 });
+    if (v2HelpCheck.success) {
+        console.log('  v2 --help：退出码 0');
+    } else {
+        console.error(`  警告：v2 --help 失败`);
+    }
+
     return {
         success: true,
         stage: 'v1_to_v2',
@@ -530,6 +337,10 @@ function compileV2(v1Result, outputDir, verbose) {
         legionMsil,
         artifacts: v2Artifacts,
         hash: computeDirHash(targetDir, ['.msil']),
+        runtime: {
+            version: v2VersionCheck,
+            help: v2HelpCheck,
+        },
     };
 }
 
@@ -705,7 +516,7 @@ CLR 自举验证脚本
 
 function main() {
     const options = parseArgs();
-    const outputRoot = path.resolve(options.output || path.join(ROOT_DIR, 'dist', 'bootstrap-clr'));
+    const outputRoot = path.resolve(options.output || path.join(ROOT_DIR, 'dist', TRACK.outputSubdir));
     const v1OutputDir = path.join(outputRoot, 'v1');
     const v2OutputDir = path.join(outputRoot, 'v2');
 
@@ -717,27 +528,21 @@ function main() {
     console.log(`自举项目：${BOOTSTRAP_PROJECT}`);
     console.log(`目标三元组：${TARGET_TRIPLE}\n`);
 
-    const moduleSystemResult = validateModuleSystem(options.verbose);
+    const moduleSystemResult = validateModuleSystem(ROOT_DIR, options.verbose);
     if (!moduleSystemResult.success) {
-        const gates = [
-            createGate('模块系统前置门', '未通过', shortenText(moduleSystemResult.errors.join('；'), 400)),
-            createGate('上一代编译器入口', '跳过', '模块系统前置门未通过'),
-            createGate('源码 -> v1.clr', '跳过', MODULE_GUARD_SKIPPED_REASON),
-            createGate('v1 --version', '跳过', '源码 -> v1.clr 未执行'),
-            createGate('v1 --help', '跳过', '源码 -> v1.clr 未执行'),
-            createGate('v1 -> v2.clr', '跳过', LEVEL2_SKIPPED_REASON),
-            createGate('v1 / v2 比对', '跳过', '由于上游门禁未通过，比对未执行'),
-        ];
-        const blockers = moduleSystemResult.errors.map(error => `模块系统前置门失败：${error}`);
-        const reportPath = writeReport(outputRoot, {
-            success: false,
+        const gateNames = l2GateNamesForTrack('clr');
+        const gates = gateNames.map((name, index) => createGate(
+            name,
+            index === 0 ? '未通过' : '跳过',
+            index === 0 ? shortenText(moduleSystemResult.errors.join('；'), 400) : MODULE_GUARD_SKIPPED_REASON,
+        ));
+        const blockers = moduleSystemResult.errors.map((error) => `模块系统前置门失败：${error}`);
+        const reportPath = writeReport(outputRoot, createL2ReportSkeleton('clr', {
             gates,
             blockers,
-            previousLegion: null,
             moduleSystem: moduleSystemResult,
-            v1: { success: false, outputDir: null, hash: null, runtime: { version: false, help: false } },
             v2: { attempted: false, success: false, outputDir: null, compared: false, match: false, reason: LEVEL2_SKIPPED_REASON },
-        });
+        }));
         printGateSummary(gates);
         console.log(`\n报告已写入：${reportPath}`);
         process.exit(1);
@@ -750,14 +555,15 @@ function main() {
         const gates = [
             createGate('模块系统前置门', '通过', moduleSystemResult.detail),
             createGate('上一代编译器入口', '未通过', '未找到可用 `legion`，且无法从 `NyarVM.cs` 自动构建'),
-            createGate('源码 -> v1.clr', '跳过', '上一代编译器入口未就绪'),
-            createGate('v1 --version', '跳过', '源码 -> v1.clr 未完成'),
-            createGate('v1 --help', '跳过', '源码 -> v1.clr 未完成'),
-            createGate('v1 -> v2.clr', '跳过', LEVEL2_SKIPPED_REASON),
-            createGate('v1 / v2 比对', '跳过', '由于上游门禁未通过，比对未执行'),
+            ...l2GateNamesForTrack('clr').slice(2).map((name) => createGate(name, '跳过', '上一代编译器入口未就绪')),
         ];
         const blockers = ['上一代编译器入口未就绪'];
-        const reportPath = writeReport(outputRoot, { gates, blockers, success: false, previousLegion: null, moduleSystem: moduleSystemResult });
+        const reportPath = writeReport(outputRoot, createL2ReportSkeleton('clr', {
+            gates,
+            blockers,
+            moduleSystem: moduleSystemResult,
+            v2: { attempted: false, success: false, outputDir: null, compared: false, match: false, reason: LEVEL2_SKIPPED_REASON },
+        }));
         printGateSummary(gates);
         console.error('\n错误：找不到上一代 legion CLI');
         console.error('请设置 --legion / LEGION_PATH，或保证 NyarVM.cs 可用以便脚本自动构建上一代 legion');
@@ -837,10 +643,21 @@ function main() {
 
     const reportPath = writeReport(outputRoot, {
         success: blockers.length === 0,
+        track: TRACK.track,
+        profile: TRACK.profile,
+        targetTriple: TARGET_TRIPLE,
         gates,
         blockers,
         previousLegion: legionPath,
         moduleSystem: moduleSystemResult,
+        matrix: {
+            build: v1Result.success,
+            cli: v1VersionPassed && v1HelpPassed,
+            runContract: v1Result.success,
+            runtime: v1VersionPassed && v1HelpPassed,
+            v1ToV2: Boolean(v2Result?.success),
+            compared: compareResult.match,
+        },
         v1: {
             success: v1Result.success,
             outputDir: v1Result.outputDir,
