@@ -1,6 +1,6 @@
 # VCC 编译器
 
-VCC（Valkyrie Compiler Collection）是 Valkyrie 语言编译器，将 `.v` 源码编译为多种目标平台的交付产物。
+VCC（Valkyrie Compiler Collection）是 Valkyrie 语言编译器，将 `.v` 源码（语言名 Valkyrie 与后缀 `.v` 为同一事物）编译为多种目标平台的交付产物。
 
 ## 命令行用法
 
@@ -77,9 +77,9 @@ VCC 支持多种目标平台：
 ### 导入模块
 
 ```valkyrie
-import std.io
-import game::physics
-import package::module
+using std.io
+using game.physics
+using package.module
 ```
 
 ### 模块路径解析
