@@ -1,6 +1,6 @@
-namespace std.collections;
+namespace std.collection;
 
-# std.collections: BitSet - 位图
+# std.collection: BitSet - 位图
 
 [clr("System.Collections", "System.Collections.BitArray")]
 [jvm("java.util.BitSet")]

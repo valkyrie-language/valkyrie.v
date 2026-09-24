@@ -1,6 +1,6 @@
-namespace std.collections;
+namespace std.collection;
 
-# std.collections: Queue - FIFO 队列
+# std.collection: Queue - FIFO 队列
 
 [clr("System.Collections", "System.Collections.Generic.Queue`1")]
 [jvm("java.util.ArrayDeque")]

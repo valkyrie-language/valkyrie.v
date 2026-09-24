@@ -1,4 +1,4 @@
-namespace std.collections;
+namespace std.collection;
 
 class SwissSet<T> {
     _states: ArrayList<i32>

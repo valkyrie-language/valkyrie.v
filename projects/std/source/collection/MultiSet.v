@@ -1,4 +1,4 @@
-namespace std.collections;
+namespace std.collection;
 
 class MultiSet<T> {
     _impl: HashMultiSet<T>

@@ -1,4 +1,4 @@
-namespace std.collections;
+namespace std.collection;
 
 class DisjointSet<T> {
     _parent: HashMap<T, T>

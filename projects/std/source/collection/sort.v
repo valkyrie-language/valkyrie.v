@@ -1,6 +1,6 @@
-namespace std.collections;
+namespace std.collection;
 
-# std.collections: sort - 排序算法
+# std.collection: sort - 排序算法
 
 micro quick_sort(list: List<T>, cmp: micro(T, T) -> i32): unit {
     let length: usize = list.length()
