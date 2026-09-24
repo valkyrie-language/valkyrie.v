@@ -82,6 +82,33 @@ imply Utf8Builder {
     infix `+=`(mut self, text: &Utf8Text): unit {
         self.append(text)
     }
+
+    ⍝ 追加有符号整数的十进制表示（不含前导零；`-2147483648` 等边界按 i64 规则处理）
+    micro append_i64(mut self, value: i64): unit {
+        if value == 0 {
+            self.bytes.push(48)
+            return
+        }
+
+        let mut v: i64 = value
+        if v < 0 {
+            self.bytes.push(45)
+            v = -v
+        }
+
+        let mut digits: ArrayList<u8> = ArrayList::new(21)
+        while v > 0 {
+            let digit: u8 = (v % 10) as u8
+            digits.push(48 + digit)
+            v = v / 10
+        }
+
+        let mut index: usize = digits.length()
+        while index > 0 {
+            index = index - 1
+            self.bytes.push(digits⁅index⁆.unwrap())
+        }
+    }
 }
 
 
