@@ -1,74 +1,74 @@
 namespace std.adaptor.jvm.collections;
 
-using std.collections;
+using std.collection;
 
-[host_provider(std::collections::BitSet::new)]
+[host_provider(std::collection::BitSet::new)]
 [inline(always)]
 private micro bit_set_new(): BitSet {
     return __bit_set_jvm_new()
 }
 
-[host_provider(std::collections::BitSet::with_capacity)]
+[host_provider(std::collection::BitSet::with_capacity)]
 [inline(always)]
 private micro bit_set_with_capacity(bits: usize): BitSet {
     return __bit_set_jvm_new_with_capacity(bits)
 }
 
-[host_provider(std::collections::BitSet::set)]
+[host_provider(std::collection::BitSet::set)]
 [inline(always)]
 private micro bit_set_set(bits: BitSet, index: usize): unit {
     __bit_set_jvm_set(bits, index)
 }
 
-[host_provider(std::collections::BitSet::clear_bit)]
+[host_provider(std::collection::BitSet::clear_bit)]
 [inline(always)]
 private micro bit_set_clear_bit(bits: BitSet, index: usize): unit {
     __bit_set_jvm_clear_index(bits, index)
 }
 
-[host_provider(std::collections::BitSet::get)]
+[host_provider(std::collection::BitSet::get)]
 [inline(always)]
 private micro bit_set_get(bits: BitSet, index: usize): bool {
     return __bit_set_jvm_get(bits, index)
 }
 
-[host_provider(std::collections::BitSet::toggle)]
+[host_provider(std::collection::BitSet::toggle)]
 [inline(always)]
 private micro bit_set_toggle(bits: BitSet, index: usize): unit {
     __bit_set_jvm_flip(bits, index)
 }
 
-[host_provider(std::collections::BitSet::intersect)]
+[host_provider(std::collection::BitSet::intersect)]
 [inline(always)]
 private micro bit_set_intersect(bits: BitSet, other: BitSet): unit {
     __bit_set_jvm_and(bits, other)
 }
 
-[host_provider(std::collections::BitSet::union)]
+[host_provider(std::collection::BitSet::union)]
 [inline(always)]
 private micro bit_set_union(bits: BitSet, other: BitSet): unit {
     __bit_set_jvm_or(bits, other)
 }
 
-[host_provider(std::collections::BitSet::difference)]
+[host_provider(std::collection::BitSet::difference)]
 [inline(always)]
 private micro bit_set_difference(bits: BitSet, other: BitSet): unit {
     __bit_set_jvm_and_not(bits, other)
 }
 
-[host_provider(std::collections::BitSet::xor)]
+[host_provider(std::collection::BitSet::xor)]
 [inline(always)]
 private micro bit_set_xor(bits: BitSet, other: BitSet): unit {
     __bit_set_jvm_xor(bits, other)
 }
 
-[host_provider(std::collections::BitSet::is_empty)]
+[host_provider(std::collection::BitSet::is_empty)]
 [inline(always)]
 private micro bit_set_is_empty(bits: BitSet): bool {
     return __bit_set_jvm_is_empty(bits)
 }
 
-[host_provider(std::collections::BitSet::clear_all)]
+[host_provider(std::collection::BitSet::clear_all)]
 [inline(always)]
 private micro bit_set_clear_all(bits: BitSet): unit {
     __bit_set_jvm_clear_all(bits)

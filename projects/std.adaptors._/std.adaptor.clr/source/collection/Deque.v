@@ -1,26 +1,26 @@
 namespace std.adaptor.clr.collections;
 
-using std.collections;
+using std.collection;
 
-[host_provider(std::collections::Deque::new)]
+[host_provider(std::collection::Deque::new)]
 [inline(always)]
 private micro deque_new<T>(): Deque<T> {
     return __deque_clr_new::<T>()
 }
 
-[host_provider(std::collections::Deque::push_front)]
+[host_provider(std::collection::Deque::push_front)]
 [inline(always)]
 private micro deque_push_front<T>(deque: Deque<T>, value: T): unit {
     __deque_clr_add_first(deque, value)
 }
 
-[host_provider(std::collections::Deque::push_back)]
+[host_provider(std::collection::Deque::push_back)]
 [inline(always)]
 private micro deque_push_back<T>(deque: Deque<T>, value: T): unit {
     __deque_clr_add_last(deque, value)
 }
 
-[host_provider(std::collections::Deque::pop_front)]
+[host_provider(std::collection::Deque::pop_front)]
 [inline(always)]
 private micro deque_pop_front<T>(deque: Deque<T>): Option<T> {
     if __deque_clr_length(deque) == 0 {
@@ -33,7 +33,7 @@ private micro deque_pop_front<T>(deque: Deque<T>): Option<T> {
     return Some(value)
 }
 
-[host_provider(std::collections::Deque::pop_back)]
+[host_provider(std::collection::Deque::pop_back)]
 [inline(always)]
 private micro deque_pop_back<T>(deque: Deque<T>): Option<T> {
     if __deque_clr_length(deque) == 0 {
@@ -46,7 +46,7 @@ private micro deque_pop_back<T>(deque: Deque<T>): Option<T> {
     return Some(value)
 }
 
-[host_provider(std::collections::Deque::peek_front)]
+[host_provider(std::collection::Deque::peek_front)]
 [inline(always)]
 private micro deque_peek_front<T>(deque: Deque<T>): Option<T> {
     if __deque_clr_length(deque) == 0 {
@@ -56,7 +56,7 @@ private micro deque_peek_front<T>(deque: Deque<T>): Option<T> {
     return Some(__deque_clr_node_value::<T>(__deque_clr_first_node::<T>(deque)))
 }
 
-[host_provider(std::collections::Deque::peek_back)]
+[host_provider(std::collection::Deque::peek_back)]
 [inline(always)]
 private micro deque_peek_back<T>(deque: Deque<T>): Option<T> {
     if __deque_clr_length(deque) == 0 {
@@ -66,13 +66,13 @@ private micro deque_peek_back<T>(deque: Deque<T>): Option<T> {
     return Some(__deque_clr_node_value::<T>(__deque_clr_last_node::<T>(deque)))
 }
 
-[host_provider(std::collections::Deque::length)]
+[host_provider(std::collection::Deque::length)]
 [inline(always)]
 private micro deque_length<T>(deque: Deque<T>): usize {
     return __deque_clr_length(deque)
 }
 
-[host_provider(std::collections::Deque::clear)]
+[host_provider(std::collection::Deque::clear)]
 [inline(always)]
 private micro deque_clear<T>(deque: Deque<T>): unit {
     __deque_clr_clear(deque)

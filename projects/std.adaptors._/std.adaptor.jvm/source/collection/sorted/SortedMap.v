@@ -1,8 +1,8 @@
 namespace std.adaptor.jvm.collections;
 
-using std.collections;
+using std.collection;
 
-[host_provider(std::collections::SortedMap::get)]
+[host_provider(std::collection::SortedMap::get)]
 [inline(always)]
 private micro sorted_map_get<K, V>(map: SortedMap<K, V>, key: K): Option<V> {
     if !__sorted_map_jvm_contains_key(map, key) {
@@ -12,7 +12,7 @@ private micro sorted_map_get<K, V>(map: SortedMap<K, V>, key: K): Option<V> {
     return Some(__sorted_map_jvm_get(map, key))
 }
 
-[host_provider(std::collections::SortedMap::insert)]
+[host_provider(std::collection::SortedMap::insert)]
 [inline(always)]
 private micro sorted_map_insert<K, V>(map: SortedMap<K, V>, key: K, value: V): Option<V> {
     if __sorted_map_jvm_contains_key(map, key) {
@@ -25,7 +25,7 @@ private micro sorted_map_insert<K, V>(map: SortedMap<K, V>, key: K, value: V): O
     return None
 }
 
-[host_provider(std::collections::SortedMap::remove)]
+[host_provider(std::collection::SortedMap::remove)]
 [inline(always)]
 private micro sorted_map_remove<K, V>(map: SortedMap<K, V>, key: K): Option<V> {
     if !__sorted_map_jvm_contains_key(map, key) {
@@ -37,37 +37,37 @@ private micro sorted_map_remove<K, V>(map: SortedMap<K, V>, key: K): Option<V> {
     return Some(old)
 }
 
-[host_provider(std::collections::SortedMap::contains_key)]
+[host_provider(std::collection::SortedMap::contains_key)]
 [inline(always)]
 private micro sorted_map_contains_key<K, V>(map: SortedMap<K, V>, key: K): bool {
     return __sorted_map_jvm_contains_key(map, key)
 }
 
-[host_provider(std::collections::SortedMap::keys)]
+[host_provider(std::collection::SortedMap::keys)]
 [inline(always)]
 private micro sorted_map_keys<K, V>(map: SortedMap<K, V>): List<K> {
     return __sorted_map_jvm_list_from_any::<K>(__sorted_map_jvm_keys(map))
 }
 
-[host_provider(std::collections::SortedMap::values)]
+[host_provider(std::collection::SortedMap::values)]
 [inline(always)]
 private micro sorted_map_values<K, V>(map: SortedMap<K, V>): List<V> {
     return __sorted_map_jvm_list_from_any::<V>(__sorted_map_jvm_values(map))
 }
 
-[host_provider(std::collections::SortedMap::length)]
+[host_provider(std::collection::SortedMap::length)]
 [inline(always)]
 private micro sorted_map_length<K, V>(map: SortedMap<K, V>): usize {
     return __sorted_map_jvm_length(map)
 }
 
-[host_provider(std::collections::SortedMap::clear)]
+[host_provider(std::collection::SortedMap::clear)]
 [inline(always)]
 private micro sorted_map_clear<K, V>(map: SortedMap<K, V>): unit {
     __sorted_map_jvm_clear(map)
 }
 
-[host_provider(std::collections::SortedMap::new)]
+[host_provider(std::collection::SortedMap::new)]
 [inline(always)]
 private micro sorted_map_new<K, V>(_capacity: usize): SortedMap<K, V> {
     return __sorted_map_jvm_new::<K, V>()

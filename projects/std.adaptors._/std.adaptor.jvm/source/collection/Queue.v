@@ -1,20 +1,20 @@
 namespace std.adaptor.jvm.collections;
 
-using std.collections;
+using std.collection;
 
-[host_provider(std::collections::Queue::new)]
+[host_provider(std::collection::Queue::new)]
 [inline(always)]
 private micro queue_new<T>(): Queue<T> {
     return __queue_jvm_new::<T>()
 }
 
-[host_provider(std::collections::Queue::enqueue)]
+[host_provider(std::collection::Queue::enqueue)]
 [inline(always)]
 private micro queue_enqueue<T>(queue: Queue<T>, value: T): unit {
     __queue_jvm_enqueue(queue, value)
 }
 
-[host_provider(std::collections::Queue::dequeue)]
+[host_provider(std::collection::Queue::dequeue)]
 [inline(always)]
 private micro queue_dequeue<T>(queue: Queue<T>): Option<T> {
     if __queue_jvm_length(queue) == 0 {
@@ -24,7 +24,7 @@ private micro queue_dequeue<T>(queue: Queue<T>): Option<T> {
     return Some(__queue_jvm_dequeue(queue))
 }
 
-[host_provider(std::collections::Queue::peek)]
+[host_provider(std::collection::Queue::peek)]
 [inline(always)]
 private micro queue_peek<T>(queue: Queue<T>): Option<T> {
     if __queue_jvm_length(queue) == 0 {
@@ -34,13 +34,13 @@ private micro queue_peek<T>(queue: Queue<T>): Option<T> {
     return Some(__queue_jvm_peek(queue))
 }
 
-[host_provider(std::collections::Queue::length)]
+[host_provider(std::collection::Queue::length)]
 [inline(always)]
 private micro queue_length<T>(queue: Queue<T>): usize {
     return __queue_jvm_length(queue)
 }
 
-[host_provider(std::collections::Queue::clear)]
+[host_provider(std::collection::Queue::clear)]
 [inline(always)]
 private micro queue_clear<T>(queue: Queue<T>): unit {
     __queue_jvm_clear(queue)

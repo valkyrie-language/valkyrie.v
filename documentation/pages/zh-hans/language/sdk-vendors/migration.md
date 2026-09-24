@@ -183,7 +183,7 @@ std.net.request(req)
 15. `std.text.Utf16Text` / `std.text.Utf16Iterator` 已移除全部 `match arch`，并把原有 CLR / JVM 字符串 bind 下沉到 `std.adaptor.clr` / `std.adaptor.jvm`，其余目标暂时严格保留既有 fallback 语义
 16. `std.text.Utf8Iterator` 中残留的 `__char_from_u16` CLR bind 也已移除，统一改为直接字符转换，避免继续把底层宿主 bind 塞在 `std`
 17. `std.collection.Array` / `std.collection.ArrayList` 已完成第一批收口：类级 `clr` / `jvm` runtime 等同标记继续保留在 `std`，方法级宿主分支已改为内部 `host_contract`，其中默认回退实现直接留在 contract body 中，`clr` / `jvm` 覆盖实现则下沉到 `std.adaptor.clr/source/collection/*` 与 `std.adaptor.jvm/source/collection/*` 镜像目录
-18. `std.collections.HashMap` / `std.collections.HashSet` 也已切到方法级 `host_contract`，默认回退继续直接操作 `SwissTable` / `SwissSet`，`clr` / `jvm` 侧改为顶层 `host_provider(std::collections::Type::method)` 形式，避免 adaptor 反向读取 `std` 内部结构，也避免字符串符号影响 IDE 跳转
+18. `std.collection.HashMap` / `std.collection.HashSet` 也已切到方法级 `host_contract`，默认回退继续直接操作 `SwissTable` / `SwissSet`，`clr` / `jvm` 侧改为顶层 `host_provider(std::collection::Type::method)` 形式，避免 adaptor 反向读取 `std` 内部结构，也避免字符串符号影响 IDE 跳转
 19. 目前 `std` 中仍剩余 12 个文件、95 处 `match arch`，全部集中在 `collection` / `async` 模块
 
 下一批继续推进：

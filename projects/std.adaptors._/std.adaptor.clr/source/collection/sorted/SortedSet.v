@@ -1,44 +1,44 @@
 namespace std.adaptor.clr.collections;
 
-using std.collections;
+using std.collection;
 
-[host_provider(std::collections::SortedSet::insert)]
+[host_provider(std::collection::SortedSet::insert)]
 [inline(always)]
 private micro sorted_set_insert<T>(set: SortedSet<T>, value: T): bool {
     return __sorted_set_clr_add(set, value)
 }
 
-[host_provider(std::collections::SortedSet::remove)]
+[host_provider(std::collection::SortedSet::remove)]
 [inline(always)]
 private micro sorted_set_remove<T>(set: SortedSet<T>, value: T): bool {
     return __sorted_set_clr_remove(set, value)
 }
 
-[host_provider(std::collections::SortedSet::contains)]
+[host_provider(std::collection::SortedSet::contains)]
 [inline(always)]
 private micro sorted_set_contains<T>(set: SortedSet<T>, value: T): bool {
     return __sorted_set_clr_contains(set, value)
 }
 
-[host_provider(std::collections::SortedSet::length)]
+[host_provider(std::collection::SortedSet::length)]
 [inline(always)]
 private micro sorted_set_length<T>(set: SortedSet<T>): usize {
     return __sorted_set_clr_length(set)
 }
 
-[host_provider(std::collections::SortedSet::clear)]
+[host_provider(std::collection::SortedSet::clear)]
 [inline(always)]
 private micro sorted_set_clear<T>(set: SortedSet<T>): unit {
     __sorted_set_clr_clear(set)
 }
 
-[host_provider(std::collections::SortedSet::to_list)]
+[host_provider(std::collection::SortedSet::to_list)]
 [inline(always)]
 private micro sorted_set_to_list<T>(set: SortedSet<T>): List<T> {
     return __sorted_set_clr_list_from_any::<T>(set)
 }
 
-[host_provider(std::collections::SortedSet::new)]
+[host_provider(std::collection::SortedSet::new)]
 [inline(always)]
 private micro sorted_set_new<T>(): SortedSet<T> {
     return __sorted_set_clr_new::<T>()

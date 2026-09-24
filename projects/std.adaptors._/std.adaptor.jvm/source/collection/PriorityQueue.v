@@ -1,20 +1,20 @@
 namespace std.adaptor.jvm.collections;
 
-using std.collections;
+using std.collection;
 
-[host_provider(std::collections::PriorityQueue::new)]
+[host_provider(std::collection::PriorityQueue::new)]
 [inline(always)]
 private micro priority_queue_new<T>(): PriorityQueue<T> {
     return __priority_queue_jvm_new::<T>()
 }
 
-[host_provider(std::collections::PriorityQueue::push)]
+[host_provider(std::collection::PriorityQueue::push)]
 [inline(always)]
 private micro priority_queue_push<T>(queue: PriorityQueue<T>, value: T): unit {
     __priority_queue_jvm_add(queue, value)
 }
 
-[host_provider(std::collections::PriorityQueue::pop)]
+[host_provider(std::collection::PriorityQueue::pop)]
 [inline(always)]
 private micro priority_queue_pop<T>(queue: PriorityQueue<T>): Option<T> {
     if __priority_queue_jvm_length(queue) == 0 {
@@ -24,7 +24,7 @@ private micro priority_queue_pop<T>(queue: PriorityQueue<T>): Option<T> {
     return Some(__priority_queue_jvm_poll(queue))
 }
 
-[host_provider(std::collections::PriorityQueue::peek)]
+[host_provider(std::collection::PriorityQueue::peek)]
 [inline(always)]
 private micro priority_queue_peek<T>(queue: PriorityQueue<T>): Option<T> {
     if __priority_queue_jvm_length(queue) == 0 {
@@ -34,13 +34,13 @@ private micro priority_queue_peek<T>(queue: PriorityQueue<T>): Option<T> {
     return Some(__priority_queue_jvm_peek(queue))
 }
 
-[host_provider(std::collections::PriorityQueue::length)]
+[host_provider(std::collection::PriorityQueue::length)]
 [inline(always)]
 private micro priority_queue_length<T>(queue: PriorityQueue<T>): usize {
     return __priority_queue_jvm_length(queue)
 }
 
-[host_provider(std::collections::PriorityQueue::clear)]
+[host_provider(std::collection::PriorityQueue::clear)]
 [inline(always)]
 private micro priority_queue_clear<T>(queue: PriorityQueue<T>): unit {
     __priority_queue_jvm_clear(queue)

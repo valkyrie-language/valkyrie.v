@@ -1,8 +1,8 @@
 namespace std.adaptor.jvm.collections;
 
-using std.collections;
+using std.collection;
 
-[host_provider(std::collections::OrderedMap::get)]
+[host_provider(std::collection::OrderedMap::get)]
 [inline(always)]
 private micro ordered_map_get<K, V>(map: OrderedMap<K, V>, key: K): Option<V> {
     if !__ordered_map_jvm_contains_key(map, key) {
@@ -12,7 +12,7 @@ private micro ordered_map_get<K, V>(map: OrderedMap<K, V>, key: K): Option<V> {
     return Some(__ordered_map_jvm_get(map, key))
 }
 
-[host_provider(std::collections::OrderedMap::insert)]
+[host_provider(std::collection::OrderedMap::insert)]
 [inline(always)]
 private micro ordered_map_insert<K, V>(map: OrderedMap<K, V>, key: K, value: V): Option<V> {
     if __ordered_map_jvm_contains_key(map, key) {
@@ -25,7 +25,7 @@ private micro ordered_map_insert<K, V>(map: OrderedMap<K, V>, key: K, value: V):
     return None
 }
 
-[host_provider(std::collections::OrderedMap::remove)]
+[host_provider(std::collection::OrderedMap::remove)]
 [inline(always)]
 private micro ordered_map_remove<K, V>(map: OrderedMap<K, V>, key: K): Option<V> {
     if !__ordered_map_jvm_contains_key(map, key) {
@@ -37,37 +37,37 @@ private micro ordered_map_remove<K, V>(map: OrderedMap<K, V>, key: K): Option<V>
     return Some(old)
 }
 
-[host_provider(std::collections::OrderedMap::contains_key)]
+[host_provider(std::collection::OrderedMap::contains_key)]
 [inline(always)]
 private micro ordered_map_contains_key<K, V>(map: OrderedMap<K, V>, key: K): bool {
     return __ordered_map_jvm_contains_key(map, key)
 }
 
-[host_provider(std::collections::OrderedMap::keys)]
+[host_provider(std::collection::OrderedMap::keys)]
 [inline(always)]
 private micro ordered_map_keys<K, V>(map: OrderedMap<K, V>): List<K> {
     return __ordered_map_jvm_list_from_any::<K>(__ordered_map_jvm_keys(map))
 }
 
-[host_provider(std::collections::OrderedMap::values)]
+[host_provider(std::collection::OrderedMap::values)]
 [inline(always)]
 private micro ordered_map_values<K, V>(map: OrderedMap<K, V>): List<V> {
     return __ordered_map_jvm_list_from_any::<V>(__ordered_map_jvm_values(map))
 }
 
-[host_provider(std::collections::OrderedMap::length)]
+[host_provider(std::collection::OrderedMap::length)]
 [inline(always)]
 private micro ordered_map_length<K, V>(map: OrderedMap<K, V>): usize {
     return __ordered_map_jvm_length(map)
 }
 
-[host_provider(std::collections::OrderedMap::clear)]
+[host_provider(std::collection::OrderedMap::clear)]
 [inline(always)]
 private micro ordered_map_clear<K, V>(map: OrderedMap<K, V>): unit {
     __ordered_map_jvm_clear(map)
 }
 
-[host_provider(std::collections::OrderedMap::new)]
+[host_provider(std::collection::OrderedMap::new)]
 [inline(always)]
 private micro ordered_map_new<K, V>(capacity: usize): OrderedMap<K, V> {
     return __ordered_map_jvm_new::<K, V>(capacity)

@@ -1,20 +1,20 @@
 namespace std.adaptor.clr.collections;
 
-using std.collections;
+using std.collection;
 
-[host_provider(std::collections::BitSet::new)]
+[host_provider(std::collection::BitSet::new)]
 [inline(always)]
 private micro bit_set_new(): BitSet {
     return __bit_set_clr_new(0)
 }
 
-[host_provider(std::collections::BitSet::with_capacity)]
+[host_provider(std::collection::BitSet::with_capacity)]
 [inline(always)]
 private micro bit_set_with_capacity(bits: usize): BitSet {
     return __bit_set_clr_new(bits)
 }
 
-[host_provider(std::collections::BitSet::set)]
+[host_provider(std::collection::BitSet::set)]
 [inline(always)]
 private micro bit_set_set(bits: BitSet, index: usize): unit {
     if index >= __bit_set_clr_length(bits) {
@@ -24,7 +24,7 @@ private micro bit_set_set(bits: BitSet, index: usize): unit {
     __bit_set_clr_set_value(bits, index, true)
 }
 
-[host_provider(std::collections::BitSet::clear_bit)]
+[host_provider(std::collection::BitSet::clear_bit)]
 [inline(always)]
 private micro bit_set_clear_bit(bits: BitSet, index: usize): unit {
     if index >= __bit_set_clr_length(bits) {
@@ -34,13 +34,13 @@ private micro bit_set_clear_bit(bits: BitSet, index: usize): unit {
     __bit_set_clr_set_value(bits, index, false)
 }
 
-[host_provider(std::collections::BitSet::get)]
+[host_provider(std::collection::BitSet::get)]
 [inline(always)]
 private micro bit_set_get(bits: BitSet, index: usize): bool {
     return bit_set_clr_get_or_false(bits, index)
 }
 
-[host_provider(std::collections::BitSet::toggle)]
+[host_provider(std::collection::BitSet::toggle)]
 [inline(always)]
 private micro bit_set_toggle(bits: BitSet, index: usize): unit {
     let value: bool = bit_set_clr_get_or_false(bits, index)
@@ -51,7 +51,7 @@ private micro bit_set_toggle(bits: BitSet, index: usize): unit {
     __bit_set_clr_set_value(bits, index, !value)
 }
 
-[host_provider(std::collections::BitSet::intersect)]
+[host_provider(std::collection::BitSet::intersect)]
 [inline(always)]
 private micro bit_set_intersect(bits: BitSet, other: BitSet): unit {
     let self_length: usize = __bit_set_clr_length(bits)
@@ -68,7 +68,7 @@ private micro bit_set_intersect(bits: BitSet, other: BitSet): unit {
     }
 }
 
-[host_provider(std::collections::BitSet::union)]
+[host_provider(std::collection::BitSet::union)]
 [inline(always)]
 private micro bit_set_union(bits: BitSet, other: BitSet): unit {
     let self_length: usize = __bit_set_clr_length(bits)
@@ -85,7 +85,7 @@ private micro bit_set_union(bits: BitSet, other: BitSet): unit {
     }
 }
 
-[host_provider(std::collections::BitSet::difference)]
+[host_provider(std::collection::BitSet::difference)]
 [inline(always)]
 private micro bit_set_difference(bits: BitSet, other: BitSet): unit {
     let self_length: usize = __bit_set_clr_length(bits)
@@ -96,7 +96,7 @@ private micro bit_set_difference(bits: BitSet, other: BitSet): unit {
     }
 }
 
-[host_provider(std::collections::BitSet::xor)]
+[host_provider(std::collection::BitSet::xor)]
 [inline(always)]
 private micro bit_set_xor(bits: BitSet, other: BitSet): unit {
     let self_length: usize = __bit_set_clr_length(bits)
@@ -113,7 +113,7 @@ private micro bit_set_xor(bits: BitSet, other: BitSet): unit {
     }
 }
 
-[host_provider(std::collections::BitSet::is_empty)]
+[host_provider(std::collection::BitSet::is_empty)]
 [inline(always)]
 private micro bit_set_is_empty(bits: BitSet): bool {
     let length: usize = __bit_set_clr_length(bits)
@@ -129,7 +129,7 @@ private micro bit_set_is_empty(bits: BitSet): bool {
     return true
 }
 
-[host_provider(std::collections::BitSet::clear_all)]
+[host_provider(std::collection::BitSet::clear_all)]
 [inline(always)]
 private micro bit_set_clear_all(bits: BitSet): unit {
     __bit_set_clr_set_all(bits, false)
