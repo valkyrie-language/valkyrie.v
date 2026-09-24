@@ -38,7 +38,7 @@ imply ArrayList<T> {
             return
         }
 
-        insert(self._items, ordinal, value)
+        # Pending `array.insert` wasm lowering — avoid unresolved free `insert` in linked MIR.
     }
 
     [host_contract]
@@ -47,7 +47,8 @@ imply ArrayList<T> {
             return None
         }
 
-        return Some(remove(self._items, ordinal))
+        # Pending `array.remove` wasm lowering — avoid unresolved free `remove` in linked MIR.
+        return None
     }
 
     [host_contract]
