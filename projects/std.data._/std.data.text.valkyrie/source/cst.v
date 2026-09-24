@@ -2,7 +2,7 @@ namespace std.data.text.valkyrie;
 
 # Isomorphic to Rust `std-data::text::valkyrie::cst`.
 
-unite ValSyntaxKind {
+enums ValSyntaxKind {
     Root
     Statement
     Trivia

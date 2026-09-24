@@ -1,6 +1,6 @@
 namespace std.data.text.von;
 
-unite VonTokenKind {
+enums VonTokenKind {
     Identifier
     StringLiteral
     NumberLiteral

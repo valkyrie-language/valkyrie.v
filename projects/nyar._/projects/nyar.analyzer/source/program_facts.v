@@ -35,7 +35,7 @@ structure FunctionAnalysis {
     reference_management_hint: utf8
 }
 
-unite TypeDefinitionKind {
+enums TypeDefinitionKind {
     Enum
     Unite
     Flags

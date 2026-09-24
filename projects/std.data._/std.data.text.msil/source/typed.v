@@ -34,7 +34,7 @@ structure MsilMethodRef {
     signature: MsilMethodSignature
 }
 
-unite MsilOpcode {
+enums MsilOpcode {
     Nop
     Break
     Ldarg0

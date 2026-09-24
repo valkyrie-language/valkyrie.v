@@ -22,7 +22,7 @@ structure ObjectAlgebraicProgram {
     structured_terms: [AlgebraicTerm]
 }
 
-unite RewritePhase {
+enums RewritePhase {
     Normalize
     Saturate
     PreProjection
