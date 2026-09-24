@@ -109,14 +109,14 @@ namespace game::physics {
 
 ```valkyrie
 using game::physics::Vector
-using std::collections::*
+using std::collection::*
 ```
 
 | 形式 | 说明 |
 |:---|:---|
 | `using std::io` | 标准库导入 |
 | `using game::physics::Vector` | 单名称导入 |
-| `using std::collections::*` | 通配符导入 |
+| `using std::collection::*` | 通配符导入 |
 
 详见 [路径解析](path-resolution.md) 和 [方法分发](method-dispatch.md)。
 

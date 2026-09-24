@@ -237,7 +237,7 @@ namespace game::physics {
 }
 
 using game::physics::Vector
-using std::collections::*
+using std::collection::*
 ```
 
 ## 标准库核心 trait 谱系

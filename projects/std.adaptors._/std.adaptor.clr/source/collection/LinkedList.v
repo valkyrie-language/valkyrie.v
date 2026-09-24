@@ -1,32 +1,32 @@
 namespace std.adaptor.clr.collections;
 
-using std.collections;
+using std.collection;
 
-[host_provider(std::collections::LinkedList::new)]
+[host_provider(std::collection::LinkedList::new)]
 [inline(always)]
 private micro linked_list_new<T>(): LinkedList<T> {
     return __linked_list_clr_new::<T>()
 }
 
-[host_provider(std::collections::LinkedList::length)]
+[host_provider(std::collection::LinkedList::length)]
 [inline(always)]
 private micro linked_list_length<T>(list: LinkedList<T>): usize {
     return __linked_list_clr_length(list)
 }
 
-[host_provider(std::collections::LinkedList::push_front)]
+[host_provider(std::collection::LinkedList::push_front)]
 [inline(always)]
 private micro linked_list_push_front<T>(list: LinkedList<T>, value: T): unit {
     __linked_list_clr_add_first(list, value)
 }
 
-[host_provider(std::collections::LinkedList::push_back)]
+[host_provider(std::collection::LinkedList::push_back)]
 [inline(always)]
 private micro linked_list_push_back<T>(list: LinkedList<T>, value: T): unit {
     __linked_list_clr_add_last(list, value)
 }
 
-[host_provider(std::collections::LinkedList::pop_front)]
+[host_provider(std::collection::LinkedList::pop_front)]
 [inline(always)]
 private micro linked_list_pop_front<T>(list: LinkedList<T>): Option<T> {
     if __linked_list_clr_length(list) == 0 {
@@ -39,7 +39,7 @@ private micro linked_list_pop_front<T>(list: LinkedList<T>): Option<T> {
     return Some(value)
 }
 
-[host_provider(std::collections::LinkedList::pop_back)]
+[host_provider(std::collection::LinkedList::pop_back)]
 [inline(always)]
 private micro linked_list_pop_back<T>(list: LinkedList<T>): Option<T> {
     if __linked_list_clr_length(list) == 0 {
@@ -52,7 +52,7 @@ private micro linked_list_pop_back<T>(list: LinkedList<T>): Option<T> {
     return Some(value)
 }
 
-[host_provider(std::collections::LinkedList::peek_front)]
+[host_provider(std::collection::LinkedList::peek_front)]
 [inline(always)]
 private micro linked_list_peek_front<T>(list: LinkedList<T>): Option<T> {
     if __linked_list_clr_length(list) == 0 {
@@ -62,7 +62,7 @@ private micro linked_list_peek_front<T>(list: LinkedList<T>): Option<T> {
     return Some(__linked_list_clr_node_value::<T>(__linked_list_clr_first_node::<T>(list)))
 }
 
-[host_provider(std::collections::LinkedList::peek_back)]
+[host_provider(std::collection::LinkedList::peek_back)]
 [inline(always)]
 private micro linked_list_peek_back<T>(list: LinkedList<T>): Option<T> {
     if __linked_list_clr_length(list) == 0 {
@@ -72,19 +72,19 @@ private micro linked_list_peek_back<T>(list: LinkedList<T>): Option<T> {
     return Some(__linked_list_clr_node_value::<T>(__linked_list_clr_last_node::<T>(list)))
 }
 
-[host_provider(std::collections::LinkedList::clear)]
+[host_provider(std::collection::LinkedList::clear)]
 [inline(always)]
 private micro linked_list_clear<T>(list: LinkedList<T>): unit {
     __linked_list_clr_clear(list)
 }
 
-[host_provider(std::collections::LinkedList::contains)]
+[host_provider(std::collection::LinkedList::contains)]
 [inline(always)]
 private micro linked_list_contains<T>(list: LinkedList<T>, value: T): bool {
     return __linked_list_clr_contains(list, value)
 }
 
-[host_provider(std::collections::LinkedList::iter)]
+[host_provider(std::collection::LinkedList::iter)]
 [inline(always)]
 private micro linked_list_iter<T>(list: LinkedList<T>, f: micro(T) -> unit): unit {
     let length: usize = __linked_list_clr_length(list)
@@ -101,7 +101,7 @@ private micro linked_list_iter<T>(list: LinkedList<T>, f: micro(T) -> unit): uni
     }
 }
 
-[host_provider(std::collections::LinkedList::iter_reverse)]
+[host_provider(std::collection::LinkedList::iter_reverse)]
 [inline(always)]
 private micro linked_list_iter_reverse<T>(list: LinkedList<T>, f: micro(T) -> unit): unit {
     let length: usize = __linked_list_clr_length(list)

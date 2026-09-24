@@ -1,45 +1,45 @@
 namespace std.adaptor.clr.collections;
 
-using std.collections;
+using std.collection;
 
-[host_provider(std::collections::HashSet::insert)]
+[host_provider(std::collection::HashSet::insert)]
 [inline(always)]
 private micro hash_set_insert<T>(set: HashSet<T>, value: T): bool {
     return __hash_set_clr_add(set, value)
 }
 
-[host_provider(std::collections::HashSet::remove)]
+[host_provider(std::collection::HashSet::remove)]
 [inline(always)]
 private micro hash_set_remove<T>(set: HashSet<T>, value: T): bool {
     return __hash_set_clr_remove(set, value)
 }
 
 [inline(always), pure]
-[host_provider(std::collections::HashSet::contains)]
+[host_provider(std::collection::HashSet::contains)]
 [inline(always)]
 private micro hash_set_contains<T>(set: HashSet<T>, value: T): bool {
     return __hash_set_clr_contains(set, value)
 }
 
-[host_provider(std::collections::HashSet::length)]
+[host_provider(std::collection::HashSet::length)]
 [inline(always)]
 private micro hash_set_length<T>(set: HashSet<T>): usize {
     return __hash_set_clr_length(set)
 }
 
-[host_provider(std::collections::HashSet::clear)]
+[host_provider(std::collection::HashSet::clear)]
 [inline(always)]
 private micro hash_set_clear<T>(set: HashSet<T>): unit {
     __hash_set_clr_clear(set)
 }
 
-[host_provider(std::collections::HashSet::to_list)]
+[host_provider(std::collection::HashSet::to_list)]
 [inline(always)]
 private micro hash_set_to_list<T>(set: HashSet<T>): List<T> {
     return __hash_set_clr_list_from_any::<T>(set)
 }
 
-[host_provider(std::collections::HashSet::new)]
+[host_provider(std::collection::HashSet::new)]
 [inline(always)]
 private micro hash_set_new<T>(): HashSet<T> {
     return __hash_set_clr_new::<T>()
