@@ -16,7 +16,7 @@ using std.data.binary.wasm;
 # - WASI CM paths / WIT ids = UTF-8 **bytes** at the boundary (no Utf16 indexing).
 # No body_source bypass.
 
-unite WasmHostBoundary {
+enums WasmHostBoundary {
     WasmJsGlue
     WasiComponent
 }

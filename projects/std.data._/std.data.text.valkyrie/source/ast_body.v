@@ -12,12 +12,12 @@ unite LiteralExpression {
     Null
 }
 
-unite UnaryOperator {
+enums UnaryOperator {
     Neg
     Not
 }
 
-unite BinaryOperator {
+enums BinaryOperator {
     And
     Or
     Add

@@ -8,7 +8,7 @@ namespace nyar.emitter.wasi;
 # Do not apply CLR `String.get_Length` / JS `.length` (UTF-16 code units). Language
 # `utf8` scalar APIs are fine for ASCII WIT package ids (byte ≡ scalar).
 
-unite WasiPreview {
+enums WasiPreview {
     Preview2
     Preview3
 }
@@ -25,23 +25,15 @@ micro wasi_preview3_version() -> utf8 {
 
 micro wasi_preview_name(p: WasiPreview) -> utf8 {
     match p {
-        case Preview2: {
-            return "wasip2"
-        }
-        case Preview3: {
-            return "wasip3"
-        }
+        case Preview2: return "wasip2"
+        case Preview3: return "wasip3"
     }
 }
 
 micro wasi_package_version(p: WasiPreview) -> utf8 {
     match p {
-        case Preview2: {
-            return wasi_preview2_version()
-        }
-        case Preview3: {
-            return wasi_preview3_version()
-        }
+        case Preview2: return wasi_preview2_version()
+        case Preview3: return wasi_preview3_version()
     }
 }
 

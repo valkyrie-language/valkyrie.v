@@ -13,7 +13,7 @@ using std.data.text.msil;
 # Lanes: CLR / JVM / WASM(+JS glue) / WASI(wasip2|wasip3).
 # Do NOT add body_source → backend string bypasses here.
 
-unite BackendInputKind {
+enums BackendInputKind {
     ClrTypedMsil
     JvmClass
     WasmBinary
