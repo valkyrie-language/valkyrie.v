@@ -1,7 +1,5 @@
 namespace std.text;
 
-type utf8 = Utf8Text
-
 <% match arch %>
 <% case "wasm32" %>
 [wasm("env", "utf8_concat")]
