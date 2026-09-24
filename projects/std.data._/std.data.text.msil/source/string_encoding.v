@@ -15,7 +15,8 @@ namespace std.data.text.msil;
 # across an interop boundary without an explicit transcoder.
 
 micro msil_quote_char() -> utf8 {
-    return "\""
+    # Cooked strings reject `\"`; use Unicode escape for U+0022.
+    return "\u{22}"
 }
 
 micro msil_hex2_u8(n: i32) -> utf8 {
