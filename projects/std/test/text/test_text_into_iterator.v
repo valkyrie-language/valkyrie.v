@@ -77,3 +77,17 @@ micro `test char lowercase ascii index`() {
         }
     }
 }
+
+[test]
+micro `test utf8 char_at`() {
+    let s: utf8 = Utf8Text::from_bytes([97, 110, 97, 103, 114, 97, 109])
+    if s.char_at(0).unwrap().lowercase_ascii_index().unwrap() != 0 {
+        panic("utf8 char_at first failed")
+    }
+    if s.char_at(1).unwrap().lowercase_ascii_index().unwrap() != 13 {
+        panic("utf8 char_at second failed")
+    }
+    if s.char_at(6).is_some() {
+        panic("utf8 char_at bounds failed")
+    }
+}
