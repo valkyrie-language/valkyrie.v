@@ -1,11 +1,16 @@
 #!/usr/bin/env node
 
 /**
- * bootstrap-smoke Node 切片验收
+ * bootstrap-smoke Node 切片验收（辅助设施，不是自举证明）
  *
  *   1. seed 编译 legion.tools → v1.node
  *   2. v1 运行 --version / --help
  *   3. v1 尝试 build legion.tools → v2（允许诚实失败在真实语义层）
+ *
+ * 禁止：
+ *   - 把本脚本产物装配进 packages/legion-wasm（正式包）
+ *   - 用本脚本通过冒充 source-bootstrap / bootstrap-proven
+ * 正式入口：valkyrie.rs/scripts/node-wasm-compiler-capability.mjs
  *
  * 用法：
  *   node scripts/bootstrap-smoke-node.mjs [--legion <path>] [--output <dir>] [--verbose]
