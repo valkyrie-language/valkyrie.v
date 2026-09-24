@@ -33,6 +33,27 @@ micro `test utf8 builder concat`() {
 }
 
 [test]
+micro `test utf8 builder append i64`() {
+    let mut zero: Utf8Builder = Utf8Builder::new(4)
+    zero.append_i64(0)
+    if !zero.build().equals(Utf8Text::from_bytes([48])) {
+        panic("utf8 builder append_i64 zero test failed")
+    }
+
+    let mut positive: Utf8Builder = Utf8Builder::new(8)
+    positive.append_i64(42)
+    if !positive.build().equals(Utf8Text::from_bytes([52, 50])) {
+        panic("utf8 builder append_i64 positive test failed")
+    }
+
+    let mut negative: Utf8Builder = Utf8Builder::new(16)
+    negative.append_i64(-2147483648)
+    if !negative.build().equals(Utf8Text::from_bytes([45, 50, 49, 52, 55, 52, 56, 51, 54, 52, 56])) {
+        panic("utf8 builder append_i64 negative test failed")
+    }
+}
+
+[test]
 micro `test utf8 builder from text`() {
     let builder: Utf8Builder = Utf8Builder::new(Utf8Text::from_bytes([97, 98, 99]))
     if builder.byte_length() != 3 {
