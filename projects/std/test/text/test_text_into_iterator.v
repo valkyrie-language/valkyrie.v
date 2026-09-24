@@ -66,3 +66,14 @@ micro `test ascii text into_iterator count and skip`() {
         panic("ascii text into_iterator skip value test failed")
     }
 }
+
+[test]
+micro `test char lowercase ascii index`() {
+    let s: utf8 = Utf8Text::from_bytes([97, 110, 97])
+    loop ch in s {
+        let idx: i64 = ch.lowercase_ascii_index().unwrap()
+        if idx != 0 && idx != 13 {
+            panic("char lowercase ascii index test failed")
+        }
+    }
+}
