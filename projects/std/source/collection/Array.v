@@ -79,6 +79,13 @@ private micro __array_len<T>(self: Array<T>): usize { }
 [intrinsic("array.push")]
 micro push<T>(array: Array<T>, value: T): Array<T> { }
 
+# In-place insert/remove at ordinal (1-based). `ArrayList` host_contract delegates here.
+[intrinsic("array.insert")]
+micro insert<T>(array: Array<T>, ordinal: usize, value: T): unit { }
+
+[intrinsic("array.remove")]
+micro remove<T>(array: Array<T>, ordinal: usize): T { }
+
 structure ArrayIterator<T> {
     _array: Array<T>
     _index: usize
