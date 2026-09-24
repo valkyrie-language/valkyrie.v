@@ -1,7 +1,5 @@
 namespace std.text;
 
-type utf16 = Utf16Text
-
 ⍝ UTF-16 编码的字符串
 [clr("System.Runtime", "System.String")]
 [jvm("java.lang.String")]
