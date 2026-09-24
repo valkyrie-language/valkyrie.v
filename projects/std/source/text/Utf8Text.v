@@ -354,6 +354,45 @@ imply Utf8Text {
         return -1
     }
 
+    micro char_at(self, index: i32) -> Option<char> {
+        if index < 0 {
+            return option_none::<char>()
+        }
+        let target: usize = index as usize
+        if target >= self.count_char() {
+            return option_none::<char>()
+        }
+        let start: usize = self.byte_offset(target)
+        if start >= self._repr.length {
+            return option_none::<char>()
+        }
+        let first: u8 = self._repr⁅start⁆
+        let width: usize = self.char_width(start)
+        let mut code_point: u32 = 0
+        if width == 1 {
+            code_point = first as u32
+        }
+        else if width == 2 && start + 1 < self._repr.length {
+            code_point = ((first as u32) & 0x1F) << 6
+            code_point = code_point | ((self._repr⁅start + 1⁆ as u32) & 0x3F)
+        }
+        else if width == 3 && start + 2 < self._repr.length {
+            code_point = ((first as u32) & 0x0F) << 12
+            code_point = code_point | (((self._repr⁅start + 1⁆ as u32) & 0x3F) << 6)
+            code_point = code_point | ((self._repr⁅start + 2⁆ as u32) & 0x3F)
+        }
+        else if width == 4 && start + 3 < self._repr.length {
+            code_point = ((first as u32) & 0x07) << 18
+            code_point = code_point | (((self._repr⁅start + 1⁆ as u32) & 0x3F) << 12)
+            code_point = code_point | (((self._repr⁅start + 2⁆ as u32) & 0x3F) << 6)
+            code_point = code_point | ((self._repr⁅start + 3⁆ as u32) & 0x3F)
+        }
+        else {
+            code_point = first as u32
+        }
+        return Some(code_point as u16 as char)
+    }
+
     micro chars(self) -> Utf8Iterator {
         return Utf8Iterator::new(self)
     }
