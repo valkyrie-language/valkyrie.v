@@ -1,4 +1,4 @@
-namespace std.collections;
+namespace std.collection;
 
 structure OrderedMapEntry<K, V> {
     key: K

@@ -1,6 +1,6 @@
-# std.collections: HashSet implementation
+# std.collection: HashSet implementation
 
-namespace std.collections;
+namespace std.collection;
 
 [clr("System.Collections", "System.Collections.Generic.HashSet`1")]
 [jvm("java.util.HashSet")]

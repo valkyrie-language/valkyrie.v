@@ -1,10 +1,10 @@
-# std.collections: primitive Hash implementations
+# std.collection: primitive Hash implementations
 
-namespace std.collections;
+namespace std.collection;
 
 imply utf8: Hash {
     micro hash(self) -> usize {
-        return std.collections.hash_utf8(self)
+        return std.collection.hash_utf8(self)
     }
 }
 
@@ -16,7 +16,7 @@ imply i32: Hash {
 
 imply u32: Hash {
     micro hash(self) -> usize {
-        return std.collections.hash_utf8(stringify(self))
+        return std.collection.hash_utf8(stringify(self))
     }
 }
 
@@ -28,7 +28,7 @@ imply i64: Hash {
 
 imply u64: Hash {
     micro hash(self) -> usize {
-        return std.collections.hash_utf8(stringify(self))
+        return std.collection.hash_utf8(stringify(self))
     }
 }
 

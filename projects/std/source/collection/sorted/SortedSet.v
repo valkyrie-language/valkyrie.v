@@ -1,4 +1,4 @@
-namespace std.collections;
+namespace std.collection;
 
 [clr("System.Collections", "System.Collections.Generic.SortedSet`1")]
 [jvm("java.util.TreeSet")]

@@ -1,4 +1,4 @@
-namespace std.collections;
+namespace std.collection;
 
 class BinaryHeap<T> {
     data: List<T>

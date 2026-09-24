@@ -1,4 +1,4 @@
-namespace std.collections;
+namespace std.collection;
 
 [jvm("java.util.LinkedHashSet")]
 class OrderedSet<T> {

@@ -1,5 +1,5 @@
-# std.collections: RingBuffer
-namespace std.collections;
+# std.collection: RingBuffer
+namespace std.collection;
 
 structure RingBuffer<T> {
     data: List<T>

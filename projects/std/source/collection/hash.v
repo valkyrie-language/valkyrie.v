@@ -1,6 +1,6 @@
-# std.collections: Hash trait
+# std.collection: Hash trait
 
-namespace std.collections;
+namespace std.collection;
 
 trait Hash {
     micro hash(self) -> usize

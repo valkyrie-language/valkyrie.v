@@ -1,6 +1,6 @@
-# std.collections: Set trait
+# std.collection: Set trait
 
-namespace std.collections;
+namespace std.collection;
 
 trait Set<T> {
     micro insert(mut self, value: T): bool

@@ -1,6 +1,6 @@
-namespace std.collections;
+namespace std.collection;
 
-# std.collections: Stack - LIFO 栈
+# std.collection: Stack - LIFO 栈
 class Stack<T> {
     data: List<T>
 }
