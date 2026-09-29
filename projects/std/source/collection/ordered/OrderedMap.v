@@ -155,6 +155,6 @@ imply OrderedMap<K, V> {
             cursor = cursor + 1
         }
 
-        return option_none::<V>()
+        return option_none::<usize>()
     }
 }

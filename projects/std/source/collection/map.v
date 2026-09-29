@@ -1,18 +1,16 @@
 namespace std.collection;
 
-⍝ std.collection: Map trait
+# Map 合同：与 HashMap / OrderedMap / SortedMap 的公开表面一致。
+# insert 返回被替换的旧值（无则 None）；键存在性用 contains_key；大小用 length。
 trait Map<K, V> {
-    micro get(self, key: K) -> Option<V>;
-    micro set(mut self, key: V, value: V) -> Option<V>;
-    micro insert(mut self, key: K, value: V) -> unit {
-        self.set(key, value);
-    }
-    micro remove(mut self, key: K) -> Option<V>;
-    micro contains(self, key: K) -> bool;
-    micro keys(self) -> std::iterator::Iterator<Item=K>;
-    micro values(self) -> std::iterator::Iterator<Item=V>;
-    micro count(self) -> usize;
-    micro is_empty(self) -> bool;
-    micro clear(mut self) -> unit;
-    micro iterator(self, f: micro(K, V) -> unit) -> unit;
+    micro get(self, key: K): Option<V>
+    micro insert(mut self, key: K, value: V): Option<V>
+    micro remove(mut self, key: K): Option<V>
+    micro contains_key(self, key: K): bool
+    micro keys(self): List<K>
+    micro values(self): List<V>
+    micro length(self): usize
+    micro is_empty(self): bool
+    micro clear(mut self) -> unit
+    micro iterator(self, f: micro(K, V) -> unit) -> unit
 }

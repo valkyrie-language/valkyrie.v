@@ -14,7 +14,9 @@ imply HashMap<K, V>: Map<K, V> {
 
     [host_contract]
     micro insert(mut self, key: K, value: V): Option<V> {
-        return self._impl.insert(key, value)
+        # 显式 Option 注解：避免 `insert` 名与 SwissSet/HashSet（返回 bool）在无期望类型时误匹配。
+        let previous: Option<V> = self._impl.insert(key, value)
+        return previous
     }
 
     [host_contract]
