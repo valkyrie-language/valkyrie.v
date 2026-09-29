@@ -20,7 +20,7 @@ imply Array<T> {
 
     [host_contract]
     micro get(self, ordinal: usize): Option<T> {
-
+        return Some(__array_get(self, ordinal))
     }
 
     [host_contract]
@@ -74,6 +74,9 @@ imply Array<T> {
 
 [intrinsic("array.len")]
 private micro __array_len<T>(self: Array<T>): usize { }
+
+[intrinsic("array.get")]
+private micro __array_get<T>(self: Array<T>, ordinal: usize): T { }
 
 # Functional append: `result = push(result, item)`. Backends expand `[intrinsic("array.push")]`.
 [intrinsic("array.push")]
