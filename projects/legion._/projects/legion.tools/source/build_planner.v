@@ -552,25 +552,9 @@ micro execute_backend_request(request: LegionBackendExecutionRequest) -> LegionB
         }
     }
 
-    if request.arch_tag == "clr" || request.arch_tag == "wasm" {
-        let exit_code: i32 = emitter_compile_project(request.project_dir, request.canonical_target, request.output_dir, request.verbose)
-        if exit_code != 0 {
-            return LegionBackendExecutionResult {
-                executor_kind: "emitter",
-                success: false,
-                error: "nyar driver 编译执行失败，退出码 = " + format("{}", exit_code)
-            }
-        }
-        return LegionBackendExecutionResult {
-            executor_kind: "emitter",
-            success: true,
-            error: ""
-        }
-    }
-
     return LegionBackendExecutionResult {
         executor_kind: "emitter",
         success: false,
-        error: "当前目标尚未接入源码编译执行器：" + request.canonical_target
+        error: "目标尚未接入 canonical Compiler，无法从源码产生已验证的 Semantic MIR、RepresentationPlan 和 BackendPrivatePlan：" + request.canonical_target
     }
 }
