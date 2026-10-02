@@ -41,7 +41,7 @@ micro executable_module_from_valkyrie_root(root: ValkyrieRoot, module_name: utf8
     return adapt_mir_module_to_executable(mir)
 }
 
-# Preferred CLR emit: ExecutableModule → nyar.emitter.clr (not body_source bypass).
+# CLR emit consumes the ExecutableModule contract through nyar.emitter.clr.
 micro emit_msil_text_from_valkyrie_root(root: ValkyrieRoot, module_name: utf8) -> EmitterResult {
     let executable_module: ExecutableModule = executable_module_from_valkyrie_root(root, module_name)
     return emit_clr_from_mir(executable_module)
@@ -79,26 +79,3 @@ micro emit_jvm_from_fragment_submission(submission: FragmentSubmission) -> Emitt
 
 # True when every exported op has a DeclarationBody subset
 # (return expr / let+return / simple if / empty).
-micro fragment_supports_executable_module_emit(submission: FragmentSubmission) -> bool {
-    if submission.exported_operations.length() == 0 {
-        return false
-    }
-    let mut i: usize = 0
-    while i < submission.exported_operations.length() {
-        let symbol: utf8 = submission.exported_operations⁅i⁆
-        let binding: ExternalImportBinding = find_external_binding(submission, symbol)
-        if binding.symbol.length() > 0 {
-            i = i + 1
-            continue
-        }
-        let body_source: utf8 = find_body_source(submission, symbol)
-        let body: DeclarationBody = declaration_body_parse_subset(body_source)
-        let trimmed: utf8 = body_source.trim()
-        if trimmed.length() > 0 && body.statements.length() == 0 {
-            # Non-empty body not covered by subset parser → need legacy or fuller AST.
-            return false
-        }
-        i = i + 1
-    }
-    return true
-}
