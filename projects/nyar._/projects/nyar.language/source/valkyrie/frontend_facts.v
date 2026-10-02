@@ -30,7 +30,6 @@ micro program_facts_from_valkyrie_root(root: ValkyrieRoot, module_name: utf8) ->
     }
     return facts
 }
-
 micro mir_module_from_valkyrie_root(root: ValkyrieRoot, module_name: utf8) -> MirModule {
     let hir: HirModule = hir_from_valkyrie_root(root, module_name)
     return mir_from_hir_module(hir)
@@ -56,26 +55,3 @@ micro emit_for_target_from_valkyrie_root(root: ValkyrieRoot, module_name: utf8, 
     let executable_module: ExecutableModule = executable_module_from_valkyrie_root(root, module_name)
     return emit_for_target(executable_module, target)
 }
-
-# Bootstrap bridge: FragmentSubmission → AST subset → ExecutableModule → emitter.
-micro executable_module_from_fragment_submission(submission: FragmentSubmission) -> ExecutableModule {
-    let root: ValkyrieRoot = valkyrie_root_from_fragment_submission(submission)
-    let mut module_name: utf8 = submission.module_name
-    if module_name.length() == 0 {
-        module_name = submission_assembly_name(submission)
-    }
-    return executable_module_from_valkyrie_root(root, module_name)
-}
-
-micro emit_clr_from_fragment_submission(submission: FragmentSubmission) -> EmitterResult {
-    let executable_module: ExecutableModule = executable_module_from_fragment_submission(submission)
-    return emit_clr_from_mir(executable_module)
-}
-
-micro emit_jvm_from_fragment_submission(submission: FragmentSubmission) -> EmitterResult {
-    let executable_module: ExecutableModule = executable_module_from_fragment_submission(submission)
-    return emit_jvm_lane(executable_module)
-}
-
-# True when every exported op has a DeclarationBody subset
-# (return expr / let+return / simple if / empty).
