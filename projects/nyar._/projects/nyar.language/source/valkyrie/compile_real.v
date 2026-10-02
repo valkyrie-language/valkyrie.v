@@ -97,7 +97,11 @@ micro compile_project_from_plan(plan_path: utf8, dependency_count: i32) -> Compi
         }
     }
     if target_uses_wasm_node_backend(plan.canonical_target) {
-        return compile_wasm_node_from_plan(plan_path)
+        return CompileResult {
+            ok: false,
+            error: "Node/Wasm 编译器尚未贯通 Semantic MIR → BackendPrivatePlan；禁止宿主代编译",
+            output: empty_compile_output()
+        }
     }
     let merged_files: [utf8] = ensure_project_sources(plan.source_files, plan.project_dir)
     let source_count_u: usize = merged_files.length()
