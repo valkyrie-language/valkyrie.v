@@ -166,31 +166,6 @@ micro compile_project_from_plan(plan_path: utf8, dependency_count: i32) -> Compi
             output: empty_compile_output()
         }
     }
-    let blockers: [utf8] = collect_body_emit_blockers(submission)
-    if blockers.length() > 0 {
-        let mut detail: utf8 = "fail-closed: body→MSIL 无法如实 emit"
-        if entry_is_legion(entry) {
-            detail = detail + "（legion.tools 自举仍缺完整 MIR 覆盖）"
-        }
-        let mut bi: usize = 0
-        let bn: usize = blockers.length()
-        let mut show: usize = bn
-        if show > 24 {
-            show = 24
-        }
-        while bi < show {
-            detail = detail + " | " + blockers⁅bi⁆
-            bi = bi + 1
-        }
-        if bn > show {
-            detail = detail + " | …共 " + format("{}", bn as i32) + " 项"
-        }
-        return CompileResult {
-            ok: false,
-            error: detail,
-            output: empty_compile_output()
-        }
-    }
     let edge_count: i32 = submission.external_call_edges.length() as i32
     std.io.print_line("[v1-debug] edge_count=" + format("{}", edge_count))
 

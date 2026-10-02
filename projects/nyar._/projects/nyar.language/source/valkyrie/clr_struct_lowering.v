@@ -101,7 +101,7 @@ micro nominal_type_name(type_text: utf8) -> utf8 {
     return t
 }
 
-# `"class " + name` collapses under v1 body→MSIL — build stepwise.
+# 逐步构造类型签名，避免宿主字符串拼接改变类型事实。
 micro msil_class_ty(name: utf8) -> utf8 {
     let mut t: utf8 = "class"
     t = t + " "
@@ -363,49 +363,6 @@ micro emit_struct_classes(structs: [ParsedStruct]) -> utf8 {
         si = si + 1
     }
     return join_msil_parts(parts)
-}
-
-# Build a default instance of `class Name` with nested structs / empty string[].
-micro emit_default_struct_new(struct_name: utf8, structs: [ParsedStruct]) -> BodyLowerResult {
-    let st: ParsedStruct = find_struct_def(structs, struct_name)
-    if st.name.length() == 0 {
-        return body_lower_fail("未知结构：" + struct_name)
-    }
-    let mut parts: [utf8] = []
-    parts = push(parts, "        newobj instance void " + struct_name + "::.ctor()\n")
-    let mut fi: usize = 0
-    while fi < st.fields.length() {
-        let field: ParsedStructField = st.fields⁅fi⁆
-        let ft: utf8 = field.type_text.trim()
-        parts = push(parts, "        dup\n")
-        let nested: ParsedStruct = find_struct_def(structs, ft)
-        if nested.name.length() > 0 {
-            let nested_r: BodyLowerResult = emit_default_struct_new(ft, structs)
-            if !nested_r.ok {
-                return nested_r
-            }
-            parts = push(parts, nested_r.instructions)
-            parts = push(parts, "        stfld class " + ft + " " + struct_name + "::" + msil_id(field.name) + "\n")
-        }
-        else if ft == "[utf8]" || ft == "[string]" {
-            parts = push(parts, "        ldc.i4.0\n")
-            parts = push(parts, "        newarr [mscorlib]System.String\n")
-            parts = push(parts, "        stfld string[] " + struct_name + "::" + msil_id(field.name) + "\n")
-        }
-        else if ft == "utf8" || ft == "string" {
-            parts = push(parts, "        ldstr " + dq() + dq() + "\n")
-            parts = push(parts, "        stfld string " + struct_name + "::" + msil_id(field.name) + "\n")
-        }
-        else if ft == "bool" || ft == "i32" || ft == "i64" || ft == "usize" {
-            parts = push(parts, "        ldc.i4.0\n")
-            parts = push(parts, "        stfld int32 " + struct_name + "::" + msil_id(field.name) + "\n")
-        }
-        else {
-            return body_lower_fail("结构默认值不支持字段类型：" + struct_name + "." + field.name + ": " + ft)
-        }
-        fi = fi + 1
-    }
-    return body_lower_ok(join_msil_parts(parts), "")
 }
 
 micro parse_structures_from_source(source: utf8) -> [ParsedStruct] {

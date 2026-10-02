@@ -161,7 +161,6 @@ micro build_fragment_from_modules(modules: [ParsedModule], module_count: usize, 
                 }
                 ci = ci + 1
             }
-            # Emit blockers: legacy body→MSIL gate; isomorphic path is ExecutableModule→emitter.
             fi = fi + 1
         }
         mi = mi + 1
@@ -232,58 +231,6 @@ micro find_body_source(submission: FragmentSubmission, symbol: utf8) -> utf8 {
         i = i + 1
     }
     return ""
-}
-
-micro push_unique_op(items: [utf8], value: utf8) -> [utf8] {
-    return push_unique_text(items, value)
-}
-
-# Only entry + internal-call closure — do not require lowering every dependency export.
-micro reachable_operations(submission: FragmentSubmission) -> [utf8] {
-    let mut acc: [utf8] = []
-    if submission.entry_operation.length() == 0 {
-        return acc
-    }
-    acc = push_unique_op(acc, submission.entry_operation)
-    let mut changed: bool = true
-    while changed {
-        changed = false
-        let mut ei: usize = 0
-        while ei < submission.internal_call_edges.length() {
-            let edge: InternalCallEdge = submission.internal_call_edges⁅ei⁆
-            if contains_text(acc, edge.caller) {
-                let before: usize = acc.length()
-                acc = push_unique_op(acc, edge.callee_symbol)
-                if acc.length() != before {
-                    changed = true
-                }
-            }
-            ei = ei + 1
-        }
-    }
-    return acc
-}
-
-micro collect_body_emit_blockers(submission: FragmentSubmission) -> [utf8] {
-    let mut blockers: [utf8] = []
-    let reachable: [utf8] = reachable_operations(submission)
-    let mut i: usize = 0
-    while i < reachable.length() {
-        let symbol: utf8 = reachable⁅i⁆
-        let binding: ExternalImportBinding = find_external_binding(submission, symbol)
-        if binding.symbol.length() > 0 {
-            i = i + 1
-            continue
-        }
-        let body: utf8 = find_body_source(submission, symbol)
-        let returns_void: bool = operation_is_void(submission, symbol)
-        let lowered: BodyLowerResult = lower_function_body_to_msil(body, returns_void, submission)
-        if !lowered.ok {
-            blockers = push(blockers, symbol + ": " + lowered.error)
-        }
-        i = i + 1
-    }
-    return blockers
 }
 
 micro build_fragment_from_files(files: [utf8], file_count: usize, project_name: utf8) -> FragmentSubmission {
