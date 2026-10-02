@@ -8,11 +8,9 @@ structure LoweredClrModule {
     msil: utf8
     console_message: utf8
 }
-
 micro append_msil_line(buffer: utf8, line: utf8) -> utf8 {
     return buffer + line + "\n"
 }
-
 micro dq() -> utf8 {
     return '''"'''
 }
@@ -297,102 +295,6 @@ micro lower_fragment_via_executable_module(submission: FragmentSubmission) -> Lo
     msil = append_msil_line(msil, ".assembly " + assembly_name + " {}")
     msil = append_msil_line(msil, "")
     msil = msil + emit.msil_text
-    return LoweredClrModule {
-        assembly_name: assembly_name,
-        msil: msil,
-        console_message: submission_console_message(submission)
-    }
-}
-
-micro lower_fragment_to_clr(submission: FragmentSubmission) -> LoweredClrModule {
-    let assembly_name: utf8 = submission_assembly_name(submission)
-    # No template-copy shortcut for legion — caller must fail-closed before this.
-
-    let mut msil: utf8 = ""
-    msil = append_msil_line(msil, ".assembly extern mscorlib {}")
-    msil = append_msil_line(msil, ".assembly extern System.Console {}")
-    msil = append_msil_line(msil, ".assembly extern System.IO.FileSystem {}")
-    msil = append_msil_line(msil, ".assembly extern System.Runtime {}")
-    msil = append_msil_line(msil, "")
-    msil = append_msil_line(msil, ".assembly " + assembly_name + " {}")
-    msil = append_msil_line(msil, "")
-    # Unites before structs — structs may reference VonValue / VonTokenKind fields.
-    msil = msil + emit_unite_classes(submission.unite_defs)
-    msil = msil + emit_struct_classes(submission.struct_defs)
-
-    # Emit only entry call-closure (plus CLR import MethodDefs referenced by bodies).
-    let operations: [utf8] = reachable_operations(submission)
-    let mut oi: usize = 0
-    let op_count: usize = operations.length()
-    while oi < op_count {
-        msil = append_operation_method(msil, submission, operations⁅oi⁆)
-        oi = oi + 1
-    }
-    # Ensure CLR import symbols used by external edges still have MethodDefs if referenced.
-    let mut ei: usize = 0
-    while ei < submission.external_import_bindings.length() {
-        let binding: ExternalImportBinding = submission.external_import_bindings⁅ei⁆
-        if !contains_text(operations, binding.symbol) {
-            # Import MethodDefs are optional when bodies call BCL directly.
-        }
-        ei = ei + 1
-    }
-
-    let entry: utf8 = submission.entry_operation
-    if entry.length() > 0 && !contains_text(operations, entry) {
-        msil = append_operation_method(msil, submission, entry)
-    }
-
-    let entry_body: utf8 = find_body_source(submission, entry)
-    let entry_params: [BodyLocal] = parse_function_params(entry_body, submission.struct_defs)
-    let entry_return_void: bool = operation_is_void(submission, entry)
-    let entry_return_type: utf8 = if entry_return_void { "void" } else { operation_return_msil_type(submission, entry) }
-    let entry_call_type: utf8 = entry_return_type
-    let entry_wrapper: utf8 = msil_method_name("entry_" + sanitize_symbol(entry))
-    let entry_callee: utf8 = msil_method_name(entry)
-    let entry_ptypes: utf8 = msil_param_types(entry_params)
-
-    if entry_params.length() == 1 && entry_params⁅0⁆.clr_type == "string[]" {
-        msil = append_msil_line(msil, ".method public hidebysig static " + entry_return_type + " " + entry_wrapper + "(string[] args) cil managed")
-        msil = append_msil_line(msil, "{")
-        msil = append_msil_line(msil, "    .entrypoint")
-        msil = append_msil_line(msil, "    .maxstack 8")
-        msil = append_msil_line(msil, "        ldarg.0")
-        msil = append_msil_line(msil, "        call " + entry_call_type + " " + entry_callee + "(string[])")
-        msil = append_msil_line(msil, "        ret")
-        msil = append_msil_line(msil, "}")
-    }
-    else if entry_params.length() == 1 && entry_params⁅0⁆.clr_type.starts_with("class ") {
-        let st_name: utf8 = entry_params⁅0⁆.clr_type.slice(6, entry_params⁅0⁆.clr_type.length() - 6).trim()
-        let def_new: BodyLowerResult = emit_default_struct_new(st_name, submission.struct_defs)
-        msil = append_msil_line(msil, ".method public hidebysig static " + entry_return_type + " " + entry_wrapper + "() cil managed")
-        msil = append_msil_line(msil, "{")
-        msil = append_msil_line(msil, "    .entrypoint")
-        msil = append_msil_line(msil, "    .maxstack 16")
-        if def_new.ok {
-            msil = msil + def_new.instructions
-            msil = append_msil_line(msil, "        call " + entry_call_type + " " + entry_callee + "(" + entry_ptypes + ")")
-        }
-        else {
-            msil = append_msil_line(msil, "        ldstr " + dq() + "entry default struct failed: " + def_new.error + dq())
-            msil = append_msil_line(msil, "        call void [System.Console]System.Console::WriteLine(string)")
-            if !entry_return_void {
-                msil = append_msil_line(msil, "        ldc.i4.1")
-            }
-        }
-        msil = append_msil_line(msil, "        ret")
-        msil = append_msil_line(msil, "}")
-    }
-    else {
-        msil = append_msil_line(msil, ".method public hidebysig static " + entry_return_type + " " + entry_wrapper + "() cil managed")
-        msil = append_msil_line(msil, "{")
-        msil = append_msil_line(msil, "    .entrypoint")
-        msil = append_msil_line(msil, "    .maxstack 8")
-        msil = append_msil_line(msil, "        call " + entry_call_type + " " + entry_callee + "(" + entry_ptypes + ")")
-        msil = append_msil_line(msil, "        ret")
-        msil = append_msil_line(msil, "}")
-    }
-
     return LoweredClrModule {
         assembly_name: assembly_name,
         msil: msil,

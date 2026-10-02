@@ -190,29 +190,16 @@ micro compile_project_from_plan(plan_path: utf8, dependency_count: i32) -> Compi
     let edge_count: i32 = submission.external_call_edges.length() as i32
     std.io.print_line("[v1-debug] edge_count=" + format("{}", edge_count))
 
-    let mut lowered: LoweredClrModule = LoweredClrModule {
-        assembly_name: "",
-        msil: "",
-        console_message: ""
-    }
-    if fragment_supports_executable_module_emit(submission) {
-        std.io.print_line("[v1-debug] before ExecutableModule emit")
-        lowered = lower_fragment_via_executable_module(submission)
-        if lowered.msil.length() > 0 {
-            std.io.print_line("[v1-debug] after ExecutableModule emit")
-        }
-        else {
-            std.io.print_line("[v1-debug] ExecutableModule emit empty; legacy body→MSIL bypass")
-            std.io.print_line("[v1-debug] before lower_fragment_to_clr")
-            lowered = lower_fragment_to_clr(submission)
-            std.io.print_line("[v1-debug] after lower_fragment_to_clr")
+    std.io.print_line("[v1-debug] before ExecutableModule emit")
+    let lowered: LoweredClrModule = lower_fragment_via_executable_module(submission)
+    if lowered.msil.length() == 0 {
+        return CompileResult {
+            ok: false,
+            error: "ExecutableModule 编码失败：" + lowered.console_message,
+            output: empty_compile_output()
         }
     }
-    else {
-        std.io.print_line("[v1-debug] before lower_fragment_to_clr")
-        lowered = lower_fragment_to_clr(submission)
-        std.io.print_line("[v1-debug] after lower_fragment_to_clr")
-    }
+    std.io.print_line("[v1-debug] after ExecutableModule emit")
     let emit_error: utf8 = emit_clr_artifacts(plan, lowered)
     std.io.print_line("[v1-debug] after emit_clr_artifacts")
     if emit_error.length() > 0 {
