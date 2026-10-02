@@ -1,6 +1,6 @@
 {
     version: "1",
-    name: "std-data-super-workspace",
+    name: "std-data-workspace",
     members: [
         "std.data.binary.clr",
         "std.data.binary.class",

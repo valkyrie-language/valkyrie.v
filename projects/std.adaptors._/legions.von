@@ -1,6 +1,6 @@
 {
     version: "1",
-    name: "std-adaptors-super-workspace",
+    name: "std-adaptors",
     members: [
         "std.adaptor.clr",
         "std.adaptor.jvm",
