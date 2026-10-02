@@ -33,3 +33,14 @@
 - 让 `Valkyrie` 作为 `nyar` 体系上的一个前端长期演进
 - 共享 `nyar` 的元优化能力，而不是把 `Valkyrie` 变成体系唯一真相
 - 保持 `Valkyrie` 前端与核心元优化层分离，避免重新长出新的统一大 `IR`
+
+## 当前生产边界
+
+V 侧尚未实现完整的 canonical Compiler。正式 `legion.tools` 构建在
+`execute_backend_request` 的能力边界返回失败，不选择其他入口或宿主代编译。
+旧 `ParsedModule`、`FragmentSubmission`、函数体字符串重解析与 CLR 源码
+直出路径已删除；不保留旧编译函数的空壳转发或空产物结果协议。
+
+`frontend_facts.v` 中接受 AST 的转换接口与独立 smoke 工具不证明正式编译
+能力成立，也不得接入正式构建作为替代。恢复成功路径必须由 Compiler
+从当前源码闭包完成解析、链接、M2 验证和表示规划，再交由目标私有计划编码。
