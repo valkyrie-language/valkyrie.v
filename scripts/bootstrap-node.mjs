@@ -13,7 +13,7 @@
  * 用法：
  *   node scripts/bootstrap-node.mjs [--legion <path>] [--output <dir>] [--verbose]
  *
- * seed 优先级：LEGION_PATH → valkyrie.rs legion → dist → NyarVM.cs
+ * seed 来源：显式 LEGION_PATH 或 valkyrie.rs Rust seed。
  *
  * 当前状态：诚实失败验收；v1→v2 在 v1 未形成稳定 Node 编译器入口前会明确阻断。
  */
@@ -48,8 +48,6 @@ const TRACK = BOOTSTRAP_TRACKS.node;
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = repoRootFrom(SCRIPT_DIR);
 const VALKYRIE_RS_DIR = path.resolve(ROOT_DIR, '..', 'valkyrie.rs');
-const NYARVM_DIR = path.resolve(ROOT_DIR, '..', 'NyarVM.cs');
-const LEGION_CSPROJ = path.join(NYARVM_DIR, 'tools', 'legion', 'Legion.CLI.csproj');
 
 const BOOTSTRAP_PROJECT_DIR = path.join(ROOT_DIR, BOOTSTRAP_PROJECT);
 const TARGET_TRIPLE = TRACK.targetTriple;
@@ -57,40 +55,10 @@ const TARGET_ALIAS = TRACK.targetAlias;
 const MODULE_GUARD_SKIPPED_REASON = '由于模块系统前置门未通过，`seed -> v1.node` 未执行。';
 const LEVEL2_SKIPPED_REASON = '由于上游门禁未通过，`v1.node -> v2.node` 未执行。';
 
-const LEGACY_ENTRY_BASENAME = 'legion_tools';
 const MANIFEST_PARSE_ERROR_PATTERN = /projects[\\/]+legion\.tools[\\/]+source[\\/]+manifest\.v/i;
 
-function ensurePreviousLegion(outputRoot, verbose) {
-    const existing = findLegion(ROOT_DIR, VALKYRIE_RS_DIR, NYARVM_DIR);
-    if (existing) {
-        return existing;
-    }
-
-    if (!fs.existsSync(NYARVM_DIR) || !fs.existsSync(LEGION_CSPROJ)) {
-        return null;
-    }
-
-    const toolOutputDir = path.join(outputRoot, '_previous_legion');
-    if (fs.existsSync(toolOutputDir)) {
-        fs.rmSync(toolOutputDir, { recursive: true, force: true });
-    }
-    fs.mkdirSync(toolOutputDir, { recursive: true });
-
-    console.log('未找到现成的上一代 legion，正在从 NyarVM.cs 构建...');
-    const publishResult = runCommand(
-        `dotnet publish "${LEGION_CSPROJ}" -c Release --nologo -o "${toolOutputDir}" -p:UseAppHost=true`,
-        { cwd: NYARVM_DIR, silent: !verbose, timeout: 300000 },
-    );
-
-    if (!publishResult.success) {
-        console.error('错误：自动构建上一代 legion 失败');
-        if (publishResult.stderr) {
-            console.error(publishResult.stderr.slice(0, 4000));
-        }
-        return null;
-    }
-
-    return findLegion(ROOT_DIR, VALKYRIE_RS_DIR, NYARVM_DIR) || path.join(toolOutputDir, 'legion');
+function ensurePreviousLegion() {
+    return findLegion(ROOT_DIR, VALKYRIE_RS_DIR);
 }
 
 function compileV1(legionPath, outputDir, verbose) {
@@ -158,12 +126,7 @@ function compileV1(legionPath, outputDir, verbose) {
     }
 
     if (!entry.legionMjs || !entry.legionWasm) {
-        const legacyMjs = path.join(targetDir, `${LEGACY_ENTRY_BASENAME}.mjs`);
-        const legacyWasm = path.join(targetDir, `${LEGACY_ENTRY_BASENAME}.wasm`);
         let detail = '未产出 `legion.mjs` / `legion.wasm`';
-        if (fs.existsSync(legacyMjs) || fs.existsSync(legacyWasm)) {
-            detail = '当前仍输出 `legion_tools.*`，正确产物应为 `legion.mjs` / `legion.wasm`';
-        }
         console.error(`错误：v1 Node 入口契约未满足 — ${detail}`);
         return {
             success: false,
@@ -330,7 +293,7 @@ function compareArtifacts(v1Result, v2Result) {
     }
 
     const allExtensions = ['.wasm', '.mjs', '.json', '.txt'];
-    const contractFiles = ['run-contract.txt', 'run-contracts.txt'];
+    const contractFiles = ['run-contracts.txt'];
 
     console.log('比对规则：');
     console.log('  必须一致（哈希）：.wasm');
@@ -493,7 +456,7 @@ function main() {
         process.exit(1);
     }
 
-    const legionPath = options.legion ? path.resolve(options.legion) : ensurePreviousLegion(outputRoot, options.verbose);
+    const legionPath = options.legion ? path.resolve(options.legion) : ensurePreviousLegion();
     if (!legionPath || !fs.existsSync(legionPath)) {
         const gates = [
             createGate('模块系统前置门', '通过', moduleSystemResult.detail),
