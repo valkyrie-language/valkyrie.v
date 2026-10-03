@@ -10,7 +10,6 @@
         "nyar": { version: "workspace" },
         "nyar.analyzer": { version: "workspace" },
         "nyar.optimizer": { version: "workspace" },
-        "nyar.emitter": { version: "workspace" },
         "nyar.language": { version: "workspace" },
         "nyar.package_manager": { version: "workspace" },
         "nyar.package_registry": { version: "workspace" },

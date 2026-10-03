@@ -9,10 +9,10 @@
 正式同构编译主线（与 Rust seed 对齐）为：
 
 ```text
-nyar.language → nyar.analyzer → nyar.optimizer → nyar.emitter
+nyar.language → canonical Compiler → BackendPrivatePlan → target artifact
 ```
 
-Valkyrie 前端在 `nyar.language` 内完成 AST→HIR→MIR，再适配为中性 **`ExecutableModule`**（以及 `ExecutableFunction` / `ExecutableBlock` / `ExecutableInstruction`），由 `nyar.emitter` 各 lane 消费。`nyar.vm.*` 只消费产物，不得依赖 `nyar.language`。
+Valkyrie 前端在 `nyar.language` 内完成解析与语义建模；canonical Compiler 完成链接、Semantic MIR 与表示规划，再由目标后端消费 **`BackendPrivatePlan`**。`nyar.vm.*` 只消费产物，不得依赖 `nyar.language`。V 侧 Compiler 未接入前，源码构建明确失败。
 
 **禁止**把下列旁路写成正式架构或「已完成同构自举」：`clr_body_lowering` / `body_source→MSIL`、按 type-name 特判直出 MSIL、或跳过 analyzer/optimizer/emitter 的临时降级路径。
 
@@ -118,7 +118,7 @@ Node 轨 **禁止** 用浏览器 `wasm` 三元组（`wasm32-unknown-browser-wasm
 | 11 | **`--target wasm`（浏览器）冒充 Node 轨** | npm/JSR CLI 须 `--target node`（`wasm32-node-unknown-wasm`），不是 `wasm32-unknown-browser-wasm`。 |
 | 12 | **产物仍名 `legion_tools.*`** | Node 轨入口契约要求 `legion.mjs` + `legion.wasm`；旧分区名不算通过。 |
 | 13 | **npm/jsr 包顶替 workspace 做验收** | 公开发布包可作下游 seed，不能在同一轮自举里替换 `nyar`/`std` workspace 成员。 |
-| 14 | **`body_source` / `clr_body_lowering` 旁路冒充正自举** | 正式路径是 `MirModule`→`ExecutableModule`→`nyar.emitter`；旁路不得记为架构完成。 |
+| 14 | **`body_source` / `clr_body_lowering` 旁路冒充正自举** | 正式路径是 `SourceSnapshot`→canonical Compiler→`BackendPrivatePlan`→产物；旁路不得记为架构完成。 |
 | 15 | **type-name 特判直出 MSIL / classfile** | 特判 emit 不是同构管线；不得写成正式 lowering。 |
 
 已移除/禁止的遗留路径：
@@ -176,7 +176,7 @@ Node 轨 **禁止** 用浏览器 `wasm` 三元组（`wasm32-unknown-browser-wasm
 根 `legions.von` 必须 **显式包含**（直接或嵌套展开后可达）：
 
 - `projects/legion._`（其 `legions.von` 含 `projects/legion.tools`、`projects/legion.report`）
-- `projects/nyar._`（其 `legions.von` 含 `nyar` / `nyar.analyzer` / `nyar.optimizer` / `nyar.emitter` / `nyar.language` 等）
+- `projects/nyar._`（其 `legions.von` 含 `nyar` / `nyar.analyzer` / `nyar.optimizer` / `nyar.language` 等）
 - `projects/std`
 - `examples/test.module_system`
 
