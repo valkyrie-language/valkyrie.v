@@ -35,23 +35,42 @@ micro mir_module_from_valkyrie_root(root: ValkyrieRoot, module_name: utf8) -> Mi
     return mir_from_hir_module(hir)
 }
 
-micro executable_module_from_valkyrie_root(root: ValkyrieRoot, module_name: utf8) -> ExecutableModule {
+micro executable_module_from_valkyrie_root(root: ValkyrieRoot, module_name: utf8) -> Option<ExecutableModule> {
     let mir: MirModule = mir_module_from_valkyrie_root(root, module_name)
     return adapt_mir_module_to_executable(mir)
 }
 
+micro executable_module_failure() -> EmitterResult {
+    return EmitterResult {
+        ok: false,
+        error: "nyar.language.valkyrie: MIR cannot satisfy the complete ExecutableModule contract",
+        artifact_path: "",
+        msil_text: "",
+        lane_note: ""
+    }
+}
+
 # CLR emit consumes the ExecutableModule contract through nyar.emitter.clr.
 micro emit_msil_text_from_valkyrie_root(root: ValkyrieRoot, module_name: utf8) -> EmitterResult {
-    let executable_module: ExecutableModule = executable_module_from_valkyrie_root(root, module_name)
-    return emit_clr_from_mir(executable_module)
+    let executable_module_opt: Option<ExecutableModule> = executable_module_from_valkyrie_root(root, module_name)
+    if executable_module_opt.is_none() {
+        return executable_module_failure()
+    }
+    return emit_clr_from_mir(executable_module_opt.unwrap())
 }
 
 micro emit_jvm_from_valkyrie_root(root: ValkyrieRoot, module_name: utf8) -> EmitterResult {
-    let executable_module: ExecutableModule = executable_module_from_valkyrie_root(root, module_name)
-    return emit_jvm_lane(executable_module)
+    let executable_module_opt: Option<ExecutableModule> = executable_module_from_valkyrie_root(root, module_name)
+    if executable_module_opt.is_none() {
+        return executable_module_failure()
+    }
+    return emit_jvm_lane(executable_module_opt.unwrap())
 }
 
 micro emit_for_target_from_valkyrie_root(root: ValkyrieRoot, module_name: utf8, target: utf8) -> EmitterResult {
-    let executable_module: ExecutableModule = executable_module_from_valkyrie_root(root, module_name)
-    return emit_for_target(executable_module, target)
+    let executable_module_opt: Option<ExecutableModule> = executable_module_from_valkyrie_root(root, module_name)
+    if executable_module_opt.is_none() {
+        return executable_module_failure()
+    }
+    return emit_for_target(executable_module_opt.unwrap(), target)
 }
