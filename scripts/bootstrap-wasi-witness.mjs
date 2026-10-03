@@ -42,8 +42,6 @@ const TRACK = BOOTSTRAP_TRACKS.wasi;
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = repoRootFrom(SCRIPT_DIR);
 const VALKYRIE_RS_DIR = path.resolve(ROOT_DIR, '..', 'valkyrie.rs');
-const NYARVM_DIR = path.resolve(ROOT_DIR, '..', 'NyarVM.cs');
-const LEGION_CSPROJ = path.join(NYARVM_DIR, 'tools', 'legion', 'Legion.CLI.csproj');
 
 const BOOTSTRAP_PROJECT_DIR = path.join(ROOT_DIR, BOOTSTRAP_PROJECT);
 const TARGET_TRIPLE = TRACK.targetTriple;
@@ -53,28 +51,8 @@ const WASMTIME_GC_ARGS_NO_WMEMCHECK = ['run', '-W', 'gc', '-W', 'max-memory-size
 const MODULE_GUARD_SKIPPED_REASON = '由于模块系统前置门未通过，`seed -> v1.wasi` 未执行。';
 const LEVEL2_SKIPPED_REASON = '由于上游门禁未通过，`v1.wasi -> v2.wasi` 未执行。';
 
-function ensurePreviousLegion(outputRoot, verbose) {
-    const existing = findLegion(ROOT_DIR, VALKYRIE_RS_DIR, NYARVM_DIR);
-    if (existing) {
-        return existing;
-    }
-    if (!fs.existsSync(NYARVM_DIR) || !fs.existsSync(LEGION_CSPROJ)) {
-        return null;
-    }
-    const toolOutputDir = path.join(outputRoot, '_previous_legion');
-    if (fs.existsSync(toolOutputDir)) {
-        fs.rmSync(toolOutputDir, { recursive: true, force: true });
-    }
-    fs.mkdirSync(toolOutputDir, { recursive: true });
-    console.log('未找到现成的上一代 legion，正在从 NyarVM.cs 构建...');
-    const publishResult = runCommand(
-        `dotnet publish "${LEGION_CSPROJ}" -c Release --nologo -o "${toolOutputDir}" -p:UseAppHost=true`,
-        { cwd: NYARVM_DIR, silent: !verbose, timeout: 300000 },
-    );
-    if (!publishResult.success) {
-        return null;
-    }
-    return findLegion(ROOT_DIR, VALKYRIE_RS_DIR, NYARVM_DIR) || path.join(toolOutputDir, 'legion');
+function ensurePreviousLegion() {
+    return findLegion(ROOT_DIR, VALKYRIE_RS_DIR);
 }
 
 function wasmtimeAvailable() {
@@ -135,10 +113,10 @@ function compileV1(legionPath, outputDir, verbose) {
         };
     }
 
-    if (!entry.legionWasm || entry.legacy) {
+    if (!entry.legionWasm) {
         return {
             success: false,
-            error: entry.legacy ? '仍输出 legacy .wasm' : '未产出 legion.wasi',
+            error: '未产出 legion.wasi',
             outputDir: targetDir,
             entry,
             runtime: { version: { success: false }, help: { success: false } },

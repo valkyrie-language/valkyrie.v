@@ -22,7 +22,7 @@
  * seed 优先级：
  *   1. --legion / LEGION_PATH
  *   2. valkyrie.rs 构建的 legion.exe（target/release 或 target/debug）
- *   3. NyarVM.cs 自动构建的上一代 legion
+ *   3. 仅接受现成的正式 Rust seed legion
  *
  * 当前状态：
  *   - 本脚本用于“诚实失败”的真实验收，不再把半完成状态记为成功
@@ -61,7 +61,6 @@ import {
     repoRootFrom,
     resolveClrArtifactDir,
     resolveClrEntry,
-    resolveLegionLauncher,
     runCommand,
     shortenText,
     validateModuleSystem,
@@ -73,8 +72,6 @@ const TRACK = BOOTSTRAP_TRACKS.clr;
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = repoRootFrom(SCRIPT_DIR);
 const VALKYRIE_RS_DIR = path.resolve(ROOT_DIR, '..', 'valkyrie.rs');
-const NYARVM_DIR = path.resolve(ROOT_DIR, '..', 'NyarVM.cs');
-const LEGION_CSPROJ = path.join(NYARVM_DIR, 'tools', 'legion', 'Legion.CLI.csproj');
 const LEVEL2_SKIPPED_REASON = '由于上游门禁未通过，`v1.clr -> v2.clr` 未执行。';
 
 const BOOTSTRAP_PROJECT_DIR = path.join(ROOT_DIR, BOOTSTRAP_PROJECT);
@@ -89,37 +86,8 @@ function readClrEntry(targetDir) {
     };
 }
 
-function ensurePreviousLegion(outputRoot, verbose) {
-    const existing = findLegion(ROOT_DIR, VALKYRIE_RS_DIR, NYARVM_DIR);
-    if (existing) {
-        return existing;
-    }
-
-    if (!fs.existsSync(NYARVM_DIR) || !fs.existsSync(LEGION_CSPROJ)) {
-        return null;
-    }
-
-    const toolOutputDir = path.join(outputRoot, '_previous_legion');
-    if (fs.existsSync(toolOutputDir)) {
-        fs.rmSync(toolOutputDir, { recursive: true, force: true });
-    }
-    fs.mkdirSync(toolOutputDir, { recursive: true });
-
-    console.log('未找到现成的上一代 legion，正在从 NyarVM.cs 构建...');
-    const publishResult = runCommand(
-        `dotnet publish "${LEGION_CSPROJ}" -c Release --nologo -o "${toolOutputDir}" -p:UseAppHost=true`,
-        { cwd: NYARVM_DIR, silent: !verbose, timeout: 300000 }
-    );
-
-    if (!publishResult.success) {
-        console.error('错误：自动构建上一代 legion 失败');
-        if (publishResult.stderr) {
-            console.error(publishResult.stderr.slice(0, 4000));
-        }
-        return null;
-    }
-
-    return resolveLegionLauncher(toolOutputDir);
+function ensurePreviousLegion() {
+    return findLegion(ROOT_DIR, VALKYRIE_RS_DIR);
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -352,7 +320,7 @@ function compileV2(v1Result, outputDir, verbose) {
 //
 // 必须比对（不一致则阻断）：
 //   - .msil 文件：核心 IL 产物，是自举一致性的唯一判定依据
-//   - run-contract.txt：运行契约，必须完全一致
+//   - run-contracts.txt：运行契约，必须完全一致
 //
 // 允许差异（不阻断）：
 //   - .exe / .dll：PE 包装含非确定性 MVID、时间戳、GUID
@@ -362,7 +330,7 @@ function compileV2(v1Result, outputDir, verbose) {
 //
 // 阻断条件：
 //   - 任一 .msil 文件哈希不一致 → 阻断
-//   - run-contract.txt 不一致 → 阻断
+//   - run-contracts.txt 不一致 → 阻断
 //   - 产物清单结构不一致（多了或少了 .msil 文件）→ 阻断
 
 function compareArtifacts(v1Result, v2Result) {
@@ -378,12 +346,12 @@ function compareArtifacts(v1Result, v2Result) {
     // 必须比对的扩展名
     const mustCompareExtensions = ['.msil'];
     // 必须比对的特定文件
-    const mustCompareFiles = ['run-contract.txt'];
+    const mustCompareFiles = ['run-contracts.txt'];
     // 允许差异的扩展名（不参与比对，但也不阻断）
     const allowedDiffExtensions = ['.exe', '.dll', '.pdb', '.json'];
 
     console.log('比对规则：');
-    console.log('  必须一致：.msil 文件、run-contract.txt');
+    console.log('  必须一致：.msil 文件、run-contracts.txt');
     console.log('  允许差异：.exe、.dll、.pdb、.json（含非确定性元数据）');
     console.log('');
 
@@ -432,7 +400,7 @@ function compareArtifacts(v1Result, v2Result) {
         }
     }
 
-    // 比对 run-contract.txt
+    // 比对 run-contracts.txt
     for (const fileName of mustCompareFiles) {
         const v1File = path.join(v1Result.outputDir, fileName);
         const v2File = path.join(v2Result.outputDir, fileName);
@@ -549,12 +517,11 @@ function main() {
     }
 
     // 查找 legion
-    const autoBuiltLegionRoot = path.join(outputRoot, '_previous_legion');
-    const legionPath = options.legion ? path.resolve(options.legion) : ensurePreviousLegion(outputRoot, options.verbose);
+    const legionPath = options.legion ? path.resolve(options.legion) : ensurePreviousLegion();
     if (!legionPath) {
         const gates = [
             createGate('模块系统前置门', '通过', moduleSystemResult.detail),
-            createGate('上一代编译器入口', '未通过', '未找到可用 `legion`，且无法从 `NyarVM.cs` 自动构建'),
+            createGate('上一代编译器入口', '未通过', '未找到正式 Rust seed `legion`'),
             ...l2GateNamesForTrack('clr').slice(2).map((name) => createGate(name, '跳过', '上一代编译器入口未就绪')),
         ];
         const blockers = ['上一代编译器入口未就绪'];
@@ -566,14 +533,12 @@ function main() {
         }));
         printGateSummary(gates);
         console.error('\n错误：找不到上一代 legion CLI');
-        console.error('请设置 --legion / LEGION_PATH，或保证 NyarVM.cs 可用以便脚本自动构建上一代 legion');
+        console.error('请设置 --legion / LEGION_PATH，或先构建 valkyrie.rs 的 Rust seed');
         console.log(`\n报告已写入：${reportPath}`);
         process.exit(1);
     }
 
-    const previousCompilerDetail = legionPath.startsWith(autoBuiltLegionRoot)
-        ? '已从 `NyarVM.cs` 自动构建上一代 `legion`'
-        : `使用现成入口：${legionPath}`;
+    const previousCompilerDetail = `使用正式 seed 入口：${legionPath}`;
 
     // Level 1：源码 → v1.clr
     const v1Result = compileV1(legionPath, v1OutputDir, options.verbose);
@@ -638,7 +603,7 @@ function main() {
             v2Result ? (v2Result.success ? '通过' : '未通过') : '跳过',
             v2Result ? (v2Result.success ? `产物目录：${v2Result.outputDir}` : v2Result.error) : '由于 `v1` 运行门未通过，第二轮编译未执行'
         ),
-        createGate('v1 / v2 比对', compareResult.skipped ? '跳过' : (compareResult.match ? '通过' : '未通过'), compareResult.skipped ? '由于 `v1 -> v2` 未完成，比对未执行' : (compareResult.match ? '`.msil` 与 `run-contract.txt` 一致' : '产物比对不一致')),
+        createGate('v1 / v2 比对', compareResult.skipped ? '跳过' : (compareResult.match ? '通过' : '未通过'), compareResult.skipped ? '由于 `v1 -> v2` 未完成，比对未执行' : (compareResult.match ? '`.msil` 与 `run-contracts.txt` 一致' : '产物比对不一致')),
     ];
 
     const reportPath = writeReport(outputRoot, {
