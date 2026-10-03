@@ -16,23 +16,23 @@ micro mir_return_is_void(ty: utf8) -> bool {
     return false
 }
 
-micro parse_small_i32(text: utf8) -> i32 {
-    if text == "0" || text == "false" { return 0 }
-    if text == "1" || text == "true" { return 1 }
-    if text == "2" { return 2 }
-    if text == "3" { return 3 }
-    if text == "4" { return 4 }
-    if text == "5" { return 5 }
-    if text == "6" { return 6 }
-    if text == "7" { return 7 }
-    if text == "8" { return 8 }
-    if text == "-1" { return -1 }
-    return 0
+micro parse_small_i32(text: utf8) -> Option<i32> {
+    if text == "0" || text == "false" { return Some(0) }
+    if text == "1" || text == "true" { return Some(1) }
+    if text == "2" { return Some(2) }
+    if text == "3" { return Some(3) }
+    if text == "4" { return Some(4) }
+    if text == "5" { return Some(5) }
+    if text == "6" { return Some(6) }
+    if text == "7" { return Some(7) }
+    if text == "8" { return Some(8) }
+    if text == "-1" { return Some(-1) }
+    return None
 }
 
 # Expand one MIR instruction into Executable ops.
 # Composite compares: != → Ceq+Not; <= → Cgt+Not; >= → Clt+Not.
-micro adapt_mir_instruction_kinds(kind: MirInstructionKind) -> [ExecutableInstruction] {
+micro adapt_mir_instruction_kinds(kind: MirInstructionKind) -> Option<[ExecutableInstruction]> {
     let mut out: [ExecutableInstruction] = []
     match kind {
         case Nop: {
@@ -46,7 +46,14 @@ micro adapt_mir_instruction_kinds(kind: MirInstructionKind) -> [ExecutableInstru
                 out = push(out, ExecutableInstruction { kind: LoadConstString { utf8_source: constant } })
             }
             else if ty == "i32" || ty == "bool" || ty == "i64" {
-                out = push(out, ExecutableInstruction { kind: LoadConstI32 { value: parse_small_i32(constant) } })
+                match parse_small_i32(constant) {
+                    case Some(value): {
+                        out = push(out, ExecutableInstruction { kind: LoadConstI32 { value: value } })
+                    }
+                    case None: {
+                        return None
+                    }
+                }
             }
             else if constant == "true" {
                 out = push(out, ExecutableInstruction { kind: LoadConstI32 { value: 1 } })
@@ -55,14 +62,14 @@ micro adapt_mir_instruction_kinds(kind: MirInstructionKind) -> [ExecutableInstru
                 out = push(out, ExecutableInstruction { kind: LoadConstI32 { value: 0 } })
             }
             else {
-                out = push(out, ExecutableInstruction { kind: LoadConstNull })
+                return None
             }
         }
         case LoadSymbol { path }: {
             out = push(out, ExecutableInstruction { kind: LoadSymbol { path: path } })
         }
         case Copy { source }: {
-            out = push(out, ExecutableInstruction { kind: Dup })
+            return None
         }
         case StoreVar { name, value, ty }: {
             out = push(out, ExecutableInstruction { kind: StoreNamed { name: name } })
@@ -71,25 +78,25 @@ micro adapt_mir_instruction_kinds(kind: MirInstructionKind) -> [ExecutableInstru
             out = push(out, ExecutableInstruction { kind: Call { callee: callee } })
         }
         case FieldGet { object, field }: {
-            out = push(out, ExecutableInstruction { kind: Ldfld { owner: "", field: field } })
+            return None
         }
         case FieldSet { object, field, value }: {
-            out = push(out, ExecutableInstruction { kind: Stfld { owner: "", field: field } })
+            return None
         }
         case StructNew { type_name, field_names, field_values }: {
-            out = push(out, ExecutableInstruction { kind: NewObj { ctor: type_name + "::.ctor" } })
+            return None
         }
         case TupleNew { field_values }: {
-            out = push(out, ExecutableInstruction { kind: NewObj { ctor: "Tuple::.ctor" } })
+            return None
         }
         case ArrayNew { element_ty, length }: {
-            out = push(out, ExecutableInstruction { kind: NewArr { element: element_ty } })
+            return None
         }
         case ArrayLiteral { element_ty, items }: {
-            out = push(out, ExecutableInstruction { kind: NewArr { element: element_ty } })
+            return None
         }
         case PatternMatch { value, pattern }: {
-            out = push(out, ExecutableInstruction { kind: Nop })
+            return None
         }
         case Binary { op, left, right }: {
             if op == "+" {
@@ -131,7 +138,7 @@ micro adapt_mir_instruction_kinds(kind: MirInstructionKind) -> [ExecutableInstru
                 out = push(out, ExecutableInstruction { kind: Not })
             }
             else {
-                out = push(out, ExecutableInstruction { kind: Nop })
+                return None
             }
         }
         case Unary { op, operand }: {
@@ -142,11 +149,11 @@ micro adapt_mir_instruction_kinds(kind: MirInstructionKind) -> [ExecutableInstru
                 out = push(out, ExecutableInstruction { kind: Not })
             }
             else {
-                out = push(out, ExecutableInstruction { kind: Nop })
+                return None
             }
         }
     }
-    return out
+    return Some(out)
 }
 
 micro adapt_mir_terminator(term: MirTerminator) -> ExecutableTerminator {
@@ -172,7 +179,7 @@ micro adapt_mir_terminator(term: MirTerminator) -> ExecutableTerminator {
     }
 }
 
-micro adapt_mir_function(f: MirFunction) -> ExecutableFunction {
+micro adapt_mir_function(f: MirFunction) -> Option<ExecutableFunction> {
     let mut blocks: [ExecutableBlock] = []
     let mut bi: usize = 0
     while bi < f.blocks.length() {
@@ -180,7 +187,11 @@ micro adapt_mir_function(f: MirFunction) -> ExecutableFunction {
         let mut instructions: [ExecutableInstruction] = []
         let mut ii: usize = 0
         while ii < b.instructions.length() {
-            let expanded: [ExecutableInstruction] = adapt_mir_instruction_kinds(b.instructions⁅ii⁆.kind)
+            let expanded_opt: Option<[ExecutableInstruction]> = adapt_mir_instruction_kinds(b.instructions⁅ii⁆.kind)
+            if expanded_opt.is_none() {
+                return None
+            }
+            let expanded: [ExecutableInstruction] = expanded_opt.unwrap()
             let mut ei: usize = 0
             while ei < expanded.length() {
                 instructions = push(instructions, expanded⁅ei⁆)
@@ -196,22 +207,26 @@ micro adapt_mir_function(f: MirFunction) -> ExecutableFunction {
         })
         bi = bi + 1
     }
-    return ExecutableFunction {
+    return Some(ExecutableFunction {
         symbol: f.symbol,
         return_is_void: mir_return_is_void(f.return_type),
         param_count: f.param_types.length() as u16,
         entry: ExecutableBlockRef { id: f.entry.id },
         blocks: blocks
-    }
+    })
 }
 
-micro adapt_mir_module_to_executable(mir: MirModule) -> ExecutableModule {
+micro adapt_mir_module_to_executable(mir: MirModule) -> Option<ExecutableModule> {
     let mut out: ExecutableModule = empty_executable_module()
     out.name = mir.name
     let mut fi: usize = 0
     while fi < mir.functions.length() {
-        out.functions = push(out.functions, adapt_mir_function(mir.functions⁅fi⁆))
+        let function_opt: Option<ExecutableFunction> = adapt_mir_function(mir.functions⁅fi⁆)
+        if function_opt.is_none() {
+            return None
+        }
+        out.functions = push(out.functions, function_opt.unwrap())
         fi = fi + 1
     }
-    return out
+    return Some(out)
 }
