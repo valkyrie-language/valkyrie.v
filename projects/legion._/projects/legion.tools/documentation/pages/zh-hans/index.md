@@ -15,6 +15,4 @@ node scripts/bootstrap-clr.mjs
 # Node 轨（npm / JSR 发布门）
 node scripts/bootstrap-node.mjs
 
-# CLR smoke 切片（非完整 L2）
-node scripts/bootstrap-smoke-clr.mjs
 ```
