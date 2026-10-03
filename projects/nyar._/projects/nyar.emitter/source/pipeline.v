@@ -9,25 +9,10 @@ using nyar.emitter.wasm;
 using nyar.emitter.wasi;
 using std.data.text.msil;
 
-# Isomorphic to Rust `nyar-emitter` orchestration boundary.
+# Isomorphic to the target-private lowering boundary.
 # Lanes: CLR / JVM / WASM(+JS glue) / WASI(wasip2|wasip3).
+# Target selection and adaptor binding belong to the linker, not this module.
 # Do NOT add body_source → backend string bypasses here.
-
-enums BackendInputKind {
-    ClrTypedMsil
-    JvmClass
-    WasmBinary
-    WasiComponent
-    NativeImage
-    Unspecified
-}
-
-structure EmitterRequest {
-    facts: ProgramFacts
-    algebraic: ObjectAlgebraicProgram
-    target_lane: utf8
-    backend_kind: BackendInputKind
-}
 
 structure EmitterResult {
     ok: bool
@@ -35,27 +20,6 @@ structure EmitterResult {
     artifact_path: utf8
     msil_text: utf8
     lane_note: utf8
-}
-
-micro empty_emitter_request() -> EmitterRequest {
-    return EmitterRequest {
-        facts: empty_program_facts(),
-        algebraic: empty_object_algebraic_program(),
-        target_lane: "",
-        backend_kind: Unspecified
-    }
-}
-
-micro emit_fail_closed_until_mir(request: EmitterRequest) -> EmitterResult {
-    let mut msg: utf8 = "nyar.emitter: lane requires Executable MIR (ExecutableModule); "
-    msg = msg + "body_source string bypass is rejected"
-    return EmitterResult {
-        ok: false,
-        error: msg,
-        artifact_path: "",
-        msil_text: "",
-        lane_note: ""
-    }
 }
 
 # CLR lane entry — ExecutableModule → typed MSIL (shared with jvm/wasm/wasi input shape).
@@ -146,26 +110,3 @@ micro emit_wasi_lane(module: ExecutableModule, preview: WasiPreview) -> EmitterR
     }
 }
 
-# Target-string dispatch. CLR also accepted here (same ExecutableModule).
-# Preview selection mirrors Rust `WasiPreview::from_host_flavor` / target tokens.
-micro emit_for_target(module: ExecutableModule, target: utf8) -> EmitterResult {
-    if target.contains("clr") {
-        return emit_clr_from_mir(module)
-    }
-    if target.contains("jvm") {
-        return emit_jvm_lane(module)
-    }
-    if target.contains("wasip3") || target.contains("wasi") || target.contains("wasip2") {
-        return emit_wasi_lane(module, wasi_preview_from_target(target))
-    }
-    if target.contains("wasm") || target.contains("node") {
-        return emit_wasm_js_lane(module)
-    }
-    return EmitterResult {
-        ok: false,
-        error: "nyar.emitter: unknown target lane (use clr/jvm/wasm/wasi* via ExecutableModule)",
-        artifact_path: "",
-        msil_text: "",
-        lane_note: target
-    }
-}
