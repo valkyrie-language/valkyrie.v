@@ -26,7 +26,7 @@
 
 - `projects/nyar._/projects/nyar`：提供公共 target 与契约基础设施
 - 与 `nyar.vm.clr`、`nyar.vm.jvm` 一起组成基于 `nyar` 基础设施的经典运行时家族
-- **依赖方向**：只消费 `nyar.emitter` 产物，**不得**依赖 `nyar.language`；WASM/WASI lane 输入类型全称为 `ExecutableModule`
+- **依赖方向**：只消费 canonical Compiler 产出的正式 WASM/WASI artifact，**不得**依赖 `nyar.language`；V 侧 Compiler 未接入前明确拒绝源码构建
 
 ## 说明
 

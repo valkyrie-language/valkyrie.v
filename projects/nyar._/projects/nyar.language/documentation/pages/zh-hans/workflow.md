@@ -21,10 +21,9 @@
 `Valkyrie` 的长期调用链应固定为：
 
 ```text
-source/valkyrie（AST → HIR → MIR → ExecutableModule 适配）
-    -> nyar.analyzer
-    -> nyar.optimizer
-    -> nyar.emitter（各 lane 消费 ExecutableModule）
+source/valkyrie（解析与语义建模）
+    -> canonical Compiler（链接、Semantic MIR、表示规划）
+    -> BackendPrivatePlan → target artifact
     -> 产物 → nyar.vm.*（仅消费，不依赖 language）
 ```
 
@@ -33,11 +32,11 @@ source/valkyrie（AST → HIR → MIR → ExecutableModule 适配）
 ```text
 工具层 / 上层入口（legion.tools）
     -> projects/nyar._/projects/nyar.language/source/valkyrie
-    -> nyar.analyzer → nyar.optimizer → nyar.emitter
+    -> canonical Compiler → BackendPrivatePlan
     -> target family artifact / nyar.vm.*
 ```
 
-类型与类名写全称（如 `ExecutableModule`、`ExecutableInstruction`），禁止 `Exec` / `ExecModule` 等简写。`body_source` / `clr_body_lowering` / type-name 特判旁路**不是**正式架构。
+后端只消费 `BackendPrivatePlan`；`body_source`、独立 `ExecutableModule` 发射、`clr_body_lowering` 和 type-name 特判旁路**不是**正式架构。V 侧 canonical Compiler 未接入前，正式构建明确失败。
 
 ## 工具层负责什么
 
