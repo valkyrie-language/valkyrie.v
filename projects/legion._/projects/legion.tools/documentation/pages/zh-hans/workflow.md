@@ -234,6 +234,5 @@ legion test . --standalone # 额外生成 standalone.html
 验收脚本：
 
 - `valkyrie.v/scripts/bootstrap-clr.mjs` — 完整 L2（legion.tools v1→v2）
-- `valkyrie.v/scripts/bootstrap-smoke-clr.mjs` — smoke 切片（v1 真编译 `examples/bootstrap-smoke`）
 
 Rust 对等入口：`legion bootstrap --project <legion.tools>`。

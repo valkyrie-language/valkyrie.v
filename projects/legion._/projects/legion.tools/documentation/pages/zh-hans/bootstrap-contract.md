@@ -109,12 +109,12 @@ Node 轨 **禁止** 用浏览器 `wasm` 三元组（`wasm32-unknown-browser-wasm
 | 2 | **`projects/micro_compiler` 作弊工程** | 用极简替身项目冒充 `legion.tools` 完成 v1→v2。 |
 | 3 | **复制 seed 二进制为 v1/v2** | 未经过源码编译，比对无意义。 |
 | 4 | **v1 硬编码输出、不读源文件** | WASM 链要求传入真实 `source/main.v`；CLR 要求 `legion build` 收集项目闭包。 |
-| 5 | **仅验收 `--version` / `--help` 字符串** | CLI 壳可由宿主注入；必须能 `build` 同项目或 smoke 切片。 |
+| 5 | **仅验收 `--version` / `--help` 字符串** | CLI 壳可由宿主注入；必须能从完整源码闭包构建同一项目。 |
 | 6 | **跳过 v1→v2 或跳过比对仍报成功** | `bootstrap-clr.mjs` 对跳过项返回失败。 |
 | 7 | **用 Rust seed 完成 v2 编译** | 破坏自举定义；v2 只能来自 v1。 |
 | 8 | **实验脚本替代正式验收轨** | `scripts/experimental/*` 不计入发布门；须用 `bootstrap-clr.mjs` / `bootstrap-node.mjs`。 |
 | 9 | **registry 依赖替代 workspace 成员** | 自举链上的 `nyar` / `std` 必须解析到本地 workspace，避免拉到未知远程包。 |
-| 10 | **把 smoke 切片当成完整 L2** | `examples/bootstrap-smoke` 只验证 v1 能编译最小夹具；完整 L2 仍要 `legion.tools` v1→v2。 |
+| 10 | **用切片或辅助项目替代完整 L2** | 只允许从完整 `legion.tools` manifests/source 闭包执行 v1→v2。 |
 | 11 | **`--target wasm`（浏览器）冒充 Node 轨** | npm/JSR CLI 须 `--target node`（`wasm32-node-unknown-wasm`），不是 `wasm32-unknown-browser-wasm`。 |
 | 12 | **产物仍名 `legion_tools.*`** | Node 轨入口契约要求 `legion.mjs` + `legion.wasm`；旧分区名不算通过。 |
 | 13 | **npm/jsr 包顶替 workspace 做验收** | 公开发布包可作下游 seed，不能在同一轮自举里替换 `nyar`/`std` workspace 成员。 |
@@ -272,16 +272,6 @@ Legion planner 会 **递归展开** 嵌套 `legions.von`，并为成员路径建
 
 > Node 轨与 CLR 轨并列接入 CI（`bootstrap.yml`）；**Node job 失败阻断 npm / JSR 公开发布**，CLR job 失败阻断 NuGet。
 
-### 6.3 Smoke 切片（非完整 L2）
-
-`node scripts/bootstrap-smoke-clr.mjs` 验收：
-
-1. seed → v1（`legion.tools`）
-2. v1 编译 `examples/bootstrap-smoke`
-3. 校验 `main.exe` / `main.msil` / `run-contracts.txt`
-
-**通过 smoke 不等于 L2 完成**；完整 L2 仍以 `bootstrap-clr.mjs` 的 v1→v2 + MSIL 比对为准。
-
 ---
 
 ## 7. v1 / v2 比对规则
@@ -291,7 +281,7 @@ Legion planner 会 **递归展开** 嵌套 `legions.von`，并为成员路径建
 | 产物 | 说明 |
 |:---|:---|
 | 所有 `.msil` 文件 | 核心 IL；自举一致性的 **主判定依据** |
-| `run-contract.txt` 或 `run-contracts.txt` | 运行契约；必须字节一致 |
+| `run-contracts.txt` | 运行契约；必须字节一致 |
 
 比对方式：按文件名对齐后 SHA-256；`.msil` 清单结构不同（多/少文件）亦阻断。
 
@@ -305,7 +295,7 @@ Legion planner 会 **递归展开** 嵌套 `legions.von`，并为成员路径建
 
 ### 7.3 Rust `legion bootstrap` 比对
 
-`legion bootstrap` 在 CLR 目标上优先比对 `run-contract.txt`；若不存在则回退到 CLI 入口 PE 字节比对（适用于极小 smoke 项目）。
+`legion bootstrap` 在 CLR 目标上只比对正式 `run-contracts.txt`；缺失或无法验证时直接失败。
 
 完整 `legion.tools` CLR 验收以 `bootstrap-clr.mjs` 的 **MSIL 目录哈希** 为准。
 
@@ -314,7 +304,7 @@ Legion planner 会 **递归展开** 嵌套 `legions.von`，并为成员路径建
 | 产物 | 说明 |
 |:---|:---|
 | 所有 `.wasm` 文件 | Node 宿主 WASM 模块；自举一致性的 **主判定依据** |
-| `run-contract.txt` / `run-contracts.txt` | 运行契约；必须字节一致 |
+| `run-contracts.txt` | 运行契约；必须字节一致 |
 
 ### 7.5 Node 轨：允许差异
 
