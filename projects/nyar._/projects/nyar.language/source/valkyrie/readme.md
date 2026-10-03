@@ -41,6 +41,7 @@ V 侧尚未实现完整的 canonical Compiler。正式 `legion.tools` 构建在
 旧 `ParsedModule`、`FragmentSubmission`、函数体字符串重解析与 CLR 源码
 直出路径已删除；不保留旧编译函数的空壳转发或空产物结果协议。
 
-`frontend_facts.v` 中接受 AST 的转换接口不单独证明正式编译能力成立。
+语言前端已删除 AST→MIR→`ExecutableModule`→emitter 的独立成功桥及适配器，
+不保留直接发射入口、兼容转发或另一套成功输入构造。
 正式构建必须由 Compiler 从当前源码闭包完成解析、链接、M2 验证和表示规划，
 再交由目标私有计划编码。
