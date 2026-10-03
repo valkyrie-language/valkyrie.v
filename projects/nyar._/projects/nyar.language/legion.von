@@ -1,7 +1,7 @@
 {
     name: "nyar.language",
     version: "workspace",
-    description: "Nyar 多语言前端 — Valkyrie 编译器 smoke 子集",
+    description: "Nyar 多语言前端 — Valkyrie 语义前端",
     type: "library",
     auto_link: {
         core: true,
