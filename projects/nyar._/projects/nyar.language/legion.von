@@ -10,7 +10,6 @@
     dependencies: {
         "nyar": { version: "workspace" },
         "nyar.analyzer": { version: "workspace" },
-        "nyar.emitter": { version: "workspace" },
         "std.data.text.valkyrie": { version: "workspace" },
         "std.data.text.msil": { version: "workspace" }
     },

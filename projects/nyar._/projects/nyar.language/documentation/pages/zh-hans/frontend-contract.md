@@ -20,7 +20,7 @@
 
 仓库绝对路径形如 `valkyrie.v/projects/nyar._/projects/nyar.language/source/*`。后续新增语言时，也应按同样方式接入。
 
-Valkyrie（源码后缀 `.v`，与语言名同一事物）的 AST/CST 归属 **`std.data.text.valkyrie`**，由 `nyar.language` 前端消费；**不要**再维护平行包 `std.data.text.v`。正式同构主线继续进入 `nyar.analyzer` → `nyar.optimizer` → `nyar.emitter`，中性输入为 **`ExecutableModule`**（全称，禁止 `Exec` / `ExecModule`）。
+Valkyrie（源码后缀 `.v`，与语言名同一事物）的 AST/CST 归属 **`std.data.text.valkyrie`**，由 `nyar.language` 前端消费；**不要**再维护平行包 `std.data.text.v`。正式编译必须进入 canonical Compiler，完成链接、Semantic MIR 和表示规划，再由目标后端消费 **`BackendPrivatePlan`**。V 侧未接入该 Compiler 前，不提供源码到产物的成功路径。
 
 ## 每个前端负责什么
 

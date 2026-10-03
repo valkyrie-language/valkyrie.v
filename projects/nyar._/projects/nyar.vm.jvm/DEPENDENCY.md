@@ -5,9 +5,7 @@ This package is a **runtime/host shell** for JVM artifacts.
 Correct direction:
 
 ```
-nyar.language → nyar.analyzer → nyar.optimizer → nyar.emitter (jvm lane)
-                                      ↓
-                         ExecutableModule → classfile / JAR
+canonical Compiler → BackendPrivatePlan → classfile / JAR
                                       ↓
                                  nyar.vm.jvm
 ```
@@ -15,7 +13,7 @@ nyar.language → nyar.analyzer → nyar.optimizer → nyar.emitter (jvm lane)
 Rules:
 - `nyar.vm.jvm` must **not** depend on `nyar.language` or AST packages.
 - It may depend on `nyar` (runtime contracts) and JVM host adapters.
-- Codegen lives in `nyar.emitter` (`source/jvm/`), consuming **`ExecutableModule`** (full name; not `Exec` / `ExecModule`).
+- JVM codegen consumes only the formal `BackendPrivatePlan` produced by the compiler boundary.
 - Do **not** treat language body bypass or type-name special-case emit as the formal path.
 
-Status: documentation shell only (no V sources yet).
+Status: documentation shell only; V-side canonical Compiler is not connected and source builds fail explicitly.

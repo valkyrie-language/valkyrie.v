@@ -5,7 +5,6 @@
         "projects/nyar",
         "projects/nyar.analyzer",
         "projects/nyar.optimizer",
-        "projects/nyar.emitter",
         "projects/nyar.language",
         "projects/nyar.package_manager",
         "projects/nyar.package_registry"
