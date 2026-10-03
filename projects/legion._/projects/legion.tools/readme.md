@@ -30,7 +30,7 @@
 - 基于 `nyar` 体系的公共基础设施
 - 与 `legend.tools`、`atlas.tools`、`asgard.tools` 同属工具项目
 - 各个工具之间职责独立，不互相从属
-- `projects/nyar._/projects/nyar.language/source/valkyrie`：提供 `Valkyrie` 语言前端（AST/CST 在 `std.data.text.valkyrie`；分析/优化/发射走 `nyar.analyzer` / `nyar.optimizer` / `nyar.emitter`，中性视图为 `ExecutableModule`）
+- `projects/nyar._/projects/nyar.language/source/valkyrie`：提供 `Valkyrie` 语言前端（AST/CST 在 `std.data.text.valkyrie`；正式产物必须由 canonical Compiler 生成）
 - `legion.tools`：基于该前端整合工作流，而不是重复实现语义层
 
 ## 文档
