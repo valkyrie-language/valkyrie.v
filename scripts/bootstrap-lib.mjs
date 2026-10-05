@@ -157,7 +157,7 @@ export function resolveArtifactDir(outputDir, targetTriple) {
  * 入口必须同时具备正式命名的 `legion.mjs` 与 `legion.wasm`；
  * 缺失任一文件即失败，不读取旧 contract、不猜测 physical entry。
  * @param {string} targetDir - 产物目录
- * @returns {{legionMjs: string|null, legionWasm: string|null, legacy: boolean, physicalEntry: string|null}}
+ * @returns {{legionMjs: string|null, legionWasm: string|null, physicalEntry: string|null}}
  */
 export function resolveNodeEntry(targetDir) {
     const canonical = {
@@ -165,8 +165,8 @@ export function resolveNodeEntry(targetDir) {
         legionWasm: path.join(targetDir, 'legion.wasm'),
     };
     return fs.existsSync(canonical.legionMjs) && fs.existsSync(canonical.legionWasm)
-        ? { ...canonical, legacy: false, physicalEntry: 'legion.mjs' }
-        : { legionMjs: null, legionWasm: null, legacy: false, physicalEntry: null };
+        ? { ...canonical, physicalEntry: 'legion.mjs' }
+        : { legionMjs: null, legionWasm: null, physicalEntry: null };
 }
 
 /**
@@ -802,7 +802,7 @@ export function resolveClrEntry(targetDir) {
 
 /**
  * 解析 JVM 轨产物入口（legion.jar �?run-contract 指定）�? * @param {string} targetDir
- * @returns {{legionJar: string|null, physicalEntry: string|null, legacy: boolean}}
+ * @returns {{legionJar: string|null, physicalEntry: string|null}}
  */
 export function resolveJvmEntry(targetDir) {
     const canonical = path.join(targetDir, 'legion.jar');
@@ -813,7 +813,7 @@ export function resolveJvmEntry(targetDir) {
 
 /**
  * 解析 WASI 轨产物入口（legion.wasi �?run-contract 指定）�? * @param {string} targetDir
- * @returns {{legionWasm: string|null, physicalEntry: string|null, legacy: boolean}}
+ * @returns {{legionWasm: string|null, physicalEntry: string|null}}
  */
 export function resolveWasiEntry(targetDir) {
     const canonical = path.join(targetDir, 'legion.wasi');
