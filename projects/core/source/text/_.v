@@ -12,7 +12,7 @@ structure TextSpan {
 
 imply TextSpan {
     ⍝ 将文本范围转换为字节范围
-    micro as_range(self) -> Range<usize> {
+    micro as_range(self) -> Range {
         return Range(self.offset, self.offset + self.length)
     }
 }
