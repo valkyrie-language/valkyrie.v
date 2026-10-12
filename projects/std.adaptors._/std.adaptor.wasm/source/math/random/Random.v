@@ -1,35 +1,37 @@
-namespace std.adaptor.wasm.math.random;
+# std.adaptor.wasm: Random host_provider
+# adaptor 在 std 之前编译，不得 brace-construct / 字段访问 std.math.random.Random，
+# 也不得调用 std 包内 fallback；布局与随机源由 wasm env host 承担。
 
-using std.math.random.{Random};
+namespace std.adaptor.wasm.math.random;
 
 [host_provider(std::math::random::Random::new)]
 micro host_new() -> std.math.random.Random {
-    return Random {
-        _state: 0
-    }
+    return __host_random_new()
 }
 
 [host_provider(std::math::random::Random::with_seed)]
 micro host_with_seed(seed: i32) -> std.math.random.Random {
-    return Random {
-        _state: seed
-    }
+    return __host_random_with_seed(seed)
 }
 
 [host_provider(std::math::random::Random::next_i32)]
 micro host_next_i32(random: std.math.random.Random, max_exclusive: i32) -> i32 {
-    if random._state != 0 {
-        return std.math.random.__random_fallback_next_i32(random, max_exclusive)
-    }
-
-    return std.math.random.__random_scale_unit(std.adaptor.wasm.math.math_random(), max_exclusive)
+    return __host_random_next_i32(random, max_exclusive)
 }
 
 [host_provider(std::math::random::Random::next_f64)]
 micro host_next_f64(random: std.math.random.Random) -> f64 {
-    if random._state != 0 {
-        return f64(std.math.random.__random_fallback_next_i32(random, 2147483647)) / 2147483647.0
-    }
-
-    return std.adaptor.wasm.math.math_random()
+    return __host_random_next_f64(random)
 }
+
+[wasm("env", "random_new")]
+private micro __host_random_new(): std.math.random.Random
+
+[wasm("env", "random_with_seed")]
+private micro __host_random_with_seed(seed: i32): std.math.random.Random
+
+[wasm("env", "random_next_i32")]
+private micro __host_random_next_i32(random: std.math.random.Random, max_exclusive: i32): i32
+
+[wasm("env", "random_next_f64")]
+private micro __host_random_next_f64(random: std.math.random.Random): f64
