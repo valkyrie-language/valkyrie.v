@@ -20,7 +20,3 @@ micro debug(message: utf8): unit {
     print_line(message)
 }
 
-micro print_fmt(fmt: utf8, arg: utf8): unit {
-    let formatted: utf8 = format(fmt, arg)
-    print(formatted)
-}
