@@ -21,6 +21,6 @@ micro debug(message: utf8): unit {
 }
 
 micro print_fmt(fmt: utf8, arg: utf8): unit {
-    let formatted: utf8 = format(fmt, arg)
+    let formatted: utf8 = std.text.format(fmt, arg)
     print(formatted)
 }
