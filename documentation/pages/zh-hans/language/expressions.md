@@ -74,30 +74,31 @@ items.filter(micro(it) { it > 0 })
 
 ## 索引表达式
 
-Valkyrie 区分两套索引语义：**序数访问** 与 **偏移访问**。
+索引分为两套语义：**序数索引** 与 **基数索引**。二者都是索引，不是“访问 / 偏移”混称。
 
 | 语法 | 节点 | 语义 | 例子 |
 |:---|:---|:---|:---|
-| `a[1]` | OrdinalIndexExpression | 序数访问，`1` 表示第一个元素 | `items[1]` |
-| `a⁅0⁆` | OffsetIndexExpression | 偏移访问，`0` 表示第一个元素 | `items⁅0⁆` |
-| `a::[0]` | OffsetIndexExpression | `a⁅0⁆` 的等价别名 | `items::[0]` |
+| `a[1]` | OrdinalIndexExpression | 序数索引，`1` 表示第一个元素 | `items[1]` |
+| `a⁅0⁆` | CardinalIndexExpression | 基数索引，`0` 表示第一个元素 | `items⁅0⁆` |
+| `a::[0]` | CardinalIndexExpression | `a⁅0⁆` 的等价别名 | `items::[0]` |
 
 ### 语义说明
 
-- `a[1]` 与 `a⁅0⁆` 默认不等价，因为它们属于不同的体系。
-- 当容器实现了“序数访问”与“偏移访问”两套能力时，二者可以被映射为等价行为。
-- 序数访问按人类习惯从 `1` 开始计数。
-- 偏移访问按机器习惯从 `0` 开始计数。
+- `a[1]` 与 `a⁅0⁆` 默认不等价，因为它们属于不同的计数体系。
+- 当容器同时实现序数索引与基数索引能力时，二者可以被映射为等价行为。
+- 序数索引从 `1` 开始计数。
+- 基数索引从 `0` 开始计数。
 - `a::[expr]` 是 `a⁅expr⁆` 的别名，不引入新的 AST 节点。
+- 实现侧若仍出现 `OffsetExpression` 名称，那是历史别名，语义仍是基数索引。
 
 ```valkyrie
-items[1] # 第一个元素
+items[1] # 第一个元素（序数）
 items[0] # 运行时错误
 items[-1] # 最后一个元素
 mapping["key"]
 matrix[1, 1]
 
-items⁅0⁆ # 偏移 0 函数
+items⁅0⁆ # 第一个元素（基数）
 items⁅-1⁆ # 最后一个元素
 mapping⁅"key"⁆
 matrix⁅0, 0⁆
@@ -114,9 +115,9 @@ items::[0]
 
 ### 典型映射
 
-- `List<T>`：支持 `OrdinalIndexExpression` 与 `OffsetIndexExpression`
-- `Dict<K,V>`：主要支持 `OrdinalIndexExpression`；若实现暴露内部顺序或偏移能力，则可额外支持 `OffsetIndexExpression`
-- `HashMap<K,V>`：通常只支持键访问，不建议暴露偏移访问
+- `List<T>`：支持序数索引与基数索引
+- `Dict<K,V>`：主要支持序数索引；若实现暴露内部顺序或基数能力，则可额外支持基数索引
+- `HashMap<K,V>`：通常只支持键访问，不建议暴露基数索引
 - `Set<T>`：通常通过有序容器或迭代器能力间接支持索引访问
 
 ## 成员访问表达式

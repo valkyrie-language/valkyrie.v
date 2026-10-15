@@ -14,15 +14,13 @@
 `valkyrie.v` 将语言核心、标准库、前端框架、云适配器、自举应用全部纳入一个 monorepo。每个子目录是一个可独立发布的 **分发**
 （distribution），但聚合在一起构成完整的发行版。
 
-### 二、自举与集成测试一体化
+### 二、源码闭包与集成测试
 
-`valkyrie.v` 本身就是最大的集成测试。根 `legions.von` 将所有子项目的所有包平铺为一个超 workspace——一次
-`legion build --all` 就是对整个生态的全面验证。没有额外的集成测试框架，因为仓库本身 **就是**集成测试。
+`valkyrie.v` 根 `legions.von` 将子项目平铺为超 workspace；`legion build` / `legion test` 验证源码闭包与包合同。当前通过率门禁不在本仓自举阶梯，而在兄弟仓 `leetcode.v` 的 `nyar` / `wasm` 双 target 矩阵。
 
 ### 三、统一使用 vendor 机制区分本地包和远程包
 
-不造一套专门的自举机制。Valkyrie 自带的 **vendor 机制**（`legion.von` 中的 `dependencies` 支持 `path:` 字段）天然区分本地包和远程包，这正是
-`valkyrie.v` 内部解引用子 workspace 的方式。
+Valkyrie 的 **vendor 机制**（`legion.von` 中的 `dependencies` 支持 `path:` 字段）区分本地包和远程包，也是本仓内部解引用子 workspace 的方式。
 
 ---
 
@@ -260,205 +258,15 @@ cd valkyrie.v/projects/legion._ && legion build    # 仅 legion.tools / report
 
 ---
 
-## 自举与验证机制
+## 通过率门禁与远期自举
 
-Valkyrie 的自举不是一次性事件，而是一个 **逐级替换**的渐进过程。每一级自举完成时，上一级实现自动成为该级的集成测试——这就是
-eat your own dogfood 的工程含义。
+**当前通过率门禁不在本文件。** 近期唯一交付目标是兄弟仓 `leetcode.v` 中所有已有理想 `solution.v`，在 `nyar` 与 `wasm` 两个 target 上真实通过 `legion build`、`legion test`、execution manifest 新鲜度校验与全量 `metadata.tests`。
 
-### 自举阶梯
+本仓继续提供语言源码、标准库、adaptor 与工具工程的 source closure。正式编译必须走 manifests/source → Compiler → 真实产物；不得恢复宿主代编译、旧 artifact、smoke 旁路，也不得重建已删除的 `ExecutableModule` / `body_source` 第二套发射链。
 
-```mermaid
-flowchart LR
-    subgraph L0["Level 0: .NET 实现 ✅"]
-        A["NyarVM.cs/projects/"]
-    end
-    subgraph L1["Level 1: Valhalla VM 🚧"]
-        B["projects/nyar._/<br/>nyar.vm.*（规划/进行中）"]
-    end
-    subgraph L2["Level 2: 编译器自举 📋"]
-        C["Valkyrie 编译器<br/>（用 Valkyrie 编写）"]
-    end
-    subgraph L3["Level 3: 全栈自举 📋"]
-        D["legion 工具自身<br/>（用 Valkyrie 编写）"]
-    end
+V-produced Legion、两代收敛、`0.1.0`、CLR/JVM/WASI/浏览器联合门与全栈自举属于远期升级合同，不是当前矩阵绿色条件。术语定义见工作区内部决策；执行顺序只认当前卡点文档。
 
-    A -- " 编译出 " --> B
-    B -- " 编译出 " --> C
-    C -- " 编译出 " --> D
-    L0 -. " 验证<br/>xUnit + CI 全量构建 " .-> L0
-    L1 -. " 验证<br/>L0 产物能运行此 VM " .-> L1
-    L2 -. " 验证<br/>L1 VM 能编译此编译器 " .-> L2
-    L3 -. " 验证<br/>L2 编译器能构建此 legion " .-> L3
-```
-
-### 逐级详解
-
-#### Level 0：.NET 实现（当前主力）
-
-```mermaid
-flowchart LR
-    V[".v 源码"] --> Oak["Oak 文本解码<br/>Lexer → Parser → AST"]
-    Oak --> Nyar["Nyar 分析 + 优化<br/>EGraph → Rewrite → Extract"]
-    Nyar --> Asm["Nyar 代码生成<br/>IKunTree → 目标结构"]
-    Asm --> Acorn["Acorn 二进制编码<br/>目标结构 → 二进制"]
-    Acorn --> Run["运行时<br/>NyarVM / CLR / JVM / WASM"]
-```
-
-**验证方式**：
-
-- `NyarVM.cs/` 的 .NET 单元测试（xUnit）
-- `valkyrie.v/` 根 `legions.von` 全量 `legion build --all`
-- `legion test --all` 跨所有 28 个语法特性测试包
-
-**这一级的产物**：可以正确编译和执行 Valkyrie 程序的 .NET 引擎。
-
----
-
-#### Level 1：Valkyrie 自举 VM（当前进行中）
-
-```mermaid
-flowchart LR
-    SRC[".v 源码"] --> L0["Level 0 .NET 引擎编译"]
-    L0 --> Byte["编译为 .nyar 字节码"]
-    Byte --> NyarVM["NyarVM 加载并执行"]
-    NyarVM --> VH["Valhalla VM<br/>自身可执行 Valkyrie 程序"]
-```
-
-**自举验证**：
-
-- VM / 运行时家族源码与契约在 `projects/nyar._/projects/nyar.vm.*`（ **只消费** emitter 产物，不依赖 `nyar.language`）
-- 历史上文档曾写 `bootstrap.v/projects/valkyrie/`；该顶层分发目录 **已不存在**，勿再作路径引用
-- Level 0 编译产物后，用 Level 0 的 NyarVM 运行自举 VM，再跑 `examples/` 测试
-
-**验证命令**（以当前子 workspace 为准）：
-
-```bash
-cd valkyrie.v/projects/nyar._
-legion build
-legion test --target nyar
-```
-
-**推进条件**：Valhalla VM 通过 28 个语法特性测试，行为与 Level 0 的 NyarVM 一致。
-
----
-
-#### Level 2：编译器自举（CLR / JVM / Node / WASI 四目标联合门，进行中）
-
-当前验收以 `projects/legion._/projects/legion.tools` 为唯一自举目标， **四目标反作弊联动**：
-
-| 轨       | 目标   | 产物                         | 验收脚本                     | 备注                           |
-|:---------|:-------|:-----------------------------|:-----------------------------|:-------------------------------|
-| **CLR**  | `clr`  | `legion.exe` + `.msil`       | `bootstrap-clr.mjs`          | 完整 L2 七门                   |
-| **JVM**  | `jvm`  | `legion.jar`                 | `bootstrap-jvm.mjs`          | 完整 L2 七门                   |
-| **Node** | `node` | `legion.mjs` + `legion.wasm` | `bootstrap-node.mjs`         | 完整 L2 七门；npm / JSR 发布门 |
-| **WASI** | `wasi` | `legion.wasi`                | `bootstrap-wasi-witness.mjs` | witness 子集（不要求 v1→v2）   |
-
-- **Rust seed**：`legion bootstrap --project projects/legion._/projects/legion.tools`
-- **月度矩阵**：`monthly-matrix.mjs` 聚合四目标 report + `cmds_run` runtime 矩阵
-- **反作弊机读**：`check-bootstrap-integrity.mjs`（禁止 stub / bridge / 非 canonical 入口）
-
-**整组 KPI**：任一目标缺席、stub/bridge 检出、或跳过 v1→v2 比对 → **整组失败**（不单记 Node smoke）。
-
-**完整 L2**（CLR / JVM / Node）：seed → v1 可 `build` 同项目 → v2 与 v1 在契约产物上一致。
-
-契约详情：[
-`bootstrap-contract.md`](projects/legion._/projects/legion.tools/documentation/pages/zh-hans/bootstrap-contract.md)
-npm / JSR 发布：[`publishing-registries.md`](documentation/pages/zh-hans/guides/publishing-registries.md)
-
----
-
-#### Level 2（远期）：Valhalla VM 全栈编译器自举
-
-#### Level 3：全栈自举（远期）
-
-```mermaid
-flowchart LR
-    SRC[".v 源码"] --> VH["L1 Valhalla VM"]
-    VH --> Compiler["L2 Valkyrie 编译器"]
-    Compiler --> Byte["输出 .nyar 字节码"]
-    Byte --> VH2["Valhalla VM 直接执行"]
-    VH2 --> Legion["legion CLI<br/>用 Valkyrie 重写"]
-```
-
-**自举验证**：`legion build --all` 和 `legion test --all` 在零 .NET 依赖下通过。
-
----
-
-### 验证闭环
-
-```mermaid
-flowchart TD
-    N["Level N 验证通过的标准"] --> Check{"用 Level N 的产物<br/>执行 Level N+1 的自举代码"}
-    Check --> Compare{"行为是否等于<br/>用 Level 0 直接执行<br/>Level N+1 的代码？"}
-    Compare -- " 一致 ✅ " --> Pass["验证通过<br/>Level N 可安全替换"]
-    Compare -- " 不一致 ❌ " --> Fix["修复差异<br/>以 Level 0 结果为基准"]
-```
-
-这就是逐级替换的安全保证——永远有上一级作为正确答案兜底。
-
----
-
-### 自举路线图
-
-| 阶段                   | 状态        | 自举内容                                            | 验证手段                                               |
-|:-----------------------|:------------|:----------------------------------------------------|:-------------------------------------------------------|
-| **L0 .NET 引擎**       | ✅ 已完成   | 完整的编译+优化+多后端+运行时                       | xUnit + 全量 `legion build --all`                      |
-| **L1 Nyar VM**         | 🚧 源码就绪 | Valkyrie 编写的 VM (Executor/Frame/GC)              | L0 编译 L1 VM → L0 NyarVM 运行此 VM → 执行 28 个测试包 |
-| **L1.5 std.v 自举**    | 📋          | 标准库用 Valkyrie 编写，经过 L0 编译器 + L1 VM 运行 | `legion test --all` 在 L1 VM 上通过                    |
-| **L2 CLR 编译器自举**  | 🚧 进行中   | `legion.tools` seed→v1→v2（CLR）                    | `bootstrap-clr.mjs` + `legion bootstrap`               |
-| **L2 JVM 编译器自举**  | 🚧 进行中   | 同上，`--target jvm`                                | `bootstrap-jvm.mjs`                                    |
-| **L2 Node 编译器自举** | 🚧 进行中   | 同上，`--target node` → npm / JSR 分发              | `bootstrap-node.mjs`                                   |
-| **L2 WASI witness**    | 🚧 进行中   | seed build + `wasmtime run -W gc`                   | `bootstrap-wasi-witness.mjs`                           |
-| **L2 VM 编译器自举**   | 📋          | Lexer/Parser/AST→IKun 用 Valkyrie 重写              | L1 VM + L2 编译器编译自身 → 输出一致                   |
-| **L3 全栈自举**        | 📋          | `legion` 工具自身用 Valkyrie 编写                   | `legion build --all` 零 .NET 依赖通过                  |
-
-### CI 自举验证管线
-
-发布门为 **四目标联合验收**，共享同一 `legion.tools` 源码、模块系统前置门与 `monthly-matrix.mjs` 汇总：
-
-| 轨          | 验收脚本                        | 通过条件                  |
-|:------------|:--------------------------------|:--------------------------|
-| **CLR**     | `bootstrap-clr.mjs`             | 完整 L2 七门              |
-| **JVM**     | `bootstrap-jvm.mjs`             | 完整 L2 七门              |
-| **Node**    | `bootstrap-node.mjs`            | 完整 L2 七门              |
-| **WASI**    | `bootstrap-wasi-witness.mjs`    | witness 六门              |
-| **Runtime** | `run-runtime-matrix.mjs`        | `cmds_run` 四目标矩阵全绿 |
-| **反作弊**  | `check-bootstrap-integrity.mjs` | 零 stub / bridge 检出     |
-
-**任一 job 失败 → 整组阻断发布**（不单记 Node 或 CLR 局部通过）。
-
-```mermaid
-flowchart TB
-    subgraph Setup["0. 准备"]
-        Src["legion.tools 源码"]
-        Seed["上一代 seed<br/>Rust / NyarVM / npm"]
-    end
-
-    subgraph CLR["CLR 轨 — NuGet"]
-        C1["seed → v1.clr"] --> C2["v1 → v2.clr"]
-        C2 --> CC{".msil ≟"}
-    end
-
-    subgraph Node["Node 轨 — npm / JSR"]
-        N1["seed → v1.node"] --> N2["node v1 → v2.node"]
-        N2 --> NC{".wasm ≟"}
-    end
-
-    Src --> C1
-    Src --> N1
-    Seed --> C1
-    Seed --> N1
-    CC -- " 一致 " --> NuGet["NuGet 发布 ✅"]
-    NC -- " 一致 " --> NpmJsr["npm / JSR 发布 ✅"]
-```
-
-#### 平台与注册表分工
-
-- **npm**：CLI 全局命令、`@scope/pkg` 工具包（`legion publish --registry npm`）
-- **JSR**：模块化库、TypeScript 友好标准库切片（`legion publish --registry jsr`）
-- **NuGet**：CLR 轨 `legion` 工具（与 npm/JSR 不互相替代）
-
-详见 [npm 与 JSR 发布策略](documentation/pages/zh-hans/guides/publishing-registries.md)。
+本地验证本仓包合同时，仍可在对应子 workspace 运行 `legion build` / `legion test`；这不替代 LeetCode 双 target 矩阵。
 
 ---
 
