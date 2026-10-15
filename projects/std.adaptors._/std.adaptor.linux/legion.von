@@ -1,7 +1,6 @@
 {
     name: "std.adaptor.linux",
     description: "Valkyrie Linux SDK -- Linux 平台 API 绑定",
-    main: "source/linux.v",
     dependencies: {
         "core": "workspace"
     },

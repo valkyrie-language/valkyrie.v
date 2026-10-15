@@ -4,6 +4,8 @@
 
 # 定时器
 
+namespace std.adaptor.wasm.timer;
+
 [js_builtin("setTimeout")]
 micro set_timeout(callback: i32, delay: i32): i32
 

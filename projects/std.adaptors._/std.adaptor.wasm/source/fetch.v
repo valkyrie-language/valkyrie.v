@@ -1,6 +1,8 @@
 # std.web_sdk: Fetch API
 # [js_builtin] 直接映射 JS 内置 fetch API，无依赖
 # fetch 有副作用（网络 IO），不标注 pure
+
+namespace std.adaptor.wasm.fetch;
 # 字符串 contract 统一优先使用 utf8，由底层绑定承担宿主桥接
 
 [host_provider(std::net::get)]

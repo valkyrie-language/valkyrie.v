@@ -1,6 +1,8 @@
 # std.web_sdk: DOM API
 # [js_builtin] 直接映射 JS 内置 DOM API，无依赖
 # DOM 操作全部有副作用，不标注 pure
+
+namespace std.adaptor.wasm.dom;
 # JS 字符串内部为 UTF-16，所有字符串参数标注为 utf16
 
 #region 元素查询
