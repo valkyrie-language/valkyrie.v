@@ -1,6 +1,8 @@
 # std.web_sdk: JSON API
 # [js_builtin] 直接映射 JS 内置 JSON API，无依赖
 # 给定相同输入输出确定，标注 pure
+
+namespace std.adaptor.wasm.json;
 # JS 字符串内部为 UTF-16，所有字符串参数标注为 utf16
 
 #region 解析

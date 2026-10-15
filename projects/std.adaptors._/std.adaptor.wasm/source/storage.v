@@ -1,6 +1,8 @@
 # std.web_sdk: Storage API
 # [js_builtin] 直接映射 JS 内置 Storage API，无依赖
 # Storage 有副作用（IO），不标注 pure
+
+namespace std.adaptor.wasm.storage;
 # JS 字符串内部为 UTF-16，所有字符串参数标注为 utf16
 
 #region localStorage

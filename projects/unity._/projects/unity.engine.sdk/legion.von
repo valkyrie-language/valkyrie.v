@@ -1,7 +1,6 @@
 {
     name: "unity.engine.sdk",
     description: "Unity Engine 游戏 SDK -- Unity 游戏宿主 API 绑定",
-    main: "source/net.v",
     dependencies: {
         "core": "workspace",
         "std": "workspace"

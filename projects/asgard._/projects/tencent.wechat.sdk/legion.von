@@ -1,7 +1,6 @@
 {
     name: "tencent.wechat.sdk",
     description: "腾讯 WeChat 小游戏 SDK -- 微信小游戏宿主 API 绑定",
-    main: "source/net.v",
     dependencies: {
         "core": "workspace",
         "std": "workspace"

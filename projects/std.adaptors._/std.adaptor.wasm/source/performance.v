@@ -1,6 +1,8 @@
 # std.web_sdk: Performance API
 # [js_builtin] 直接映射 JS 内置 Performance API，无依赖
 # now() 是纯函数，mark/measure 有副作用
+
+namespace std.adaptor.wasm.performance;
 # JS 字符串内部为 UTF-16，所有字符串参数标注为 utf16
 
 #region 时间戳

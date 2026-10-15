@@ -1,6 +1,8 @@
 # std.web_sdk: URL API
 # [js_builtin] 直接映射 JS 内置 URL API，无依赖
 # URL 操作是纯函数，标注 pure
+
+namespace std.adaptor.wasm.url;
 # JS 字符串内部为 UTF-16，所有字符串参数标注为 utf16
 
 #region URL 解析
