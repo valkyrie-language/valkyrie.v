@@ -98,7 +98,7 @@ author = "作者名"
 homepage = "https://example.com"
 repository = "https://github.com/user/repo"
 
-main = "source/main.v"
+# 编译单元由 `source/`（或项目根 `.v`）与源码特性 `[main]` / `[export]` 决定，manifest 不声明入口路径。
 
 # 构建目标列表，每个元素指定一个 canonical triple
 [build]

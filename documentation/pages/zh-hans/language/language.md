@@ -174,8 +174,8 @@ items.map(micro(item) -> string { ... }) # 完整闭包
 items.map { $1.name }                   # 尾随闭包
 value |> process |> format              # 管道
 
-items[1]           # 序数访问（从 1 开始）
-items⁅0⁆          # 偏移访问（从 0 开始）
+items[1]           # 序数索引（从 1 开始）
+items⁅0⁆          # 基数索引（从 0 开始）
 ```
 
 详细规则参见：[expressions.md](expressions.md)、[statements.md](statements.md)
