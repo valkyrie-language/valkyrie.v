@@ -89,11 +89,10 @@ micro wrap_tls(stream: TcpStream, config: TlsConfig): TlsStream {
     if stream.closed || stream.fd < 0 {
         return TlsStream::invalid()
     }
-    let handle: i32
-    if config.server_mode {
-        handle = tls_wrap_server(stream.fd, config.cert_path, config.key_path, config.min_version)
+    let handle: i32 = if config.server_mode {
+        tls_wrap_server(stream.fd, config.cert_path, config.key_path, config.min_version)
     } else {
-        handle = tls_wrap_client(stream.fd, config.min_version)
+        tls_wrap_client(stream.fd, config.min_version)
     }
     if handle < 0 {
         stream.close()

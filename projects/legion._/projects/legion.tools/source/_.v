@@ -113,24 +113,18 @@ micro parse_build_request(args: [utf8]) -> BuildRequest {
 }
 
 micro select_publish_target(manifest: LegionProjectManifest, requested_target: utf8, publish_type: utf8) -> PublishSelection {
-    let mut selected: LegionPublishTarget? = null
     let mut i: usize = 0
     while i < manifest.publish_targets.length() {
         let target: LegionPublishTarget = manifest.publish_targets⁅i⁆
         if target.format_type == publish_type {
             if requested_target.length() == 0 || target.target == requested_target {
-                selected = target
-                break
+                return PublishSelection {
+                    found: true,
+                    target: target
+                }
             }
         }
         i = i + 1
-    }
-
-    if selected.is_some() {
-        return PublishSelection {
-            found: true,
-            target: selected.unwrap()
-        }
     }
 
     return PublishSelection {
