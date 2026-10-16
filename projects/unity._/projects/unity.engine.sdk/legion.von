@@ -6,7 +6,7 @@
         "core": "workspace",
         "std": "workspace"
     },
-    sdk-vendor: {
+    sdk_vendor: {
         organization: "unity",
         host: "engine",
         kind: "platform-sdk",
