@@ -35,23 +35,26 @@ imply char {
     # 字母数字统一小写键：数字为码位，字母为小写 ASCII 码位。
     micro ascii_alnum_key(self) -> Option<i64> {
         if !self.is_ascii_alphanumeric() {
-            return option_none::<i64>()
+            let empty: Option<i64> = None
+            return empty
         }
         let code: u32 = self as u32
         if code >= 65 && code <= 90 {
-            return Some((code + 32) as i64)
+            return Some { value: (code + 32) as i64 }
         }
-        return Some(code as i64)
+        return Some { value: code as i64 }
     }
 
     micro lowercase_ascii_index(self) -> Option<i64> {
         let code: u32 = self as u32
         if code < 97 {
-            return option_none::<i64>()
+            let empty: Option<i64> = None
+            return empty
         }
         if code > 122 {
-            return option_none::<i64>()
+            let empty: Option<i64> = None
+            return empty
         }
-        return Some((code - 97) as i64)
+        return Some { value: (code - 97) as i64 }
     }
 }
