@@ -14,12 +14,13 @@ imply EnumerateIterator<T, I>: Iterator {
 
     micro next(mut self): Option<(ordinal: usize, value: T)> {
         if !self._iter.has_next() {
-            return option_none::<Item>()
+            let empty: Option<Item> = None
+            return empty
         }
 
         let ordinal: usize = self._ordinal
         let value: T = self._iter.next().unwrap()
         self._ordinal = self._ordinal + 1
-        return Some((ordinal, value))
+        return Some { value: (ordinal, value) }
     }
 }

@@ -33,6 +33,21 @@ micro normalize_path(path: utf8) -> utf8 {
     return path.replace("\u{5c}", "/")
 }
 
+micro path_has_drive_separator(path: utf8) -> bool {
+    let limit: usize = path.length()
+    if limit < 2 {
+        return false
+    }
+    let mut i: usize = 0
+    while i + 1 < limit {
+        if path.slice(i, 1) == ":" && path.slice(i + 1, 1) == "/" {
+            return true
+        }
+        i = i + 1
+    }
+    return false
+}
+
 micro path_join(base: utf8, child: utf8) -> utf8 {
     let left: utf8 = normalize_path(base)
     let right: utf8 = normalize_path(child)
@@ -42,7 +57,7 @@ micro path_join(base: utf8, child: utf8) -> utf8 {
     if right.length() == 0 {
         return left
     }
-    if right.starts_with("/") || right.contains(":/") {
+    if right.starts_with("/") || path_has_drive_separator(right) {
         return right
     }
     if left.ends_with("/") {
@@ -57,7 +72,7 @@ micro resolve_project_dir(project: utf8) -> utf8 {
     }
 
     let normalized: utf8 = normalize_path(project.trim())
-    if normalized.starts_with("/") || normalized.contains(":/") {
+    if normalized.starts_with("/") || path_has_drive_separator(normalized) {
         return normalized
     }
     return path_join(std.io.get_current_directory(), normalized)
