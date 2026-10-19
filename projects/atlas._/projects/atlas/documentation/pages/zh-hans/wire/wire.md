@@ -76,7 +76,7 @@ System / Controller 业务方法
     （使用已注入的 store / logger / …）
 ```
 
-Wire 解决的是**对象从哪来**；路由、中间件、Hermes / Query IR 解决的是请求怎么进、数据怎么查。与语言**代数效应**的分工见 [Wire 与代数效应](effects.md)；请求横切见 [Middleware · AOP](../middleware/aop.md)。
+Wire 解决的是**对象从哪来**；路由、中间件、VOS / Query IR 解决的是请求怎么进、数据怎么查。与语言**代数效应**的分工见 [Wire 与代数效应](effects.md)；请求横切见 [Middleware · AOP](../middleware/aop.md)。
 
 ## 非真实实现（mock / sink / null）
 
@@ -96,10 +96,10 @@ Wire 解决的是**对象从哪来**；路由、中间件、Hermes / Query IR �
 
 ## 和数据访问的关系
 
-- Hermes schema、`RegenBindings`、Query IR：定义**数据长什么样、怎么查**；
+- VOS schema、`RegenBindings`、Query IR：定义**数据长什么样、怎么查**；
 - Wire：定义**谁持有访问端口**（如 store / 客户端）并在请求边界注入。
 
-可以 `wire` 一个由绑定生成的 Store/仓储端口，再在方法里发 Hermes query。schema / Query IR 描述数据与查询；Wire 只负责把端口实例接到 System / Controller 上，容器也不用来登记表结构。
+可以 `wire` 一个由绑定生成的 Store/仓储端口，再在方法里发 VOS query。schema / Query IR 描述数据与查询；Wire 只负责把端口实例接到 System / Controller 上，容器也不用来登记表结构。
 
 ## 明确不在范围
 

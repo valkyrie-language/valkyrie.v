@@ -19,7 +19,7 @@
 ## 数据访问
 
 Atlas **不绑**某一种 ORM 运行时；不做 **migrations-first** ORM。  
-**Hermes** = schema 真源 + 默认 query 语言（**SQL 亦可**）；库为 MySQL / PostgreSQL / SQLite；**与 yyds 无关**。  
+**VOS** = schema 真源 + 默认 query 语言（**SQL 亦可**）；库为 MySQL / PostgreSQL / SQLite；**与 yyds 无关**。  
 升级：目标 vs 当前 → **UpgradePlan** → 有限编辑 → 一次性 Apply（**不是** migrations 回放）。
 
 详细讨论（canonical）：

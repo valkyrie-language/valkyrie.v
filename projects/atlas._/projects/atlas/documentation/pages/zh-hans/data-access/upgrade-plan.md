@@ -2,16 +2,16 @@
 
 ## 什么是 UpgradePlan
 
-**UpgradePlan** 是针对**某一份具体数据库**的一次性结构升级方案：比较「仓库里的目标 Hermes schema」与「这台库当前的 schema」，算出差距，生成可审阅、可**有限修改**的执行步骤，确认后 **Apply once**。
+**UpgradePlan** 是针对**某一份具体数据库**的一次性结构升级方案：比较「仓库里的目标 VOS schema」与「这台库当前的 schema」，算出差距，生成可审阅、可**有限修改**的执行步骤，确认后 **Apply once**。
 
 它回答的是运维问题：「**这一台库，现在长这样，要变成目标 schema，该执行什么？**」
 
-不是 migrations 文件链，也不是版本表回放。方言 SQL（若采用）来自 Hermes / [Query IR](query-ir.md) 路径上的 **SQL 物化**，面向 MySQL / PostgreSQL / SQLite 等。
+不是 migrations 文件链，也不是版本表回放。方言 SQL（若采用）来自 VOS / [Query IR](query-ir.md) 路径上的 **SQL 物化**，面向 MySQL / PostgreSQL / SQLite 等。
 
 ## 流程
 
 ```text
-目标 Hermes schema          当前库上的 schema
+目标 VOS schema          当前库上的 schema
 （仓库 SoT，最新）            （实测 / 导出 / 内省）
         │                         │
         └────────────┬────────────┘
@@ -38,7 +38,7 @@
 
 输入两端都是 schema 形状，不是 migration 版本号。
 
-- **目标**：仓库内最新 Hermes schema（唯一 SoT）；
+- **目标**：仓库内最新 VOS schema（唯一 SoT）；
 - **当前**：从该环境库内省或导出的实际形状（含人手热修过的现实）。
 
 输出结构化差异，例如：缺表、缺列、类型变更、可空变更、约束增删、索引差异等。同一目标 schema，空库、落后很远的库、被热修过的库，diff **不同**——这是特性，不是缺陷。
@@ -58,7 +58,7 @@
 - 跳过已知等价、仅风格差异的噪声变更；
 - 修正生成器在特定方言上的不当默认。
 
-「有限」意味着：不能改到与目标 schema 矛盾（例如计划里丢掉目标仍要求存在的列，却声称升级完成）。修改的是**抵达目标的路径**，不是偷偷改目标本身。目标仍以仓库 Hermes schema 为准；若目标错了，应改 schema 再重生计划与绑定。
+「有限」意味着：不能改到与目标 schema 矛盾（例如计划里丢掉目标仍要求存在的列，却声称升级完成）。修改的是**抵达目标的路径**，不是偷偷改目标本身。目标仍以仓库 VOS schema 为准；若目标错了，应改 schema 再重生计划与绑定。
 
 ### Apply once
 
@@ -84,7 +84,7 @@ migrations 回放的失效机制见 [migrations 回放](migrations-antipattern.m
 
 | 构件 | 职责 |
 |------|------|
-| 目标 Hermes schema | 结构 SoT |
+| 目标 VOS schema | 结构 SoT |
 | RegenBindings | 按目标生成应用侧绑定 |
 | schema 静态 query 检查 | 合入前卡 query，依据仍是目标 schema |
 | Query IR | 查询执行语义；升级不改它的定义 |
@@ -113,5 +113,5 @@ migrations 回放的失效机制见 [migrations 回放](migrations-antipattern.m
 
 - 以 migrations 文件链 + 版本表回放为默认升级模型；
 - 把 UpgradePlan 历史当成新的 SoT 长期堆积；
-- 在 UpgradePlan 里偷偷修改目标 schema 语义（目标变更走 Hermes 源文件）；
+- 在 UpgradePlan 里偷偷修改目标 schema 语义（目标变更走 VOS 源文件）；
 - 用 UpgradePlan 代替 query 静态检查或绑定生成。

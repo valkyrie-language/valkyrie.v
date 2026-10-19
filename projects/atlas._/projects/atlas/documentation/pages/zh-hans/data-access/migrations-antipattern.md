@@ -92,7 +92,7 @@ migrations 链保存的是：**怎样一步步走过来的过程日志**。
 
 ## 它为什么是反模式
 
-**以 migrations 文件链 + 版本表回放作为结构协作真源**，在 Atlas 的目标场景（多人、多环境、长寿命、以 Hermes 最新 schema 为 SoT）下是**反模式**：
+**以 migrations 文件链 + 版本表回放作为结构协作真源**，在 Atlas 的目标场景（多人、多环境、长寿命、以 VOS 最新 schema 为 SoT）下是**反模式**：
 
 | 它承诺的 | 实践交付的 |
 |----------|------------|
@@ -103,7 +103,7 @@ migrations 链保存的是：**怎样一步步走过来的过程日志**。
 
 Atlas 因此约定：
 
-- **状态真源**：仓库内**最新** Hermes schema；绑定与 [schema 静态 query 检查](schema-static-query-check.md) 对齐它。
+- **状态真源**：仓库内**最新** VOS schema；绑定与 [schema 静态 query 检查](schema-static-query-check.md) 对齐它。
 - **环境对齐**：当前 schema vs 目标 schema → [UpgradePlan](upgrade-plan.md)（可物化 SQL、可有限编辑）→ **一次性 Apply**。
 - **不把** migrations 版本表回放做成一等公民工作流；工具链也不以「维护 / 回放 migration 链」为默认叙事。
 

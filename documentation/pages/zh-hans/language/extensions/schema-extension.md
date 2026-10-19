@@ -2,7 +2,7 @@
 
 Valkyrie 语言的 Schema 扩展为数据模式定义提供声明式语法，用于游戏配置、资源描述和网络协议。
 
-命名对齐 C# 侧 **Hermes**。对 Atlas：Hermes 是 schema 真源与默认 query；执行走 **Query IR**。详见 [Query IR](../../../../../projects/atlas._/projects/atlas/documentation/pages/zh-hans/data-access/query-ir.md) 与 [数据访问总览](../../../../../projects/atlas._/projects/atlas/documentation/pages/zh-hans/data-access/index.md)。与 **yyds** 无关。
+命名对齐 **VOS**。对 Atlas：VOS 是 schema 真源与默认 query；执行走 **Query IR**。详见 [Query IR](../../../../../projects/atlas._/projects/atlas/documentation/pages/zh-hans/data-access/query-ir.md) 与 [数据访问总览](../../../../../projects/atlas._/projects/atlas/documentation/pages/zh-hans/data-access/index.md)。与 **yyds** 无关。
 
 ## 设计理念
 
@@ -248,7 +248,7 @@ micro active_adults(users: [User]) -> [User] {
 
 ## namespace 与组合
 
-每个 `.her` 文件必须以 `namespace` 声明开头：
+每个 `.vos` 文件必须以 `namespace` 声明开头：
 
 ```v
 namespace app;
