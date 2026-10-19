@@ -2,10 +2,10 @@
 
 ## 什么是 schema 静态 query 检查
 
-在**编译期 / 合入前**，用 **Hermes schema** 核对应用里的 **query**（默认 Hermes；SQL 亦可，进入同一套 Atlas [Query IR](query-ir.md) 语义后再查）是否仍然合法：引用的模型与字段是否存在、类型与空值是否相容、投影与过滤是否说得通。
+在**编译期 / 合入前**，用 **VOS schema** 核对应用里的 **query**（默认 VOS；SQL 亦可，进入同一套 Atlas [Query IR](query-ir.md) 语义后再查）是否仍然合法：引用的模型与字段是否存在、类型与空值是否相容、投影与过滤是否说得通。
 
 - **检查对象**：query（及由其推导的绑定用法），不是「某次 migration 脚本写得对不对」。
-- **检查依据**：仓库里的**目标 schema（SoT）**，也就是**最新**那份 Hermes schema。
+- **检查依据**：仓库里的**目标 schema（SoT）**，也就是**最新**那份 VOS schema。
 - **检查时机**：构建与静态分析阶段报错；不指望第一次打到真实库才发现列不存在。
 
 不做运行时探测，不读生产库的版本表，也不按 migrations 历史水位选一份「当时的 schema」来放行。
@@ -13,19 +13,19 @@
 ## 在流水线里站哪
 
 ```text
-目标 Hermes schema（最新 SoT）
+目标 VOS schema（最新 SoT）
         │
         ├──────────────► RegenBindings（应用侧绑定）
         │
         └──────────────► schema 静态 query 检查
                               ▲
-Hermes / SQL query ──► Query IR ─┘
+VOS / SQL query ──► Query IR ─┘
                               │
                               ▼（通过）
                            执行 / 进一步物化 SQL（若需要）
 ```
 
-需要方言 SQL 字符串时，是 Query IR / Hermes 的 **SQL 物化**；检查发生在 query 语义层，而不是「先打成 SQL 再当类型系统」。
+需要方言 SQL 字符串时，是 Query IR / VOS 的 **SQL 物化**；检查发生在 query 语义层，而不是「先打成 SQL 再当类型系统」。
 
 ## 具体查什么
 

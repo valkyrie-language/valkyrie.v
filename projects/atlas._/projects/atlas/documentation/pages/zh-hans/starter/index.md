@@ -56,6 +56,6 @@ my_shop/
 | 横切管道 | [Middleware](../middleware/index.md) |
 | 鉴权 / 校验 / CORS 等 | middleware 下各专页 |
 | 错误与观测 | [错误追踪](../error-tracing/index.md) |
-| 数据访问 | [Hermes / Query IR / UpgradePlan](../data-access/index.md) |
+| 数据访问 | [VOS / Query IR / UpgradePlan](../data-access/index.md) |
 | Store / Cache / Queue / EventBus | [architecture 四件套](../architecture/store-cache-queue-eventbus.md)（**仅 Atlas**；Asgard 勿套同名） |
 | Wire | [Wire](../wire/index.md) |

@@ -30,7 +30,7 @@
 
 ## 与 Atlas 的边界
 
-**yyds 与 Atlas 无关。** 本生态是独立数据库产品线（`yykv` / `yydb` / `yyds`），不是 Atlas 的默认数据平面，也不承担 Atlas 的 Hermes（schema 真源 + 默认 query；SQL 亦可）/ `RegenBindings` / 一次性升级约定。Atlas 数据访问见其自身文档；此处不交叉绑定。
+**yyds 与 Atlas 无关。** 本生态是独立数据库产品线（`yykv` / `yydb` / `yyds`），不是 Atlas 的默认数据平面，也不承担 Atlas 的 VOS（schema 真源 + 默认 query；SQL 亦可）/ `RegenBindings` / 一次性升级约定。Atlas 数据访问见其自身文档；此处不交叉绑定。
 
 > 注意：上文「`yydb` / `yyds` 升降级」指产品形态与部署角色的升降，与 Atlas 无关。
 

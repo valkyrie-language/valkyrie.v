@@ -22,7 +22,7 @@
 
 ## 数据访问
 
-- [总览：Hermes、绑定与升级](data-access/index.md)
+- [总览：VOS、绑定与升级](data-access/index.md)
 - [Query IR](data-access/query-ir.md)
 - [Schema Upgrade Plan](data-access/upgrade-plan.md)
 - [schema 静态 query 检查](data-access/schema-static-query-check.md)

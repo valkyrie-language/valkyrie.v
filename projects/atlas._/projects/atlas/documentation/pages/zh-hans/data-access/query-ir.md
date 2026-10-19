@@ -2,7 +2,7 @@
 
 ## 什么是 Query IR
 
-**Query IR** 是 Atlas 数据访问里，查询进入执行与静态分析之前的**查询语义表示**。应用默认用 Hermes 写 query，也可以写 SQL；两条入口都归一到 Query IR，再交给：
+**Query IR** 是 Atlas 数据访问里，查询进入执行与静态分析之前的**查询语义表示**。应用默认用 VOS 写 query，也可以写 SQL；两条入口都归一到 Query IR，再交给：
 
 - [schema 静态 query 检查](schema-static-query-check.md)（对照最新目标 schema）；
 - 查询执行（得到结果行）；
@@ -13,7 +13,7 @@
 ## 入口与出口
 
 ```text
-Hermes query（默认）  ──►  Query IR  ──►  静态检查 ──►  执行（结果行）
+VOS query（默认）  ──►  Query IR  ──►  静态检查 ──►  执行（结果行）
 SQL 文本（可选）      ──►  Query IR  ──┘         │
                                                   │（仅当需要 SQL 文本）
                                                   ▼
@@ -22,11 +22,11 @@ SQL 文本（可选）      ──►  Query IR  ──┘         │
 
 | 方向 | 内容 |
 |------|------|
-| **进** | Hermes 查询 AST / 文本，或 SQL 文本（解析进同一查询语义） |
+| **进** | VOS 查询 AST / 文本，或 SQL 文本（解析进同一查询语义） |
 | **出（热路径）** | 可执行的查询计划 / 驱动调用 → 结果行 |
 | **出（物化）** | MySQL / PostgreSQL / SQLite 等方言的 SQL 字符串 |
 
-Schema 真源始终是 Hermes 目标 schema；Query IR 描述的是「这次要问什么」，不是「库应该长什么样」。库形状由 schema + [UpgradePlan](upgrade-plan.md) 负责。
+Schema 真源始终是 VOS 目标 schema；Query IR 描述的是「这次要问什么」，不是「库应该长什么样」。库形状由 schema + [UpgradePlan](upgrade-plan.md) 负责。
 
 ## 它承载什么语义
 
@@ -39,16 +39,16 @@ Query IR 至少要能表达（随语言能力扩展，不限于今日 `std-data`
 
 DDL（建表、改列）不属于日常 query 热路径；结构变更走目标 schema 与 UpgradePlan。把「建表语句」偶发投进物化打印机，是工具/演示用途，不要和线上 query 执行混为一谈。
 
-## Hermes 默认、SQL 可选
+## VOS 默认、SQL 可选
 
-| | Hermes | SQL |
+| | VOS | SQL |
 |--|--------|-----|
 | 地位 | 默认 query 语言，且 schema DSL 同源 | 二等可选路径 |
-| 进 Query IR | 解析 Hermes query → 查询语义 | 解析 SQL → 同一套查询语义（能映射的子集） |
+| 进 Query IR | 解析 VOS query → 查询语义 | 解析 SQL → 同一套查询语义（能映射的子集） |
 | 静态检查 | 必须过，依据最新 schema | 进入 Query IR 后同样必须过，不能「是 SQL 就免检」 |
 | 物化 | 需要字符串时再生成方言 SQL | 已是 SQL 时，物化可能接近原样或按方言规范化 |
 
-Hermes **可以**生成 SQL，不表示执行必须先生成 SQL。原生/驱动若能直接吃 Query IR 或 Hermes 语义，热路径不必经过字符串。
+VOS **可以**生成 SQL，不表示执行必须先生成 SQL。原生/驱动若能直接吃 Query IR 或 VOS 语义，热路径不必经过字符串。
 
 ## 与 SQL 物化的边界
 
@@ -62,13 +62,13 @@ Hermes **可以**生成 SQL，不表示执行必须先生成 SQL。原生/驱动
 
 ## 错误心智
 
-`Hermes → 某个万能中立层 → 先打成 SQL 字符串 → 再当查询执行`
+`VOS → 某个万能中立层 → 先打成 SQL 字符串 → 再当查询执行`
 
 问题在于：
 
 1. 把执行绑死在字符串 SQL，方言与转义细节泄漏进热路径；
 2. 暗示存在贯通 schema、query、DDL、打印的 god IR；
-3. 静态检查若只在 SQL 字符串上做，难与 Hermes 目标 SoT 对齐，也难做结构化诊断。
+3. 静态检查若只在 SQL 字符串上做，难与 VOS 目标 SoT 对齐，也难做结构化诊断。
 
 正确顺序：query → Query IR →（检查）→ 执行；仅在需要文本时再物化。
 
@@ -76,13 +76,13 @@ Hermes **可以**生成 SQL，不表示执行必须先生成 SQL。原生/驱动
 
 | 构件 | 和 Query IR 的关系 |
 |------|-------------------|
-| 最新 Hermes schema | SoT；检查与 `RegenBindings` 都认它 |
+| 最新 VOS schema | SoT；检查与 `RegenBindings` 都认它 |
 | schema 静态 query 检查 | 对进入 Query IR 的 query 做合入门禁 |
 | RegenBindings | 生成应用侧类型/仓库接口；query 结果形状应与之相容 |
 | UpgradePlan | 改的是库结构；不改 Query IR 定义。结构对齐后，已通过检查的 query 才有资格在该环境执行 |
 
 ## 实现现状（`std-data`）
 
-- `hermes`：`.hermes` / `.her` 子集解析与 AST（走向 Query IR）。
+- VOS 源码（`.vos`）：schema / query 子集解析与 AST（走向 Query IR）。
 - `sql`：方言 AST 与打印机，服务 SQL 物化。
 - 完整 Query IR 规范、执行引擎、全量静态检查仍为 Atlas 数据访问的规划能力；竖切用于钉住「查询语义 vs 物化字符串」的边界。

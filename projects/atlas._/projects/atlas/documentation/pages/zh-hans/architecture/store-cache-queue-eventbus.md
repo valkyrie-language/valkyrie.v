@@ -28,8 +28,8 @@ Store 属于 **DAP Adapter 面**（可替换接缝）；Cache / Queue / EventBus
 
 ## 与数据访问
 
-- **Hermes / Query IR / UpgradePlan**：schema 与查询真源、升级计划——见 [data-access](../data-access/index.md)。
-- **Store**：业务端口形状；具体是否经 Hermes 查库由 Adapter 实现决定，不要把 Store 与「migrations 回放 ORM」混为一谈。
+- **VOS / Query IR / UpgradePlan**：schema 与查询真源、升级计划——见 [data-access](../data-access/index.md)。
+- **Store**：业务端口形状；具体是否经 VOS 查库由 Adapter 实现决定，不要把 Store 与「migrations 回放 ORM」混为一谈。
 
 ## 测试替身
 

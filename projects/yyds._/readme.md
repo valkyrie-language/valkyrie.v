@@ -13,7 +13,7 @@
 - `yydb` 与 `yyds` 不是一个东西
 - `yydb` 可以作为 `yyds` 的 sidecar 高速缓存
 - `yydb` 和 `yyds` 可以升降级，但不能因此合并成一个包
-- **与 Atlas 无关**：yyds 是独立数据库产品线，不是 Atlas ORM / 数据绑定平面；勿与 Atlas 的 Hermes（schema 真源 + 默认 query；SQL 亦可）→ RegenBindings / 一次性升级故事交叉绑定
+- **与 Atlas 无关**：yyds 是独立数据库产品线，不是 Atlas ORM / 数据绑定平面；勿与 Atlas 的 VOS（schema 真源 + 默认 query；SQL 亦可）→ RegenBindings / 一次性升级故事交叉绑定
 
 ## 计划中的子包
 
