@@ -189,10 +189,15 @@ Node 轨 **禁止** 用浏览器 `wasm` 三元组（`wasm32-unknown-browser-wasm
 须包含以下可检索符号（用于证明跨模块类型解析走显式 import，而非宿主注入）：
 
 - `using nyar;`
-- `micro legion_parse_canonical_target(target: utf8) -> CanonicalTarget {`
 - `return parse_target(canonical)`
 - `return format_target(parsed)`
-- `return default_target()`
+
+**且不得包含**未知 target 的默认成功回落：
+
+- `default_target()`
+
+`legion_parse_canonical_target` 已删除：未知 target 只允许经 `legion_canonical_target`
+返回空串并由调用方结构化失败，不得回落 `default_target()`。
 
 ---
 

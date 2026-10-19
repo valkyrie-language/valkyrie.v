@@ -5,12 +5,13 @@ using nyar;
 micro module_system_smoke() -> i32 {
     let parsed: CanonicalTarget = parse_target("clr-microsoft-unknown-managed")
     let formatted: utf8 = format_target(parsed)
-    let fallback: CanonicalTarget = default_target()
+    # `default_target()` 已删除；nyar target 须显式解析 canonical 三元组。
+    let nyar_target: CanonicalTarget = parse_target("nyar-unknown-unknown")
 
     if formatted != "clr-microsoft-unknown-managed" {
         return 1
     }
-    if fallback.architecture != "nyar" {
+    if nyar_target.architecture != "nyar" {
         return 2
     }
     return 0

@@ -50,16 +50,8 @@ micro legion_normalize_short_target(value: utf8) -> utf8 {
     return ""
 }
 
-# 将目标名解析为 nyar.CanonicalTarget 结构。
-# 演示跨模块类型导入：nyar 项目导出 CanonicalTarget，legion.tools 通过 using nyar 引入。
-micro legion_parse_canonical_target(target: utf8) -> CanonicalTarget {
-    let value: utf8 = target.trim().to_lower()
-    let canonical: utf8 = legion_normalize_short_target(value)
-    if canonical.length() == 0 {
-        return default_target()
-    }
-    return parse_target(canonical)
-}
+# 已删除 `legion_parse_canonical_target`：未知 target 不得回落到 `default_target()` 成功。
+# 目标解析只有一条路径 `legion_canonical_target`（未支持返回空串，由调用方结构化失败）。
 
 # 返回规范化的目标三元组字符串。
 # 内部使用 nyar.parse_target 和 nyar.format_target 完成结构化解析与格式化。
@@ -138,67 +130,35 @@ micro legion_output_root(project_dir: utf8, output: utf8) -> utf8 {
     return resolve_project_dir(output)
 }
 
-micro legion_target_arch_tag(canonical_target: utf8) -> utf8 {
-    if canonical_target.starts_with("clr-") {
-        return "clr"
-    }
-    if canonical_target.starts_with("jvm-") {
-        return "jvm"
-    }
-    if canonical_target.starts_with("wasm32-") || canonical_target.starts_with("wasm64-") {
+# target → arch 标签只映射 nyar.CanonicalTarget.architecture，不再对 canonical 字符串
+# 做 prefix/suffix/contains 反推；ABI 直接读 CanonicalTarget.abi，不再按后缀猜。
+micro legion_target_arch_tag(architecture: utf8) -> utf8 {
+    if architecture == "wasm32" || architecture == "wasm64" {
         return "wasm"
     }
-    if canonical_target.starts_with("nyar-") {
+    if architecture == "clr" {
+        return "clr"
+    }
+    if architecture == "jvm" {
+        return "jvm"
+    }
+    if architecture == "nyar" {
         return "nyar"
     }
     return ""
 }
 
-micro legion_target_abi(canonical_target: utf8) -> utf8 {
-    if canonical_target.ends_with("-managed") {
-        return "managed"
-    }
-    if canonical_target.contains("-wasi-p1") {
-        return "wasi-p1"
-    }
-    if canonical_target.contains("-wasi-p2") {
-        return "wasi-p2"
-    }
-    if canonical_target.contains("-webassembly") {
-        return "webassembly"
-    }
-    return "unknown"
-}
-
-micro legion_target_backend_family(canonical_target: utf8) -> utf8 {
-    let arch_tag: utf8 = legion_target_arch_tag(canonical_target)
-    if arch_tag == "clr" || arch_tag == "jvm" || arch_tag == "wasm" {
-        return arch_tag
-    }
+# backend family 只由 arch 标签派生，唯一所有者，不再维护第二套别名表。
+micro legion_target_backend_family(arch_tag: utf8) -> utf8 {
     if arch_tag == "nyar" {
         return "nyar_vm"
     }
-    return "unknown"
+    return arch_tag
 }
 
-# Avoid `LegionBuildTarget?` — CLR currently mis-lowers nullary Option for valuetype
-# payloads as int32→struct stores (InvalidProgram). Early-return from the scan instead.
-micro legion_find_build_target(manifest: LegionProjectManifest, requested_target: utf8, canonical_target: utf8) -> LegionBuildTarget {
-    let mut i: usize = 0
-    while i < manifest.build_targets.length() {
-        let candidate: LegionBuildTarget = manifest.build_targets⁅i⁆
-        let candidate_canonical: utf8 = legion_canonical_target(candidate.name)
-        if candidate.name == requested_target || candidate_canonical == canonical_target {
-            return candidate
-        }
-        i = i + 1
-    }
-
-    return LegionBuildTarget {
-        name: requested_target,
-        options: legion_empty_build_target_options()
-    }
-}
+# 已删除 `legion_find_build_target` 的「未声明即合成空 options」回落：
+# manifest 未声明 requested target 时不得伪造一个成功用的 LegionBuildTarget。
+# 调用方 `legion_build_contexts` 在扫描后按声明与否结构化失败。
 
 # 构建依赖图：使用图论模块的有向图存储依赖关系
 # 边方向为 A → B 表示 A 依赖 B
@@ -282,7 +242,24 @@ micro legion_build_contexts(
             return Fail(new_von_diagnostic("存在不支持的构建目标", 0, 0))
         }
 
-        let build_target: LegionBuildTarget = legion_find_build_target(manifest, requested, canonical)
+        # declared options 只在 manifest 声明确实存在该 target 时赋值；
+        # 未声明即失败，不得使用合成的空 options 继续构建。
+        let parsed: CanonicalTarget = parse_target(canonical)
+        let mut declared: bool = false
+        let mut declared_options: LegionBuildTargetOptions = legion_empty_build_target_options()
+        let mut ti: usize = 0
+        while ti < manifest.build_targets.length() {
+            let candidate: LegionBuildTarget = manifest.build_targets⁅ti⁆
+            if candidate.name == requested || legion_canonical_target(candidate.name) == canonical {
+                declared_options = candidate.options
+                declared = true
+            }
+            ti = ti + 1
+        }
+        if !declared {
+            return Fail(new_von_diagnostic("manifest 未声明请求的构建目标", 0, 0))
+        }
+        let arch_tag: utf8 = legion_target_arch_tag(parsed.architecture)
 
         push(contexts, LegionBuildContext {
             project_dir: project_dir,
@@ -292,13 +269,13 @@ micro legion_build_contexts(
             output_dir: path_join(output_root, canonical),
             dependency_names: dep_names,
             dependency_order: build_order,
-            arch_tag: legion_target_arch_tag(canonical),
-            abi: legion_target_abi(canonical),
-            backend_family: legion_target_backend_family(canonical),
+            arch_tag: arch_tag,
+            abi: parsed.abi,
+            backend_family: legion_target_backend_family(arch_tag),
             verbose: request.verbose,
             preferred_logical_entry: "",
             include_test_sources: false,
-            build_options: build_target.options
+            build_options: declared_options
         })
         i = i + 1
     }
