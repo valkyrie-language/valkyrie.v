@@ -589,15 +589,19 @@ export function validateModuleSystem(rootDir, verbose = false) {
     if (!buildContextText.includes('using nyar;')) {
         errors.push('`build_context.v` 未显�?`using nyar;`');
     }
-    for (const requiredSymbol of [
-        'micro legion_parse_canonical_target(target: utf8) -> CanonicalTarget {',
-        'return parse_target(canonical)',
-        'return format_target(parsed)',
-        'return default_target()',
-    ]) {
-        if (!buildContextText.includes(requiredSymbol)) {
+    // 只看代码不看注释：注释里点名被禁止的回落不算回落。
+    const buildContextCode = buildContextText
+        .split(/\r?\n/)
+        .filter((line) => !line.trimStart().startsWith('#'))
+        .join('\n');
+    for (const requiredSymbol of ['parse_target(canonical)', 'return format_target(parsed)']) {
+        if (!buildContextCode.includes(requiredSymbol)) {
             errors.push(`build_context 缺少模块系统契约片段�?{requiredSymbol}`);
         }
+    }
+    // 未知 target 的默认成功回落必须保持删除：`default_target()` 不得再出现在 build_context。
+    if (buildContextCode.includes('default_target()')) {
+        errors.push('`build_context.v` 仍保留未知 target 默认成功（`default_target()`）');
     }
 
     if (verbose) {
