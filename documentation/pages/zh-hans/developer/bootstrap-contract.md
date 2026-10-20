@@ -1,17 +1,7 @@
-# 编译器自举契约
+# 编译器自举证明
 
-L2 自举分 **CLR**（NuGet）与 **Node**（**npm / JSR**）两条并行轨，完整契约见：
+自举是独立证明，不是当前 LeetCode nyar/wasm 题意矩阵的替代品。
 
-**[projects/legion._/projects/legion.tools/documentation/pages/zh-hans/bootstrap-contract.md](../../../../projects/legion._/projects/legion.tools/documentation/pages/zh-hans/bootstrap-contract.md)**
+seed 从当前 V 源码生成一次完整 candidate 称 source-bootstrap；V candidate 自行从完整当前 manifests/source 闭包生成下一代才称 self-hosted。还需确定性产物与 run contract 收敛、真实执行及完整反作弊证据，才能称 bootstrap-proven。
 
-| 轨 | 目标 | 验收 | 发布 |
-|:---|:---|:---|:---|
-| CLR | `clr` | `bootstrap-clr.mjs` | NuGet |
-| Node | `node` | `bootstrap-node.mjs` | **npm**、**JSR** |
-
-```bash
-node scripts/bootstrap-clr.mjs
-node scripts/bootstrap-node.mjs
-```
-
-npm / JSR 发布策略：[publishing-registries.md](../guides/publishing-registries.md)
+[完整证明合同](../../../../projects/legion._/projects/legion.tools/documentation/pages/zh-hans/bootstrap-contract.md)定义输入、世代与记录要求。本页不维护实现状态、target 工作包或发布门禁流水账。

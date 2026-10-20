@@ -1,372 +1,58 @@
-# 编译管线逐阶段详解
+# 编译管线与阶段合同
 
-本文描述 `valkyrie.v` 的长期编译主线。核心目标不是把所有 target 塞进一份统一大 `IR`，而是让语义先闭合，再按 target family 分流，最后以统一交付契约落盘。
+本文固定输入、事实所有者和拒绝边界。设计合同不表示功能已经完成。
 
-## 一张图
+## 编译流
 
 ```mermaid
 flowchart TD
-    Source[Source]
-    Parse[Parse]
-    Meta[Meta]
-    Semantics[Semantics]
-    HIR[HIR]
-    MIR[MIR]
-    Optimize[Optimize]
-    Partition[Partition]
-    Lane[Target Lowering Lane]
-    BackendInput[Backend Input]
-    Validate[Validate]
-    BackendCompile[Backend Compile]
-    Encode[Encode]
-    Package[Package]
-    ArtifactSet[ArtifactSet]
-
-    Source --> Parse --> Meta --> Semantics --> HIR --> MIR --> Optimize --> Partition
-    Partition --> Lane --> BackendInput --> Validate --> BackendCompile --> Encode --> Package --> ArtifactSet
-
-    classDef phase fill:#f6f9fc,stroke:#8a9aad,stroke-width:1.2px,color:#1f2937;
-    classDef boundary fill:#fff8e8,stroke:#d6a93d,stroke-width:1.2px,color:#5c4400;
-    classDef delivery fill:#f3fbf6,stroke:#7fb77e,stroke-width:1.2px,color:#1f5130;
-
-    class Parse,Meta,Semantics,HIR,MIR,Optimize phase;
-    class Partition,Validate boundary;
-    class Lane,BackendInput,BackendCompile,Encode,Package,ArtifactSet delivery;
+    Inventory["WorkspaceResolver：immutable inventory / package graph"]
+    Index["Oak 声明扫描、恢复状态和诊断"]
+    Binding["可见绑定 / 类型 / 实例与 evidence 需求"]
+    Bodies["按需 HIR body 物化"]
+    Semantic["package Semantic MIR"]
+    Linked["linker：adaptor/import + Canonical validation"]
+    Optimize["语义保持的优化"]
+    Layout["稀疏 RepresentationPlan"]
+    Private["BackendLowering.prepare / BackendPrivatePlan"]
+    Bytes["格式编码 / ArtifactStore"]
+    Inventory --> Index --> Binding
+    Binding --> Bodies --> Binding
+    Bodies --> Semantic --> Linked --> Optimize --> Layout --> Private --> Bytes
 ```
 
-核心约束如下：
+声明索引、绑定和实例需求协作到固定点。不是先完成全部函数体再裁剪，也不要求未物化 body 已完成语义分析。
 
-- `Parse -> Partition` 是语义主线，所有 target 共享。
-- 包分层同构于 Rust：`nyar.language` → `nyar.analyzer` → `nyar.optimizer` → `nyar.emitter`；lane 消费 **`ExecutableModule`**（全称，禁止 `Exec` / `ExecModule`）。
-- target 分叉从 `Partition` 开始，而不是从 parser、类型检查器或后端内部开始。
-- `Validate` 是强约束，不是可选步骤。
-- `nyar.vm.*` 只消费产物；`body_source` / type-name 特判旁路不是正式主线。
+## 输入与需求
 
-## 阶段 1：Parse
+inventory 记录 manifest 声明的来源；声明索引提取签名、导出、类型及可见性；需求图决定哪些 body 与实例进入 HIR。每个物化节点都须有入口需求边。
 
-### 输入
+无计划、显式空需求和非空需求未物化是不同状态。读取/解码、声明索引和 body 诊断分别规定阻断范围。不可达坏 body 不阻断入口，可达坏 body 不能进入成功 MIR。
 
-- `.v`（Valkyrie 源码后缀；语言名与后缀是同一事物，解析模型在 `std.data.text.valkyrie`）
-- `.awsl`
-- 其他正式语言源文件
+## 语法、恢复与语义
 
-### 输出
+Oak 输出树、recovery/missing/error 与 diagnostics。namespace 语法形态显式保留，缺 token 不补成普通运算符或空名称；保留后续有效声明。语法恢复不等于语义准入。
 
-- 带 `TextSpan` 的语法树
-- 语法诊断
+Valkyrie frontend 负责名称、类型、place、definite assignment、泛型替换与 evidence。所有类型位共用绑定，包括签名、字段、Cast 与关联类型。短名唯一不能替代依赖可见性。
 
-### 负责什么
+AST unary/binary 语法在 HIR 展开为普通 callable；所有调用经完整实例与签名进入 Invoke。MIR 不按 callee 拼写补类型或行为。
 
-- 文本解码
-- token 化
-- 语法解析
-- 保留源位置信息
+## 链接、表示与编码
 
-### 不负责什么
+linker 冻结跨包身份、adaptor 与 import signature。Canonical validation 验证完整实例、字段/变体 owner、调用与 SSA 事实。优化只能保留已定语义。
 
-- 名称解析
-- 类型检查
-- target 推断
-- 平台绑定
+RepresentationPlan 以 stable semantic ID 记录稀疏 carrier/layout，不复制 CFG 或选择 adaptor。BackendLowering.prepare 生产目标私有计划；所有编码入口预先验证。backend 只编码 BackendPrivatePlan，不查名称补 ABI、layout 或载荷。
 
-## 阶段 2：Meta
+Acorn 编码外部格式；nyar-bytecode 编码 Nyar 自有字节码。ArtifactStore 原子提交完整 artifact 与 evidence。
 
-### 输入
+## 诊断、工具与缓存
 
-- 语法树
-- 编译配置
-- `CanonicalTarget`
+各域保留 stage/code/owner/source/span，Compiler 汇总诊断。Lint 不另设编译门禁；formatter 属于 Oak CST/token-gap，pretty printer 只输出模型文本。
 
-### 输出
+inventory provenance 与语义 freshness 分开；语义摘要覆盖实际影响编译的声明、签名、body、可见绑定环境与 Compiler/host。target/profile、adaptor 选择和 artifact 摘要在对应阶段绑定。缓存读取前重算期望身份，不兼容读取缺字段旧证据。
 
-- 已消除元节点的稳定语法树
+## 验收
 
-### 负责什么
+每项工作包先定义行为、缺事实、唯一生产者、接口和失败方式。正反验证覆盖不可达/可达坏 body、同文件 body 隔离、同名不同 owner/namespace、未声明依赖、跨包实例/evidence。
 
-- 宏展开
-- 编译期条件分支
-- 代码生成模板的语法级展开
-
-### 不负责什么
-
-- 语义闭合
-- target family lowering
-
-## 阶段 3：Semantics
-
-### 输入
-
-- 稳定语法树
-- 模块图
-- 导入关系
-
-### 输出
-
-- `SemanticModel`
-- 语言级诊断
-- 逻辑入口信息
-
-### 负责什么
-
-- 名称解析
-- 类型检查
-- `trait / imply` 满足
-- `row` 方法约束满足
-- `class / unite` 名义关系判断
-- effect 约束验证
-- 文本类型收敛
-- 逻辑入口识别
-
-### 必须在这一层闭合的事实
-
-- 当前调用到底是静态调用、见证调用还是其他语言级调用事实
-- 某个方法、字段、构造器到底绑定到谁
-- 某个文本字面量最终属于哪种文本类型
-
-### 不负责什么
-
-- 目标 ABI
-- 文件格式
-- 宿主入口包装
-- 产物拼装
-
-## 阶段 4：HIR
-
-### 输入
-
-- 稳定语法树
-- `SemanticModel`
-
-### 输出
-
-- 高层语义表示 `HIR`
-
-### 负责什么
-
-- 把语法树转成已绑定的高层语义节点
-- 保留语言特性语义，不急于抹平成低层细节
-- 统一表达入口、调用、控制流、模式和文本语义
-
-### 不负责什么
-
-- 低层布局
-- 目标调用约定
-- 二进制格式字段
-
-## 阶段 5：MIR
-
-### 输入
-
-- `HIR`
-
-### 输出
-
-- 中层分析表示 `MIR`
-
-### 负责什么
-
-- 把高层语义变成可分析、可重写、可静态化的表示
-- 显式化控制流与数据依赖
-- 承接后续优化与静态化
-
-### 设计要求
-
-- `MIR` 是语言与 target 之间的分析边界
-- `MIR` 可以用 `SSA`、图结构、表达式岛或其他可分析形式实现
-- `MIR` 不是所有 target 共用的最终物理格式
-
-## 阶段 6：Optimize
-
-### 输入
-
-- `MIR`
-- 优化级别
-- target 预算信息
-
-### 输出
-
-- 已静态化、已去虚化、已收敛预算的 `MIR` 或等价结果
-
-### 负责什么
-
-- 常量折叠
-- 规则重写
-- 去虚化
-- 部分求值
-- 闭世界静态化
-- 体积与首包预算控制
-
-### 说明
-
-这里可以使用 `EGraph`，也可以使用别的优化设施；但优化设施不构成语言真相本身。
-
-### 不负责什么
-
-- 文件格式编码
-- 宿主桥接代码生成
-
-## 阶段 7：Partition
-
-### 输入
-
-- 优化后的 `MIR`
-- `CanonicalTarget`
-- 构建配置
-
-### 输出
-
-- `ArtifactPartitionPlan`
-
-### 负责什么
-
-- 决定哪些代码进入哪个 target family
-- 决定是否拆包、延迟加载、首包裁剪
-- 决定后续进入哪条 lane
-
-### 这是整条管线最关键的分界点
-
-`Partition` 之后，不允许继续维持“所有后端都能吃”的兼容壳。必须按 family 进入各自路线。
-
-## 阶段 8：Target Lowering Lane
-
-### 输入
-
-- 分区后的中层结果
-- family 契约
-
-### 输出
-
-- family 专用 `Backend Input`
-
-### 负责什么
-
-- 把已经闭合的语义输入，翻译为本 family 可消费的低层输入
-- 保持 family 自身约束，而不是继续伪装成统一低层模型
-
-### 典型结果
-
-- `CLR` 得到 `CLR` 专用 backend input
-- `JVM` 得到 `JVM` 专用 backend input
-- `WASM Browser/Node` 得到 `Wasm` 模块输入与宿主约束
-- `WASI` 得到 `WASI` 所需模块输入与入口约束
-- `Native` 得到 native family 自己的对象文件或机器码输入
-
-## 阶段 9：Validate
-
-### 输入
-
-- `Backend Input`
-- family 契约
-
-### 输出
-
-- 验证通过结果，或编译期错误
-
-### 必须检查什么
-
-- 输入是否真属于当前 family
-- 是否仍残留当前 family 不支持的开放语义
-- 是否仍有未闭合的调用、布局或入口事实
-- 是否满足当前 family 的宿主约束与格式前提
-
-### 原则
-
-- `Validate` 必须早于 `Compile`
-- 不支持的语义必须编译期硬失败
-- 禁止 emit 兜底补语义
-
-## 阶段 10：Backend Compile
-
-### 输入
-
-- 已通过验证的 family 输入
-
-### 输出
-
-- 目标格式数据结构
-
-### 负责什么
-
-- 指令选择
-- 布局计算
-- 调用约定映射
-- metadata 组织
-- 目标相关局部优化
-
-### 不负责什么
-
-- 名称解析
-- trait 选择
-- row 满足判断
-- effect 选择
-- 标准库语义解释
-
-## 阶段 11：Encode
-
-### 输入
-
-- 目标格式数据结构
-
-### 输出
-
-- 主二进制字节流
-
-### 负责什么
-
-- 结构编码
-- 格式校验
-- 主产物字节输出
-
-### 不负责什么
-
-- 语言语义
-- 入口胶水
-- sidecar 拼装
-
-## 阶段 12：Package
-
-### 输入
-
-- 主产物
-- family 契约
-- 宿主约束
-
-### 输出
-
-- `ArtifactSet`
-
-### 负责什么
-
-- 入口包装
-- sidecar 产物
-- `RunContract`
-- 调试资产
-- 验证记录聚合
-
-### 说明
-
-`Browser`、`Node`、`WASI`、`CLR`、`JVM` 的差异，大量发生在这一层，而不是 parser、类型检查器或通用 backend 层。
-
-## `ArtifactSet` 是最终成功标准
-
-编译成功不是“有个 `.wasm` 或 `.dll`”，而是至少具备：
-
-- `PrimaryArtifact`
-- `SidecarArtifacts`
-- `DebugArtifacts`
-- `ValidationRecords`
-- `RunContract`
-
-## 永久约束
-
-- 禁止把 `MIR`、`Lane` 或 `Backend Input` 再膨胀成统一大 `IR`
-- 禁止让后端补做语言语义判断
-- 禁止让 `std` 直接知道宿主平台差异
-- 禁止让工具层承担 lowering 职责
-- 禁止为了单一 family 的短期需求污染所有公共结构
-
-## 进一步阅读
-
-- [架构详解](../developer/architecture.md)
-- [目标家族契约](target-family-contract.md)
-- [后端概览](backends/index.md)
+分别报告机制删除、合同性质和真实交付；每个工作包及时回到正式两 target 路径。单个错误消失不代表根合同成立，局部 fixture 不能代替真实 artifact/export/invoke 和 metadata.tests。

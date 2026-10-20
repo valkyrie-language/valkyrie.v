@@ -1,56 +1,18 @@
 # CLR 后端
 
-## 定位
+CLR 的 IL、metadata 与托管对象表示由目标私有计划表达，不改变语言语义或当前题目矩阵范围。
 
-`CLR` family 面向 `CLR` 托管宿主、`IL` 和元数据系统。它适合复用 `CLR` 的对象模型、`GC` 和程序集生态，但仍然必须保持 family 边界清晰。
+## 输入合同
 
-## 输入前提
+```text
+Canonical + RepresentationPlan → CLR BackendPrivatePlan
+  → pre-encode validation → PE/CLI format encoding → assembly
+```
 
-进入 `CLR` 后端前，应当已经完成：
+linker 冻结 adaptor/import，表示规划冻结 carrier/layout；backend 安排 token、方法体和程序集数据。语言 nominal instance、field/variant、复制语义与 evidence 由上游提供，不按宿主类型名或字段形状补全。
 
-- 语义闭合（`nyar.language` AST→HIR→MIR）
-- `nyar.analyzer` / `nyar.optimizer`
-- 适配为中性 **`ExecutableModule`**（全称；禁止 `Exec` / `ExecModule`）
-- `Partition` 与 `CLR` family 专属 lane（`nyar.emitter` CLR：`ExecutableModule`→typed MSIL）
-- CLR 入口、程序集、元数据与宿主依赖的整理
+runtime 只消费产物，不依赖 AST/frontend；正式编译不能以 body_source 重解析、宿主代编译或类型名特判绕过 Compiler。
 
-正式路径不是 `body_source→MSIL` 或 type-name 特判直出。`nyar.vm.clr` 只消费产物，不依赖 language。
+## 验收
 
-## Validate
-
-`Validate` 阶段重点确认：
-
-- 当前输入能否合法映射到 CLR 类型系统和 IL 约束
-- 调用语义、尾调用、虚调用和入口方式是否满足 CLR family 契约
-- 所需宿主能力是否已经通过 adaptor 或 family 输入明确表达
-
-如果某项能力在 CLR 上没有稳定承载方式，必须编译期失败。
-
-## Compile
-
-`Compile` 阶段负责：
-
-- 生成程序集、类型、方法体和元数据
-- 将 family 输入翻译为 IL 与相关结构
-- 准备编码和打包所需的目标产物
-
-## Family 特性
-
-- 可以利用 CLR GC 和托管对象模型
-- 可以利用程序集、元数据和现成运行时工具链
-- 适合生成 `.dll`、`.exe` 等托管交付物
-
-## 交付物
-
-典型交付物包括：
-
-- `.dll`
-- `.exe`
-- 程序集清单与元数据
-- 最终 `ArtifactSet`
-
-## 风险边界
-
-- 禁止让 CLR 专属元数据结构泄漏成公共编译模型
-- 禁止把 CLR 能力当成所有后端都必须共享的基础设施
-- 禁止在 IL 生成阶段兜底修补上游遗漏的语言语义
+缺调用、签名、layout 或能力在所属边界失败。程序集格式正确不代表真实入口与题意通过；须执行实际产物。专题合同不宣称完整 CLR 或自举已经实现。

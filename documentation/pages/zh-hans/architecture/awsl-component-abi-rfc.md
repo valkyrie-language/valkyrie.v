@@ -1,6 +1,6 @@
 # AWSL 組件 ABI 與響應式語義最小擴展
 
-狀態：Implemented（Draft RFC 落地）
+本文说明组件 ABI 语法与接口分工；具体支持能力须由对应修订的组件编译和跨文件校验验证。
 
 ## 核心語法
 
@@ -17,16 +17,14 @@
 
 ## 實作位置
 
-- **Parser（最小微改）**：[`valkyrie.rs/projects/std-data/src/text/valkyrie/parser/`](../../../../../../valkyrie.rs/projects/std-data/src/text/valkyrie/parser/) — widget body 支援 `[attr] let` / expression statements
-- **ABI 提取**：[`valkyrie.rs/projects/std-data/src/text/awsl/abi/`](../../../../../../valkyrie.rs/projects/std-data/src/text/awsl/abi/)
-- **編譯 / 跨檔校驗**：[`valkyrie.rs/projects/asgard/src/awsl/abi_index.rs`](../../../../../../valkyrie.rs/projects/asgard/src/awsl/abi_index.rs)
-- **Wire v2**：[`valkyrie.rs/projects/asgard/src/codegen/mobile_ui_binary.rs`](../../../../../../valkyrie.rs/projects/asgard/src/codegen/mobile_ui_binary.rs) — `ASGARDUI` + `0x02` + ABI 段
-- **LSP 診斷**：[`valkyrie.rs/projects/nyar-language/src/valkyrie/lsp/handlers/awsl/diagnostics.rs`](../../../../../../valkyrie.rs/projects/nyar-language/src/valkyrie/lsp/handlers/awsl/diagnostics.rs)
-- **JetBrains**：`AwslAbiAttributeInspection`、語義高亮 `SYM_ABI_*`
+- **语法与组件 ABI 提取**：Oak 对应语言接口；Asgard 消费 `oak_awsl::extract_component_abi_from_script` 与 `ComponentAbiIndex`。
+- **组件编译与跨文件校验**：`valkyrie.rs` 的 `projects/compilers/asgard/src/awsl/abi_index.rs`。
+- **UI wire 编码接线**：`valkyrie.rs` 的 `projects/compilers/asgard/src/codegen/mobile_ui_binary.rs`。UI wire 产物不证明 Valkyrie 程序语义或通用 backend 合同成立。
+- **LSP 诊断适配**：`nyar-vm.rs` 的 `projects/compilers/nyar-language/src/valkyrie/lsp/handlers/awsl/diagnostics.rs`。编辑器适配不另建语义事实源。
 
 ## 範例
 
-見 [`Switch.awsl`](../../../../../../valkyrie.v/projects/asgard._/projects/asgard.ui.core/source/components/Switch.awsl)。
+見 [`Switch.awsl`](../../../../projects/asgard._/projects/asgard.ui.core/source/components/Switch.awsl)。
 
 ## 遷移
 

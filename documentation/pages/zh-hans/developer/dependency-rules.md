@@ -1,109 +1,30 @@
 # 依赖规则
 
-## 总原则
+依赖边按事实所有者划分。当前源码位置、包名与长期职责分别判断，不用目录搬迁或改名掩盖重复事实源。
 
-依赖方向必须服务于长期架构边界，而不是延续某条旧仓库的历史分层。
+## 所有权方向
 
-对 `valkyrie.v` 当前路线来说，最重要的不是记住一串旧项目名，而是守住下面这些方向：
+- Oak 负责 lexer/parser、CST/AST、恢复诊断及源码 formatter。
+- Valkyrie frontend 负责规范语义、绑定、类型、实例/evidence 需求、HIR 和 Semantic MIR。
+- Nyar 负责通用验证、优化、表示及 backend lowering framework。
+- Acorn 负责外部二进制格式；nyar-bytecode 负责 Nyar 字节码。
+- Legion 负责工程 graph、逐文件输入、Compiler 调用、cache 与 ArtifactStore。
+- core/std 定义语言基础与库行为，adaptor 定义目标实现，由 linker 选择。
 
-- 语言语义层不依赖宿主绑定层
-- 公共中层不依赖具体 family 实现
-- 编码与打包层不反向定义语言语义
-- 工具链层不反向长成编译器核心
+Frontend 可以依赖 Oak 与 Nyar；Nyar 可依赖 Acorn；通用框架不能反向依赖 Legion 或 Valkyrie 装配实现。VM 只消费产物，不依赖 AST 或语言 frontend。
 
-## 推荐分层
+## 编译与工具
 
-```mermaid
-flowchart TD
-    SourceParse[Source / Parse]
-    Semantics[Semantics]
-    Middle[HIR / MIR / Optimize]
-    Partition[Partition]
-    FamilyLane[Family Lane]
-    BackendInput[Backend Input]
-    ValidateCompile[Validate / Compile]
-    EncodePackage[Encode / Package]
-    Toolchain[Toolchain]
+外部只有 WorkspaceResolver、Compiler、ArtifactStore。Legion 不直接调用 frontend、语义闭包 planner 或 HIR/MIR，不注入语义选择结果。Compiler 不访问工程文件系统。
 
-    SourceParse --> Semantics --> Middle --> Partition --> FamilyLane --> BackendInput --> ValidateCompile --> EncodePackage --> Toolchain
+绑定、实例需求与 HIR 物化在 Compiler 内协作到固定点，共用 package visibility；不存在工具层先选语义闭包、Compiler 再建立另一套绑定的协议。
 
-    classDef phase fill:#f6f9fc,stroke:#8a9aad,stroke-width:1.2px,color:#1f2937;
-    classDef boundary fill:#fff8e8,stroke:#d6a93d,stroke-width:1.2px,color:#5c4400;
-    classDef delivery fill:#f3fbf6,stroke:#7fb77e,stroke-width:1.2px,color:#1f5130;
+linker 绑定 adaptor/import；表示规划只选布局；backend 只编码已验证 BackendPrivatePlan。禁止用 carrier、名称或目标特判弥补语义缺口。
 
-    class SourceParse,Semantics,Middle,Toolchain phase;
-    class Partition,ValidateCompile boundary;
-    class FamilyLane,BackendInput,EncodePackage delivery;
-```
+源码 formatter 只调用 Oak CST/token-gap；PP 是模型打印。Lint 消费恢复树或语义事实，不拥有第二套语言准入；工程 check/LSP 共享同一工程输入。
 
-依赖只能沿这个方向向下走，不能逆流。
+## 删除与验收
 
-## 仓库层面的职责
+迁移消费者后删除依赖与实现，证明旧生产入口不可达，不保留兼容 wrapper。成对验证可达/不可达、可见/不可见、正确/错误 owner 及泛型实例；文本扫描只辅助，不替代合同和真实执行证据。
 
-### `projects/core`
-
-- 只放语言固有 primitive、核心约束和稳定基础类型
-
-### `projects/std`
-
-- 只放统一语义标准库
-- 不直接承载宿主差异
-
-### `projects/std.adaptor.*`
-
-- 只放宿主绑定
-- 不反向提升成语言主线
-
-### `projects/std.data.binary.*`
-
-- 只放目标格式数据模型与编码契约
-- 不承担语言语义解释
-- 包名按真实格式：如 `std.data.binary.class`、`std.data.binary.jar`；禁止写成 `std.data.binary.jvm`（无 `jvm` 格式）
-
-### `projects/std.data.text.*`
-
-- 文本格式模型；Valkyrie（`.v`）AST/CST/span 在 **`std.data.text.valkyrie`**
-- **禁止**平行包 `std.data.text.v`（`.v` 只是后缀，不是第二门语言 / 独立 crate）
-- `nyar.language` 消费上述模型，不长期私有一份平行 AST
-
-### `projects/nyar._/projects/nyar.vm.*`
-
-- 只放执行环境或特定 family 运行契约
-- **只消费** `nyar.emitter` 产物，**不得**依赖 `nyar.language` / AST
-
-### `projects/nyar._/projects/nyar.language` → `nyar.analyzer` → `nyar.optimizer` → `nyar.emitter`
-
-- 同构主线；emitter 各 lane 输入为 **`ExecutableModule`**（全称，禁止 `Exec` / `ExecModule` 简写）
-- 禁止把 `body_source` / `clr_body_lowering` 旁路或 type-name 特判当作正式依赖边
-
-### `projects/legion._/projects/legion.tools`
-
-- 只放工程工具链能力
-- 不反向承担前端语义、middle-end 或 lowering 责任
-- 物理路径在 `legion._` 下；报告包为同级 `legion.report`
-
-### `projects/unity._/projects/{unity.engine.sdk,valkyrie.unity}`
-
-- Unity SDK 与插件源码均在 `unity._` 子 workspace，不在顶层 `projects/`
-## 明确禁止
-
-- 禁止后端依赖前端补丁式语义兜底
-- 禁止工具链层依赖编译器内部私有对象图
-- 禁止某个 family 的数据结构泄漏成全部公共层的必选字段
-- 禁止把编码格式层反向抬升成统一低层 `IR`
-- 禁止把宿主绑定塞回 `std` 本体
-- 禁止 `nyar.vm.*` 依赖 `nyar.language`
-- 禁止用旁路 lowering 替代 `ExecutableModule`→emitter 同构边
-## 编译器与包管理分离
-
-这是必须长期维持的规则：
-
-- `VCC` 不依赖包管理器实现细节
-- `Legion` 可以调用 `VCC`
-- 替换包管理器不应改变编译器语义
-
-共享边界应当是清晰的构建输入、依赖闭包和交付契约，而不是私有内部对象。
-
-## 一句话原则
-
-任何依赖一旦让工具链反向定义编译器、让后端反向定义语言语义，或让单一 family 污染公共层，就说明依赖方向已经坏掉。
+架构总览见 [architecture.md](architecture.md)，编译阶段见 [compilation.md](../maintainer/compilation.md)。
