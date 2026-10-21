@@ -5,7 +5,7 @@ Wasm 编码与 Node、浏览器、WASI 宿主能力分开。具体 target/profil
 ## 输入合同
 
 ```text
-Canonical + RepresentationPlan → Wasm BackendPrivatePlan
+Canonical + RepresentationPlan → Wasm TargetExecutionPlan
   → pre-encode validation → format encoding
   → Wasm artifact + signature-driven glue
 ```

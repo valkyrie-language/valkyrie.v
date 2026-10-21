@@ -12,7 +12,7 @@ flowchart TD
     HIR["按需 HIR / package Semantic MIR"]
     Linked["linker / Canonical validation"]
     Plan["RepresentationPlan"]
-    Private["BackendPrivatePlan"]
+    Private["TargetExecutionPlan"]
     Encode["Acorn / Nyar bytecode"]
     Store["ArtifactStore / execution evidence"]
     Resolver --> Compiler
@@ -47,7 +47,7 @@ nominal ADT、fixed array、tuple 允许有限且类型参数化的结构操作�
 
 linker 冻结 adaptor/import 与跨包实例。Canonical 验证调用、完整类型、field/variant owner 和 SSA。优化保持已定语义；RepresentationPlan 是 stable semantic ID keyed 的稀疏布局侧表，不复制 CFG、不选 adaptor。
 
-backend 只编码通过 pre-encode validation 的 BackendPrivatePlan。布局、ABI、import signature、carrier、payload 缺失必须结构化失败，不能默认、猜名字或回调 frontend 修补。
+backend 只编码通过 pre-encode validation 的 TargetExecutionPlan。布局、ABI、import signature、carrier、payload 缺失必须结构化失败，不能默认、猜名字或回调 frontend 修补。
 
 ## 恢复与证据
 

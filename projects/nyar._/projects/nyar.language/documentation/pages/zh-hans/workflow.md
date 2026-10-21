@@ -14,7 +14,7 @@ WorkspaceResolver
         → package Semantic MIR
         → linker / Canonical validation
         → RepresentationPlan
-        → BackendPrivatePlan
+        → TargetExecutionPlan
     → artifact / execution evidence
 ```
 
@@ -26,7 +26,7 @@ Oak 负责 lexer、parser、CST/AST、语法恢复和 syntax diagnostics。源�
 
 Valkyrie frontend 负责可见声明绑定、类型、泛型替换、trait/imply evidence、调用、语义需求固定点、HIR 和 package Semantic MIR。AST 的 unary/binary 语法在 HIR 展开为普通 callable，后续调用统一为 `Invoke`。
 
-Nyar 负责通用 IR、验证、优化、表示规划和 backend lowering framework。linker 选择 target-conditioned adaptor/import，Representation Planner 选择稳定 ID keyed 的表示，backend 只编码 `BackendPrivatePlan`。
+Nyar 负责通用 IR、验证、优化、表示规划和 backend lowering framework。linker 选择 target-conditioned adaptor/import，Representation Planner 选择稳定 ID keyed 的表示，backend 只编码 `TargetExecutionPlan`。
 
 Legion 负责 manifests、package graph、缓存、ArtifactStore 和执行编排。它不能重新实现 parser、resolver、HIR/MIR 或 semantic closure。
 

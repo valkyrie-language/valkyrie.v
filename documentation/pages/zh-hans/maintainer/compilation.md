@@ -14,7 +14,7 @@ flowchart TD
     Linked["linker：adaptor/import + Canonical validation"]
     Optimize["语义保持的优化"]
     Layout["稀疏 RepresentationPlan"]
-    Private["BackendLowering.prepare / BackendPrivatePlan"]
+    Private["BackendLowering.prepare / TargetExecutionPlan"]
     Bytes["格式编码 / ArtifactStore"]
     Inventory --> Index --> Binding
     Binding --> Bodies --> Binding
@@ -41,7 +41,7 @@ AST unary/binary 语法在 HIR 展开为普通 callable；所有调用经完整�
 
 linker 冻结跨包身份、adaptor 与 import signature。Canonical validation 验证完整实例、字段/变体 owner、调用与 SSA 事实。优化只能保留已定语义。
 
-RepresentationPlan 以 stable semantic ID 记录稀疏 carrier/layout，不复制 CFG 或选择 adaptor。BackendLowering.prepare 生产目标私有计划；所有编码入口预先验证。backend 只编码 BackendPrivatePlan，不查名称补 ABI、layout 或载荷。
+RepresentationPlan 以 stable semantic ID 记录稀疏 carrier/layout，不复制 CFG 或选择 adaptor。BackendLowering.prepare 生产目标私有计划；所有编码入口预先验证。backend 只编码 TargetExecutionPlan，不查名称补 ABI、layout 或载荷。
 
 Acorn 编码外部格式；nyar-bytecode 编码 Nyar 自有字节码。ArtifactStore 原子提交完整 artifact 与 evidence。
 

@@ -5,7 +5,7 @@ CLR 的 IL、metadata 与托管对象表示由目标私有计划表达，不改�
 ## 输入合同
 
 ```text
-Canonical + RepresentationPlan → CLR BackendPrivatePlan
+Canonical + RepresentationPlan → CLR TargetExecutionPlan
   → pre-encode validation → PE/CLI format encoding → assembly
 ```
 
