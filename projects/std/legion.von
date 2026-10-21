@@ -6,16 +6,7 @@
         core: true,
         std: false
     },
-    dependencies: {
-        "std.adaptor.nyar": { version: "workspace", abi: "nyar" },
-        "std.adaptor.clr": { version: "workspace", abi: "clr" },
-        "std.adaptor.jvm": { version: "workspace", abi: "jvm" },
-        "std.adaptor.windows": { version: "workspace", abi: "native" },
-        "std.adaptor.linux": { version: "workspace", abi: "native" },
-        "std.adaptor.macos": { version: "workspace", abi: "native" },
-        "std.adaptor.wasm": { version: "workspace", abi: "wasm" },
-        "std.adaptor.wasi": { version: "workspace", abi: "wasi" }
-    },
+    dependencies: {},
     build: [
         {
             target: "nyar"

@@ -2,12 +2,13 @@
     name: "std.adaptor.nyar",
     description: "Valkyrie NyarVM 平台 SDK — NyarVM 指令集绑定",
     dependencies: {
-        "core": "workspace"
+        "core": "workspace",
+        "std": "workspace"
     },
     sdk_vendor: {
         organization: "valkyrie",
         host: "nyar",
-        kind: "platform-sdk",
+        kind: "distribution-default",
         targets: ["nyar"]
     },
     build: [

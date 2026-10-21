@@ -2,12 +2,13 @@
     name: "std.adaptor.jvm",
     description: "Valkyrie JVM SDK -- JVM 平台 API 绑定",
     dependencies: {
-        "core": "workspace"
+        "core": "workspace",
+        "std": "workspace"
     },
     sdk_vendor: {
         organization: "valkyrie",
         host: "jvm",
-        kind: "platform-sdk",
+        kind: "distribution-default",
         targets: ["jvm-openjdk-unknown-managed"]
     },
     engines: {

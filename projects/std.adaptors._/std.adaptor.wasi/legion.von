@@ -2,12 +2,13 @@
     name: "std.adaptor.wasi",
     description: "Valkyrie WASI 平台 SDK -- 基于 WASI component model 的宿主绑定",
     dependencies: {
-        "core": "workspace"
+        "core": "workspace",
+        "std": "workspace"
     },
     sdk_vendor: {
         organization: "valkyrie",
         host: "wasi",
-        kind: "platform-sdk",
+        kind: "distribution-default",
         targets: ["wasi", "wasip3"]
     },
     build: [
