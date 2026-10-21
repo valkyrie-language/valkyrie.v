@@ -5,7 +5,7 @@ This package is a **runtime/host shell** for Wasm / WASI artifacts.
 Correct direction:
 
 ```
-canonical Compiler → BackendPrivatePlan → .wasm (+ JS glue | wasip2/wasip3 CM)
+canonical Compiler → TargetExecutionPlan → .wasm (+ JS glue | wasip2/wasip3 CM)
                                       ↓
                                  nyar.vm.wasm
 ```

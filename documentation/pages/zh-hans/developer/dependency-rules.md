@@ -19,7 +19,7 @@ Frontend 可以依赖 Oak 与 Nyar；Nyar 可依赖 Acorn；通用框架不能�
 
 绑定、实例需求与 HIR 物化在 Compiler 内协作到固定点，共用 package visibility；不存在工具层先选语义闭包、Compiler 再建立另一套绑定的协议。
 
-linker 绑定 adaptor/import；表示规划只选布局；backend 只编码已验证 BackendPrivatePlan。禁止用 carrier、名称或目标特判弥补语义缺口。
+linker 绑定 adaptor/import；表示规划只选布局；backend 只编码已验证 TargetExecutionPlan。禁止用 carrier、名称或目标特判弥补语义缺口。
 
 源码 formatter 只调用 Oak CST/token-gap；PP 是模型打印。Lint 消费恢复树或语义事实，不拥有第二套语言准入；工程 check/LSP 共享同一工程输入。
 

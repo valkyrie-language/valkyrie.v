@@ -555,6 +555,6 @@ micro execute_backend_request(request: LegionBackendExecutionRequest) -> LegionB
     return LegionBackendExecutionResult {
         executor_kind: "emitter",
         success: false,
-        error: "目标尚未接入 canonical Compiler，无法从源码产生已验证的 Semantic MIR、RepresentationPlan 和 BackendPrivatePlan：" + request.canonical_target
+        error: "目标尚未接入 canonical Compiler，无法从源码产生已验证的 Semantic MIR、RepresentationPlan 和 TargetExecutionPlan：" + request.canonical_target
     }
 }
