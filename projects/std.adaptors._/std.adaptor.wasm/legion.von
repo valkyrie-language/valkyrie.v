@@ -2,12 +2,13 @@
     name: "std.adaptor.wasm",
     description: "Valkyrie WebAssembly SDK -- Web 浏览器 API 绑定",
     dependencies: {
-        "core": "workspace"
+        "core": "workspace",
+        "std": "workspace"
     },
     sdk_vendor: {
         organization: "valkyrie",
         host: "browser",
-        kind: "platform-sdk",
+        kind: "distribution-default",
         targets: ["node", "wasm32-unknown-browser-wasm", "wasm32-node-unknown-wasm"]
     },
     build: [
