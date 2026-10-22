@@ -26,6 +26,10 @@ imply f64 {
         __f64_eq(self, rhs)
     }
 
+    infix `!=`(self, rhs: Self): bool {
+        !(self == rhs)
+    }
+
     infix `<`(self, rhs: Self): bool {
         __f64_lt(self, rhs)
     }
