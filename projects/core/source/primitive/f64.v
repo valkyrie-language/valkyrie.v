@@ -59,24 +59,24 @@ imply f64 {
     }
 }
 
-[intrinsic("f64.add")]
-private micro __f64_add(lhs: f64, rhs: f64): f64 { }
+[host_contract]
+private micro __f64_add(lhs: f64, rhs: f64): f64
 
-[intrinsic("f64.sub")]
-private micro __f64_sub(lhs: f64, rhs: f64): f64 { }
+[host_contract]
+private micro __f64_sub(lhs: f64, rhs: f64): f64
 
-[intrinsic("f64.neg")]
-private micro __f64_neg(self: f64): f64 { }
+[host_contract]
+private micro __f64_neg(self: f64): f64
 
-[intrinsic("f64.mul")]
-private micro __f64_mul(lhs: f64, rhs: f64): f64 { }
+[host_contract]
+private micro __f64_mul(lhs: f64, rhs: f64): f64
 
-[intrinsic("f64.div")]
-private micro __f64_div(lhs: f64, rhs: f64): f64 { }
+[host_contract]
+private micro __f64_div(lhs: f64, rhs: f64): f64
 
-[intrinsic("f64.eq")]
-private micro __f64_eq(lhs: f64, rhs: f64): bool { }
+[host_contract]
+private micro __f64_eq(lhs: f64, rhs: f64): bool
 
-[intrinsic("f64.lt")]
-private micro __f64_lt(lhs: f64, rhs: f64): bool { }
+[host_contract]
+private micro __f64_lt(lhs: f64, rhs: f64): bool
 

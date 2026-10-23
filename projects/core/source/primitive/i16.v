@@ -76,42 +76,42 @@ imply i16 {
 }
 
 # region i16 内部指令映射
-[intrinsic("i16.add")]
-private micro __i16_add(lhs: i16, rhs: i16): i16 { }
+[host_contract]
+private micro __i16_add(lhs: i16, rhs: i16): i16
 
-[intrinsic("i16.sub")]
-private micro __i16_sub(lhs: i16, rhs: i16): i16 { }
+[host_contract]
+private micro __i16_sub(lhs: i16, rhs: i16): i16
 
-[intrinsic("i16.neg")]
-private micro __i16_neg(self: i16): i16 { }
+[host_contract]
+private micro __i16_neg(self: i16): i16
 
-[intrinsic("i16.mul")]
-private micro __i16_mul(lhs: i16, rhs: i16): i16 { }
+[host_contract]
+private micro __i16_mul(lhs: i16, rhs: i16): i16
 
-[intrinsic("i16.div")]
-private micro __i16_div(lhs: i16, rhs: i16): i16 { }
+[host_contract]
+private micro __i16_div(lhs: i16, rhs: i16): i16
 
-[intrinsic("i16.rem")]
-private micro __i16_rem(lhs: i16, rhs: i16): i16 { }
+[host_contract]
+private micro __i16_rem(lhs: i16, rhs: i16): i16
 
-[intrinsic("i16.eq")]
-private micro __i16_eq(lhs: i16, rhs: i16): bool { }
+[host_contract]
+private micro __i16_eq(lhs: i16, rhs: i16): bool
 
-[intrinsic("i16.lt")]
-private micro __i16_lt(lhs: i16, rhs: i16): bool { }
+[host_contract]
+private micro __i16_lt(lhs: i16, rhs: i16): bool
 
-[intrinsic("i16.and")]
-private micro __i16_and(lhs: i16, rhs: i16): i16 { }
+[host_contract]
+private micro __i16_and(lhs: i16, rhs: i16): i16
 
-[intrinsic("i16.or")]
-private micro __i16_or(lhs: i16, rhs: i16): i16 { }
+[host_contract]
+private micro __i16_or(lhs: i16, rhs: i16): i16
 
-[intrinsic("i16.xor")]
-private micro __i16_xor(lhs: i16, rhs: i16): i16 { }
+[host_contract]
+private micro __i16_xor(lhs: i16, rhs: i16): i16
 
-[intrinsic("i16.shl")]
-private micro __i16_shl(lhs: i16, rhs: i16): i16 { }
+[host_contract]
+private micro __i16_shl(lhs: i16, rhs: i16): i16
 
-[intrinsic("i16.shr")]
-private micro __i16_shr(lhs: i16, rhs: i16): i16 { }
+[host_contract]
+private micro __i16_shr(lhs: i16, rhs: i16): i16
 # end region

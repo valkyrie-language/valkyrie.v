@@ -84,23 +84,23 @@ imply i32 {
 }
 
 # region i32 内部指令映射
-[intrinsic("i32.add")]
-private micro __i32_add(lhs: i32, rhs: i32): i32 { }
+[host_contract]
+private micro __i32_add(lhs: i32, rhs: i32): i32
 
-[intrinsic("i32.sub")]
-private micro __i32_sub(lhs: i32, rhs: i32): i32 { }
+[host_contract]
+private micro __i32_sub(lhs: i32, rhs: i32): i32
 
-[intrinsic("i32.neg")]
-private micro __i32_neg(self: i32): i32 { }
+[host_contract]
+private micro __i32_neg(self: i32): i32
 
-[intrinsic("i32.mul")]
-private micro __i32_mul(lhs: i32, rhs: i32): i32 { }
+[host_contract]
+private micro __i32_mul(lhs: i32, rhs: i32): i32
 
-[intrinsic("i32.div")]
-private micro __i32_div(lhs: i32, rhs: i32): i32 { }
+[host_contract]
+private micro __i32_div(lhs: i32, rhs: i32): i32
 
-[intrinsic("i32.rem")]
-private micro __i32_rem(lhs: i32, rhs: i32): i32 { }
+[host_contract]
+private micro __i32_rem(lhs: i32, rhs: i32): i32
 
 private micro __i32_pow(lhs: i32, rhs: i32): i32 {
     if rhs < 0 {
@@ -122,25 +122,25 @@ private micro __i32_pow(lhs: i32, rhs: i32): i32 {
     return acc
 }
 
-[intrinsic("i32.eq")]
-private micro __i32_eq(lhs: i32, rhs: i32): bool { }
+[host_contract]
+private micro __i32_eq(lhs: i32, rhs: i32): bool
 
-[intrinsic("i32.lt")]
-private micro __i32_lt(lhs: i32, rhs: i32): bool { }
+[host_contract]
+private micro __i32_lt(lhs: i32, rhs: i32): bool
 
-[intrinsic("i32.and")]
-private micro __i32_and(lhs: i32, rhs: i32): i32 { }
+[host_contract]
+private micro __i32_and(lhs: i32, rhs: i32): i32
 
-[intrinsic("i32.or")]
-private micro __i32_or(lhs: i32, rhs: i32): i32 { }
+[host_contract]
+private micro __i32_or(lhs: i32, rhs: i32): i32
 
-[intrinsic("i32.xor")]
-private micro __i32_xor(lhs: i32, rhs: i32): i32 { }
+[host_contract]
+private micro __i32_xor(lhs: i32, rhs: i32): i32
 
-[intrinsic("i32.shl")]
-private micro __i32_shl(lhs: i32, rhs: i32): i32 { }
+[host_contract]
+private micro __i32_shl(lhs: i32, rhs: i32): i32
 
-[intrinsic("i32.shr")]
-private micro __i32_shr(lhs: i32, rhs: i32): i32 { }
+[host_contract]
+private micro __i32_shr(lhs: i32, rhs: i32): i32
 # end region
 

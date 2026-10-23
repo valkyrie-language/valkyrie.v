@@ -60,24 +60,24 @@ imply f32 {
 }
 
 # region f32 内部指令映射
-[intrinsic("f32.add")]
-private micro __f32_add(lhs: f32, rhs: f32): f32 { }
+[host_contract]
+private micro __f32_add(lhs: f32, rhs: f32): f32
 
-[intrinsic("f32.sub")]
-private micro __f32_sub(lhs: f32, rhs: f32): f32 { }
+[host_contract]
+private micro __f32_sub(lhs: f32, rhs: f32): f32
 
-[intrinsic("f32.neg")]
-private micro __f32_neg(self: f32): f32 { }
+[host_contract]
+private micro __f32_neg(self: f32): f32
 
-[intrinsic("f32.mul")]
-private micro __f32_mul(lhs: f32, rhs: f32): f32 { }
+[host_contract]
+private micro __f32_mul(lhs: f32, rhs: f32): f32
 
-[intrinsic("f32.div")]
-private micro __f32_div(lhs: f32, rhs: f32): f32 { }
+[host_contract]
+private micro __f32_div(lhs: f32, rhs: f32): f32
 
-[intrinsic("f32.eq")]
-private micro __f32_eq(lhs: f32, rhs: f32): bool { }
+[host_contract]
+private micro __f32_eq(lhs: f32, rhs: f32): bool
 
-[intrinsic("f32.lt")]
-private micro __f32_lt(lhs: f32, rhs: f32): bool { }
+[host_contract]
+private micro __f32_lt(lhs: f32, rhs: f32): bool
 # end region
