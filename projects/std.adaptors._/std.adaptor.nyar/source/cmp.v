@@ -4,12 +4,14 @@
 
 #region i32 比较
 
+[host_provider(core::primitive::__i32_eq)]
 [vm("i32_eq")]
 micro i32_eq(a: i32, b: i32): bool
 
 [vm("i32_ne")]
 micro i32_ne(a: i32, b: i32): bool
 
+[host_provider(core::primitive::__i32_lt)]
 [vm("i32_lt")]
 micro i32_lt(a: i32, b: i32): bool
 
