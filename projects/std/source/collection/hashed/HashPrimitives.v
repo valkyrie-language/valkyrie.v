@@ -16,7 +16,7 @@ imply i32: Hash {
 
 imply u32: Hash {
     micro hash(self) -> usize {
-        return std.collection.hash_utf8(stringify(self))
+        return self as usize
     }
 }
 
@@ -28,7 +28,7 @@ imply i64: Hash {
 
 imply u64: Hash {
     micro hash(self) -> usize {
-        return std.collection.hash_utf8(stringify(self))
+        return self as usize
     }
 }
 
@@ -47,7 +47,7 @@ imply f64: Hash {
 micro hash_utf8(s: utf8) -> usize {
     let mut hash: usize = 0
     let mut i: usize = 0
-    while i < s.length {
+    while i < (s.length as usize) {
         hash = hash * 31 + s⁅i⁆ as usize
         i = i + 1
     }
