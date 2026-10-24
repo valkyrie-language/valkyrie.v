@@ -90,7 +90,7 @@ imply Utf8Text {
         <% case "wasm32" %>
         return __host_utf8_equals(self, other)
         <% else %>
-        return self._repr == other._repr
+        return self.equals_repr(other._repr)
         <% end %>
     }
 
@@ -115,20 +115,7 @@ imply Utf8Text {
         <% case "wasm32" %>
         return __host_utf8_concat(self, other)
         <% else %>
-        let mut bytes: [u8] = []
-        let mut index: usize = 0
-        while index < self._repr.length {
-            push(bytes, self._repr⁅index⁆)
-            index = index + 1
-        }
-
-        index = 0
-        while index < other._repr.length {
-            push(bytes, other._repr⁅index⁆)
-            index = index + 1
-        }
-
-        return Utf8Text { _repr: bytes }
+        return self.concat_repr(other)
         <% end %>
     }
 
@@ -277,7 +264,7 @@ imply Utf8Text {
             return 0
         }
 
-        let byte: u8 = self._repr⁅index⁆
+        let byte: u32 = self._repr⁅index⁆ as u32
         if byte <= 0x7F {
             return 1
         }
@@ -402,5 +389,47 @@ imply Utf8Text: std::iterator::IntoIterator {
 
     micro into_iterator(self): Utf8Iterator {
         return self.chars()
+    }
+}
+
+imply Utf8Text {
+    suffix `⁅⁆`(self, cardinal: usize): u8 {
+        return self._repr⁅cardinal⁆
+    }
+
+    suffix `⁅⁆=`(mut self, cardinal: usize, value: u8): unit {
+        self._repr⁅cardinal⁆ = value
+    }
+
+    private micro equals_repr(self, other_repr: [u8]) -> bool {
+        if self._repr.length != other_repr.length {
+            return false
+        }
+        let mut index: usize = 0
+        while index < self._repr.length {
+            if (self._repr⁅index⁆ as usize) == (other_repr⁅index⁆ as usize) {
+                index = index + 1
+            } else {
+                return false
+            }
+        }
+        return true
+    }
+
+    private micro concat_repr(self, other: utf8) -> utf8 {
+        let mut bytes: [u8] = []
+        let mut index: usize = 0
+        while index < self._repr.length {
+            bytes = push(bytes, self._repr⁅index⁆)
+            index = index + 1
+        }
+
+        index = 0
+        while index < other._repr.length {
+            bytes = push(bytes, other._repr⁅index⁆)
+            index = index + 1
+        }
+
+        return Utf8Text { _repr: bytes }
     }
 }
