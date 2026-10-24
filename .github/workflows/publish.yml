@@ -71,7 +71,7 @@ jobs:
           echo "当前阶段：legion test --all 功能待实现"
           echo ""
           echo "测试计划："
-          echo "  1. legion test --target nyar --all"
+          echo "  1. legion test --target ovm --all"
           echo "  2. 验证所有 30+ 个 test.* 测试包通过"
           echo "  3. 生成 HTML 测试报告"
 
@@ -90,7 +90,7 @@ jobs:
             "license": "MIT",
             "repository": "${{ github.server_url }}/${{ github.repository }}",
             "type": "source-distribution",
-            "targets": ["clr", "jvm", "wasm", "nyar"]
+            "targets": ["clr", "jvm", "wasm", "ovm"]
           }
           EOF
           cat package-manifest.json

@@ -1,5 +1,5 @@
-# std.adaptor.nyar: 无符号与指针宽度整数的目标绑定
-# 只登记 NyarVM 真正具备的指令：位宽相同且语义相同的加、减、乘与等值比较。
+# std.adaptor.ovm: 无符号与指针宽度整数的目标绑定
+# 只登记 OVM 真正具备的指令：位宽相同且语义相同的加、减、乘与等值比较。
 # 无符号除余、无符号比较与逻辑右移在 VM 中没有对应指令，必须保持未绑合并结构化失败；
 # u8/u16 需要截断，VM 没有掩码指令，因此不提供 provider。
 
@@ -23,7 +23,7 @@ micro u32_eq(a: u32, b: u32): bool
 
 #endregion
 
-#region usize（NyarVM 指针宽度为 32 位）
+#region usize（OVM 指针宽度为 32 位）
 
 [host_provider(core::primitive::__usize_add)]
 [ovm_operator("i32.add")]
@@ -63,7 +63,7 @@ micro u64_eq(a: u64, b: u64): bool
 
 #endregion
 
-#region isize（NyarVM 指针宽度为 32 位，有符号）
+#region isize（OVM 指针宽度为 32 位，有符号）
 
 [host_provider(core::primitive::__isize_add)]
 [ovm_operator("i32.add")]

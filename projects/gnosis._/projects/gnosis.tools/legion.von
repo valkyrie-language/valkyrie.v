@@ -8,6 +8,6 @@
         "gnosis": { version: "workspace" },
         "gnosis.render": { version: "workspace" }
     },
-    build: [{ target: "nyar" }],
+    build: [{ target: "ovm" }],
     engines: { vcc: "0.1.*" }
 }

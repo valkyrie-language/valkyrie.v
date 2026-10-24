@@ -111,7 +111,7 @@ dependencies: {
 legion test
 legion test examples/test.if_expression
 legion test --filter easy_if
-legion test --target nyar,clr,jvm
+legion test --target ovm,clr,jvm
 legion test --verbose
 ```
 
@@ -125,7 +125,7 @@ legion test --verbose
 
 典型目标包括：
 
-- `nyar`
+- `ovm`
 - `clr`
 - `jvm`
 - `node`
@@ -149,7 +149,7 @@ Runner 只是执行测试产物的宿主适配层，不是新的语言语义层�
 ```bash
 legion bench
 legion bench --runs 10
-legion bench --target nyar,clr
+legion bench --target ovm,clr
 ```
 
 ### 覆盖率

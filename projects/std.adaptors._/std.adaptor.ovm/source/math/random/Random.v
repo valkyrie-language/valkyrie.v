@@ -1,4 +1,4 @@
-namespace std.adaptor.nyar.math.random;
+namespace std.adaptor.ovm.math.random;
 
 [host_provider(std::math::random::Random::new)]
 micro host_new() -> std.math.random.Random {
@@ -20,7 +20,7 @@ micro host_next_i32(random: std.math.random.Random, max_exclusive: i32) -> i32 {
         return std.math.random.__random_fallback_next_i32(random, max_exclusive)
     }
 
-    let value: i32 = std.adaptor.nyar.builtin.math_rand()
+    let value: i32 = std.adaptor.ovm.builtin.math_rand()
     if value < 0 {
         return (-value) % max_exclusive
     }

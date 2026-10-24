@@ -62,7 +62,7 @@ VCC 支持多种目标平台：
 
 | 后端 | Vendor | 输出格式 | 适用场景 |
 |:---|:---|:---|:---|
-| NyarVM | unknown | `.nyar` 字节码 | 通用计算、开发调试 |
+| OVM | unknown | `.nyar` 字节码 | 通用计算、开发调试 |
 | WASM | unknown | `.wasm` | 浏览器前端、Edge 计算 |
 | JVM | openjdk / android | `.class` | Java 生态集成 |
 | CLR | microsoft / unity | `.dll` / `.exe` | 托管运行时生态集成 |

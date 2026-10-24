@@ -90,9 +90,9 @@ WebSocket 升级后宿主保留连接，用 `feed_ws_text` / `feed_ws_bytes`（d
 ## 验证
 
 ```bash
-legion build projects/atlas --target nyar
-legion build projects/atlas.cloud --target nyar
-legion build projects/atlas.adaptor --target nyar
-legion build projects/atlas.adaptor.azure --target nyar
+legion build projects/atlas --target ovm
+legion build projects/atlas.cloud --target ovm
+legion build projects/atlas.adaptor --target ovm
+legion build projects/atlas.adaptor.azure --target ovm
 cargo test -p nyar-language wire
 ```

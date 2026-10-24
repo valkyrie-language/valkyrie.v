@@ -1,6 +1,6 @@
-# std.adaptor.nyar: UTF-8 文本操作 [ovm] 宿主绑定
-# 将 valkyrie-core 的 UTF-8 文本操作映射为 NyarVM opcode
-# NyarVM 内部文本表示为 UTF-8 编码
+# std.adaptor.ovm: UTF-8 文本操作 [ovm] 宿主绑定
+# 将 valkyrie-core 的 UTF-8 文本操作映射为 OVM opcode
+# OVM 内部文本表示为 UTF-8 编码
 
 #region utf8 操作
 

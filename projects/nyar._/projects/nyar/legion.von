@@ -7,7 +7,7 @@
     dependencies: {},
     build: [
         {
-            target: "nyar"
+            target: "ovm"
         },
         {
             target: "clr-microsoft-unknown-managed",

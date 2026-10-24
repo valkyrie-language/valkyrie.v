@@ -5,7 +5,7 @@
     type: "library",
     dependencies: {},
     build: [
-        { target: "nyar" },
+        { target: "ovm" },
         { target: "clr" },
         { target: "jvm" },
         { target: "wasm" }

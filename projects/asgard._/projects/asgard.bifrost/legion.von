@@ -17,7 +17,7 @@
     },
     build: [
         {
-            target: "nyar"
+            target: "ovm"
         }
     ]
 }

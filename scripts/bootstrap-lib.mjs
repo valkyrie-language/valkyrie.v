@@ -322,7 +322,7 @@ const NESTED_WORKSPACE_PREFIX = {
         'projects/std.adaptor.jvm',
         'projects/std.adaptor.linux',
         'projects/std.adaptor.macos',
-        'projects/std.adaptor.nyar',
+        'projects/std.adaptor.ovm',
         'projects/std.adaptor.wasi',
         'projects/std.adaptor.wasm',
         'projects/std.adaptor.windows',

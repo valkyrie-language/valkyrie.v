@@ -363,20 +363,20 @@ legion test
 
 ---
 
-## 与 NyarVM.cs 的关系
+## 与 OVM.cs 的关系
 
 ```mermaid
 flowchart TD
     subgraph Distro["valkyrie.v/ 发行版 — 用户可见的 .v 源码"]
         VV[".v 源码"]
     end
-    subgraph Engine["NyarVM.cs/projects/ — .NET 编译运行时引擎"]
+    subgraph Engine["OVM.cs/projects/ — .NET 编译运行时引擎"]
         NC["Nyar.Core<br/>EGraph 优化器"]
         NA["Nyar.Assembler<br/>多后端代码生成"]
-        NV["Nyar.VM<br/>NyarVM 运行时"]
+        NV["Nyar.VM<br/>OVM 运行时"]
         TL["tools/legion<br/>包管理 + 构建工具"]
     end
     Distro -- " 编译依赖 " --> Engine
 ```
 
-`valkyrie.v` 是"什么"，`NyarVM.cs/projects/` 是"怎么做"。前者定义 Valkyrie 生态的形态，后者提供运行它的引擎。
+`valkyrie.v` 是"什么"，`OVM.cs/projects/` 是"怎么做"。前者定义 Valkyrie 生态的形态，后者提供运行它的引擎。

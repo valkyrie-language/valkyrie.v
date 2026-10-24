@@ -239,8 +239,8 @@ micro wasi_clock_time_get(clock_id: i32, precision: i64, time: i32): i32
 
 | 注解 | 语义 | 适用平台 | 示例 |
 |:---|:---|:---|:---|
-| `[import("module")]` | 动态导入 `.nyar` 模块 | NyarVM | `[import("std.math")]` |
-| `[export]` | 导出为 `.nyar` 模块符号 | NyarVM | `[export]` |
+| `[import("module")]` | 动态导入 `.nyar` 模块 | OVM | `[import("std.math")]` |
+| `[export]` | 导出为 `.nyar` 模块符号 | OVM | `[export]` |
 
 #### `[import("module")]` — 动态导入 `.nyar` 模块
 

@@ -1,19 +1,19 @@
 {
-    name: "std.adaptor.nyar",
-    description: "Valkyrie NyarVM 平台 SDK — NyarVM 指令集绑定",
+    name: "std.adaptor.ovm",
+    description: "Valkyrie OVM 平台 SDK — OVM 指令集绑定",
     dependencies: {
         "core": "workspace",
         "std": "workspace"
     },
     sdk_vendor: {
         organization: "valkyrie",
-        host: "nyar",
+        host: "ovm",
         kind: "distribution-default",
-        targets: ["nyar"]
+        targets: ["ovm"]
     },
     build: [
         {
-            target: "nyar"
+            target: "ovm"
         }
     ],
     engines: {

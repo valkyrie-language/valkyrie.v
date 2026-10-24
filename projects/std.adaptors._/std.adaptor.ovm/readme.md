@@ -1,14 +1,14 @@
-# `std.adaptor.nyar`
+# `std.adaptor.ovm`
 
-Valkyrie NyarVM 平台 SDK — 提供 NyarVM 指令集绑定，编译为 `.nyar` 字节码。
+Valkyrie OVM 平台 SDK — 提供 OVM 指令集绑定，编译为 `.nyar` 字节码。
 ## 目标三元组
 | 目标三元组            | 架构   | 说明              |
 |:-----------------------|:-------|:------------------|
-| `nyar-unknown-unknown-managed` | nyar32 | NyarVM 通用运行时 |
+| `ovm-unknown-unknown-managed` | ovm | OVM 通用运行时 |
 
 ## 包内容
 ```
-std.adaptor.nyar/
+std.adaptor.ovm/
 ├── legion.von          # 包清单
 └── source/
     ├── arith.v         # 算术运算 [ovm] 宿主绑定
@@ -36,11 +36,11 @@ std.adaptor.nyar/
 
 ## 与其他适配器的关系
 
-`std.adaptor.nyar` 是 NyarVM 平台的适配层，与其他平台适配器并列：
+`std.adaptor.ovm` 是 OVM 平台的适配层，与其他平台适配器并列：
 
 | 适配器              | 平台        | 绑定属性          |
 |:---------------------|:------------|:-------------------|
-| `std.adaptor.nyar`   | NyarVM      | `[ovm]`            |
+| `std.adaptor.ovm`   | OVM      | `[ovm]`            |
 | `std.adaptor.wasm`   | WebAssembly | `[js_builtin]`     |
 | `std.adaptor.dotnet` | .NET CLR    | `[dotnet_builtin]` |
 | `std.adaptor.jvm`    | JVM         | `[jvm_builtin]`    |
@@ -50,12 +50,12 @@ std.adaptor.nyar/
 ## 编译命令
 
 ```bash
-# 编译为 NyarVM 字节码
-vcc build --target nyar
+# 编译为 OVM 字节码
+vcc build --target ovm
 
-# 编译为 NyarVM 并运行
-vcc run --target nyar
+# 编译为 OVM 并运行
+vcc run --target ovm
 ```
 
 ## 状态
-✅ NyarVM 宿主绑定已覆盖 8 个模块，包含 50+ `[ovm]` 绑定。
+✅ OVM 宿主绑定已覆盖 8 个模块，包含 50+ `[ovm]` 绑定。

@@ -13,6 +13,6 @@
     },
     build: [
         { target: "clr" },
-        { target: "nyar" }
+        { target: "ovm" }
     ]
 }

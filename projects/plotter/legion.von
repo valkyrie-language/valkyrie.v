@@ -10,7 +10,7 @@
     dependencies: {},
     build: [
         {
-            target: "nyar"
+            target: "ovm"
         },
         {
             target: "clr"

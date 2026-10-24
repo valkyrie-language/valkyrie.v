@@ -77,7 +77,7 @@ arch-impl-spec[-abi]
 | `aarch64` | 64 位 ARM 原生执行 | ELF / Mach-O |
 | `wasm32` | 32 位 WebAssembly | `.wasm` |
 | `wasm64` | 64 位 WebAssembly | `.wasm` |
-| `nyar` | NyarVM 字节码 | `.nyar` |
+| `ovm` | OVM 字节码 | `.nyar` |
 | `gnosis` | GnosisVM 字节码 | `.gnosis` |
 | `clr` | CLR 托管执行模型（IL + 运行时） | `.dll` / `.exe` |
 | `jvm` | JVM 托管执行模型 | `.class` / `.jar` |
@@ -158,7 +158,7 @@ arch-impl-spec[-abi]
 
 以下目标使用固定 ABI 约定，四段式直接定形：
 
-- `nyar-unknown-unknown-managed`
+- `ovm-unknown-unknown-managed`
 - `gnosis-unknown-native`
 - `spirv-unknown-vulkan` （`vulkan` 是规范，而非实现）
 
@@ -166,11 +166,11 @@ arch-impl-spec[-abi]
 
 ## 6. CanonicalTarget 注册表
 
-### 6.1 NyarVM / GnosisVM
+### 6.1 OVM / GnosisVM
 
 | CanonicalTarget | 含义 | 常用运行约定 |
 |:---|:---|:---|
-| `nyar-unknown-unknown-managed` | NyarVM 字节码 | 由 NyarVM 直接加载执行 |
+| `ovm-unknown-unknown-managed` | OVM 字节码 | 由 OVM 直接加载执行 |
 | `gnosis-unknown-native` | GnosisVM 字节码 | 由 GnosisVM 直接加载执行 |
 
 ### 6.2 JVM
@@ -265,7 +265,7 @@ arch-impl-spec[-abi]
 
 | 短别名 | 展开为 CanonicalTarget |
 |:---|:---|
-| `nyar` | `nyar-unknown-unknown-managed` |
+| `ovm` | `ovm-unknown-unknown-managed` |
 | `gnosis` | `gnosis-unknown-native` |
 | `wasm` | `wasm32-unknown-browser-wasm` |
 | `node` | `wasm32-node-unknown-wasm` |

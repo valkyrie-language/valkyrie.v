@@ -1,5 +1,5 @@
-# std.adaptor.nyar: 算术运算 [ovm_operator] 绑定
-# 将 valkyrie-core 的算术运算映射为 NyarVM opcode
+# std.adaptor.ovm: 算术运算 [ovm_operator] 绑定
+# 将 valkyrie-core 的算术运算映射为 OVM opcode
 # 编译器使用 [ovm_operator] 绑定直接内联为对应指令，零函数调用开销
 
 #region i32 算术

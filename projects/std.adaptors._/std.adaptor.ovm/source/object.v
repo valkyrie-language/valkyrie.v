@@ -1,5 +1,5 @@
-# std.adaptor.nyar: 对象与闭包操作 [ovm] 宿主绑定
-# 将 valkyrie-core 的对象操作映射为 NyarVM opcode
+# std.adaptor.ovm: 对象与闭包操作 [ovm] 宿主绑定
+# 将 valkyrie-core 的对象操作映射为 OVM opcode
 
 #region 对象字段
 

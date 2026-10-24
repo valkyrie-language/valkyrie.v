@@ -1,5 +1,5 @@
-# std.adaptor.nyar: 比较运算 [ovm_operator] 绑定
-# 将 valkyrie-core 的比较运算映射为 NyarVM opcode
+# std.adaptor.ovm: 比较运算 [ovm_operator] 绑定
+# 将 valkyrie-core 的比较运算映射为 OVM opcode
 # bool 逻辑保留 Valkyrie 短路求值实现，不在此处绑定
 
 #region i32 比较

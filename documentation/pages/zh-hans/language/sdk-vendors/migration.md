@@ -17,7 +17,7 @@
 - `std.adaptor.clr`
 - `std.adaptor.jvm`
 - `std.adaptor.wasm`
-- `std.adaptor.nyar`
+- `std.adaptor.ovm`
 
 如果一次性全部推翻，会导致：
 
@@ -56,7 +56,7 @@
 - `std.adaptor.clr` 提供 `console` / `net` / `timer`
 - `std.adaptor.jvm` 提供 `console` / `net`
 - `std.adaptor.wasm` 提供 browser 相关 `host_provider`
-- `std.adaptor.nyar` 提供 `nyarvm` 相关 `host_provider`
+- `std.adaptor.ovm` 提供 `ovm` 相关 `host_provider`
 
 此时旧包名继续保留，而且应作为发行版默认 `sdk` 集合的一部分。
 
@@ -168,7 +168,7 @@ std.net.request(req)
 
 1. `std.console` / `std.net` / `std.io.time` / `std.io.fs` 的第一批入口已改为 `host_contract`，移除了这些文件里的 `match arch`
 2. `std.io.print` / `std.io.read` / `std.terminal` 也已改成稳定入口调用或 `host_contract`，继续把平台选择从 `std` 中外移
-3. `std.adaptor.clr` / `std.adaptor.jvm` / `std.adaptor.wasm` / `std.adaptor.nyar` / `std.adaptor.windows` / `std.adaptor.linux` / `std.adaptor.macos` 已补入第一批 `host_provider`
+3. `std.adaptor.clr` / `std.adaptor.jvm` / `std.adaptor.wasm` / `std.adaptor.ovm` / `std.adaptor.windows` / `std.adaptor.linux` / `std.adaptor.macos` 已补入第一批 `host_provider`
 4. `std contract` 涉及字符串时继续以 `utf8` 为稳定入口；浏览器侧 `js_builtin` 仍保持宿主真实字符串语义，显式转换只能出现在 provider 代码里，不能落到 `bind` 层
 5. 历史双栈 `WASI` 适配目录已从默认工作区依赖、workspace 成员与磁盘工程目录中移除，新增单一 `std.adaptor.wasi` 作为 `WASI component model` 收口入口
 6. `sdk-vendor` 继续保留宿主元数据，但不再声明 `host_providers` 摘要；`host_provider` 与 `bind` 统一由源码属性收集
