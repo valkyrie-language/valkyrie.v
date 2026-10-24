@@ -71,38 +71,38 @@ imply u64 {
     }
 }
 
-[intrinsic("u64.add")]
-private micro __u64_add(lhs: u64, rhs: u64): u64;
+[host_contract]
+private micro __u64_add(lhs: u64, rhs: u64): u64
 
-[intrinsic("u64.sub")]
-private micro __u64_sub(lhs: u64, rhs: u64): u64 { }
+[host_contract]
+private micro __u64_sub(lhs: u64, rhs: u64): u64
 
-[intrinsic("u64.mul")]
-private micro __u64_mul(lhs: u64, rhs: u64): u64 { }
+[host_contract]
+private micro __u64_mul(lhs: u64, rhs: u64): u64
 
-[intrinsic("u64.div")]
-private micro __u64_div(lhs: u64, rhs: u64): u64 { }
+[host_contract]
+private micro __u64_div(lhs: u64, rhs: u64): u64
 
-[intrinsic("u64.rem")]
-private micro __u64_rem(lhs: u64, rhs: u64): u64 { }
+[host_contract]
+private micro __u64_rem(lhs: u64, rhs: u64): u64
 
-[intrinsic("u64.eq")]
-private micro __u64_eq(lhs: u64, rhs: u64): bool { }
+[host_contract]
+private micro __u64_eq(lhs: u64, rhs: u64): bool
 
-[intrinsic("u64.lt")]
-private micro __u64_lt(lhs: u64, rhs: u64): bool { }
+[host_contract]
+private micro __u64_lt(lhs: u64, rhs: u64): bool
 
-[intrinsic("u64.and")]
-private micro __u64_and(lhs: u64, rhs: u64): u64 { }
+[host_contract]
+private micro __u64_and(lhs: u64, rhs: u64): u64
 
-[intrinsic("u64.or")]
-private micro __u64_or(lhs: u64, rhs: u64): u64 { }
+[host_contract]
+private micro __u64_or(lhs: u64, rhs: u64): u64
 
-[intrinsic("u64.xor")]
-private micro __u64_xor(lhs: u64, rhs: u64): u64 { }
+[host_contract]
+private micro __u64_xor(lhs: u64, rhs: u64): u64
 
-[intrinsic("u64.shl")]
-private micro __u64_shl(lhs: u64, rhs: u64): u64 { }
+[host_contract]
+private micro __u64_shl(lhs: u64, rhs: u64): u64
 
-[intrinsic("u64.shr")]
-private micro __u64_shr(lhs: u64, rhs: u64): u64 { }
+[host_contract]
+private micro __u64_shr(lhs: u64, rhs: u64): u64

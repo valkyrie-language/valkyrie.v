@@ -75,41 +75,41 @@ imply isize {
     }
 }
 
-[intrinsic("isize.add")]
-private micro __isize_add(lhs: isize, rhs: isize): isize;
+[host_contract]
+private micro __isize_add(lhs: isize, rhs: isize): isize
 
-[intrinsic("isize.sub")]
-private micro __isize_sub(lhs: isize, rhs: isize): isize { }
+[host_contract]
+private micro __isize_sub(lhs: isize, rhs: isize): isize
 
-[intrinsic("isize.neg")]
-private micro __isize_neg(self: isize): isize { }
+[host_contract]
+private micro __isize_neg(self: isize): isize
 
-[intrinsic("isize.mul")]
-private micro __isize_mul(lhs: isize, rhs: isize): isize { }
+[host_contract]
+private micro __isize_mul(lhs: isize, rhs: isize): isize
 
-[intrinsic("isize.div")]
-private micro __isize_div(lhs: isize, rhs: isize): isize { }
+[host_contract]
+private micro __isize_div(lhs: isize, rhs: isize): isize
 
-[intrinsic("isize.rem")]
-private micro __isize_rem(lhs: isize, rhs: isize): isize { }
+[host_contract]
+private micro __isize_rem(lhs: isize, rhs: isize): isize
 
-[intrinsic("isize.eq")]
-private micro __isize_eq(lhs: isize, rhs: isize): bool { }
+[host_contract]
+private micro __isize_eq(lhs: isize, rhs: isize): bool
 
-[intrinsic("isize.lt")]
-private micro __isize_lt(lhs: isize, rhs: isize): bool { }
+[host_contract]
+private micro __isize_lt(lhs: isize, rhs: isize): bool
 
-[intrinsic("isize.and")]
-private micro __isize_and(lhs: isize, rhs: isize): isize { }
+[host_contract]
+private micro __isize_and(lhs: isize, rhs: isize): isize
 
-[intrinsic("isize.or")]
-private micro __isize_or(lhs: isize, rhs: isize): isize { }
+[host_contract]
+private micro __isize_or(lhs: isize, rhs: isize): isize
 
-[intrinsic("isize.xor")]
-private micro __isize_xor(lhs: isize, rhs: isize): isize { }
+[host_contract]
+private micro __isize_xor(lhs: isize, rhs: isize): isize
 
-[intrinsic("isize.shl")]
-private micro __isize_shl(lhs: isize, rhs: isize): isize { }
+[host_contract]
+private micro __isize_shl(lhs: isize, rhs: isize): isize
 
-[intrinsic("isize.shr")]
-private micro __isize_shr(lhs: isize, rhs: isize): isize { }
+[host_contract]
+private micro __isize_shr(lhs: isize, rhs: isize): isize

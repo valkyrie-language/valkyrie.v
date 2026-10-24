@@ -71,38 +71,38 @@ imply u32 {
     }
 }
 
-[intrinsic("u32.add")]
-private micro __u32_add(lhs: u32, rhs: u32): u32;
+[host_contract]
+private micro __u32_add(lhs: u32, rhs: u32): u32
 
-[intrinsic("u32.sub")]
-private micro __u32_sub(lhs: u32, rhs: u32): u32 { }
+[host_contract]
+private micro __u32_sub(lhs: u32, rhs: u32): u32
 
-[intrinsic("u32.mul")]
-private micro __u32_mul(lhs: u32, rhs: u32): u32 { }
+[host_contract]
+private micro __u32_mul(lhs: u32, rhs: u32): u32
 
-[intrinsic("u32.div")]
-private micro __u32_div(lhs: u32, rhs: u32): u32 { }
+[host_contract]
+private micro __u32_div(lhs: u32, rhs: u32): u32
 
-[intrinsic("u32.rem")]
-private micro __u32_rem(lhs: u32, rhs: u32): u32 { }
+[host_contract]
+private micro __u32_rem(lhs: u32, rhs: u32): u32
 
-[intrinsic("u32.eq")]
-private micro __u32_eq(lhs: u32, rhs: u32): bool { }
+[host_contract]
+private micro __u32_eq(lhs: u32, rhs: u32): bool
 
-[intrinsic("u32.lt")]
-private micro __u32_lt(lhs: u32, rhs: u32): bool { }
+[host_contract]
+private micro __u32_lt(lhs: u32, rhs: u32): bool
 
-[intrinsic("u32.and")]
-private micro __u32_and(lhs: u32, rhs: u32): u32 { }
+[host_contract]
+private micro __u32_and(lhs: u32, rhs: u32): u32
 
-[intrinsic("u32.or")]
-private micro __u32_or(lhs: u32, rhs: u32): u32 { }
+[host_contract]
+private micro __u32_or(lhs: u32, rhs: u32): u32
 
-[intrinsic("u32.xor")]
-private micro __u32_xor(lhs: u32, rhs: u32): u32 { }
+[host_contract]
+private micro __u32_xor(lhs: u32, rhs: u32): u32
 
-[intrinsic("u32.shl")]
-private micro __u32_shl(lhs: u32, rhs: u32): u32 { }
+[host_contract]
+private micro __u32_shl(lhs: u32, rhs: u32): u32
 
-[intrinsic("u32.shr")]
-private micro __u32_shr(lhs: u32, rhs: u32): u32 { }
+[host_contract]
+private micro __u32_shr(lhs: u32, rhs: u32): u32
