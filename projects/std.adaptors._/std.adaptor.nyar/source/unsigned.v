@@ -46,19 +46,19 @@ micro usize_eq(a: usize, b: usize): bool
 #region u64
 
 [host_provider(core::primitive::__u64_add)]
-[vm("i64_add")]
+[ovm("i64_add")]
 micro u64_add(a: u64, b: u64): u64
 
 [host_provider(core::primitive::__u64_sub)]
-[vm("i64_sub")]
+[ovm("i64_sub")]
 micro u64_sub(a: u64, b: u64): u64
 
 [host_provider(core::primitive::__u64_mul)]
-[vm("i64_mul")]
+[ovm("i64_mul")]
 micro u64_mul(a: u64, b: u64): u64
 
 [host_provider(core::primitive::__u64_eq)]
-[vm("i64_eq")]
+[ovm("i64_eq")]
 micro u64_eq(a: u64, b: u64): bool
 
 #endregion

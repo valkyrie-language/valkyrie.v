@@ -1,19 +1,19 @@
-# std.adaptor.nyar: VM 内置函数 [vm] 绑定
+# std.adaptor.nyar: VM 内置函数 [ovm] 宿主绑定
 # 将 valkyrie-core 的运行时函数映射为 NyarVM opcode
-# 无函数体 = [vm] 声明式绑定，编译器直接映射为对应 opcode
+# 无函数体 = [ovm] 声明式宿主绑定，编译器发射对 OVM runtime 宿主函数的调用
 
 #region 输出
 
-[vm("println")]
+[ovm("println")]
 micro println_i32(value: i32): i32
 
-[vm("println")]
+[ovm("println")]
 private micro println_utf8(value: utf8): utf8
 
-[vm("print")]
+[ovm("print")]
 micro print_i32(value: i32): i32
 
-[vm("print")]
+[ovm("print")]
 private micro print_utf8(value: utf8): utf8
 
 [host_provider(std::console::write)]
@@ -35,13 +35,13 @@ micro error_line(message: utf8): unit {
 
 #region 系统
 
-[vm("exit")]
+[ovm("exit")]
 micro exit(code: i32): i32
 
-[vm("sleep_ms")]
+[ovm("sleep_ms")]
 micro sleep_ms(ms: i32): i32
 
-[vm("get_time")]
+[ovm("get_time")]
 private micro __get_time(): i64
 
 [host_provider(std::io::now)]
@@ -63,16 +63,16 @@ micro sleep(ms: i32): unit {
 
 #region 数学
 
-[vm("math_sin")]
+[ovm("math_sin")]
 micro math_sin(x: f64): f64
 
-[vm("math_cos")]
+[ovm("math_cos")]
 micro math_cos(x: f64): f64
 
-[vm("math_sqrt")]
+[ovm("math_sqrt")]
 micro math_sqrt(x: f64): f64
 
-[vm("math_rand")]
+[ovm("math_rand")]
 micro math_rand(): i32
 
 #endregion

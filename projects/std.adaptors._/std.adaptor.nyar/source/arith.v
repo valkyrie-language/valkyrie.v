@@ -32,22 +32,22 @@ micro i32_neg(a: i32): i32
 
 #region i32 位运算
 
-[vm("i32_and")]
+[ovm("i32_and")]
 micro i32_and(a: i32, b: i32): i32
 
-[vm("i32_or")]
+[ovm("i32_or")]
 micro i32_or(a: i32, b: i32): i32
 
-[vm("i32_xor")]
+[ovm("i32_xor")]
 micro i32_xor(a: i32, b: i32): i32
 
-[vm("i32_shl")]
+[ovm("i32_shl")]
 micro i32_shl(a: i32, b: i32): i32
 
-[vm("i32_shr")]
+[ovm("i32_shr")]
 micro i32_shr(a: i32, b: i32): i32
 
-[vm("i32_not")]
+[ovm("i32_not")]
 micro i32_not(a: i32): i32
 
 #endregion
@@ -55,27 +55,27 @@ micro i32_not(a: i32): i32
 #region i64 算术
 
 [host_provider(core::primitive::__i64_add)]
-[vm("i64_add")]
+[ovm("i64_add")]
 micro i64_add(a: i64, b: i64): i64
 
 [host_provider(core::primitive::__i64_sub)]
-[vm("i64_sub")]
+[ovm("i64_sub")]
 micro i64_sub(a: i64, b: i64): i64
 
 [host_provider(core::primitive::__i64_mul)]
-[vm("i64_mul")]
+[ovm("i64_mul")]
 micro i64_mul(a: i64, b: i64): i64
 
 [host_provider(core::primitive::__i64_div)]
-[vm("i64_div")]
+[ovm("i64_div")]
 micro i64_div(a: i64, b: i64): i64
 
 [host_provider(core::primitive::__i64_rem)]
-[vm("i64_rem")]
+[ovm("i64_rem")]
 micro i64_rem(a: i64, b: i64): i64
 
 [host_provider(core::primitive::__i64_neg)]
-[vm("i64_neg")]
+[ovm("i64_neg")]
 micro i64_neg(a: i64): i64
 
 #endregion
@@ -83,23 +83,23 @@ micro i64_neg(a: i64): i64
 #region i64 比较
 
 [host_provider(core::primitive::__i64_eq)]
-[vm("i64_eq")]
+[ovm("i64_eq")]
 micro i64_eq(a: i64, b: i64): bool
 
-[vm("i64_ne")]
+[ovm("i64_ne")]
 micro i64_ne(a: i64, b: i64): bool
 
 [host_provider(core::primitive::__i64_lt)]
-[vm("i64_lt")]
+[ovm("i64_lt")]
 micro i64_lt(a: i64, b: i64): bool
 
-[vm("i64_le")]
+[ovm("i64_le")]
 micro i64_le(a: i64, b: i64): bool
 
-[vm("i64_gt")]
+[ovm("i64_gt")]
 micro i64_gt(a: i64, b: i64): bool
 
-[vm("i64_ge")]
+[ovm("i64_ge")]
 micro i64_ge(a: i64, b: i64): bool
 
 #endregion
@@ -107,23 +107,23 @@ micro i64_ge(a: i64, b: i64): bool
 #region f64 算术
 
 [host_provider(core::primitive::__f64_add)]
-[vm("f64_add")]
+[ovm("f64_add")]
 micro f64_add(a: f64, b: f64): f64
 
 [host_provider(core::primitive::__f64_sub)]
-[vm("f64_sub")]
+[ovm("f64_sub")]
 micro f64_sub(a: f64, b: f64): f64
 
 [host_provider(core::primitive::__f64_mul)]
-[vm("f64_mul")]
+[ovm("f64_mul")]
 micro f64_mul(a: f64, b: f64): f64
 
 [host_provider(core::primitive::__f64_div)]
-[vm("f64_div")]
+[ovm("f64_div")]
 micro f64_div(a: f64, b: f64): f64
 
 [host_provider(core::primitive::__f64_neg)]
-[vm("f64_neg")]
+[ovm("f64_neg")]
 micro f64_neg(a: f64): f64
 
 #endregion

@@ -87,7 +87,7 @@ micro __jvm_set_request_method(conn: i32, method: utf8): unit
 
 - `[host_contract]` 声明某个稳定入口允许宿主实现
 - `[host_provider("...")]` 声明某个函数提供该入口
-- `[js_builtin]` / `[clr]` / `[jvm]` / `[c]` / `[wasi]` / `[vm]` 等 `bind` 属性负责宿主绑定
+- `[js_builtin]` / `[clr]` / `[jvm]` / `[c]` / `[wasi]` / `[ovm]` 等 `bind` 属性负责宿主绑定
 
 也就是说，先有 `host_contract / host_provider / bind` 这套模型，后有 attribute 语法承载它们。
 
@@ -111,7 +111,7 @@ micro __jvm_set_request_method(conn: i32, method: utf8): unit
 |:---|:---|:---|
 | `[host_contract]` | `std` 稳定入口层 | 声明该入口允许被宿主提供方实现 |
 | `[host_provider("...")]` | `sdk` / `adaptor` / vendor 层 | 声明实现关系 |
-| `[js_builtin]` / `[clr]` / `[jvm]` / `[c]` / `[wasi]` / `[vm]` | 宿主绑定层 | 承载 `bind` 语义并绑定最终宿主符号 |
+| `[js_builtin]` / `[clr]` / `[jvm]` / `[c]` / `[wasi]` / `[ovm]` | 宿主绑定层 | 承载 `bind` 语义并绑定最终宿主符号 |
 
 ## 典型结构
 
@@ -158,7 +158,7 @@ micro __wx_request(req: Request): Response
 2. 解析有效依赖闭包中的所有 `[host_provider(...)]` 声明。
 3. 根据有效依赖闭包和 `sdk-vendor` 过滤候选实现。
 4. 若候选集唯一，则直接自动绑定。
-5. 对唯一候选实现继续收集其上的 `[js_builtin]` / `[clr]` / `[jvm]` / `[wasi]` / `[vm]` 等 `bind` 属性。
+5. 对唯一候选实现继续收集其上的 `[js_builtin]` / `[clr]` / `[jvm]` / `[wasi]` / `[ovm]` 等 `bind` 属性。
 6. 由 `nyar` 把这些 `bind` 属性下沉到后续 `MIR/LIR/backend` 所需的宿主调用信息。
 7. 若候选集不唯一，则直接报冲突诊断，而不是再引入额外配置语义。
 
