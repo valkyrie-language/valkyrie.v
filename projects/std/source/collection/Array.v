@@ -72,14 +72,14 @@ imply Array<T> {
     }
 }
 
-[intrinsic("array.len")]
+[intrinsic("builtin.array.length")]
 private micro __array_len<T>(self: Array<T>): usize { }
 
-[intrinsic("array.get")]
+[intrinsic("builtin.array.get")]
 private micro __array_get<T>(self: Array<T>, ordinal: usize): T { }
 
-# Functional append: `result = push(result, item)`. Backends expand `[intrinsic("array.push")]`.
-[intrinsic("array.push")]
+# Functional append: `result = push(result, item)`. Backends expand `[intrinsic("builtin.array.push")]`.
+[intrinsic("builtin.array.push")]
 micro push<T>(array: Array<T>, value: T): Array<T> { }
 
 # In-place insert/remove at ordinal (1-based). `ArrayList` host_contract delegates here.
