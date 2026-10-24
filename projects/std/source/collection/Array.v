@@ -19,12 +19,12 @@ imply Array<T> {
     }
 
     [host_contract]
-    micro get(self, ordinal: usize): Option<T> {
+    micro `get`(self, ordinal: usize): Option<T> {
         return Some(__array_get(self, ordinal))
     }
 
     [host_contract]
-    micro set(mut self, ordinal: usize, value: T): unit {
+    micro `set`(mut self, ordinal: usize, value: T): unit {
 
     }
 

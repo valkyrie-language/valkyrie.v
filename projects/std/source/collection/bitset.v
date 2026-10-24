@@ -27,7 +27,7 @@ imply BitSet {
     }
 
     [host_contract]
-    micro set(mut self, index: usize): unit {
+    micro `set`(mut self, index: usize): unit {
         let word_idx: usize = index / 64
         let bit_idx: usize = index % 64
         self.ensure_capacity(word_idx + 1)
@@ -47,7 +47,7 @@ imply BitSet {
     }
 
     [host_contract]
-    micro get(self, index: usize): bool {
+    micro `get`(self, index: usize): bool {
         let word_idx: usize = index / 64
         let bit_idx: usize = index % 64
         if word_idx >= self.words.length() {
