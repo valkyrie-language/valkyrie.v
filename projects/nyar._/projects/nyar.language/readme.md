@@ -1,12 +1,12 @@
 # nyar.language
 
-`nyar.language` 负责 `nyar` 体系中的各种语言前端分析。
+`nyar.language` 是 Nyar 平台的多语言 frontend host 与接入契约；它可以托管 Valkyrie、Bash、PowerShell 等多个 frontend，但不把任一语言的语义规则升级为 Nyar 核心公共语义。
 
 ## 定位
 
-- 面向多语言前端与前端分析流程
-- 承载解析、语义建模、前端约束检查等工作
-- 作为不同语言接入 `nyar` 体系的前端入口层
+- 面向多语言前端与 Nyar frontend SPI
+- 承载各语言的解析适配、语义建模与前端约束检查
+- 作为不同语言把已闭合语义交给 `nyar` 的入口层
 
 ## 适合承载什么
 
@@ -24,8 +24,8 @@
 
 ## 与其他项目的关系
 
-- `nyar`：提供核心公共基座
-- `nyar.language`：承接各种语言前端分析
+- `nyar`：提供多语言分析、编译、执行平台与 frontend SPI
+- `nyar.language`：承接具体语言 frontend 并生产 frontend contract
 - `nyar.package_manager` 与 `nyar.package_registry`：位于生态与交付层
 
 ## 目标
