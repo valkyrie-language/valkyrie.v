@@ -33,7 +33,7 @@ imply SwissTable<K, V> {
         }
     }
 
-    micro get(self, key: K): Option<V> {
+    micro `get`(self, key: K): Option<V> {
         let slot: Option<usize> = self.find_slot(key)
         if slot.is_none() {
             return None

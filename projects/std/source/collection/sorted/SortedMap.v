@@ -8,7 +8,7 @@ class SortedMap<K, V> {
 
 imply SortedMap<K, V>: Map<K, V> {
     [host_contract]
-    micro get(self, key: K): Option<V> {
+    micro `get`(self, key: K): Option<V> {
         return self._impl.get(key)
     }
 

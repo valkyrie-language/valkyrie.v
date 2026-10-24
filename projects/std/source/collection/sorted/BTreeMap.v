@@ -26,7 +26,7 @@ imply BTreeMap<K, V> {
         }
     }
 
-    micro get(self, key: K): Option<V> {
+    micro `get`(self, key: K): Option<V> {
         if self._root.is_none() {
             return option_none::<V>()
         }

@@ -79,16 +79,16 @@ imply ArrayList<T> {
     }
 
     [host_contract]
-    micro get(self, ordinal: usize): Option<T> {
+    micro `get`(self, ordinal: usize): Option<T> {
         if ordinal == 0 || ordinal > self.length() {
             return None
         }
 
-        return self._items.get(ordinal)
+        return __array_get(self._items, ordinal)
     }
 
     [host_contract]
-    micro set(mut self, ordinal: usize, value: T): unit {
+    micro `set`(mut self, ordinal: usize, value: T): unit {
         if ordinal == 0 || ordinal > self.length() {
             return
         }

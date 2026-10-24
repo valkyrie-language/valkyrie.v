@@ -15,7 +15,7 @@ class OrderedMap<K, V> {
 
 imply OrderedMap<K, V>: Map<K, V> {
     [host_contract]
-    micro get(self, key: K): Option<V> {
+    micro `get`(self, key: K): Option<V> {
         let slot_option: Option<usize> = self.find_slot(key)
         if slot_option.is_none() {
             return option_none::<V>()

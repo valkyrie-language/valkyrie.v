@@ -8,8 +8,9 @@ class HashMap<K, V> {
 
 imply HashMap<K, V>: Map<K, V> {
     [host_contract]
-    micro get(self, key: K): Option<V> {
-        return self._impl.get(key)
+    micro `get`(self, key: K): Option<V> {
+        let result: Option<V> = self._impl.get(key)
+        return result
     }
 
     [host_contract]
