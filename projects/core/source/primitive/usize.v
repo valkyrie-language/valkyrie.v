@@ -71,38 +71,38 @@ imply usize {
     }
 }
 
-[intrinsic("usize.add")]
-private micro __usize_add(lhs: usize, rhs: usize): usize;
+[host_contract]
+private micro __usize_add(lhs: usize, rhs: usize): usize
 
-[intrinsic("usize.sub")]
-private micro __usize_sub(lhs: usize, rhs: usize): usize { }
+[host_contract]
+private micro __usize_sub(lhs: usize, rhs: usize): usize
 
-[intrinsic("usize.mul")]
-private micro __usize_mul(lhs: usize, rhs: usize): usize { }
+[host_contract]
+private micro __usize_mul(lhs: usize, rhs: usize): usize
 
-[intrinsic("usize.div")]
-private micro __usize_div(lhs: usize, rhs: usize): usize { }
+[host_contract]
+private micro __usize_div(lhs: usize, rhs: usize): usize
 
-[intrinsic("usize.rem")]
-private micro __usize_rem(lhs: usize, rhs: usize): usize { }
+[host_contract]
+private micro __usize_rem(lhs: usize, rhs: usize): usize
 
-[intrinsic("usize.eq")]
-private micro __usize_eq(lhs: usize, rhs: usize): bool { }
+[host_contract]
+private micro __usize_eq(lhs: usize, rhs: usize): bool
 
-[intrinsic("usize.lt")]
-private micro __usize_lt(lhs: usize, rhs: usize): bool { }
+[host_contract]
+private micro __usize_lt(lhs: usize, rhs: usize): bool
 
-[intrinsic("usize.and")]
-private micro __usize_and(lhs: usize, rhs: usize): usize { }
+[host_contract]
+private micro __usize_and(lhs: usize, rhs: usize): usize
 
-[intrinsic("usize.or")]
-private micro __usize_or(lhs: usize, rhs: usize): usize { }
+[host_contract]
+private micro __usize_or(lhs: usize, rhs: usize): usize
 
-[intrinsic("usize.xor")]
-private micro __usize_xor(lhs: usize, rhs: usize): usize { }
+[host_contract]
+private micro __usize_xor(lhs: usize, rhs: usize): usize
 
-[intrinsic("usize.shl")]
-private micro __usize_shl(lhs: usize, rhs: usize): usize { }
+[host_contract]
+private micro __usize_shl(lhs: usize, rhs: usize): usize
 
-[intrinsic("usize.shr")]
-private micro __usize_shr(lhs: usize, rhs: usize): usize { }
+[host_contract]
+private micro __usize_shr(lhs: usize, rhs: usize): usize
