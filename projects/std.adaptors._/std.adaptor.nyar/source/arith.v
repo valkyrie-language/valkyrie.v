@@ -1,31 +1,31 @@
-# std.adaptor.nyar: 算术运算 [vm_opcode] 绑定
+# std.adaptor.nyar: 算术运算 [ovm_operator] 绑定
 # 将 valkyrie-core 的算术运算映射为 NyarVM opcode
-# 编译器使用 [vm_opcode] 绑定直接内联为对应指令，零函数调用开销
+# 编译器使用 [ovm_operator] 绑定直接内联为对应指令，零函数调用开销
 
 #region i32 算术
 
 [host_provider(core::primitive::__i32_add)]
-[vm_opcode("i32.add")]
+[ovm_operator("i32.add")]
 micro i32_add(a: i32, b: i32): i32
 
 [host_provider(core::primitive::__i32_sub)]
-[vm_opcode("i32.sub")]
+[ovm_operator("i32.sub")]
 micro i32_sub(a: i32, b: i32): i32
 
 [host_provider(core::primitive::__i32_mul)]
-[vm_opcode("i32.mul")]
+[ovm_operator("i32.mul")]
 micro i32_mul(a: i32, b: i32): i32
 
 [host_provider(core::primitive::__i32_div)]
-[vm_opcode("i32.div")]
+[ovm_operator("i32.div")]
 micro i32_div(a: i32, b: i32): i32
 
 [host_provider(core::primitive::__i32_rem)]
-[vm_opcode("i32.rem")]
+[ovm_operator("i32.rem")]
 micro i32_rem(a: i32, b: i32): i32
 
 [host_provider(core::primitive::__i32_neg)]
-[vm_opcode("i32.neg")]
+[ovm_operator("i32.neg")]
 micro i32_neg(a: i32): i32
 
 #endregion
