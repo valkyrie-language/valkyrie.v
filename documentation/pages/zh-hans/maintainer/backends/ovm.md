@@ -1,19 +1,19 @@
-# NyarVM 后端
+# OVM 后端
 
 ## 定位
 
-`NyarVM` family 面向 Valkyrie 自有运行时。它不需要迎合外部平台对象模型，但仍然必须遵守统一的 backend 契约：只消费自己的输入，先 `validate`，再 `compile`。
+`OVM` family 面向 Valkyrie 自有运行时。它不需要迎合外部平台对象模型，但仍然必须遵守统一的 backend 契约：只消费自己的输入，先 `validate`，再 `compile`。
 
 ## 输入前提
 
-进入 `NyarVM` 后端前，应当已经完成：
+进入 `OVM` 后端前，应当已经完成：
 
 - 语义闭合
 - 中层优化
 - `Partition`
-- `NyarVM` family 对应的 lowering
+- `OVM` family 对应的 lowering
 
-后端接收的是 `NyarVM` 自己的 `Backend Input`，而不是给所有 family 共用的一份“标准后端输入”。
+后端接收的是 `OVM` 自己的 `Backend Input`，而不是给所有 family 共用的一份“标准后端输入”。
 
 ## Validate
 
@@ -29,7 +29,7 @@
 
 `Compile` 阶段负责：
 
-- 把 `NyarVM` family 输入翻译成 VM 可执行指令或模块数据
+- 把 `OVM` family 输入翻译成 VM 可执行指令或模块数据
 - 组织对象模型、元数据表和调用分发表
 - 生成供运行时加载的模块产物
 
@@ -43,12 +43,12 @@
 
 ## Family 特性
 
-- 可以直接对接 `NyarVM` 的对象模型和运行时能力
+- 可以直接对接 `OVM` 的对象模型和运行时能力
 - 可以利用 VM 自己的 GC、调度和元数据系统
 - 适合作为语言自有执行环境，但不应反向定义所有其他 family 的公共结构
 
 ## 风险边界
 
-- 禁止把 `NyarVM` 的对象模型抬升为所有后端共享的物理模型
+- 禁止把 `OVM` 的对象模型抬升为所有后端共享的物理模型
 - 禁止因为 VM 方便就让公共层提前绑定 VM 专属概念
 - 禁止把运行时补救机制当成编译期验证的替代品

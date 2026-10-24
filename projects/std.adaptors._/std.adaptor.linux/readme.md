@@ -86,8 +86,8 @@ micro sys_read(fd: i32, buf: i32, length: i32): i64
 ## ⚙️ 编译命令
 
 ```bash
-# 编译为 NyarVM（默认）
-vcc build --target nyar
+# 编译为 OVM（默认）
+vcc build --target ovm
 
 # 编译为 WASM（通过 WASM 中间表示）
 vcc build --target wasm

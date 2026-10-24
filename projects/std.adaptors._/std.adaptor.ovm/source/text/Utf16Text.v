@@ -1,4 +1,4 @@
-namespace std.adaptor.nyar.text;
+namespace std.adaptor.ovm.text;
 
 [host_provider(std::text::Utf16Text::length)]
 micro host_length(value: std.text.utf16): isize {

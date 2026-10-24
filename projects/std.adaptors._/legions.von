@@ -6,7 +6,7 @@
         "std.adaptor.jvm",
         "std.adaptor.linux",
         "std.adaptor.macos",
-        "std.adaptor.nyar",
+        "std.adaptor.ovm",
         "std.adaptor.wasi",
         "std.adaptor.wasm",
         "std.adaptor.windows"

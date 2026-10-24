@@ -58,5 +58,5 @@ micro format_target(target: CanonicalTarget) -> utf8 {
 }
 
 # 已删除 `default_target()`：它让「未知 target」有默认成功目标。
-# 需要 `nyar-unknown-unknown` 的调用方须显式 `parse_target("nyar-unknown-unknown")`，
+# 需要 `ovm-unknown-unknown` 的调用方须显式 `parse_target("ovm-unknown-unknown")`，
 # 未知目标一律由调用方结构化失败，不得回落默认值。

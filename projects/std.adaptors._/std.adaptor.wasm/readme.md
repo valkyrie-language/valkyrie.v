@@ -101,8 +101,8 @@ std.adaptor.wasm/
 # 编译为浏览器 WASM（默认）
 vcc build --target wasm
 
-# 编译为 NyarVM（所有平台通用）
-vcc build --target nyar
+# 编译为 OVM（所有平台通用）
+vcc build --target ovm
 
 # 编译为 WASI Component Model
 vcc build --target wasi

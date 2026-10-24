@@ -75,8 +75,8 @@ micro sys_darwin_write(fd: i32, buf: c_str, length: i32): i64
 ## ⚙️ 编译命令
 
 ```bash
-# 编译为 NyarVM（默认）
-vcc build --target nyar
+# 编译为 OVM（默认）
+vcc build --target ovm
 
 # 指定 macOS 目标
 vcc build --arch aarch64 --os macos

@@ -35,7 +35,7 @@
             target: "wasip3"
         },
         {
-            target: "nyar"
+            target: "ovm"
         }
     ],
     publish: [

@@ -13,7 +13,7 @@
             target: "wasm32-unknown-browser-wasm"
         },
         {
-            target: "nyar"
+            target: "ovm"
         }
     ]
 }

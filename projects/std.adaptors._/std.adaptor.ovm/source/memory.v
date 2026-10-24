@@ -1,5 +1,5 @@
-# std.adaptor.nyar: 内存操作 [ovm] 宿主绑定
-# 将 valkyrie-core 的内存操作映射为 NyarVM opcode
+# std.adaptor.ovm: 内存操作 [ovm] 宿主绑定
+# 将 valkyrie-core 的内存操作映射为 OVM opcode
 # OVM runtime 提供对应的内存宿主函数
 
 #region 分配与释放

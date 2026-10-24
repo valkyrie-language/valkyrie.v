@@ -1,5 +1,5 @@
-# std.adaptor.nyar: 类型转换 [ovm] 宿主绑定
-# 将 valkyrie-core 的类型转换映射为 NyarVM opcode
+# std.adaptor.ovm: 类型转换 [ovm] 宿主绑定
+# 将 valkyrie-core 的类型转换映射为 OVM opcode
 # OVM runtime 提供对应的转换宿主函数
 
 #region 数值类型转换

@@ -8,7 +8,7 @@
     },
     dependencies: {},
     build: [
-        { target: "nyar" },
+        { target: "ovm" },
         { target: "clr" },
         { target: "wasm" },
         { target: "jvm" }

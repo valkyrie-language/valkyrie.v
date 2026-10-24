@@ -143,7 +143,7 @@ flowchart LR
     Clr[projects/std.adaptor.clr]
     JVM[projects/std.adaptor.jvm]
     Wasm[projects/std.adaptor.wasm]
-    Nyar[projects/std.adaptor.nyar]
+    Nyar[projects/std.adaptor.ovm]
 
     classDef phase fill:#f6f9fc,stroke:#8a9aad,stroke-width:1.2px,color:#1f2937;
     classDef boundary fill:#fff8e8,stroke:#d6a93d,stroke-width:1.2px,color:#5c4400;

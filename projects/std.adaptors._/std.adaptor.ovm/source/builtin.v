@@ -1,5 +1,5 @@
-# std.adaptor.nyar: VM 内置函数 [ovm] 宿主绑定
-# 将 valkyrie-core 的运行时函数映射为 NyarVM opcode
+# std.adaptor.ovm: VM 内置函数 [ovm] 宿主绑定
+# 将 valkyrie-core 的运行时函数映射为 OVM opcode
 # 无函数体 = [ovm] 声明式宿主绑定，编译器发射对 OVM runtime 宿主函数的调用
 
 #region 输出

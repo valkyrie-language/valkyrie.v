@@ -1,4 +1,4 @@
-﻿# Legion 包管理器
+# Legion 包管理器
 
 Legion 是 Nyar 组织面向 **Valkyrie** 的工作区入口与包管理器，提供依赖管理、版本控制、多目标编译、包发布、安全审计和脚本执行能力。
 
@@ -142,7 +142,7 @@ tag = "latest"
 
 | 短别名 | 展开为 | 说明 |
 |:---|:---|:---|
-| `nyar` | `nyar-unknown-unknown-managed` | NyarVM 字节码（默认） |
+| `ovm` | `ovm-unknown-unknown-managed` | OVM 字节码（默认） |
 | `gnosis` | `gnosis-unknown-native` | GnosisVM 字节码 |
 | `wasm` | `wasm32-unknown-browser` | WebAssembly（浏览器） |
 | `node` | `wasm32-unknown-node` | WebAssembly（Node.js） |
@@ -153,7 +153,7 @@ tag = "latest"
 | `jvm` | `jvm-openjdk-linux` | JVM 类文件 |
 | `native` | 宿主平台对应的 canonical triple | 原生二进制 |
 
-未指定 `build` 字段时默认编译目标为 `nyar`。
+未指定 `build` 字段时默认编译目标为 `ovm`。
 
 示例——使用完整三元组：
 
@@ -169,7 +169,7 @@ tag = "latest"
 
 ```von
 [build]
-{target: "nyar"}
+{target: "ovm"}
 {target: "wasm"}
 ```
 
@@ -445,7 +445,7 @@ flowchart TD
 | `legion test` | 扫描 `test/` 目录，识别 `[test]` 函数并在默认测试目标上执行 |
 | `legion test <project>` | 运行指定项目的测试 |
 | `legion test --filter <name>` | 按名称过滤测试用例 |
-| `legion test --target nyar,clr,jvm,node` | 在多 target 上执行测试 |
+| `legion test --target ovm,clr,jvm,node` | 在多 target 上执行测试 |
 | `legion test --target all` | 在所有 target 上执行（nyar, clr, jvm, node） |
 | `legion test --verbose` | 详细输出 |
 | `legion bench` | 扫描 `test/` 目录，对 `[benchmark]` 函数执行基准测试 |
@@ -508,7 +508,7 @@ flowchart TD
 
 | 后端家族 | Runner 类型 | 执行方式 | 外部依赖 |
 |:---|:---|:---|:---|
-| NyarVM | VM Runner | 加载 `.nyar` 产物并执行 | 无 |
+| OVM | VM Runner | 加载 `.nyar` 产物并执行 | 无 |
 | CLR | CLR Runner | 调用宿主命令执行托管产物 | CLR 宿主环境 |
 | JVM | JVM Runner | 调用宿主命令执行 JVM 产物 | JVM 宿主环境 |
 | WASM (Node) | Node Runner | 调用 `node` 执行宿主入口 | Node.js |

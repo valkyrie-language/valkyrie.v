@@ -44,8 +44,8 @@ micro legion_normalize_short_target(value: utf8) -> utf8 {
     if value == "wasi" || value == "wasm32-unknown-wasi-wasi" {
         return "wasm32-unknown-wasi-wasi"
     }
-    if value == "nyar" || value == "nyar-unknown-unknown" {
-        return "nyar-unknown-unknown"
+    if value == "ovm" || value == "ovm-unknown-unknown" {
+        return "ovm-unknown-unknown"
     }
     return ""
 }
@@ -71,7 +71,7 @@ micro legion_requested_targets(value: utf8) -> [utf8] {
         return []
     }
     if value.trim().to_lower() == "all" {
-        return ["clr", "jvm", "wasm", "nyar"]
+        return ["clr", "jvm", "wasm", "ovm"]
     }
 
     let pieces: [utf8] = value.split(",")
@@ -142,16 +142,16 @@ micro legion_target_arch_tag(architecture: utf8) -> utf8 {
     if architecture == "jvm" {
         return "jvm"
     }
-    if architecture == "nyar" {
-        return "nyar"
+    if architecture == "ovm" {
+        return "ovm"
     }
     return ""
 }
 
 # backend family 只由 arch 标签派生，唯一所有者，不再维护第二套别名表。
 micro legion_target_backend_family(arch_tag: utf8) -> utf8 {
-    if arch_tag == "nyar" {
-        return "nyar_vm"
+    if arch_tag == "ovm" {
+        return "ovm"
     }
     return arch_tag
 }

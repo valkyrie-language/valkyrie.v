@@ -93,8 +93,8 @@ micro nt_close(handle: i32): i32
 ## ⚙️ 编译命令
 
 ```bash
-# 编译为 NyarVM（默认）
-vcc build --target nyar
+# 编译为 OVM（默认）
+vcc build --target ovm
 
 # 编译为 CLR（.NET 运行时）
 vcc build --target clr

@@ -9,7 +9,7 @@
     },
     dependencies: {},
     build: [
-        { target: "nyar" }
+        { target: "ovm" }
     ],
     engines: {
         vcc: "0.1.*"

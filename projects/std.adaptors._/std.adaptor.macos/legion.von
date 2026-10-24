@@ -13,7 +13,7 @@
     },
     build: [
         {
-            target: "nyar"
+            target: "ovm"
         }
     ],
     engines: {

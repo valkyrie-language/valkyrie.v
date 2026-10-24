@@ -26,7 +26,7 @@ flowchart TD
     WASM[WASM Browser/Node]
     WASI[WASI]
     Native[Native]
-    NyarVM[NyarVM]
+    OVM[OVM]
     Shader[Shader]
 
     Partition --> Lane --> BackendInput --> Validate --> Compile --> ArtifactSet
@@ -35,7 +35,7 @@ flowchart TD
     Lane --> WASM
     Lane --> WASI
     Lane --> Native
-    Lane --> NyarVM
+    Lane --> OVM
     Lane --> Shader
 
     classDef phase fill:#f6f9fc,stroke:#8a9aad,stroke-width:1.2px,color:#1f2937;
@@ -44,10 +44,10 @@ flowchart TD
 
     class Partition,Lane,BackendInput phase;
     class Validate boundary;
-    class Compile,ArtifactSet,CLR,JVM,WASM,WASI,Native,NyarVM,Shader delivery;
+    class Compile,ArtifactSet,CLR,JVM,WASM,WASI,Native,OVM,Shader delivery;
 ```
 
-## `NyarVM`
+## `OVM`
 
 ### 输入前提
 
