@@ -11,28 +11,28 @@ Valkyrie NyarVM 平台 SDK — 提供 NyarVM 指令集绑定，编译为 `.nyar`
 std.adaptor.nyar/
 ├── legion.von          # 包清单
 └── source/
-    ├── arith.v         # 算术运算 [vm] 绑定
-    ├── builtin.v       # VM 内置函数 [vm] 绑定
-    ├── cmp.v           # 比较运算 [vm] 绑定
-    ├── control.v       # 控制流 [vm] 绑定
-    ├── conv.v          # 类型转换 [vm] 绑定
-    ├── memory.v        # 内存操作 [vm] 绑定
-    ├── object.v        # 对象操作 [vm] 绑定
-    └── utf8.v        # 字符串操作 [vm] 绑定
+    ├── arith.v         # 算术运算 [ovm] 宿主绑定
+    ├── builtin.v       # VM 内置函数 [ovm] 宿主绑定
+    ├── cmp.v           # 比较运算 [ovm] 宿主绑定
+    ├── control.v       # 控制流 [ovm] 宿主绑定
+    ├── conv.v          # 类型转换 [ovm] 宿主绑定
+    ├── memory.v        # 内存操作 [ovm] 宿主绑定
+    ├── object.v        # 对象操作 [ovm] 宿主绑定
+    └── utf8.v        # 字符串操作 [ovm] 宿主绑定
 ```
 
 ## 绑定概念
 
 | 文件        | 绑定类型                      | 说明                                 |
 |:------------|:------------------------------|:-------------------------------------|
-| `arith.v`   | `[vm("i32_add/...")]         | i32/i64/f64 算术与位运算 opcode 绑定 |
-| `builtin.v` | `[vm("println/...")]`         | NyarVM 内置函数绑定                  |
-| `cmp.v`     | `[vm("i32_eq/...")]`          | i32 比较 opcode 绑定                 |
-| `control.v` | `[vm("nop")]`                 | 控制流 opcode 绑定                   |
-| `conv.v`    | `[vm("i32_to_...")]`          | 类型转换 opcode 绑定                 |
-| `memory.v`  | `[vm("alloc/...")]`           | 内存管理 opcode 绑定                 |
-| `object.v`  | `[vm("obj_.../closure_...")]` | 对象与闭包 opcode 绑定               |
-| `utf8.v`  | `[vm("str_...")]`             | 字符串操作 opcode 绑定               |
+| `arith.v`   | `[ovm("i32_add/...")]`         | i32/i64/f64 算术与位运算宿主绑定 |
+| `builtin.v` | `[ovm("println/...")]`         | OVM 内置函数绑定                  |
+| `cmp.v`     | `[ovm("i32_eq/...")]`          | i32 比较宿主绑定                 |
+| `control.v` | `[ovm("nop")]`                 | 控制流宿主绑定                   |
+| `conv.v`    | `[ovm("i32_to_...")]`          | 类型转换宿主绑定                 |
+| `memory.v`  | `[ovm("alloc/...")]`           | 内存管理宿主绑定                 |
+| `object.v`  | `[ovm("obj_.../closure_...")]` | 对象与闭包宿主绑定               |
+| `utf8.v`  | `[ovm("str_...")]`             | 字符串操作宿主绑定               |
 
 ## 与其他适配器的关系
 
@@ -40,7 +40,7 @@ std.adaptor.nyar/
 
 | 适配器              | 平台        | 绑定属性          |
 |:---------------------|:------------|:-------------------|
-| `std.adaptor.nyar`   | NyarVM      | `[vm]`             |
+| `std.adaptor.nyar`   | NyarVM      | `[ovm]`            |
 | `std.adaptor.wasm`   | WebAssembly | `[js_builtin]`     |
 | `std.adaptor.dotnet` | .NET CLR    | `[dotnet_builtin]` |
 | `std.adaptor.jvm`    | JVM         | `[jvm_builtin]`    |
@@ -58,4 +58,4 @@ vcc run --target nyar
 ```
 
 ## 状态
-✅ NyarVM 指令集绑定已覆盖 8 个模块，包含 50+ opcode 绑定。
+✅ NyarVM 宿主绑定已覆盖 8 个模块，包含 50+ `[ovm]` 绑定。
