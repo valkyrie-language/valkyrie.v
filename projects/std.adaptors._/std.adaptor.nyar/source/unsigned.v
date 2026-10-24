@@ -6,19 +6,19 @@
 #region u32
 
 [host_provider(core::primitive::__u32_add)]
-[vm_opcode("i32.add")]
+[ovm_operator("i32.add")]
 micro u32_add(a: u32, b: u32): u32
 
 [host_provider(core::primitive::__u32_sub)]
-[vm_opcode("i32.sub")]
+[ovm_operator("i32.sub")]
 micro u32_sub(a: u32, b: u32): u32
 
 [host_provider(core::primitive::__u32_mul)]
-[vm_opcode("i32.mul")]
+[ovm_operator("i32.mul")]
 micro u32_mul(a: u32, b: u32): u32
 
 [host_provider(core::primitive::__u32_eq)]
-[vm_opcode("i32.eq")]
+[ovm_operator("i32.eq")]
 micro u32_eq(a: u32, b: u32): bool
 
 #endregion
@@ -26,19 +26,19 @@ micro u32_eq(a: u32, b: u32): bool
 #region usize（NyarVM 指针宽度为 32 位）
 
 [host_provider(core::primitive::__usize_add)]
-[vm_opcode("i32.add")]
+[ovm_operator("i32.add")]
 micro usize_add(a: usize, b: usize): usize
 
 [host_provider(core::primitive::__usize_sub)]
-[vm_opcode("i32.sub")]
+[ovm_operator("i32.sub")]
 micro usize_sub(a: usize, b: usize): usize
 
 [host_provider(core::primitive::__usize_mul)]
-[vm_opcode("i32.mul")]
+[ovm_operator("i32.mul")]
 micro usize_mul(a: usize, b: usize): usize
 
 [host_provider(core::primitive::__usize_eq)]
-[vm_opcode("i32.eq")]
+[ovm_operator("i32.eq")]
 micro usize_eq(a: usize, b: usize): bool
 
 #endregion
@@ -66,35 +66,35 @@ micro u64_eq(a: u64, b: u64): bool
 #region isize（NyarVM 指针宽度为 32 位，有符号）
 
 [host_provider(core::primitive::__isize_add)]
-[vm_opcode("i32.add")]
+[ovm_operator("i32.add")]
 micro isize_add(a: isize, b: isize): isize
 
 [host_provider(core::primitive::__isize_sub)]
-[vm_opcode("i32.sub")]
+[ovm_operator("i32.sub")]
 micro isize_sub(a: isize, b: isize): isize
 
 [host_provider(core::primitive::__isize_mul)]
-[vm_opcode("i32.mul")]
+[ovm_operator("i32.mul")]
 micro isize_mul(a: isize, b: isize): isize
 
 [host_provider(core::primitive::__isize_div)]
-[vm_opcode("i32.div")]
+[ovm_operator("i32.div")]
 micro isize_div(a: isize, b: isize): isize
 
 [host_provider(core::primitive::__isize_rem)]
-[vm_opcode("i32.rem")]
+[ovm_operator("i32.rem")]
 micro isize_rem(a: isize, b: isize): isize
 
 [host_provider(core::primitive::__isize_neg)]
-[vm_opcode("i32.neg")]
+[ovm_operator("i32.neg")]
 micro isize_neg(a: isize): isize
 
 [host_provider(core::primitive::__isize_eq)]
-[vm_opcode("i32.eq")]
+[ovm_operator("i32.eq")]
 micro isize_eq(a: isize, b: isize): bool
 
 [host_provider(core::primitive::__isize_lt)]
-[vm_opcode("i32.lt")]
+[ovm_operator("i32.lt")]
 micro isize_lt(a: isize, b: isize): bool
 
 #endregion
