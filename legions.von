@@ -19,6 +19,7 @@
         "projects/plotter",
         "projects/std",
         "examples/test.module_system",
+        "examples/leetcode_browser_wasm",
         "../game.geometry_wars"
     ],
     workspace: {
