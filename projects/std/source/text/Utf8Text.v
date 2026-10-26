@@ -1,37 +1,7 @@
 namespace std.text;
 
-<% match arch %>
-<% case "wasm32" %>
-[wasm("env", "utf8_concat")]
-private micro __host_utf8_concat(a: Utf8Text, b: Utf8Text): Utf8Text
-
-[wasm("env", "utf8_length")]
-private micro __host_utf8_length(s: Utf8Text): i32
-
-[wasm("env", "utf8_trim")]
-private micro __host_utf8_trim(s: Utf8Text): Utf8Text
-
-[wasm("env", "utf8_replace")]
-private micro __host_utf8_replace(s: Utf8Text, old_value: Utf8Text, new_value: Utf8Text): Utf8Text
-
-[wasm("env", "utf8_starts_with")]
-private micro __host_utf8_starts_with(s: Utf8Text, prefix: Utf8Text): bool
-
-[wasm("env", "utf8_ends_with")]
-private micro __host_utf8_ends_with(s: Utf8Text, suffix: Utf8Text): bool
-
-[wasm("env", "utf8_contains")]
-private micro __host_utf8_contains(s: Utf8Text, other: Utf8Text): bool
-
-[wasm("env", "utf8_equals")]
-private micro __host_utf8_equals(a: Utf8Text, b: Utf8Text): bool
-
-[wasm("env", "utf8_index_of")]
-private micro __host_utf8_index_of(s: Utf8Text, other: Utf8Text): i32
-
-[wasm("env", "utf8_slice")]
-private micro __host_utf8_slice(s: Utf8Text, start: i32, count: i32): Utf8Text
-<% end %>
+# Portable Utf8Text: [host_contract] surfaces bind to std.adaptor.* via Legion resolver.
+# Target-specific glue (wasm env, CLR, …) lives only in adaptor packages — no arch metaprogramming here.
 
 class Utf8Text {
     _repr: [u8]
@@ -73,25 +43,26 @@ imply Utf8Text {
     # Unicode scalar count (std). CLR host_provider must not flatten to String.get_Length.
     [host_contract]
     micro length(self) -> i32 {
-        <% match arch %>
-        <% case "wasm32" %>
-        return __host_utf8_length(self)
-        <% else %>
         return self.count_char() as i32
-        <% end %>
     }
 
     micro is_empty(self) -> bool {
         return self.byte_length() == 0
     }
 
+    [host_contract]
     micro equals(self, other: utf8) -> bool {
-        <% match arch %>
-        <% case "wasm32" %>
-        return __host_utf8_equals(self, other)
-        <% else %>
-        return self.equals_repr(other._repr)
-        <% end %>
+        if self._repr.length != other._repr.length {
+            return false
+        }
+        let mut index: usize = 0
+        while index < self._repr.length {
+            if self._repr⁅index⁆ != other._repr⁅index⁆ {
+                return false
+            }
+            index = index + 1
+        }
+        return true
     }
 
     micro not_equals(self, other: utf8) -> bool {
@@ -110,29 +81,29 @@ imply Utf8Text {
         return self.concat(other)
     }
 
+    [host_contract]
     micro concat(self, other: utf8) -> utf8 {
-        <% match arch %>
-        <% case "wasm32" %>
-        return __host_utf8_concat(self, other)
-        <% else %>
-        return self.concat_repr(other)
-        <% end %>
+        let mut bytes: [u8] = []
+        let mut index: usize = 0
+        while index < self._repr.length {
+            bytes = push(bytes, self._repr⁅index⁆)
+            index = index + 1
+        }
+        index = 0
+        while index < other._repr.length {
+            bytes = push(bytes, other._repr⁅index⁆)
+            index = index + 1
+        }
+        return Utf8Text { _repr: bytes }
     }
 
+    [host_contract]
     micro contains(self, value: utf8) -> bool {
-        <% match arch %>
-        <% case "wasm32" %>
-        return __host_utf8_contains(self, value)
-        <% else %>
         return self.index_of(value) >= 0
-        <% end %>
     }
 
+    [host_contract]
     micro starts_with(self, prefix: utf8) -> bool {
-        <% match arch %>
-        <% case "wasm32" %>
-        return __host_utf8_starts_with(self, prefix)
-        <% else %>
         let prefix_length: i32 = prefix.length()
         let self_length: i32 = self.length()
         if prefix_length > self_length {
@@ -140,14 +111,10 @@ imply Utf8Text {
         }
 
         return self.slice(0, prefix_length).equals(prefix)
-        <% end %>
     }
 
+    [host_contract]
     micro ends_with(self, suffix: utf8) -> bool {
-        <% match arch %>
-        <% case "wasm32" %>
-        return __host_utf8_ends_with(self, suffix)
-        <% else %>
         let suffix_length: i32 = suffix.length()
         let self_length: i32 = self.length()
         if suffix_length > self_length {
@@ -155,27 +122,17 @@ imply Utf8Text {
         }
 
         return self.slice(self_length - suffix_length, suffix_length).equals(suffix)
-        <% end %>
     }
 
     # Scalar index of `value` (std). CLR host_provider converts via UTF-16 walk — not String.IndexOf alone.
     [host_contract]
     micro index_of(self, value: utf8) -> i32 {
-        <% match arch %>
-        <% case "wasm32" %>
-        return __host_utf8_index_of(self, value)
-        <% else %>
         return self.index_of_repr(value)
-        <% end %>
     }
 
+    [host_contract]
     micro trim(self) -> utf8 {
-        <% match arch %>
-        <% case "wasm32" %>
-        return __host_utf8_trim(self)
-        <% else %>
         return self
-        <% end %>
     }
 
     micro to_lower(self) -> utf8 {
@@ -186,13 +143,9 @@ imply Utf8Text {
         return self
     }
 
+    [host_contract]
     micro replace(self, old_value: utf8, new_value: utf8) -> utf8 {
-        <% match arch %>
-        <% case "wasm32" %>
-        return __host_utf8_replace(self, old_value, new_value)
-        <% else %>
         return self
-        <% end %>
     }
 
     micro split(self, separator: utf8) -> [utf8] {
@@ -231,10 +184,6 @@ imply Utf8Text {
     # Scalar slice(start, count) (std). CLR host_provider must not flatten to String.Substring without conversion.
     [host_contract]
     micro slice(self, start: i32, count: i32) -> utf8 {
-        <% match arch %>
-        <% case "wasm32" %>
-        return __host_utf8_slice(self, start, count)
-        <% else %>
         if start < 0 || count < 0 {
             return Utf8Text { _repr: [] }
         }
@@ -256,7 +205,6 @@ imply Utf8Text {
         }
 
         return Utf8Text { _repr: bytes }
-        <% end %>
     }
 
     private micro char_width(self, index: usize) -> usize {
@@ -381,6 +329,14 @@ imply Utf8Text {
     micro chars(self) -> Utf8Iterator {
         return Utf8Iterator::new(self)
     }
+
+    suffix `⁅⁆`(self, cardinal: usize): u8 {
+        return self._repr⁅cardinal⁆
+    }
+
+    suffix `⁅⁆=`(mut self, cardinal: usize, value: u8): unit {
+        self._repr⁅cardinal⁆ = value
+    }
 }
 
 imply Utf8Text: std::iterator::IntoIterator {
@@ -389,47 +345,5 @@ imply Utf8Text: std::iterator::IntoIterator {
 
     micro into_iterator(self): Utf8Iterator {
         return self.chars()
-    }
-}
-
-imply Utf8Text {
-    suffix `⁅⁆`(self, cardinal: usize): u8 {
-        return self._repr⁅cardinal⁆
-    }
-
-    suffix `⁅⁆=`(mut self, cardinal: usize, value: u8): unit {
-        self._repr⁅cardinal⁆ = value
-    }
-
-    private micro equals_repr(self, other_repr: [u8]) -> bool {
-        if self._repr.length != other_repr.length {
-            return false
-        }
-        let mut index: usize = 0
-        while index < self._repr.length {
-            if (self._repr⁅index⁆ as usize) == (other_repr⁅index⁆ as usize) {
-                index = index + 1
-            } else {
-                return false
-            }
-        }
-        return true
-    }
-
-    private micro concat_repr(self, other: utf8) -> utf8 {
-        let mut bytes: [u8] = []
-        let mut index: usize = 0
-        while index < self._repr.length {
-            bytes = push(bytes, self._repr⁅index⁆)
-            index = index + 1
-        }
-
-        index = 0
-        while index < other._repr.length {
-            bytes = push(bytes, other._repr⁅index⁆)
-            index = index + 1
-        }
-
-        return Utf8Text { _repr: bytes }
     }
 }
