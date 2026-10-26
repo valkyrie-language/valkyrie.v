@@ -1,0 +1,22 @@
+{
+    name: "leetcode_browser_wasm",
+    version: "0.0.0.0",
+    description: "LeetCode 风格题解：browser-wasm + 可移植 js capability（无 Node API）",
+    license: "MIT",
+    auto_link: {
+        core: true,
+        std: false
+    },
+    dependencies: {
+        "std": "workspace"
+    },
+    build: [
+        {
+            target: "wasm32-unknown-browser-wasm",
+            publish: ["web-app"],
+            source_map: true,
+            typescript: true,
+            wat: true
+        }
+    ]
+}
