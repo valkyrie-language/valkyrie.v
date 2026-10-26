@@ -166,7 +166,9 @@ imply SwissTable<K, V> {
         }
     }
 
-    micro find_slot(self, key: K): Option<usize> {
+    micro find_slot(self, key: K): Option<usize>
+        where K: Eq, K: Hash
+    {
         let slot_count: usize = self._states.length()
         if slot_count == 0 {
             return None
