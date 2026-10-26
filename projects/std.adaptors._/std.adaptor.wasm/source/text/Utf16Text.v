@@ -1,5 +1,5 @@
-# std.adaptor.wasm: UTF-16 文本 host_provider
-# Node/Wasm 路径上 utf16 是宿主字符串；不得假设 `_repr` 字节/码元数组布局。
+# std.adaptor.wasm: UTF-16 text host_provider
+# On Node/Wasm, utf16 is the host string; do not assume `_repr` byte/code-unit layout.
 
 namespace std.adaptor.wasm.text;
 
