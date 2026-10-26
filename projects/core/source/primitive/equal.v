@@ -1,6 +1,6 @@
 namespace core::primitive;
 
-trait Eq {
+trait Equal {
     infix `==`(self, other: Self): bool
 
     infix `!=`(self, other: Self): bool

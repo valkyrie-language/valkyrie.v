@@ -136,7 +136,7 @@ private micro __i32_shl(lhs: i32, rhs: i32): i32
 private micro __i32_shr(lhs: i32, rhs: i32): i32
 # end region
 
-imply i32: Eq {
+imply i32: Equal {
     infix `==`(self, rhs: Self): bool {
         return __i32_eq(self, rhs)
     }

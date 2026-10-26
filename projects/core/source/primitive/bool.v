@@ -16,7 +16,7 @@ imply bool {
 
 }
 
-imply bool: Eq {
+imply bool: Equal {
     infix `==`(self, rhs: Self): bool {
         if self {
             return rhs

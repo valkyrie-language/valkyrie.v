@@ -99,7 +99,7 @@ private micro __usize_shl(lhs: usize, rhs: usize): usize
 [host_contract]
 private micro __usize_shr(lhs: usize, rhs: usize): usize
 
-imply usize: Eq {
+imply usize: Equal {
     infix `==`(self, rhs: Self): bool {
         return __usize_eq(self, rhs)
     }
