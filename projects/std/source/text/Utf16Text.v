@@ -9,7 +9,7 @@ class Utf16Text {
 
 imply Utf16Text {
     [host_contract]
-    micro length(self) -> isize {
+    micro length(self) -> usize {
         return self._repr.length
     }
 
@@ -22,7 +22,7 @@ imply Utf16Text {
     }
 
     [host_contract]
-    micro sub_string(self, start: isize, count: isize) -> utf16 {
+    micro slice(self, start: usize, count: usize) -> utf16 {
         return self
     }
 
@@ -47,8 +47,8 @@ imply Utf16Text {
     }
 
     [host_contract]
-    micro index_of(self, value: utf16) -> isize {
-        return -1
+    micro index_of(self, value: utf16) -> Option<usize> {
+        return option_none::<usize>()
     }
 
     [host_contract]
@@ -77,8 +77,8 @@ imply Utf16Text {
     }
 
     [host_contract]
-    private micro char_at(self, offset: isize) -> u16 {
-        return self._repr::[offset as usize]
+    private micro char_at(self, offset: usize) -> u16 {
+        return self._repr::[offset]
     }
 
     micro chars(self) -> Utf16Iterator {

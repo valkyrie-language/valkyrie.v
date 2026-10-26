@@ -18,7 +18,7 @@ micro `test utf16 text features`() {
         panic("utf16 ends_with test failed")
     }
 
-    if value.index_of("ll") != 2 {
+    if value.index_of("ll") != Some(2) {
         panic("utf16 index_of test failed")
     }
 

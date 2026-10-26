@@ -19,13 +19,13 @@ imply Utf8View: TextView {
             text: text,
             span: TextSpan {
                 offset: 0,
-                length: text.byte_length() as usize,
+                length: text.byte_length(),
             }
         }
     }
 
     micro new(text: &Utf8Text, span: TextSpan) -> Self {
-        let full_length: usize = text.byte_length() as usize
+        let full_length: usize = text.byte_length()
         if span.offset >= full_length {
             return Self {
                 text: text,

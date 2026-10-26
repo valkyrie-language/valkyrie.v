@@ -13,11 +13,11 @@ class AsciiIterator {
 # 基本方法
 imply AsciiText: Text {
     ⍝ 获取 ascii 文本的字节数长度
-    micro byte_length(self) -> isize {
+    micro byte_length(self) -> usize {
         return _bytes.length()
     }
 
-    micro char_length(self) -> isize {
+    micro char_length(self) -> usize {
         return _bytes.length()
     }
 
