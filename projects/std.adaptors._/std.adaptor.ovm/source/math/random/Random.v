@@ -9,8 +9,9 @@ micro host_new() -> std.math.random.Random {
 
 [host_provider(std::math::random::Random::with_seed)]
 micro host_with_seed(seed: i32) -> std.math.random.Random {
+    let resolved: i32 = std.math.random.__random_normalize_seed(seed)
     return std.math.random.Random {
-        _state: seed
+        _state: resolved
     }
 }
 

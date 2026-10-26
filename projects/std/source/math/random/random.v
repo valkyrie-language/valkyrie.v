@@ -8,28 +8,13 @@ class Random {
 
 imply Random {
     [host_contract]
-    micro new() -> Self {
-        return Self {
-            _state: 1
-        }
-    }
+    micro new() -> Self
 
     [host_contract]
-    micro with_seed(seed: i32) -> Self {
-        let resolved_seed: i32 = __random_normalize_seed(seed)
-        return Self {
-            _state: resolved_seed
-        }
-    }
+    micro with_seed(seed: i32) -> Self
 
     [host_contract]
-    micro next_i32(mut self, max_exclusive: i32) -> i32 {
-        if max_exclusive <= 0 {
-            return 0
-        }
-
-        return __random_fallback_next_i32(self, max_exclusive)
-    }
+    micro next_i32(mut self, max_exclusive: i32) -> i32
 
     micro next_range(mut self, min: i32, max: i32) -> i32 {
         if max <= min {
@@ -44,9 +29,7 @@ imply Random {
     }
 
     [host_contract]
-    micro next_f64(mut self) -> f64 {
-        return f64(__random_fallback_next_i32(self, 2147483647)) / 2147483647.0
-    }
+    micro next_f64(mut self) -> f64
 }
 
 micro __random_normalize_seed(seed: i32) -> i32 {
