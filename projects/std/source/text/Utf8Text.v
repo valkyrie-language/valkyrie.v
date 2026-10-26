@@ -20,11 +20,13 @@ imply Utf8Text {
         return Self { _repr: bytes }
     }
 
-    micro byte_length(self) -> i32 {
-        return self._repr.length as i32
+    micro byte_length(self) -> usize {
+        return self._repr.length
     }
 
-    micro count_char(self) -> usize {
+    # Unicode scalar count (std). CLR host_provider must not flatten to String.get_Length.
+    [host_contract]
+    micro length(self) -> usize {
         let mut index: usize = 0
         let mut count: usize = 0
         while index < self._repr.length {
@@ -40,41 +42,17 @@ imply Utf8Text {
         return count
     }
 
-    # Unicode scalar count (std). CLR host_provider must not flatten to String.get_Length.
-    [host_contract]
-    micro length(self) -> i32 {
-        return self.count_char() as i32
-    }
-
     micro is_empty(self) -> bool {
         return self.byte_length() == 0
     }
 
     [host_contract]
     micro equals(self, other: utf8) -> bool {
-        if self._repr.length != other._repr.length {
-            return false
-        }
-        let mut index: usize = 0
-        while index < self._repr.length {
-            if self._repr⁅index⁆ != other._repr⁅index⁆ {
-                return false
-            }
-            index = index + 1
-        }
-        return true
+        return self == other
     }
 
     micro not_equals(self, other: utf8) -> bool {
-        return !self.equals(other)
-    }
-
-    infix `==`(self, other: utf8): bool {
-        return self.equals(other)
-    }
-
-    infix `!=`(self, other: utf8): bool {
-        return self.not_equals(other)
+        return self != other
     }
 
     infix `+`(self, other: utf8): utf8 {
@@ -83,29 +61,18 @@ imply Utf8Text {
 
     [host_contract]
     micro concat(self, other: utf8) -> utf8 {
-        let mut bytes: [u8] = []
-        let mut index: usize = 0
-        while index < self._repr.length {
-            bytes = push(bytes, self._repr⁅index⁆)
-            index = index + 1
-        }
-        index = 0
-        while index < other._repr.length {
-            bytes = push(bytes, other._repr⁅index⁆)
-            index = index + 1
-        }
-        return Utf8Text { _repr: bytes }
+        return self.concat_repr(other)
     }
 
     [host_contract]
     micro contains(self, value: utf8) -> bool {
-        return self.index_of(value) >= 0
+        return self.index_of(value).is_some()
     }
 
     [host_contract]
     micro starts_with(self, prefix: utf8) -> bool {
-        let prefix_length: i32 = prefix.length()
-        let self_length: i32 = self.length()
+        let prefix_length: usize = prefix.length()
+        let self_length: usize = self.length()
         if prefix_length > self_length {
             return false
         }
@@ -115,8 +82,8 @@ imply Utf8Text {
 
     [host_contract]
     micro ends_with(self, suffix: utf8) -> bool {
-        let suffix_length: i32 = suffix.length()
-        let self_length: i32 = self.length()
+        let suffix_length: usize = suffix.length()
+        let self_length: usize = self.length()
         if suffix_length > self_length {
             return false
         }
@@ -126,7 +93,7 @@ imply Utf8Text {
 
     # Scalar index of `value` (std). CLR host_provider converts via UTF-16 walk — not String.IndexOf alone.
     [host_contract]
-    micro index_of(self, value: utf8) -> i32 {
+    micro index_of(self, value: utf8) -> Option<usize> {
         return self.index_of_repr(value)
     }
 
@@ -150,46 +117,46 @@ imply Utf8Text {
 
     micro split(self, separator: utf8) -> [utf8] {
         let mut result: [utf8] = []
-        let separator_length: i32 = separator.length()
+        let separator_length: usize = separator.length()
 
-        if separator_length <= 0 {
+        if separator_length == 0 {
             push(result, self)
             return result
         }
 
         let mut remaining: utf8 = self
         while true {
-            let index: i32 = remaining.index_of(separator)
-            if index < 0 {
+            let index_option: Option<usize> = remaining.index_of(separator)
+            if index_option.is_none() {
                 push(result, remaining)
                 return result
             }
 
+            let index: usize = index_option.unwrap()
             push(result, remaining.slice(0, index))
 
-            let remaining_length: i32 = remaining.length()
-            let next_start: i32 = index + separator_length
-            let next_length: i32 = remaining_length - next_start
-            if next_length <= 0 {
-                # Must push utf8/string — never a bare Utf8Text value into `[utf8]`
-                # (CLR lowers `[utf8]` as `string[]`; Utf8Text slots make Trim AV).
+            let remaining_length: usize = remaining.length()
+            let next_start: usize = index + separator_length
+            if next_start >= remaining_length {
                 push(result, "")
                 return result
             }
 
+            let next_length: usize = remaining_length - next_start
             remaining = remaining.slice(next_start, next_length)
         }
     }
 
     # Scalar slice(start, count) (std). CLR host_provider must not flatten to String.Substring without conversion.
     [host_contract]
-    micro slice(self, start: i32, count: i32) -> utf8 {
-        if start < 0 || count < 0 {
+    micro slice(self, start: usize, count: usize) -> utf8 {
+        let scalar_length: usize = self.length()
+        if start > scalar_length {
             return Utf8Text { _repr: [] }
         }
 
-        let start_index: usize = start as usize
-        let count_value: usize = count as usize
+        let start_index: usize = start
+        let count_value: usize = count
         let start_byte: usize = self.byte_offset(start_index)
         let end_byte: usize = self.byte_offset(start_index + count_value)
 
@@ -248,13 +215,13 @@ imply Utf8Text {
         return byte_index
     }
 
-    private micro index_of_repr(self, value: utf8) -> i32 {
+    private micro index_of_repr(self, value: utf8) -> Option<usize> {
         if value._repr.length == 0 {
-            return 0
+            return Some(0)
         }
 
         if value._repr.length > self._repr.length {
-            return -1
+            return option_none::<usize>()
         }
 
         let mut offset: usize = 0
@@ -278,24 +245,20 @@ imply Utf8Text {
                     char_index = char_index + 1
                 }
 
-                return char_index as i32
+                return Some(char_index)
             }
 
             offset = offset + self.char_width(offset)
         }
 
-        return -1
+        return option_none::<usize>()
     }
 
-    micro char_at(self, index: i32) -> Option<char> {
-        if index < 0 {
+    micro char_at(self, index: usize) -> Option<char> {
+        if index >= self.length() {
             return option_none::<char>()
         }
-        let target: usize = index as usize
-        if target >= self.count_char() {
-            return option_none::<char>()
-        }
-        let start: usize = self.byte_offset(target)
+        let start: usize = self.byte_offset(index)
         if start >= self._repr.length {
             return option_none::<char>()
         }
@@ -329,14 +292,6 @@ imply Utf8Text {
     micro chars(self) -> Utf8Iterator {
         return Utf8Iterator::new(self)
     }
-
-    suffix `⁅⁆`(self, cardinal: usize): u8 {
-        return self._repr⁅cardinal⁆
-    }
-
-    suffix `⁅⁆=`(mut self, cardinal: usize, value: u8): unit {
-        self._repr⁅cardinal⁆ = value
-    }
 }
 
 imply Utf8Text: std::iterator::IntoIterator {
@@ -345,5 +300,66 @@ imply Utf8Text: std::iterator::IntoIterator {
 
     micro into_iterator(self): Utf8Iterator {
         return self.chars()
+    }
+}
+
+imply Utf8Text {
+    suffix `⁅ ⁆`(self, cardinal: usize): u8 {
+        return self._repr⁅cardinal⁆
+    }
+
+    suffix `⁅ ⁆=`(mut self, cardinal: usize, value: u8): unit {
+        self._repr⁅cardinal⁆ = value
+    }
+
+    private micro equals_repr(self, other_repr: [u8]) -> bool {
+        if self._repr.length != other_repr.length {
+            return false
+        }
+        let mut index: usize = 0
+        while index < self._repr.length {
+            if self._repr⁅index⁆ != other_repr⁅index⁆ {
+                return false
+            }
+            index = index + 1
+        }
+        return true
+    }
+
+    private micro concat_repr(self, other: utf8) -> utf8 {
+        let mut bytes: [u8] = []
+        let mut index: usize = 0
+        while index < self._repr.length {
+            bytes = push(bytes, self._repr⁅index⁆)
+            index = index + 1
+        }
+
+        index = 0
+        while index < other._repr.length {
+            bytes = push(bytes, other._repr⁅index⁆)
+            index = index + 1
+        }
+
+        return Utf8Text { _repr: bytes }
+    }
+}
+
+imply Utf8Text: core::primitive::Eq {
+    infix `==`(self, other: utf8): bool {
+        return self.equals_repr(other._repr)
+    }
+
+    infix `!=`(self, other: utf8): bool {
+        return !(self == other)
+    }
+}
+
+imply Utf8Text: core::primitive::Identical {
+    infix `===`(self, other: utf8): bool {
+        return self == other
+    }
+
+    infix `!==`(self, other: utf8): bool {
+        return self != other
     }
 }

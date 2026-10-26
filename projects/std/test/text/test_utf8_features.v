@@ -26,11 +26,11 @@ micro `test utf8 text features`() {
         panic("utf8 ends_with test failed")
     }
 
-    if value.index_of(Utf8Text::from_bytes([108, 108])) != 2 {
+    if value.index_of(Utf8Text::from_bytes([108, 108])) != Some(2) {
         panic("utf8 index_of test failed")
     }
 
-    let part: utf8 = utf8_substr(value, 1, 3)
+    let part: utf8 = utf8_slice(value, 1, 3)
     if part.length() != 3 {
         panic("utf8 substring length test failed")
     }
