@@ -359,7 +359,7 @@ imply Utf8Text: core::primitive::Identical {
         return self == other
     }
 
-    infix `!==`(self, other: utf8): bool {
+    infix `=!=`(self, other: utf8): bool {
         return self != other
     }
 }
