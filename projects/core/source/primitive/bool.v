@@ -6,7 +6,7 @@ namespace core::primitive;
 structure bool { }
 
 imply bool {
-    prefix `!`(self): Self {
+    prefix `!`(self): bool {
         if self {
             return false
         }
@@ -14,6 +14,9 @@ imply bool {
         return true
     }
 
+}
+
+imply bool: Eq {
     infix `==`(self, rhs: Self): bool {
         if self {
             return rhs
@@ -23,6 +26,16 @@ imply bool {
     }
 
     infix `!=`(self, rhs: Self): bool {
-        !(self == rhs)
+        return !(self == rhs)
+    }
+}
+
+imply bool: Identical {
+    infix `===`(self, rhs: Self): bool {
+        return self == rhs
+    }
+
+    infix `!==`(self, rhs: Self): bool {
+        return self != rhs
     }
 }

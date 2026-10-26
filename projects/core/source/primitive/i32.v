@@ -30,14 +30,6 @@ imply i32 {
         __i32_pow(self, rhs)
     }
 
-    infix `==`(self, rhs: Self): bool {
-        __i32_eq(self, rhs)
-    }
-
-    infix `!=`(self, rhs: Self): bool {
-        !(self == rhs)
-    }
-
     infix `<`(self, rhs: Self): bool {
         __i32_lt(self, rhs)
     }
@@ -143,4 +135,24 @@ private micro __i32_shl(lhs: i32, rhs: i32): i32
 [host_contract]
 private micro __i32_shr(lhs: i32, rhs: i32): i32
 # end region
+
+imply i32: Eq {
+    infix `==`(self, rhs: Self): bool {
+        return __i32_eq(self, rhs)
+    }
+
+    infix `!=`(self, rhs: Self): bool {
+        return !(self == rhs)
+    }
+}
+
+imply i32: Identical {
+    infix `===`(self, rhs: Self): bool {
+        return self == rhs
+    }
+
+    infix `!==`(self, rhs: Self): bool {
+        return self != rhs
+    }
+}
 
