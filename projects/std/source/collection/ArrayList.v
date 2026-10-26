@@ -97,19 +97,19 @@ imply ArrayList<T> {
         insert(self._items, ordinal, value)
     }
 
-    suffix `[]`(self, ordinal: usize): Option<T> {
+    suffix `[ ]`(self, ordinal: usize): Option<T> {
         return self.get(ordinal)
     }
 
-    suffix `[]=`(mut self, ordinal: usize, value: T): unit {
+    suffix `[ ]=`(mut self, ordinal: usize, value: T): unit {
         self.set(ordinal, value)
     }
 
-    suffix `⁅⁆`(self, cardinal: usize): Option<T> {
+    suffix `⁅ ⁆`(self, cardinal: usize): Option<T> {
         return self.get(cardinal + 1)
     }
 
-    suffix `⁅⁆=`(mut self, cardinal: usize, value: T): unit {
+    suffix `⁅ ⁆=`(mut self, cardinal: usize, value: T): unit {
         self.set(cardinal + 1, value)
     }
 

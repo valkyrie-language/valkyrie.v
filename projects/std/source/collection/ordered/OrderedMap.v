@@ -144,7 +144,9 @@ imply OrderedMap<K, V> {
         }
     }
 
-    micro find_slot(self, key: K): Option<usize> {
+    micro find_slot(self, key: K): Option<usize>
+        where K: Eq, K: Hash
+    {
         let mut cursor: usize = 0
         while cursor < self._entries.length() {
             let entry: OrderedMapEntry<K, V> = self._entries.get(cursor + 1).unwrap()

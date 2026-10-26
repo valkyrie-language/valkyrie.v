@@ -54,20 +54,20 @@ imply Array<T> {
         return false
     }
 
-    # Names must match HIR sugar (`suffix []` / `suffix ⁅⁆`) with no interior spaces.
-    suffix `[]`(self, ordinal: usize): Option<T> {
+    # Names must match HIR sugar (`suffix [ ]` / `suffix ⁅ ⁆`).
+    suffix `[ ]`(self, ordinal: usize): Option<T> {
         return self.get(ordinal)
     }
 
-    suffix `[]=`(mut self, ordinal: usize, value: T): unit {
+    suffix `[ ]=`(mut self, ordinal: usize, value: T): unit {
         self.set(ordinal, value)
     }
 
-    suffix `⁅⁆`(self, cardinal: usize): Option<T> {
+    suffix `⁅ ⁆`(self, cardinal: usize): Option<T> {
         return self.get(cardinal + 1)
     }
 
-    suffix `⁅⁆=`(mut self, cardinal: usize, value: T): unit {
+    suffix `⁅ ⁆=`(mut self, cardinal: usize, value: T): unit {
         self.set(cardinal + 1, value)
     }
 }
