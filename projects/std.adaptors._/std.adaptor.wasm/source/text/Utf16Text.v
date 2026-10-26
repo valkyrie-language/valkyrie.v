@@ -1,108 +1,108 @@
-# std.adaptor.wasm: UTF-16 ÊñáÊú¨ host_provider
-# Node/Wasm Ë∑ØÂæÑ‰∏ä utf16 ÊòØÂÆø‰∏ªÂ≠óÁ¨¶‰∏≤Ôºõ‰∏çÂæóÂÅáËÆæ `_repr` Â≠óËäÇ/Á†ÅÂÖÉÊï∞ÁªÑÂ∏ÉÂ±Ä„ÄÇ
+# std.adaptor.wasm: UTF-16 Œƒ±æ host_provider
+# Node/Wasm ¬∑æ∂…œ utf16  «Àﬁ÷˜◊÷∑˚¥Æ£ª≤ªµ√ºŸ…Ë `_repr` ◊÷Ω⁄/¬Î‘™ ˝◊È≤ºæ÷°£
 
 namespace std.adaptor.wasm.text;
 
 [host_provider(std::text::Utf16Text::length)]
 micro host_length(value: std.text.utf16): isize {
-    return __host_utf16_length(value)
+    return __js_utf16_length(value)
 }
 
-[host_provider(std::text::Utf16Text::sub_string)]
-micro host_sub_string(value: std.text.utf16, start: isize, count: isize): std.text.utf16 {
-    return __host_utf16_slice(value, start, count)
+[host_provider(std::text::Utf16Text::slice)]
+micro host_slice(value: std.text.utf16, start: isize, count: isize): std.text.utf16 {
+    return __js_utf16_slice(value, start, count)
 }
 
 [host_provider(std::text::Utf16Text::concat)]
 micro host_concat(value: std.text.utf16, other: std.text.utf16): std.text.utf16 {
-    return __host_utf16_concat(value, other)
+    return __js_utf16_concat(value, other)
 }
 
 [host_provider(std::text::Utf16Text::contains)]
 micro host_contains(value: std.text.utf16, other: std.text.utf16): bool {
-    return __host_utf16_contains(value, other)
+    return __js_utf16_contains(value, other)
 }
 
 [host_provider(std::text::Utf16Text::starts_with)]
 micro host_starts_with(value: std.text.utf16, prefix: std.text.utf16): bool {
-    return __host_utf16_starts_with(value, prefix)
+    return __js_utf16_starts_with(value, prefix)
 }
 
 [host_provider(std::text::Utf16Text::ends_with)]
 micro host_ends_with(value: std.text.utf16, suffix: std.text.utf16): bool {
-    return __host_utf16_ends_with(value, suffix)
+    return __js_utf16_ends_with(value, suffix)
 }
 
 [host_provider(std::text::Utf16Text::index_of)]
 micro host_index_of(value: std.text.utf16, other: std.text.utf16): isize {
-    return __host_utf16_index_of(value, other)
+    return __js_utf16_index_of(value, other)
 }
 
 [host_provider(std::text::Utf16Text::trim)]
 micro host_trim(value: std.text.utf16): std.text.utf16 {
-    return __host_utf16_trim(value)
+    return __js_utf16_trim(value)
 }
 
 [host_provider(std::text::Utf16Text::to_lower)]
 micro host_to_lower(value: std.text.utf16): std.text.utf16 {
-    return __host_utf16_to_lower(value)
+    return __js_utf16_to_lower(value)
 }
 
 [host_provider(std::text::Utf16Text::to_upper)]
 micro host_to_upper(value: std.text.utf16): std.text.utf16 {
-    return __host_utf16_to_upper(value)
+    return __js_utf16_to_upper(value)
 }
 
 [host_provider(std::text::Utf16Text::replace)]
 micro host_replace(value: std.text.utf16, old_value: std.text.utf16, new_value: std.text.utf16): std.text.utf16 {
-    return __host_utf16_replace(value, old_value, new_value)
+    return __js_utf16_replace(value, old_value, new_value)
 }
 
 [host_provider(std::text::Utf16Text::equals)]
 micro host_equals(value: std.text.utf16, other: std.text.utf16): bool {
-    return __host_utf16_equals(value, other)
+    return __js_utf16_equals(value, other)
 }
 
 [host_provider(std::text::Utf16Text::char_at)]
 micro host_char_at(value: std.text.utf16, index: isize): u16 {
-    return __host_utf16_char_at(value, index)
+    return __js_utf16_char_at(value, index)
 }
 
 [wasm("env", "utf16_length")]
-private micro __host_utf16_length(s: utf16): isize
+private micro __js_utf16_length(s: utf16): isize
 
 [wasm("env", "utf16_slice")]
-private micro __host_utf16_slice(s: utf16, start: isize, count: isize): utf16
+private micro __js_utf16_slice(s: utf16, start: isize, count: isize): utf16
 
 [wasm("env", "utf16_concat")]
-private micro __host_utf16_concat(a: utf16, b: utf16): utf16
+private micro __js_utf16_concat(a: utf16, b: utf16): utf16
 
 [wasm("env", "utf16_contains")]
-private micro __host_utf16_contains(s: utf16, other: utf16): bool
+private micro __js_utf16_contains(s: utf16, other: utf16): bool
 
 [wasm("env", "utf16_starts_with")]
-private micro __host_utf16_starts_with(s: utf16, prefix: utf16): bool
+private micro __js_utf16_starts_with(s: utf16, prefix: utf16): bool
 
 [wasm("env", "utf16_ends_with")]
-private micro __host_utf16_ends_with(s: utf16, suffix: utf16): bool
+private micro __js_utf16_ends_with(s: utf16, suffix: utf16): bool
 
 [wasm("env", "utf16_index_of")]
-private micro __host_utf16_index_of(s: utf16, other: utf16): isize
+private micro __js_utf16_index_of(s: utf16, other: utf16): isize
 
 [wasm("env", "utf16_trim")]
-private micro __host_utf16_trim(s: utf16): utf16
+private micro __js_utf16_trim(s: utf16): utf16
 
 [wasm("env", "utf16_to_lower")]
-private micro __host_utf16_to_lower(s: utf16): utf16
+private micro __js_utf16_to_lower(s: utf16): utf16
 
 [wasm("env", "utf16_to_upper")]
-private micro __host_utf16_to_upper(s: utf16): utf16
+private micro __js_utf16_to_upper(s: utf16): utf16
 
 [wasm("env", "utf16_replace")]
-private micro __host_utf16_replace(s: utf16, old_value: utf16, new_value: utf16): utf16
+private micro __js_utf16_replace(s: utf16, old_value: utf16, new_value: utf16): utf16
 
 [wasm("env", "utf16_equals")]
-private micro __host_utf16_equals(a: utf16, b: utf16): bool
+private micro __js_utf16_equals(a: utf16, b: utf16): bool
 
 [wasm("env", "utf16_char_at")]
-private micro __host_utf16_char_at(s: utf16, index: isize): u16
+private micro __js_utf16_char_at(s: utf16, index: isize): u16

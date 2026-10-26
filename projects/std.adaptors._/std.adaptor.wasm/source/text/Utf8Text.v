@@ -9,80 +9,84 @@ namespace std.adaptor.wasm.text;
 
 [host_provider(std::text::Utf8Text::concat)]
 micro host_concat(value: std.text.utf8, other: std.text.utf8): std.text.utf8 {
-    return __host_utf8_concat(value, other)
+    return __js_utf8_concat(value, other)
 }
 
 [host_provider(std::text::Utf8Text::length)]
-micro host_length(value: std.text.utf8): i32 {
-    return __host_utf8_length(value)
+micro host_length(value: std.text.utf8): usize {
+    return __js_utf8_length(value) as usize
 }
 
 [host_provider(std::text::Utf8Text::trim)]
 micro host_trim(value: std.text.utf8): std.text.utf8 {
-    return __host_utf8_trim(value)
+    return __js_utf8_trim(value)
 }
 
 [host_provider(std::text::Utf8Text::replace)]
 micro host_replace(value: std.text.utf8, old_value: std.text.utf8, new_value: std.text.utf8): std.text.utf8 {
-    return __host_utf8_replace(value, old_value, new_value)
+    return __js_utf8_replace(value, old_value, new_value)
 }
 
 [host_provider(std::text::Utf8Text::starts_with)]
 micro host_starts_with(value: std.text.utf8, prefix: std.text.utf8): bool {
-    return __host_utf8_starts_with(value, prefix)
+    return __js_utf8_starts_with(value, prefix)
 }
 
 [host_provider(std::text::Utf8Text::ends_with)]
 micro host_ends_with(value: std.text.utf8, suffix: std.text.utf8): bool {
-    return __host_utf8_ends_with(value, suffix)
+    return __js_utf8_ends_with(value, suffix)
 }
 
 [host_provider(std::text::Utf8Text::contains)]
 micro host_contains(value: std.text.utf8, other: std.text.utf8): bool {
-    return __host_utf8_contains(value, other)
+    return __js_utf8_contains(value, other)
 }
 
 [host_provider(std::text::Utf8Text::equals)]
 micro host_equals(value: std.text.utf8, other: std.text.utf8): bool {
-    return __host_utf8_equals(value, other)
+    return __js_utf8_equals(value, other)
 }
 
 [host_provider(std::text::Utf8Text::index_of)]
-micro host_index_of(value: std.text.utf8, other: std.text.utf8): i32 {
-    return __host_utf8_index_of(value, other)
+micro host_index_of(value: std.text.utf8, other: std.text.utf8): Option<usize> {
+    let index: i32 = __js_utf8_index_of(value, other)
+    if index < 0 {
+        return option_none::<usize>()
+    }
+    return Some(index as usize)
 }
 
 [host_provider(std::text::Utf8Text::slice)]
-micro host_slice(value: std.text.utf8, start: i32, count: i32): std.text.utf8 {
-    return __host_utf8_slice(value, start, count)
+micro host_slice(value: std.text.utf8, start: usize, count: usize): std.text.utf8 {
+    return __js_utf8_slice(value, start as i32, count as i32)
 }
 
 [wasm("env", "utf8_concat")]
-private micro __host_utf8_concat(a: utf8, b: utf8): utf8
+private micro __js_utf8_concat(a: utf8, b: utf8): utf8
 
 [wasm("env", "utf8_length")]
-private micro __host_utf8_length(s: utf8): i32
+private micro __js_utf8_length(s: utf8): i32
 
 [wasm("env", "utf8_trim")]
-private micro __host_utf8_trim(s: utf8): utf8
+private micro __js_utf8_trim(s: utf8): utf8
 
 [wasm("env", "utf8_replace")]
-private micro __host_utf8_replace(s: utf8, old_value: utf8, new_value: utf8): utf8
+private micro __js_utf8_replace(s: utf8, old_value: utf8, new_value: utf8): utf8
 
 [wasm("env", "utf8_starts_with")]
-private micro __host_utf8_starts_with(s: utf8, prefix: utf8): bool
+private micro __js_utf8_starts_with(s: utf8, prefix: utf8): bool
 
 [wasm("env", "utf8_ends_with")]
-private micro __host_utf8_ends_with(s: utf8, suffix: utf8): bool
+private micro __js_utf8_ends_with(s: utf8, suffix: utf8): bool
 
 [wasm("env", "utf8_contains")]
-private micro __host_utf8_contains(s: utf8, other: utf8): bool
+private micro __js_utf8_contains(s: utf8, other: utf8): bool
 
 [wasm("env", "utf8_equals")]
-private micro __host_utf8_equals(a: utf8, b: utf8): bool
+private micro __js_utf8_equals(a: utf8, b: utf8): bool
 
 [wasm("env", "utf8_index_of")]
-private micro __host_utf8_index_of(s: utf8, other: utf8): i32
+private micro __js_utf8_index_of(s: utf8, other: utf8): i32
 
 [wasm("env", "utf8_slice")]
-private micro __host_utf8_slice(s: utf8, start: i32, count: i32): utf8
+private micro __js_utf8_slice(s: utf8, start: i32, count: i32): utf8
