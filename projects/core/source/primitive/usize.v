@@ -114,7 +114,7 @@ imply usize: Identical {
         return self == rhs
     }
 
-    infix `!==`(self, rhs: Self): bool {
+    infix `=!=`(self, rhs: Self): bool {
         return self != rhs
     }
 }
