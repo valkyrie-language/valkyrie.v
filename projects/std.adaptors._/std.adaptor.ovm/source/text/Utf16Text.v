@@ -5,8 +5,8 @@ micro host_length(value: std.text.utf16): isize {
     return value._repr.length
 }
 
-[host_provider(std::text::Utf16Text::sub_string)]
-micro host_sub_string(value: std.text.utf16, start: isize, count: isize): std.text.utf16 {
+[host_provider(std::text::Utf16Text::slice)]
+micro host_slice(value: std.text.utf16, start: isize, count: isize): std.text.utf16 {
     return value
 }
 
