@@ -26,14 +26,6 @@ imply usize {
         __usize_rem(self, rhs)
     }
 
-    infix `==`(self, rhs: Self): bool {
-        __usize_eq(self, rhs)
-    }
-
-    infix `!=`(self, rhs: Self): bool {
-        !(self == rhs)
-    }
-
     infix `<`(self, rhs: Self): bool {
         __usize_lt(self, rhs)
     }
@@ -106,3 +98,23 @@ private micro __usize_shl(lhs: usize, rhs: usize): usize
 
 [host_contract]
 private micro __usize_shr(lhs: usize, rhs: usize): usize
+
+imply usize: Eq {
+    infix `==`(self, rhs: Self): bool {
+        return __usize_eq(self, rhs)
+    }
+
+    infix `!=`(self, rhs: Self): bool {
+        return !(self == rhs)
+    }
+}
+
+imply usize: Identical {
+    infix `===`(self, rhs: Self): bool {
+        return self == rhs
+    }
+
+    infix `!==`(self, rhs: Self): bool {
+        return self != rhs
+    }
+}
