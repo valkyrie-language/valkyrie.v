@@ -84,7 +84,7 @@ imply ArrayList<T> {
             return None
         }
 
-        return __array_get(self._items, ordinal)
+        return Some(__array_get(self._items, ordinal))
     }
 
     [host_contract]
