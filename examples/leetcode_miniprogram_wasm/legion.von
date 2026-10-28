@@ -1,0 +1,22 @@
+# miniprogram target 维度已删除，由 vendor=wechat 替代 — 此 build 条目已废弃
+{
+    name: "leetcode_miniprogram_wasm",
+    version: "0.0.0.0",
+    description: "LeetCode 风格题解：微信小程序 wasm + js glue",
+    license: "MIT",
+    auto_link: {
+        core: true,
+        std: false
+    },
+    dependencies: {
+        "std": "workspace"
+    },
+    build: [
+        {
+            target: "wasm32-unknown-miniprogram-wasm",
+            publish: ["mini-program"],
+            source_map: true,
+            wat: true
+        }
+    ]
+}
