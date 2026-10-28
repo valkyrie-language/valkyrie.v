@@ -94,16 +94,16 @@
 | | 小游戏 | 小程序 |
 |:---|:---|:---|
 | publish | `mini-game` | `mini-program` |
-| SDK | `tencent.wechat.sdk`（`host: wechat`） | `tencent.wechat.miniprogram.sdk`（`host: wechat-miniprogram`） |
+| SDK | `tencent.wechat.sdk`（`host: wechat`） | `tencent.wechat.miniprogram.sdk`（`host: wechat`） |
 | UI | 小游戏运行时 / Canvas（非 VOA DOM） | 声明式 WXML/WXSS + `setData` |
 | 交付 | `asgard pack --target mini-game` | `asgard pack --target mini-program` |
-| 编译入口 | `legion build` | `asgard build`（`platform: wechat-miniprogram`） |
+| 编译入口 | `legion build`（`target: wasm32-wechat-unknown-wasm`） | `asgard build`（`platform: wechat-miniprogram`，`target: wasm32-wechat-unknown-wasm`） |
 
 推荐流程：
 
-1. `asgard.config.v` 设置 `platform: "wechat-miniprogram"`
+1. `asgard.config.v` 设置 `platform: "wechat-miniprogram"`，`target: "wasm32-wechat-unknown-wasm"`（`vendor = wechat`）
 2. `legion.von` 中 `publish: ["mini-program"]`（隐式注入小程序 SDK）
-3. `asgard build` 产出 `app.json`、`pages/*`、**宿主字节码包**（目标：无 WASM；RenderIR 编入制品）
+3. `asgard build` 产出 `app.json`、`pages/*`、**`.wasm`**（逻辑 AOT + asgard ui 尾段）
 4. `asgard pack --target mini-program` 补齐 `project.config.json` / `sitemap.json`
 5. 用微信开发者工具打开输出目录
 
