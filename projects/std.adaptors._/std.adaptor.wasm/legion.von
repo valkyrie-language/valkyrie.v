@@ -1,6 +1,6 @@
 {
     name: "std.adaptor.wasm",
-    description: "Valkyrie WebAssembly SDK -- Web 浏览器 API 绑定",
+    description: "Valkyrie WebAssembly SDK -- 浏览器 / 微信宿主 API 绑定（按 target 条件分流）",
     dependencies: {
         "core": "workspace",
         "std": "workspace"
@@ -11,6 +11,7 @@
         kind: "distribution-default",
         targets: [
             "wasm32-unknown-browser-wasm",
+            "wasm32-wechat-unknown-wasm",
             "wasm"
         ]
     },
@@ -26,7 +27,7 @@
             wat: true
         },
         {
-            target: "wechat"
+            target: "wasm32-wechat-unknown-wasm"
         }
     ],
     engines: {
