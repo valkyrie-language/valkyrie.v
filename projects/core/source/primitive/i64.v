@@ -26,14 +26,6 @@ imply i64 {
         __i64_rem(self, rhs)
     }
 
-    infix `==`(self, rhs: Self): bool {
-        __i64_eq(self, rhs)
-    }
-
-    infix `!=`(self, rhs: Self): bool {
-        !(self == rhs)
-    }
-
     infix `<`(self, rhs: Self): bool {
         __i64_lt(self, rhs)
     }
@@ -72,6 +64,16 @@ imply i64 {
 
     bit_shift_right(self, rhs: Self): Self {
         __i64_shr(self, rhs)
+    }
+}
+
+imply i64: Equal {
+    infix `==`(self, rhs: Self): bool {
+        return __i64_eq(self, rhs)
+    }
+
+    infix `!=`(self, rhs: Self): bool {
+        return !(self == rhs)
     }
 }
 
