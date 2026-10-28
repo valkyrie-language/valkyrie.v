@@ -267,7 +267,8 @@ arch-impl-spec[-abi]
 |:---|:---|
 | `ovm` | `ovm-unknown-unknown-managed` |
 | `gnosis` | `gnosis-unknown-native` |
-| `wasm` | `wasm32-unknown-browser-wasm` |
+| `wasm` | `wasm32-unknown-unknown-wasm` |
+| `browser` | `wasm32-unknown-browser-wasm` |
 | `node` | `wasm32-node-unknown-wasm` |
 | `deno` | `wasm32-deno-unknown-wasm` |
 | `bun` | `wasm32-bun-unknown-wasm` |
