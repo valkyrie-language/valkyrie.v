@@ -7,14 +7,14 @@
     },
     sdk_vendor: {
         organization: "tencent",
-        host: "wechat-miniprogram",
+        host: "wechat",
         kind: "platform-sdk",
-        targets: ["wechat-miniprogram-host"],
+        targets: ["wechat"],
         publish: ["mini-program"]
     },
     build: [
         {
-            target: "wechat-miniprogram-host",
+            target: "wechat",
             source_map: true,
             typescript: true,
             wat: true

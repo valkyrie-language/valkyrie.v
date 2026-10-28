@@ -10,9 +10,7 @@
         host: "browser",
         kind: "distribution-default",
         targets: [
-            "node",
-            "wasm32-unknown-browser-wasm",
-            "wasm32-node-unknown-wasm"
+            "wasm32-unknown-browser-wasm"
         ]
     },
     build: [
