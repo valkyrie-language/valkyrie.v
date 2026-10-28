@@ -29,6 +29,9 @@
             wat: true
         },
         {
+            target: "wasm32-wechat-unknown-wasm"
+        },
+        {
             target: "wasm32-node-unknown-wasm"
         }
     ],
