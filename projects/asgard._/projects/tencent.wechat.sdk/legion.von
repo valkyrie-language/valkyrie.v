@@ -9,12 +9,12 @@
         organization: "tencent",
         host: "wechat",
         kind: "platform-sdk",
-        targets: ["wasm32-unknown-browser-wasm"],
+        targets: ["wasm32-wechat-unknown-wasm"],
         publish: ["mini-game"]
     },
     build: [
         {
-            target: "wasm32-unknown-browser-wasm",
+            target: "wasm32-wechat-unknown-wasm",
             source_map: true,
             typescript: true,
             wat: true
