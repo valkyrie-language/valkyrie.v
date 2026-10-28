@@ -10,10 +10,15 @@
         host: "browser",
         kind: "distribution-default",
         targets: [
-            "wasm32-unknown-browser-wasm"
+            "wasm32-unknown-browser-wasm",
+            "wasm"
         ]
     },
     build: [
+        {
+            target: "wasm",
+            source_map: true
+        },
         {
             target: "wasm32-unknown-browser-wasm",
             source_map: true,
