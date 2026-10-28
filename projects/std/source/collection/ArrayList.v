@@ -114,7 +114,9 @@ imply ArrayList<T> {
     }
 
     [host_contract]
-    micro contains(self, value: T): bool {
+    micro contains(self, value: T): bool
+        where T: Equal
+    {
         loop item in self._items {
             if item == value {
                 return true

@@ -13,7 +13,9 @@ imply HashMultiSet<T> {
         }
     }
 
-    micro insert(mut self, value: T): usize {
+    micro insert(mut self, value: T): usize
+        where T: Equal & Hash
+    {
         let current: usize = self.count(value)
         let next: usize = current + 1
         self._counts.insert(value, next)
@@ -21,7 +23,9 @@ imply HashMultiSet<T> {
         return next
     }
 
-    micro remove(mut self, value: T): bool {
+    micro remove(mut self, value: T): bool
+        where T: Equal & Hash
+    {
         let current: usize = self.count(value)
         if current == 0 {
             return false
@@ -38,7 +42,9 @@ imply HashMultiSet<T> {
         return true
     }
 
-    micro remove_all(mut self, value: T): usize {
+    micro remove_all(mut self, value: T): usize
+        where T: Equal & Hash
+    {
         let current: usize = self.count(value)
         if current == 0 {
             return 0
@@ -49,7 +55,9 @@ imply HashMultiSet<T> {
         return current
     }
 
-    micro count(self, value: T): usize {
+    micro count(self, value: T): usize
+        where T: Equal & Hash
+    {
         let mut result: usize = 0
         self._counts.iterator(micro(entry_value: T, copies: usize) -> unit {
             if entry_value == value {
@@ -59,7 +67,9 @@ imply HashMultiSet<T> {
         return result
     }
 
-    micro contains(self, value: T): bool {
+    micro contains(self, value: T): bool
+        where T: Equal & Hash
+    {
         return self.count(value) > 0
     }
 
@@ -84,7 +94,9 @@ imply HashMultiSet<T> {
         return self._counts.keys()
     }
 
-    micro to_list(self): List<T> {
+    micro to_list(self): List<T>
+        where T: Equal & Hash
+    {
         let keys: List<T> = self._counts.keys()
         let mut result: List<T> = ArrayList::new(self._length)
         let mut i: usize = 0
@@ -102,7 +114,9 @@ imply HashMultiSet<T> {
         return result
     }
 
-    micro iter(self, f: micro(T) -> unit) -> unit {
+    micro iter(self, f: micro(T) -> unit) -> unit
+        where T: Equal & Hash
+    {
         let keys: List<T> = self._counts.keys()
         let mut i: usize = 0
         while i < keys.length() {
@@ -117,7 +131,9 @@ imply HashMultiSet<T> {
         }
     }
 
-    micro iterator(self, f: micro(T, usize) -> unit) -> unit {
+    micro iterator(self, f: micro(T, usize) -> unit) -> unit
+        where T: Equal & Hash
+    {
         let keys: List<T> = self._counts.keys()
         let mut i: usize = 0
         while i < keys.length() {
@@ -127,7 +143,9 @@ imply HashMultiSet<T> {
         }
     }
 
-    micro from_list(values: List<T>): Self {
+    micro from_list(values: List<T>): Self
+        where T: Equal & Hash
+    {
         let mut result: Self = Self::new(values.length())
         let mut i: usize = 0
         while i < values.length() {

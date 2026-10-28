@@ -10,17 +10,23 @@ class HashSet<T> {
 
 imply HashSet<T>: Set<T> {
     [host_contract]
-    micro insert(mut self, value: T): bool {
+    micro insert(mut self, value: T): bool
+        where T: Equal & Hash
+    {
         return self._impl.insert(value)
     }
 
     [host_contract]
-    micro remove(mut self, value: T): bool {
+    micro remove(mut self, value: T): bool
+        where T: Equal & Hash
+    {
         return self._impl.remove(value)
     }
 
     [host_contract]
-    micro contains(self, value: T): bool {
+    micro contains(self, value: T): bool
+        where T: Equal & Hash
+    {
         return self._impl.contains(value)
     }
 
@@ -50,7 +56,9 @@ imply HashSet<T>: Set<T> {
         return self._impl.to_list()
     }
 
-    micro from_list(list: List<T>): Self {
+    micro from_list(list: List<T>): Self
+        where T: Equal & Hash
+    {
         let mut result: Self = Self::new()
         list.iter(micro(value: T) -> unit { result.insert(value) })
         return result

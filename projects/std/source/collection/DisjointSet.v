@@ -15,7 +15,9 @@ imply DisjointSet<T> {
         }
     }
 
-    micro add(mut self, value: T): bool {
+    micro add(mut self, value: T): bool
+        where T: Equal & Hash
+    {
         if self._parent.contains_key(value) {
             return false
         }
@@ -26,11 +28,15 @@ imply DisjointSet<T> {
         return true
     }
 
-    micro contains(self, value: T): bool {
+    micro contains(self, value: T): bool
+        where T: Equal & Hash
+    {
         return self._parent.contains_key(value)
     }
 
-    micro find(mut self, value: T): Option<T> {
+    micro find(mut self, value: T): Option<T>
+        where T: Equal & Hash
+    {
         if !self.contains(value) {
             return None
         }
@@ -38,7 +44,9 @@ imply DisjointSet<T> {
         return Some(self.find_root(value))
     }
 
-    micro union(mut self, left: T, right: T): bool {
+    micro union(mut self, left: T, right: T): bool
+        where T: Equal & Hash
+    {
         self.add(left)
         self.add(right)
 
@@ -66,7 +74,9 @@ imply DisjointSet<T> {
         return true
     }
 
-    micro connected(mut self, left: T, right: T): bool {
+    micro connected(mut self, left: T, right: T): bool
+        where T: Equal & Hash
+    {
         if !self.contains(left) || !self.contains(right) {
             return false
         }
@@ -96,7 +106,9 @@ imply DisjointSet<T> {
         return self._parent.keys()
     }
 
-    micro find_root(mut self, value: T): T {
+    micro find_root(mut self, value: T): T
+        where T: Equal & Hash
+    {
         let parent: T = self._parent.get(value).unwrap()
         if parent == value {
             return value
