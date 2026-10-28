@@ -11,7 +11,7 @@
     },
     build: [
         {
-            target: "wasm32-unknown-browser-wasm",
+            target: "wasm32-wechat-unknown-wasm",
             publish: ["mini-game"],
             source_map: true,
             typescript: true,
