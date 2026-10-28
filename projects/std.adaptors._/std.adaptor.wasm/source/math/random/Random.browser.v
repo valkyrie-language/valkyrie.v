@@ -1,7 +1,6 @@
 # Browser / portable JS glue：`js.random` capability（非 Node 专有 API）
-# 文件级 `when`（Oak 暂用键值实参；`target.specification == "…"` 待前端 attribute 解析 `==` 后切换）
 
-[when(target.vendor == "browser")]
+[when(target.specification == "browser")]
 namespace std.adaptor.wasm.math.random;
 
 [host_provider(std::math::random::Random::new)]
