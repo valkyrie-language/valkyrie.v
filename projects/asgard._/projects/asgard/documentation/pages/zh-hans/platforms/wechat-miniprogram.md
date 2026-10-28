@@ -10,22 +10,23 @@ Asgard 的长期目标是同一套 AWSL + V 逻辑，编译到 Web / 微信小�
 |:---|:---|:---|
 | `publish` | `mini-game` | `mini-program` |
 | SDK | `tencent.wechat.sdk` | `tencent.wechat.miniprogram.sdk` |
-| `sdk-vendor.host` | `wechat` | `wechat-miniprogram` |
+| `sdk-vendor.host` | `wechat` | `wechat` |
+| 编译目标 | `wasm32-wechat-unknown-wasm` | `wasm32-wechat-unknown-wasm` |
 | UI | 小游戏 / **Canvas（自渲，有限）** | WXML / WXSS（**原生**） |
-| 逻辑 | 小游戏运行时字节码 | **`*.wasm`（AOT）** |
+| 逻辑 | **`*.wasm`（AOT）** | **`*.wasm`（AOT）** |
 | RenderIR | 不适用本管线 | **asgard ui 尾段编入 `.wasm`** |
 | VOA | 不走 VOA UI | `platform: wechat-miniprogram` |
 | 打包 | `asgard pack --target mini-game` | `asgard pack --target mini-program` |
 
 ## 配置
 
-`asgard.config.v`（`target = "wasm32-unknown-miniprogram-wasm"`；独立 MP prelude，shim 适配微信）：
+`asgard.config.v`（`target = "wasm32-wechat-unknown-wasm"`，`vendor = wechat`；独立 MP prelude，shim 适配微信）：
 
 ```v
 define_config(asgard) {
     name = "demo.wechat.miniprogram"
     platform = "wechat-miniprogram"
-    target = "wasm32-unknown-miniprogram-wasm"
+    target = "wasm32-wechat-unknown-wasm"
     build {
         output = "dist"
     }
@@ -39,7 +40,7 @@ define_config(asgard) {
     name: "demo.wechat.miniprogram",
     build: [
         {
-            target: "wasm32-unknown-miniprogram-wasm",
+            target: "wasm32-wechat-unknown-wasm",
             publish: ["mini-program"]
         }
     ]
@@ -58,7 +59,7 @@ asgard pack --target mini-program
 微信开发者工具打开 dist
 ```
 
-`asgard build` 默认使用 `asgard.config.v` 的 `target`（`wasm32-unknown-miniprogram-wasm`）。
+`asgard build` 默认使用 `asgard.config.v` 的 `target`（`wasm32-wechat-unknown-wasm`）。
 
 ## 响应式模型（早期）
 

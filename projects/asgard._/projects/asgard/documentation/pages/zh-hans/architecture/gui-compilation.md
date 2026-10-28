@@ -113,7 +113,7 @@ flowchart TB
 | `**browser`**            | `wasm32-*-browser-wasm` | `**.wasm`**（浏览器 AOT 模块）  | RenderIR → DOM 胶水；**IR 编入 WASM 制品元数据段 / 伴随 manifest**   |
 | `**android`**            | `aarch64-linux-android` | **`classes.dex`**（尾段 `ASGARDNT` + asgard ui） | 同一 dex 制品；Compose 壳 class |
 | `**ios`**                | `aarch64-apple-ios-`*   | **`AsgardHost`** Mach-O     | RenderIR **编入 Mach-O 尾段**                                        |
-| `**wechat-miniprogram`** | `wasm32-unknown-miniprogram-wasm` | **`*.wasm`**（逻辑 AOT） | **asgard ui 尾段** + WXML 层；`voa-runtime.js` 薄 shim |
+| `**wechat-miniprogram`** | `wasm32-wechat-unknown-wasm` | **`*.wasm`**（逻辑 AOT） | **asgard ui 尾段** + WXML 层；`voa-runtime.js` 薄 shim |
 | `**wechat-minigame`**    | —                       | **不走本 UI 管线**            | Canvas 自渲（有限）；`legion build` + `asgard pack --target mini-game` |
 
 
@@ -176,7 +176,7 @@ platform          target                      逻辑 AOT          RenderIR（Rel
 browser           wasm32-*-browser-wasm       WASM module       编入 .wasm / manifest
 android           aarch64-linux-android       classes.dex       尾段 ASGARDNT + asgard ui
 ios               aarch64-apple-ios-*         AsgardHost        尾段
-wechat-miniprogram  wasm32-unknown-miniprogram-wasm   *.wasm            尾段 asgard ui（无 ASGARDNT）
+wechat-miniprogram  wasm32-wechat-unknown-wasm     *.wasm            尾段 asgard ui（无 ASGARDNT）
 ```
 
 `publish` 只选 **VOA 哪条交付链**（`asgard pack --target …`），不改变字节码族。

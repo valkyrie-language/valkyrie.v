@@ -28,7 +28,7 @@ Asgard 采用约定优于配置，为应用提供类似 Next.js / Nuxt 的 **工
 | 层 | 技术 | 说明 |
 |:---|:---|:---|
 | 编译主线 | `valkyrie.v` 主编译线 | 复用语义闭合、family lowering 与交付体系 |
-| 逻辑字节码 | **按 `platform`** | `browser` → WASM；`android` → DEX；`ios` → Mach-O；`wechat-miniprogram` → 宿主字节码 |
+| 逻辑字节码 | **按 `platform` / `target`** | `browser` → WASM；`wechat`（`vendor = wechat`）→ WASM；`android` → DEX；`ios` → Mach-O |
 | UI | AWSL → RenderIR → **编入制品** | 各宿主原生视图消费（见 [UI 渲染策略](../guides/ui-rendering.md)） |
 | 脚本 | Valkyrie 语言（后缀 `.v`，与语言名同一事物） | `.v` 源码文件 |
 | Web 运行时 | `boot.js` + WASM | 仅 `platform: browser`；响应式在 WASM 内 |

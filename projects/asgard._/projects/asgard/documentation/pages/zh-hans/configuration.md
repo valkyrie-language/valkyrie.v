@@ -74,21 +74,22 @@ define_config(asgard) {
 
 | 目标三元组 | 说明 | 用途 |
 |:---|:---|:---|
-| `wasm32-unknown-browser` | WebAssembly（浏览器） | 前端（默认） |
-| `wasm32-unknown-node` | WebAssembly（Node.js） | 服务器侧 JS 宿主 |
-| `wasm32-unknown-deno` | WebAssembly（Deno） | Deno 宿主 |
-| `wasm32-unknown-bun` | WebAssembly（Bun） | Bun 宿主 |
-| `clr-microsoft-windows` | `CLR` 托管执行（Windows） | 后端（优先） |
+| `wasm32-unknown-browser-wasm` | WebAssembly（浏览器宿主） | 前端（默认） |
+| `wasm32-wechat-unknown-wasm` | WebAssembly（微信宿主） | 微信小程序 / 小游戏 |
+| `wasm32-node-unknown-wasm` | WebAssembly（Node.js） | 服务器侧 JS 宿主 |
+| `wasm32-deno-unknown-wasm` | WebAssembly（Deno） | Deno 宿主 |
+| `wasm32-bun-unknown-wasm` | WebAssembly（Bun） | Bun 宿主 |
+| `clr-microsoft-unknown-managed` | `CLR` 托管执行 | 后端（优先） |
 | `clr-unity-windows-il2cpp` | `CLR` 托管执行（Unity IL2CPP） | Unity |
-| `jvm-openjdk-linux` | `JVM` 托管执行 | 后端（可选） |
+| `jvm-openjdk-unknown-managed` | `JVM` 托管执行 | 后端（可选） |
 | `x86_64-unknown-linux-gnu` | 原生二进制（Linux） | 后端（可选） |
 | `lib` | 库 | 共享依赖 |
 
 配置示例：
 
 ```v
-target = "wasm32-unknown-browser"    // 前端
-target = "clr-microsoft-windows" // 后端
+target = "wasm32-unknown-browser-wasm"    // 前端
+target = "clr-microsoft-unknown-managed" // 后端
 target = "clr-unity-windows-il2cpp" // Unity
 ```
 

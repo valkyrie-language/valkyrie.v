@@ -102,7 +102,7 @@ repository = "https://github.com/user/repo"
 
 # 构建目标列表，每个元素指定一个 canonical triple
 [build]
-{target: "wasm32-unknown-browser"}
+{target: "wasm32-unknown-browser-wasm"}
 {target: "wasm32-unknown-wasi-wasi"}
 
 [dependencies]
@@ -144,13 +144,15 @@ tag = "latest"
 |:---|:---|:---|
 | `ovm` | `ovm-unknown-unknown-managed` | OVM 字节码（默认） |
 | `gnosis` | `gnosis-unknown-native` | GnosisVM 字节码 |
-| `wasm` | `wasm32-unknown-browser` | WebAssembly（浏览器） |
-| `node` | `wasm32-unknown-node` | WebAssembly（Node.js） |
-| `deno` | `wasm32-unknown-deno` | WebAssembly（Deno） |
-| `bun` | `wasm32-unknown-bun` | WebAssembly（Bun） |
+| `wasm` | `wasm32-unknown-unknown-wasm` | 中性 WASM（不选任何宿主 provider） |
+| `browser` | `wasm32-unknown-browser-wasm` | WebAssembly（浏览器宿主） |
+| `wechat` | `wasm32-wechat-unknown-wasm` | WebAssembly（微信宿主） |
+| `node` | `wasm32-node-unknown-wasm` | WebAssembly（Node.js） |
+| `deno` | `wasm32-deno-unknown-wasm` | WebAssembly（Deno） |
+| `bun` | `wasm32-bun-unknown-wasm` | WebAssembly（Bun） |
 | `wasi` | `wasm32-unknown-wasi-wasi` | WASI Component Model |
-| `clr` | `clr-microsoft-windows` | CLR 托管程序集 |
-| `jvm` | `jvm-openjdk-linux` | JVM 类文件 |
+| `clr` | `clr-microsoft-unknown-managed` | CLR 托管程序集 |
+| `jvm` | `jvm-openjdk-unknown-managed` | JVM 类文件 |
 | `native` | 宿主平台对应的 canonical triple | 原生二进制 |
 
 未指定 `build` 字段时默认编译目标为 `ovm`。
@@ -159,8 +161,8 @@ tag = "latest"
 
 ```von
 [build]
-{target: "wasm32-unknown-browser"}
-{target: "wasm32-unknown-node"}
+{target: "wasm32-unknown-browser-wasm"}
+{target: "wasm32-node-unknown-wasm"}
 {target: "wasm32-unknown-wasi-wasi"}
 {target: "clr-unity-windows-il2cpp"}
 ```

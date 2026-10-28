@@ -194,11 +194,13 @@ arch-impl-spec[-abi]
 
 **首版 Mono 路径（当前工具链）**：在 `legion.von` 使用 `target: clr-microsoft-unknown-managed` + `publish: ["unity-player"]`，由 `legion build` 输出 MSIL 并由 `valkyrie.unity` Editor 包导入 Unity；`clr-unity-*` 三元组解析与 IL2CPP 钩子留待后续阶段。
 
-### 6.4 WASM — 浏览器与 JS 宿主
+### 6.4 WASM — 浏览器 / JS / 微信宿主
 
 | CanonicalTarget | 含义 | 常用运行约定 |
 |:---|:---|:---|
+| `wasm32-unknown-unknown-wasm` | 中性 WASM 模块（不声明任何宿主） | 仅后端能力空间，不选宿主 provider |
 | `wasm32-unknown-browser-wasm` | 通用浏览器宿主标准 WASM 模块 | 导出逻辑入口，不产生 `_start`，可附带 JS glue |
+| `wasm32-wechat-unknown-wasm` | 微信宿主（小程序 / 小游戏）标准 WASM 模块 | 微信 runtime 与 `wx.*` glue |
 | `wasm32-node-unknown-wasm` | Node.js 宿主标准 WASM 模块 | Node 宿主 glue 与验证脚本 |
 | `wasm32-deno-unknown-wasm` | Deno 宿主标准 WASM 模块 | Deno 宿主 glue 与权限模型 |
 | `wasm32-bun-unknown-wasm` | Bun 宿主标准 WASM 模块 | Bun 宿主 glue 与运行脚本 |
@@ -250,6 +252,7 @@ arch-impl-spec[-abi]
 - 不自动生成 `_start`（除非 WASI）
 - JS glue 由 build 系统根据 `spec` 和 `impl` 决定，是 CanonicalTarget 的派生行为
 - `browser` 规范 → 浏览器 Web API
+- `wechat` vendor → 微信 runtime（小程序 / 小游戏），与 `browser` 互斥：`vendor = wechat` 不匹配 `specification = browser`，反之亦然
 - `node` / `deno` / `bun` 规范 → 各自 API 集合与加载方式
 
 ### 7.4 WASI
@@ -269,6 +272,7 @@ arch-impl-spec[-abi]
 | `gnosis` | `gnosis-unknown-native` |
 | `wasm` | `wasm32-unknown-unknown-wasm` |
 | `browser` | `wasm32-unknown-browser-wasm` |
+| `wechat` | `wasm32-wechat-unknown-wasm` |
 | `node` | `wasm32-node-unknown-wasm` |
 | `deno` | `wasm32-deno-unknown-wasm` |
 | `bun` | `wasm32-bun-unknown-wasm` |
@@ -318,7 +322,7 @@ Asgard **平台原生优先**；自渲仅小游戏等有限场景。详见 [UI �
 | `web-app` | Web 应用 | **WASM**（仅 Web） | VOA `platform: browser` |
 | `extension` | 浏览器扩展 | WASM | 后续 |
 | `mini-game` | 微信小游戏 | 小游戏运行时 | `asgard pack --target mini-game`（自渲，非 VOA GUI） |
-| `mini-program` | 微信小程序 | **宿主字节码** | `asgard build` + `asgard pack --target mini-program` |
+| `mini-program` | 微信小程序 | **WASM**（`wasm32-wechat-unknown-wasm`） | `asgard build` + `asgard pack --target mini-program` |
 | `apk` | Android | **DEX** | `asgard build` + `asgard pack --target apk` |
 | `ipa` | iOS | **Mach-O** | `asgard build` + `asgard pack --target ipa` |
 
