@@ -20,6 +20,7 @@
         "projects/std",
         "examples/test.module_system",
         "examples/leetcode_browser_wasm",
+        // "examples/leetcode_miniprogram_wasm",  # miniprogram target 维度已删除，由 vendor=wechat 替代 — 示例废弃
         "../game.geometry_wars"
     ],
     workspace: {

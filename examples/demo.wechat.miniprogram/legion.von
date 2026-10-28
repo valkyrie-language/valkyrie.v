@@ -1,3 +1,4 @@
+# miniprogram target 维度已删除，由 vendor=wechat 替代 — 此 build 条目已废弃
 {
     name: "demo.wechat.miniprogram",
     version: "0.1.0",

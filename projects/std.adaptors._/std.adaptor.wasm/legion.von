@@ -9,17 +9,21 @@
         organization: "valkyrie",
         host: "browser",
         kind: "distribution-default",
-        targets: ["node", "wasm32-unknown-browser-wasm", "wasm32-node-unknown-wasm"]
+        targets: [
+            "node",
+            "wasm32-unknown-browser-wasm",
+            "wasm32-node-unknown-wasm"
+        ]
     },
     build: [
-        {
-            target: "node"
-        },
         {
             target: "wasm32-unknown-browser-wasm",
             source_map: true,
             typescript: true,
             wat: true
+        },
+        {
+            target: "wechat"
         }
     ],
     engines: {
