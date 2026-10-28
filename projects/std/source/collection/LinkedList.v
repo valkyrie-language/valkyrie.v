@@ -145,7 +145,9 @@ imply LinkedList<T> {
     }
 
     [host_contract]
-    micro contains(self, value: T) -> bool {
+    micro contains(self, value: T) -> bool
+        where T: Equal
+    {
         let mut current: Option<LinkedListNode<T>> = self._head
         while current.is_some() {
             let node: LinkedListNode<T> = current.unwrap()

@@ -7,7 +7,9 @@ class OrderedSet<T> {
 
 imply OrderedSet<T>: Set<T> {
     [host_contract]
-    micro insert(mut self, value: T): bool {
+    micro insert(mut self, value: T): bool
+        where T: Equal & Hash
+    {
         if self.map.contains_key(value) {
             return false
         }
@@ -17,12 +19,16 @@ imply OrderedSet<T>: Set<T> {
     }
 
     [host_contract]
-    micro remove(mut self, value: T): bool {
+    micro remove(mut self, value: T): bool
+        where T: Equal & Hash
+    {
         return self.map.remove(value).is_some()
     }
 
     [host_contract]
-    micro contains(self, value: T): bool {
+    micro contains(self, value: T): bool
+        where T: Equal & Hash
+    {
         return self.map.contains_key(value)
     }
 
@@ -52,7 +58,9 @@ imply OrderedSet<T>: Set<T> {
         return self.map.keys()
     }
 
-    micro from_list(list: List<T>): Self {
+    micro from_list(list: List<T>): Self
+        where T: Equal & Hash
+    {
         let mut result: Self = Self::new()
         list.iter(micro(value: T) -> unit { result.insert(value) })
         return result

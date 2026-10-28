@@ -15,7 +15,9 @@ class OrderedMap<K, V> {
 
 imply OrderedMap<K, V>: Map<K, V> {
     [host_contract]
-    micro `get`(self, key: K): Option<V> {
+    micro `get`(self, key: K): Option<V>
+        where K: Equal & Hash
+    {
         let slot_option: Option<usize> = self.find_slot(key)
         if slot_option.is_none() {
             return option_none::<V>()
@@ -30,7 +32,9 @@ imply OrderedMap<K, V>: Map<K, V> {
     }
 
     [host_contract]
-    micro insert(mut self, key: K, value: V): Option<V> {
+    micro insert(mut self, key: K, value: V): Option<V>
+        where K: Equal & Hash
+    {
         let slot_option: Option<usize> = self.find_slot(key)
         if slot_option.is_some() {
             let slot: usize = slot_option.unwrap()
@@ -55,7 +59,9 @@ imply OrderedMap<K, V>: Map<K, V> {
     }
 
     [host_contract]
-    micro remove(mut self, key: K): Option<V> {
+    micro remove(mut self, key: K): Option<V>
+        where K: Equal & Hash
+    {
         let slot_option: Option<usize> = self.find_slot(key)
         if slot_option.is_none() {
             return option_none::<V>()
@@ -77,7 +83,9 @@ imply OrderedMap<K, V>: Map<K, V> {
     }
 
     [host_contract]
-    micro contains_key(self, key: K): bool {
+    micro contains_key(self, key: K): bool
+        where K: Equal & Hash
+    {
         return self.find_slot(key).is_some()
     }
 
@@ -123,7 +131,9 @@ imply OrderedMap<K, V>: Map<K, V> {
         self._count = 0
     }
 
-    micro iterator(self, f: micro(K, V) -> unit) -> unit {
+    micro iterator(self, f: micro(K, V) -> unit) -> unit
+        where K: Equal & Hash
+    {
         let keys: List<K> = self.keys()
         let mut i: usize = 0
         while i < keys.length() {
@@ -145,7 +155,7 @@ imply OrderedMap<K, V> {
     }
 
     micro find_slot(self, key: K): Option<usize>
-        where K: Equal, K: Hash
+        where K: Equal & Hash
     {
         let mut cursor: usize = 0
         while cursor < self._entries.length() {

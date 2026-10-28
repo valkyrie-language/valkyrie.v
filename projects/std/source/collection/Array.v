@@ -41,7 +41,9 @@ imply Array<T> {
         return self.get(item_count)
     }
 
-    micro contains(self, value: T): bool {
+    micro contains(self, value: T): bool
+        where T: Equal
+    {
         let mut i: usize = 1
         while i <= self.length() {
             if self.get(i).unwrap() == value {

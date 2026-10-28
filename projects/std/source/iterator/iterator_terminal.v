@@ -130,7 +130,7 @@ micro position<I, T>(self: I, pred: micro(T) -> bool): Option<usize>
 }
 
 micro contains<I, T>(self: I, value: T): bool
-    where I: Iterator<Item = T>
+    where I: Iterator<Item = T>, T: Equal
 {
     let mut iter: I = self
     while iter.has_next() {

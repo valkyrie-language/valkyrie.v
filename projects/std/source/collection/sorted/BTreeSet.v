@@ -20,7 +20,9 @@ imply BTreeSet<T> {
         }
     }
 
-    micro insert(mut self, value: T): bool {
+    micro insert(mut self, value: T): bool
+        where T: Equal
+    {
         if self._root.is_none() {
             let root: BTreeSetNode<T> = BTreeSetNode {
                 leaf: true,
@@ -56,7 +58,9 @@ imply BTreeSet<T> {
         return true
     }
 
-    micro remove(mut self, value: T): bool {
+    micro remove(mut self, value: T): bool
+        where T: Equal
+    {
         if !self.contains(value) {
             return false
         }
@@ -77,7 +81,9 @@ imply BTreeSet<T> {
         return true
     }
 
-    micro contains(self, value: T): bool {
+    micro contains(self, value: T): bool
+        where T: Equal
+    {
         if self._root.is_none() {
             return false
         }
@@ -128,7 +134,9 @@ imply BTreeSet<T> {
         return result
     }
 
-    micro from_list(list: List<T>): Self {
+    micro from_list(list: List<T>): Self
+        where T: Equal
+    {
         let mut result: Self = Self::new()
         list.iter(micro(value: T) -> unit {
             result.insert(value)
@@ -136,7 +144,9 @@ imply BTreeSet<T> {
         return result
     }
 
-    micro search_node(self, node: BTreeSetNode<T>, value: T): bool {
+    micro search_node(self, node: BTreeSetNode<T>, value: T): bool
+        where T: Equal
+    {
         if node.leaf {
             let mut cursor: usize = 0
             while cursor < node.keys.length() {

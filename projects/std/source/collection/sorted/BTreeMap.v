@@ -26,7 +26,9 @@ imply BTreeMap<K, V> {
         }
     }
 
-    micro `get`(self, key: K): Option<V> {
+    micro `get`(self, key: K): Option<V>
+        where K: Equal
+    {
         if self._root.is_none() {
             return option_none::<V>()
         }
@@ -34,7 +36,9 @@ imply BTreeMap<K, V> {
         return self.search_node(self._root.unwrap(), key)
     }
 
-    micro insert(mut self, key: K, value: V): Option<V> {
+    micro insert(mut self, key: K, value: V): Option<V>
+        where K: Equal
+    {
         if self._root.is_none() {
             let root: BTreeNode<K, V> = BTreeNode {
                 leaf: true,
@@ -74,7 +78,9 @@ imply BTreeMap<K, V> {
         return option_none::<V>()
     }
 
-    micro remove(mut self, key: K): Option<V> {
+    micro remove(mut self, key: K): Option<V>
+        where K: Equal
+    {
         let old_option: Option<V> = self.get(key)
         if old_option.is_none() {
             return option_none::<V>()
@@ -102,7 +108,9 @@ imply BTreeMap<K, V> {
         return old_option
     }
 
-    micro contains_key(self, key: K): bool {
+    micro contains_key(self, key: K): bool
+        where K: Equal
+    {
         return self.get(key).is_some()
     }
 
@@ -153,7 +161,9 @@ imply BTreeMap<K, V> {
         }
     }
 
-    micro search_node(self, node: BTreeNode<K, V>, key: K): Option<V> {
+    micro search_node(self, node: BTreeNode<K, V>, key: K): Option<V>
+        where K: Equal
+    {
         if node.leaf {
             let mut cursor: usize = 0
             while cursor < node.keys.length() {
@@ -170,7 +180,9 @@ imply BTreeMap<K, V> {
         return self.search_node(node.children.get(self.find_child_index(node, key) + 1).unwrap(), key)
     }
 
-    micro set_existing(self, node: BTreeNode<K, V>, key: K, value: V): Option<V> {
+    micro set_existing(self, node: BTreeNode<K, V>, key: K, value: V): Option<V>
+        where K: Equal
+    {
         if node.leaf {
             let mut cursor: usize = 0
             while cursor < node.keys.length() {

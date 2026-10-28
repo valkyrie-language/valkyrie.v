@@ -33,7 +33,9 @@ imply SwissTable<K, V> {
         }
     }
 
-    micro `get`(self, key: K): Option<V> {
+    micro `get`(self, key: K): Option<V>
+        where K: Equal & Hash
+    {
         let slot: Option<usize> = self.find_slot(key)
         if slot.is_none() {
             return None
@@ -43,7 +45,9 @@ imply SwissTable<K, V> {
         return Some(entry.value)
     }
 
-    micro insert(mut self, key: K, value: V): Option<V> {
+    micro insert(mut self, key: K, value: V): Option<V>
+        where K: Equal & Hash
+    {
         if self.should_grow() {
             self.rehash(swiss_table_next_capacity(self._states.length()))
         }
@@ -81,7 +85,9 @@ imply SwissTable<K, V> {
         return None
     }
 
-    micro remove(mut self, key: K): Option<V> {
+    micro remove(mut self, key: K): Option<V>
+        where K: Equal & Hash
+    {
         let slot: Option<usize> = self.find_slot(key)
         if slot.is_none() {
             return None
@@ -95,7 +101,9 @@ imply SwissTable<K, V> {
         return Some(entry.value)
     }
 
-    micro contains_key(self, key: K): bool {
+    micro contains_key(self, key: K): bool
+        where K: Equal & Hash
+    {
         return self.find_slot(key).is_some()
     }
 
@@ -167,7 +175,7 @@ imply SwissTable<K, V> {
     }
 
     micro find_slot(self, key: K): Option<usize>
-        where K: Equal, K: Hash
+        where K: Equal & Hash
     {
         let slot_count: usize = self._states.length()
         if slot_count == 0 {
@@ -197,7 +205,9 @@ imply SwissTable<K, V> {
         return None
     }
 
-    micro find_insert_slot(self, key: K, key_hash: usize): Option<usize> {
+    micro find_insert_slot(self, key: K, key_hash: usize): Option<usize>
+        where K: Equal
+    {
         let slot_count: usize = self._states.length()
         let mut first_deleted: Option<usize> = None
         let mut index: usize = key_hash % slot_count
@@ -241,7 +251,9 @@ imply SwissTable<K, V> {
         return (self._used + 1) * 4 >= slot_count * 3
     }
 
-    micro rehash(mut self, slot_count: usize): unit {
+    micro rehash(mut self, slot_count: usize): unit
+        where K: Equal & Hash
+    {
         let old_states: ArrayList<i32> = self._states
         let old_entries: ArrayList<Option<SwissTableEntry<K, V>>> = self._entries
 
