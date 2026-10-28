@@ -19,6 +19,10 @@
             target: "jvm-openjdk-unknown-managed"
         },
         {
+            target: "wasm",
+            source_map: true
+        },
+        {
             target: "wasm32-unknown-browser-wasm",
             source_map: true,
             typescript: true,
