@@ -13,7 +13,7 @@
     },
     build: [
         {
-            target: "wasm32-unknown-miniprogram-wasm",
+            target: "wechat",
             publish: ["mini-program"],
             source_map: true,
             wat: true
