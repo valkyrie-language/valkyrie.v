@@ -20,7 +20,8 @@ imply Array<T> {
 
     [host_contract]
     micro `get`(self, ordinal: usize): Option<T> {
-        return Some(__array_get(self, ordinal))
+        # 对外序数是 1 基（`first()` 取 1、`last()` 取 length），`__array_get` 是 0 基下标，必须减一。
+        return Some(__array_get(self, ordinal - 1))
     }
 
     [host_contract]
@@ -116,7 +117,8 @@ imply Array<T>: std::iterator::FromIterator {
     {
         let mut result: [T] = []
         loop item in iter {
-            push(result, item)
+            # `push` 是函数式追加（返回新数组）；丢弃返回值会让 `result` 始终为空，必须写回。
+            result = push(result, item)
         }
 
         return result
