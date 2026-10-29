@@ -33,7 +33,7 @@ imply FilterIterator<T, I>: Iterator {
             }
         }
 
-        return option_none::<Item>()
+        return option_none::<T>()
     }
 }
 

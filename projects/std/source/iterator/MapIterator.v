@@ -19,7 +19,7 @@ imply MapIterator<T, U, I>: Iterator {
 
     micro next(mut self): Option<U> {
         if !self._iter.has_next() {
-            return option_none::<Item>()
+            return option_none::<U>()
         }
 
         let item: T = self._iter.next().unwrap()

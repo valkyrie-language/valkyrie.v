@@ -70,7 +70,7 @@ micro find<I, T>(self: I, pred: micro(T) -> bool): Option<T>
         }
     }
 
-    return option_none::<Item>()
+    return option_none::<T>()
 }
 
 micro first<I, T>(self: I): Option<T>
@@ -78,7 +78,7 @@ micro first<I, T>(self: I): Option<T>
 {
     let mut iter: I = self
     if !iter.has_next() {
-        return option_none::<Item>()
+        return option_none::<T>()
     }
 
     return iter.next()
@@ -110,7 +110,7 @@ micro nth<I, T>(self: I, index: usize): Option<T>
         current = current + 1
     }
 
-    return option_none::<Item>()
+    return option_none::<T>()
 }
 
 micro position<I, T>(self: I, pred: micro(T) -> bool): Option<usize>
@@ -126,7 +126,7 @@ micro position<I, T>(self: I, pred: micro(T) -> bool): Option<usize>
         index = index + 1
     }
 
-    return option_none::<Item>()
+    return option_none::<usize>()
 }
 
 micro contains<I, T>(self: I, value: T): bool
