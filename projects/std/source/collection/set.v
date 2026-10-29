@@ -10,6 +10,6 @@ trait Set<T> {
     micro is_empty(self): bool
     micro clear(mut self) -> unit
     micro iter(self, f: micro(T) -> unit) -> unit
-    micro to_list(self): List<T>
-    micro from_list(list: List<T>): Self
+    micro to_list(self): ArrayList<T>
+    micro from_list(list: ArrayList<T>): Self
 }

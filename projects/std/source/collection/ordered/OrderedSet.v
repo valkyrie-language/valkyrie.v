@@ -47,18 +47,18 @@ imply OrderedSet<T>: Set<T> {
     }
 
     micro iter(self, f: micro(T) -> unit) -> unit {
-        let items: List<T> = self.to_list()
+        let items: ArrayList<T> = self.to_list()
         loop item in items {
             f(item)
         }
     }
 
     [host_contract]
-    micro to_list(self): List<T> {
+    micro to_list(self): ArrayList<T> {
         return self.map.keys()
     }
 
-    micro from_list(list: List<T>): Self
+    micro from_list(list: ArrayList<T>): Self
         where T: Equal & Hash
     {
         let mut result: Self = Self::new()

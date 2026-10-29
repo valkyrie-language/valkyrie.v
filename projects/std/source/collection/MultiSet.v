@@ -63,11 +63,11 @@ imply MultiSet<T> {
         self._impl.clear()
     }
 
-    micro distinct_elements(self): List<T> {
+    micro distinct_elements(self): ArrayList<T> {
         return self._impl.distinct_elements()
     }
 
-    micro to_list(self): List<T>
+    micro to_list(self): ArrayList<T>
         where T: Equal & Hash
     {
         return self._impl.to_list()
@@ -85,7 +85,7 @@ imply MultiSet<T> {
         self._impl.iterator(f)
     }
 
-    micro from_list(values: List<T>): Self
+    micro from_list(values: ArrayList<T>): Self
         where T: Equal & Hash
     {
         return Self {

@@ -90,15 +90,15 @@ imply HashMultiSet<T> {
         self._length = 0
     }
 
-    micro distinct_elements(self): List<T> {
+    micro distinct_elements(self): ArrayList<T> {
         return self._counts.keys()
     }
 
-    micro to_list(self): List<T>
+    micro to_list(self): ArrayList<T>
         where T: Equal & Hash
     {
-        let keys: List<T> = self._counts.keys()
-        let mut result: List<T> = ArrayList::new(self._length)
+        let keys: ArrayList<T> = self._counts.keys()
+        let mut result: ArrayList<T> = ArrayList::new(self._length)
         let mut i: usize = 0
         while i < keys.length() {
             let value: T = keys.get(i + 1).unwrap()
@@ -117,7 +117,7 @@ imply HashMultiSet<T> {
     micro iter(self, f: micro(T) -> unit) -> unit
         where T: Equal & Hash
     {
-        let keys: List<T> = self._counts.keys()
+        let keys: ArrayList<T> = self._counts.keys()
         let mut i: usize = 0
         while i < keys.length() {
             let value: T = keys.get(i + 1).unwrap()
@@ -134,7 +134,7 @@ imply HashMultiSet<T> {
     micro iterator(self, f: micro(T, usize) -> unit) -> unit
         where T: Equal & Hash
     {
-        let keys: List<T> = self._counts.keys()
+        let keys: ArrayList<T> = self._counts.keys()
         let mut i: usize = 0
         while i < keys.length() {
             let value: T = keys.get(i + 1).unwrap()
@@ -143,7 +143,7 @@ imply HashMultiSet<T> {
         }
     }
 
-    micro from_list(values: List<T>): Self
+    micro from_list(values: ArrayList<T>): Self
         where T: Equal & Hash
     {
         let mut result: Self = Self::new(values.length())

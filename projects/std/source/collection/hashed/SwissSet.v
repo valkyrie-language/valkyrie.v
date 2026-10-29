@@ -114,8 +114,8 @@ imply SwissSet<T> {
         }
     }
 
-    micro to_list(self): List<T> {
-        let mut result: List<T> = ArrayList::new(self._length)
+    micro to_list(self): ArrayList<T> {
+        let mut result: ArrayList<T> = ArrayList::new(self._length)
         let mut index: usize = 0
         while index < self._states.length() {
             if self._states.get(index + 1).unwrap() == 1 {
@@ -128,7 +128,7 @@ imply SwissSet<T> {
         return result
     }
 
-    micro from_list(values: List<T>): Self
+    micro from_list(values: ArrayList<T>): Self
         where T: Equal & Hash
     {
         let mut result: Self = Self::new(values.length())

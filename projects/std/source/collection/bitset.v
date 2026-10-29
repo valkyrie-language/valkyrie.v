@@ -5,7 +5,7 @@ namespace std.collection;
 [clr("System.Collections", "System.Collections.BitArray")]
 [jvm("java.util.BitSet")]
 class BitSet {
-    words: List<u64>
+    words: ArrayList<u64>
 }
 
 imply BitSet {
@@ -17,7 +17,7 @@ imply BitSet {
     [host_contract]
     micro with_capacity(bits: usize): Self {
         let words_needed: usize = (bits + 63) / 64
-        let mut words: List<u64> = ArrayList::new(0)
+        let mut words: ArrayList<u64> = ArrayList::new(0)
         let mut i: usize = 0
         while i < words_needed {
             words.push(0)

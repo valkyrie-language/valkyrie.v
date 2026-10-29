@@ -2,7 +2,7 @@ namespace std.collection;
 
 # std.collection: Stack - LIFO 栈
 class Stack<T> {
-    data: List<T>
+    data: ArrayList<T>
 }
 
 imply Stack<T> {

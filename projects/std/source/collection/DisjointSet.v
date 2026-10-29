@@ -102,7 +102,7 @@ imply DisjointSet<T> {
         self._count = 0
     }
 
-    micro elements(self): List<T> {
+    micro elements(self): ArrayList<T> {
         return self._parent.keys()
     }
 

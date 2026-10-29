@@ -86,7 +86,7 @@ imply BTreeMap<K, V> {
             return option_none::<V>()
         }
 
-        let mut entries: List<BTreeMapEntry<K, V>> = ArrayList::new(self._length)
+        let mut entries: ArrayList<BTreeMapEntry<K, V>> = ArrayList::new(self._length)
         self.iterator(micro(entry_key: K, entry_value: V) -> unit {
             if entry_key != key {
                 entries.push(BTreeMapEntry {
@@ -114,16 +114,16 @@ imply BTreeMap<K, V> {
         return self.get(key).is_some()
     }
 
-    micro keys(self): List<K> {
-        let mut result: List<K> = ArrayList::new(self._length)
+    micro keys(self): ArrayList<K> {
+        let mut result: ArrayList<K> = ArrayList::new(self._length)
         self.iterator(micro(key: K, value: V) -> unit {
             result.push(key)
         })
         return result
     }
 
-    micro values(self): List<V> {
-        let mut result: List<V> = ArrayList::new(self._length)
+    micro values(self): ArrayList<V> {
+        let mut result: ArrayList<V> = ArrayList::new(self._length)
         self.iterator(micro(key: K, value: V) -> unit {
             result.push(value)
         })
