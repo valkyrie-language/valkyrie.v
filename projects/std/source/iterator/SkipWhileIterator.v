@@ -29,7 +29,7 @@ imply SkipWhileIterator<T, I>: Iterator {
             }
 
             self._skipped = true
-            return option_none::<Item>()
+            return option_none::<T>()
         }
 
         return self._iter.next()

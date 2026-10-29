@@ -23,11 +23,11 @@ imply TakeWhileIterator<T, I>: Iterator {
 
     micro next(mut self): Option<T> {
         if self._done {
-            return option_none::<Item>()
+            return option_none::<T>()
         }
 
         if !self._iter.has_next() {
-            return option_none::<Item>()
+            return option_none::<T>()
         }
 
         let item: T = self._iter.next().unwrap()
@@ -36,7 +36,7 @@ imply TakeWhileIterator<T, I>: Iterator {
         }
 
         self._done = true
-        return option_none::<Item>()
+        return option_none::<T>()
     }
 }
 
