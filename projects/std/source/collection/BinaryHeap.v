@@ -1,7 +1,7 @@
 namespace std.collection;
 
 class BinaryHeap<T> {
-    data: List<T>
+    data: ArrayList<T>
 }
 
 imply BinaryHeap<T> {

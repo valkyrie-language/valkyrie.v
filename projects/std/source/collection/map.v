@@ -7,8 +7,8 @@ trait Map<K, V> {
     micro insert(mut self, key: K, value: V): Option<V>
     micro remove(mut self, key: K): Option<V>
     micro contains_key(self, key: K): bool
-    micro keys(self): List<K>
-    micro values(self): List<V>
+    micro keys(self): ArrayList<K>
+    micro values(self): ArrayList<V>
     micro length(self): usize
     micro is_empty(self): bool
     micro clear(mut self) -> unit

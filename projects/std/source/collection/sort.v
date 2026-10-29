@@ -2,7 +2,7 @@ namespace std.collection;
 
 # std.collection: sort - 排序算法
 
-micro quick_sort(list: List<T>, cmp: micro(T, T) -> i32): unit {
+micro quick_sort<T>(list: ArrayList<T>, cmp: micro(T, T) -> i32): unit {
     let length: usize = list.length()
     if length == 0 {
         return
@@ -10,7 +10,7 @@ micro quick_sort(list: List<T>, cmp: micro(T, T) -> i32): unit {
     quick_sort_range(list, 0, length - 1, cmp)
 }
 
-micro quick_sort_range(list: List<T>, lo: usize, hi: usize, cmp: micro(T, T) -> i32): unit {
+micro quick_sort_range<T>(list: ArrayList<T>, lo: usize, hi: usize, cmp: micro(T, T) -> i32): unit {
     if lo < hi {
         let p: usize = partition(list, lo, hi, cmp)
         if p > 0 {
@@ -20,7 +20,7 @@ micro quick_sort_range(list: List<T>, lo: usize, hi: usize, cmp: micro(T, T) -> 
     }
 }
 
-micro partition(list: List<T>, lo: usize, hi: usize, cmp: micro(T, T) -> i32): usize {
+micro partition<T>(list: ArrayList<T>, lo: usize, hi: usize, cmp: micro(T, T) -> i32): usize {
     let pivot: T = list.get(hi + 1).unwrap()
     let mut i: usize = lo
     let mut j: usize = lo
@@ -35,14 +35,14 @@ micro partition(list: List<T>, lo: usize, hi: usize, cmp: micro(T, T) -> i32): u
     return i
 }
 
-micro swap(list: List<T>, a: usize, b: usize): unit {
+micro swap<T>(list: ArrayList<T>, a: usize, b: usize): unit {
     let tmp: T = list.get(a + 1).unwrap()
     let b_val: T = list.get(b + 1).unwrap()
     list.set(a + 1, b_val)
     list.set(b + 1, tmp)
 }
 
-micro merge_sort(list: List<T>, cmp: micro(T, T) -> i32): unit {
+micro merge_sort<T>(list: ArrayList<T>, cmp: micro(T, T) -> i32): unit {
     let length: usize = list.length()
     if length == 0 {
         return
@@ -50,7 +50,7 @@ micro merge_sort(list: List<T>, cmp: micro(T, T) -> i32): unit {
     merge_sort_range(list, 0, length - 1, cmp)
 }
 
-micro merge_sort_range(list: List<T>, left: usize, right: usize, cmp: micro(T, T) -> i32): unit {
+micro merge_sort_range<T>(list: ArrayList<T>, left: usize, right: usize, cmp: micro(T, T) -> i32): unit {
     if left < right {
         let mid: usize = left + (right - left) / 2
         merge_sort_range(list, left, mid, cmp)
@@ -59,9 +59,9 @@ micro merge_sort_range(list: List<T>, left: usize, right: usize, cmp: micro(T, T
     }
 }
 
-micro merge(list: List<T>, left: usize, mid: usize, right: usize, cmp: micro(T, T) -> i32): unit {
-    let mut left_arr: List<T> = ArrayList::new(0)
-    let mut right_arr: List<T> = ArrayList::new(0)
+micro merge<T>(list: ArrayList<T>, left: usize, mid: usize, right: usize, cmp: micro(T, T) -> i32): unit {
+    let mut left_arr: ArrayList<T> = ArrayList::new(0)
+    let mut right_arr: ArrayList<T> = ArrayList::new(0)
     let mut i: usize = left
     while i <= mid {
         left_arr.push(list.get(i + 1).unwrap())

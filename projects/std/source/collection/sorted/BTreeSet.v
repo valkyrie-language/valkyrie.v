@@ -65,7 +65,7 @@ imply BTreeSet<T> {
             return false
         }
 
-        let values: List<T> = self.to_list()
+        let values: ArrayList<T> = self.to_list()
         self.clear()
 
         let mut index: usize = 0
@@ -105,7 +105,7 @@ imply BTreeSet<T> {
     }
 
     micro iter(self, f: micro(T) -> unit) -> unit {
-        let items: List<T> = self.to_list()
+        let items: ArrayList<T> = self.to_list()
         let mut index: usize = 0
         while index < items.length() {
             f(items.get(index + 1).unwrap())
@@ -113,8 +113,8 @@ imply BTreeSet<T> {
         }
     }
 
-    micro to_list(self): List<T> {
-        let mut result: List<T> = ArrayList::new(self._length)
+    micro to_list(self): ArrayList<T> {
+        let mut result: ArrayList<T> = ArrayList::new(self._length)
         if self._root.is_none() {
             return result
         }
@@ -134,7 +134,7 @@ imply BTreeSet<T> {
         return result
     }
 
-    micro from_list(list: List<T>): Self
+    micro from_list(list: ArrayList<T>): Self
         where T: Equal
     {
         let mut result: Self = Self::new()

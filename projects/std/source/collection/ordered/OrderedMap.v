@@ -90,7 +90,7 @@ imply OrderedMap<K, V>: Map<K, V> {
     }
 
     [host_contract]
-    micro keys(self): List<K> {
+    micro keys(self): ArrayList<K> {
         return self._entries
             .into_iterator()
             .filter(micro(entry: OrderedMapEntry<K, V>) -> bool {
@@ -103,7 +103,7 @@ imply OrderedMap<K, V>: Map<K, V> {
     }
 
     [host_contract]
-    micro values(self): List<V> {
+    micro values(self): ArrayList<V> {
         return self._entries
             .into_iterator()
             .filter(micro(entry: OrderedMapEntry<K, V>) -> bool {
@@ -134,7 +134,7 @@ imply OrderedMap<K, V>: Map<K, V> {
     micro iterator(self, f: micro(K, V) -> unit) -> unit
         where K: Equal & Hash
     {
-        let keys: List<K> = self.keys()
+        let keys: ArrayList<K> = self.keys()
         let mut i: usize = 0
         while i < keys.length() {
             let key: K = keys.get(i + 1).unwrap()

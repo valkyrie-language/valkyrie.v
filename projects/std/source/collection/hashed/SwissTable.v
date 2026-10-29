@@ -107,8 +107,8 @@ imply SwissTable<K, V> {
         return self.find_slot(key).is_some()
     }
 
-    micro keys(self): List<K> {
-        let mut result: List<K> = ArrayList::new(self._length)
+    micro keys(self): ArrayList<K> {
+        let mut result: ArrayList<K> = ArrayList::new(self._length)
         let mut index: usize = 0
         while index < self._states.length() {
             if self._states.get(index + 1).unwrap() == 1 {
@@ -122,8 +122,8 @@ imply SwissTable<K, V> {
         return result
     }
 
-    micro values(self): List<V> {
-        let mut result: List<V> = ArrayList::new(self._length)
+    micro values(self): ArrayList<V> {
+        let mut result: ArrayList<V> = ArrayList::new(self._length)
         let mut index: usize = 0
         while index < self._states.length() {
             if self._states.get(index + 1).unwrap() == 1 {

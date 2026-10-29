@@ -36,12 +36,12 @@ imply SortedMap<K, V>: Map<K, V> {
     }
 
     [host_contract]
-    micro keys(self): List<K> {
+    micro keys(self): ArrayList<K> {
         return self._impl.keys()
     }
 
     [host_contract]
-    micro values(self): List<V> {
+    micro values(self): ArrayList<V> {
         return self._impl.values()
     }
 
@@ -62,7 +62,7 @@ imply SortedMap<K, V>: Map<K, V> {
     micro iterator(self, f: micro(K, V) -> unit) -> unit
         where K: Equal
     {
-        let keys: List<K> = self.keys()
+        let keys: ArrayList<K> = self.keys()
         loop key in keys {
             f(key, self.get(key).unwrap())
         }

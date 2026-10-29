@@ -5,7 +5,7 @@ namespace std.collection;
 [clr("System.Collections", "System.Collections.Generic.LinkedList`1")]
 [jvm("java.util.ArrayDeque")]
 class Deque<T> {
-    data: List<T>
+    data: ArrayList<T>
 }
 
 imply Deque<T> {
