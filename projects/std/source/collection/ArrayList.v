@@ -9,6 +9,7 @@ class ArrayList<T> {
 
 imply ArrayList<T> {
     [host_contract]
+    [library_glue(construct)]
     micro new(capacity: usize): Self {
         return ArrayList { _items: [], _capacity: capacity }
     }
@@ -19,8 +20,11 @@ imply ArrayList<T> {
     }
 
     [host_contract]
+    [library_glue(push)]
     micro push(mut self, value: T): unit {
-        push(self._items, value)
+        # `push` 是函数式追加（`push(array, value): Array<T>`），必须把返回的新数组写回字段；
+        # 丢弃返回值等于什么都没做。
+        self._items = push(self._items, value)
     }
 
     micro pop(mut self): Option<T> {
@@ -57,6 +61,7 @@ imply ArrayList<T> {
     }
 
     [host_contract]
+    [library_glue(length)]
     micro length(self): usize {
         return self._items.length
     }
@@ -84,7 +89,16 @@ imply ArrayList<T> {
             return None
         }
 
-        return Some(__array_get(self._items, ordinal))
+        # `__array_get` 是底层 0 基下标，ArrayList 的序数是 1 基，必须减一。
+        return Some(__array_get(self._items, ordinal - 1))
+    }
+
+    # glue 需要裸元素；`get` 返回 `Option<T>` 不能复用。
+    [host_contract]
+    [library_glue(at)]
+    micro at(self, ordinal: usize): T {
+        # 与 `get` 同口径：1 基序数，底层 0 基下标。
+        return __array_get(self._items, ordinal - 1)
     }
 
     [host_contract]
@@ -93,8 +107,7 @@ imply ArrayList<T> {
             return
         }
 
-        remove(self._items, ordinal)
-        insert(self._items, ordinal, value)
+        self._items::[ordinal - 1] = value
     }
 
     suffix `[ ]`(self, ordinal: usize): Option<T> {
