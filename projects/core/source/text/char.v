@@ -7,6 +7,11 @@ structure char {
 }
 
 imply char {
+    # 码位 → char 具名构造（与 `Utf8Text.char_at` 的 `code_point as u16 as char` 同规则）。
+    micro from(code: u32) -> char {
+        return code as u16 as char
+    }
+
     micro is_ascii_digit(self): bool {
         let code: u32 = self as u32
         return code >= 48 && code <= 57
