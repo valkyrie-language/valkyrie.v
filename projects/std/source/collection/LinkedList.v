@@ -181,3 +181,13 @@ imply LinkedList<T> {
         }
     }
 }
+
+imply LinkedList<T>: LiteralSequence<T> {
+    micro with_length(_n: usize): Self {
+        return Self::new()
+    }
+
+    micro append(mut self, value: T): unit {
+        self.push_back(value)
+    }
+}
