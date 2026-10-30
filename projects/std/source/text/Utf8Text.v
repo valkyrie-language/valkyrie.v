@@ -120,7 +120,7 @@ imply Utf8Text {
         let separator_length: usize = separator.length()
 
         if separator_length == 0 {
-            push(result, self)
+            result = std::collection::push(result, self)
             return result
         }
 
@@ -128,17 +128,17 @@ imply Utf8Text {
         while true {
             let index_option: Option<usize> = remaining.index_of(separator)
             if index_option.is_none() {
-                push(result, remaining)
+                result = std::collection::push(result, remaining)
                 return result
             }
 
             let index: usize = index_option.unwrap()
-            push(result, remaining.slice(0, index))
+            result = std::collection::push(result, remaining.slice(0, index))
 
             let remaining_length: usize = remaining.length()
             let next_start: usize = index + separator_length
             if next_start >= remaining_length {
-                push(result, "")
+                result = std::collection::push(result, "")
                 return result
             }
 
@@ -167,7 +167,7 @@ imply Utf8Text {
         let mut bytes: [u8] = []
         let mut index: usize = start_byte
         while index < end_byte && index < self._repr.length {
-            push(bytes, self._repr⁅index⁆)
+            bytes = std::collection::push(bytes, self._repr⁅index⁆)
             index = index + 1
         }
 
@@ -330,13 +330,13 @@ imply Utf8Text {
         let mut bytes: [u8] = []
         let mut index: usize = 0
         while index < self._repr.length {
-            bytes = push(bytes, self._repr⁅index⁆)
+            bytes = std::collection::push(bytes, self._repr⁅index⁆)
             index = index + 1
         }
 
         index = 0
         while index < other._repr.length {
-            bytes = push(bytes, other._repr⁅index⁆)
+            bytes = std::collection::push(bytes, other._repr⁅index⁆)
             index = index + 1
         }
 
