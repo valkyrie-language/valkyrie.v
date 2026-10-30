@@ -172,6 +172,16 @@ imply ArrayList<T> {
     }
 }
 
+imply ArrayList<T>: LiteralSequence<T> {
+    micro with_length(n: usize): Self {
+        return Self::new(n)
+    }
+
+    micro append(mut self, value: T): unit {
+        self.push(value)
+    }
+}
+
 structure ArrayListIterator<T> {
     _list: ArrayList<T>
     _index: usize
