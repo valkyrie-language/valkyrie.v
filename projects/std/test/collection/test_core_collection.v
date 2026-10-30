@@ -133,7 +133,7 @@ micro `test linked list contains and clear`() {
 [test]
 micro `test linked list reverse iteration`() {
     let list: LinkedList<i32> = LinkedList::new()
-    let values: List<i32> = ArrayList::new(0)
+    let values: ArrayList<i32> = ArrayList::new(0)
 
     list.push_back(1)
     list.push_back(2)
@@ -362,8 +362,8 @@ micro `test multiset counts`() {
 [test]
 micro `test multiset remove and iterate counts`() {
     let set: MultiSet<i32> = MultiSet::new()
-    let keys: List<i32> = ArrayList::new(0)
-    let counts: List<usize> = ArrayList::new(0)
+    let keys: ArrayList<i32> = ArrayList::new(0)
+    let counts: ArrayList<usize> = ArrayList::new(0)
 
     set.insert(2)
     set.insert(2)
@@ -409,8 +409,8 @@ micro `test ordered map keeps insertion order`() {
     map.insert(2, 20)
     map.insert(1, 11)
 
-    let keys: List<i32> = map.keys()
-    let values: List<i32> = map.values()
+    let keys: ArrayList<i32> = map.keys()
+    let values: ArrayList<i32> = map.values()
     if map.length() != 3 {
         panic("ordered map length test failed")
     }
@@ -428,7 +428,7 @@ micro `test ordered map keeps insertion order`() {
     }
 
     map.insert(4, 40)
-    let keys_after: List<i32> = map.keys()
+    let keys_after: ArrayList<i32> = map.keys()
     if keys_after.get(0).unwrap() != 3 || keys_after.get(1).unwrap() != 2 || keys_after.get(2).unwrap() != 4 {
         panic("ordered map order after remove test failed")
     }
@@ -443,8 +443,8 @@ micro `test hash map keys and values`() {
     map.insert(2, 20)
     map.insert(1, 11)
 
-    let keys: List<i32> = map.keys()
-    let values: List<i32> = map.values()
+    let keys: ArrayList<i32> = map.keys()
+    let values: ArrayList<i32> = map.values()
     if map.length() != 3 {
         panic("hash map length test failed")
     }
@@ -485,7 +485,7 @@ micro `test hash set basic operations`() {
         panic("hash set contains test failed")
     }
 
-    let values: List<i32> = set.to_list()
+    let values: ArrayList<i32> = set.to_list()
     if values.length() != 3 {
         panic("hash set to_list length test failed")
     }
@@ -570,7 +570,7 @@ micro `test ordered set keeps insertion order`() {
         panic("ordered set duplicate insert test failed")
     }
 
-    let values: List<i32> = set.to_list()
+    let values: ArrayList<i32> = set.to_list()
     if set.length() != 3 {
         panic("ordered set length test failed")
     }
@@ -583,7 +583,7 @@ micro `test ordered set keeps insertion order`() {
         panic("ordered set remove test failed")
     }
 
-    let values_after: List<i32> = set.to_list()
+    let values_after: ArrayList<i32> = set.to_list()
     if values_after.get(0).unwrap() != 5 || values_after.get(1).unwrap() != 3 {
         panic("ordered set order after remove test failed")
     }
@@ -598,8 +598,8 @@ micro `test sorted map keeps key order`() {
     map.insert(2, 20)
     map.insert(1, 11)
 
-    let keys: List<i32> = map.keys()
-    let values: List<i32> = map.values()
+    let keys: ArrayList<i32> = map.keys()
+    let values: ArrayList<i32> = map.values()
     if map.length() != 3 {
         panic("sorted map length test failed")
     }
@@ -616,7 +616,7 @@ micro `test sorted map keeps key order`() {
         panic("sorted map remove test failed")
     }
 
-    let keys_after: List<i32> = map.keys()
+    let keys_after: ArrayList<i32> = map.keys()
     if keys_after.length() != 2 || keys_after.get(0).unwrap() != 1 || keys_after.get(1).unwrap() != 3 {
         panic("sorted map remove order test failed")
     }
@@ -631,7 +631,7 @@ micro `test sorted set keeps value order`() {
     set.insert(3)
     set.insert(1)
 
-    let values: List<i32> = set.to_list()
+    let values: ArrayList<i32> = set.to_list()
     if set.length() != 3 {
         panic("sorted set length test failed")
     }
@@ -644,7 +644,7 @@ micro `test sorted set keeps value order`() {
         panic("sorted set remove test failed")
     }
 
-    let values_after: List<i32> = set.to_list()
+    let values_after: ArrayList<i32> = set.to_list()
     if values_after.length() != 2 || values_after.get(0).unwrap() != 1 || values_after.get(1).unwrap() != 5 {
         panic("sorted set remove order test failed")
     }
