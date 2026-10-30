@@ -38,21 +38,53 @@ imply ArrayList<T> {
 
     [host_contract]
     micro insert(mut self, ordinal: usize, value: T): unit {
-        if ordinal == 0 || ordinal > self.length() + 1 {
+        let size: usize = self.length()
+        if ordinal == 0 || ordinal > size + 1 {
             return
         }
 
-        # Pending `array.insert` wasm lowering — avoid unresolved free `insert` in linked MIR.
+        # 纯 V 构造路径：函数式 `push` 重建并写回（与 `Utf8Text.concat_repr` 同形），
+        # 不依赖 pending 的自由 `insert` lowering。序数 1 基、`⁅ ⁆` 0 基。
+        let mut items: [T] = []
+        let mut index: usize = 0
+        while index < ordinal - 1 {
+            items = push(items, self._items⁅index⁆)
+            index = index + 1
+        }
+
+        items = push(items, value)
+        while index < size {
+            items = push(items, self._items⁅index⁆)
+            index = index + 1
+        }
+
+        self._items = items
     }
 
     [host_contract]
     micro remove(mut self, ordinal: usize): Option<T> {
-        if ordinal == 0 || ordinal > self.length() {
+        let size: usize = self.length()
+        if ordinal == 0 || ordinal > size {
             return None
         }
 
-        # Pending `array.remove` wasm lowering — avoid unresolved free `remove` in linked MIR.
-        return None
+        # 与 `insert` 同形的纯 V 重建路径；返回被移除元素，长度收缩一。
+        let removed: T = self._items⁅ordinal - 1⁆
+        let mut items: [T] = []
+        let mut index: usize = 0
+        while index < ordinal - 1 {
+            items = push(items, self._items⁅index⁆)
+            index = index + 1
+        }
+
+        index = index + 1
+        while index < size {
+            items = push(items, self._items⁅index⁆)
+            index = index + 1
+        }
+
+        self._items = items
+        return Some(removed)
     }
 
     [host_contract]
