@@ -26,7 +26,13 @@ imply Array<T> {
 
     [host_contract]
     micro `set`(mut self, ordinal: usize, value: T): unit {
+        if ordinal == 0 || ordinal > self.length() {
+            return
+        }
 
+        # 默认体必须语义正确：对外序数 1 基，`__array_set` 是 0 基下标写入（与 `__array_get` 同形）。
+        # target provider 只能特化本合同，不能以空体替代实现。
+        __array_set(self, ordinal - 1, value)
     }
 
     micro first(self): Option<T> {
@@ -81,7 +87,12 @@ private micro __array_len<T>(self: Array<T>): usize { }
 [intrinsic("builtin.array.get")]
 private micro __array_get<T>(self: Array<T>, ordinal: usize): T { }
 
-# Functional append: `result = push(result, item)`. Backends expand `[intrinsic("builtin.array.push")]`.
+# 0 基下标写入；`Array.set` 默认体与 target provider 共用同一合同。
+[intrinsic("builtin.array.set")]
+private micro __array_set<T>(self: Array<T>, ordinal: usize, value: T): unit { }
+
+# Functional append: `result = push(result, item)`. 公共特殊展开通道已退役：
+# push 按声明签名走普通调用链（Invoke），target provider 只能特化本合同。
 [intrinsic("builtin.array.push")]
 micro push<T>(array: Array<T>, value: T): Array<T> { }
 
