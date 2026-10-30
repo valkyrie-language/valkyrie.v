@@ -108,7 +108,8 @@ imply Batcher {
                 j = j + 1
             }
 
-            insert(sorted, pos + 1, cmd)
+            # 函数式 `insert` 返回新数组，必须写回（旧语句形调用在空体时代就是 no-op）。
+            sorted = insert(sorted, pos + 1, cmd)
             i = i + 1
         }
 
