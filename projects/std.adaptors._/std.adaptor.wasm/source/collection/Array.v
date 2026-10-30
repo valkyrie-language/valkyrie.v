@@ -25,7 +25,7 @@ private micro array_host_set<T>(mut array: [T], ordinal: usize, value: T): unit 
     array::[ordinal - 1] = value
 }
 
-[host_provider(std::collection::Array::push)]
+[host_provider(std::collection::push)]
 private micro array_host_push<T>(array: [T], value: T): [T] {
     let old_len: usize = array.length
     let mut new_array: [T] = new [T](old_len + 1)

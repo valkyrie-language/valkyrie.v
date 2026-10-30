@@ -91,17 +91,60 @@ private micro __array_get<T>(self: Array<T>, ordinal: usize): T { }
 [intrinsic("builtin.array.set")]
 private micro __array_set<T>(self: Array<T>, ordinal: usize, value: T): unit { }
 
-# Functional append: `result = push(result, item)`. 公共特殊展开通道已退役：
-# push 按声明签名走普通调用链（Invoke），target provider 只能特化本合同。
-[intrinsic("builtin.array.push")]
-micro push<T>(array: Array<T>, value: T): Array<T> { }
+# 函数式追加：`result = push(result, item)`，必须写回返回值。公共特殊展开通道已退役：
+# push 按声明签名走普通调用链（Invoke），target provider 只能特化本合同，不得以空体替代实现。
+[host_contract]
+micro push<T>(array: Array<T>, value: T): Array<T> {
+    let old_len: usize = __array_len(array)
+    let mut new_array: [T] = new [T](old_len + 1)
+    let mut i: usize = 0
+    while i < old_len {
+        # `__array_get`/`__array_set` 均为 0 基下标，拷贝循环同口径。
+        __array_set(new_array, i, __array_get(array, i))
+        i = i + 1
+    }
 
-# In-place insert/remove at ordinal (1-based). `ArrayList` host_contract delegates here.
-[intrinsic("array.insert")]
-micro insert<T>(array: Array<T>, ordinal: usize, value: T): unit { }
+    __array_set(new_array, old_len, value)
+    return new_array
+}
 
-[intrinsic("array.remove")]
-micro remove<T>(array: Array<T>, ordinal: usize): T { }
+# 函数式插入：在 1 基序数 `ordinal` 前插入 `value` 并返回新数组，调用方必须写回返回值。
+# 越界（`ordinal == 0` 或 `ordinal > length + 1`）返回原数组，即 `ArrayList.insert`
+# no-op 分支的函数式等价。
+micro insert<T>(array: Array<T>, ordinal: usize, value: T): Array<T> {
+    let size: usize = __array_len(array)
+    if ordinal == 0 || ordinal > size + 1 {
+        return array
+    }
+
+    # 纯 V 构造路径：函数式 `push` 重建（与 `ArrayList.insert` 同形）。序数 1 基、`⁅ ⁆` 0 基。
+    let mut items: [T] = []
+    let mut index: usize = 0
+    while index < ordinal - 1 {
+        items = push(items, __array_get(array, index))
+        index = index + 1
+    }
+
+    items = push(items, value)
+    while index < size {
+        items = push(items, __array_get(array, index))
+        index = index + 1
+    }
+
+    return items
+}
+
+# 越界（`ordinal == 0` 或 `ordinal > length`）返回 `None`；否则返回 1 基序数 `ordinal`
+# 处的元素。合同局限：返回类型 `Option<T>` 无法同时写回收缩后的数组，本函数不移除元素、
+# 不改变数组长度；需要真正收缩的调用方必须使用 `ArrayList.remove`。
+micro remove<T>(array: Array<T>, ordinal: usize): Option<T> {
+    let size: usize = __array_len(array)
+    if ordinal == 0 || ordinal > size {
+        return None
+    }
+
+    return Some(__array_get(array, ordinal - 1))
+}
 
 structure ArrayIterator<T> {
     _array: Array<T>
