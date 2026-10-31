@@ -1,14 +1,14 @@
 # Asgard 路由系统
 
-using voa_core.types
+using asgard.types
 
-struct VoaRouter {
+struct AsgardRouter {
     routes: list
     compiled: bool
     pattern_cache: map
 }
 
-struct VoaRoute {
+struct AsgardRoute {
     path: string
     view_name: string
     params: list
@@ -17,9 +17,9 @@ struct VoaRoute {
     route_meta: map
 }
 
-struct VoaRouteMatch {
+struct AsgardRouteMatch {
     found: bool
-    route: VoaRoute
+    route: AsgardRoute
     params: map
     query: map
 }
@@ -29,20 +29,20 @@ struct MatchResult {
     params: map
 }
 
-micro create_router(): VoaRouter {
-    return VoaRouter {
+micro create_router(): AsgardRouter {
+    return AsgardRouter {
         routes: []
         compiled: false
         pattern_cache: {}
     }
 }
 
-micro register_route(router: VoaRouter, path: string, view_name: string): VoaRouter {
+micro register_route(router: AsgardRouter, path: string, view_name: string): AsgardRouter {
     return register_route_with_method(router, path, view_name, "GET")
 }
 
-micro register_route_with_method(router: VoaRouter, path: string, view_name: string, method: string): VoaRouter {
-    let route = VoaRoute {
+micro register_route_with_method(router: AsgardRouter, path: string, view_name: string, method: string): AsgardRouter {
+    let route = AsgardRoute {
         path: path
         view_name: view_name
         params: extract_params(path)
@@ -51,15 +51,15 @@ micro register_route_with_method(router: VoaRouter, path: string, view_name: str
         route_meta: {}
     }
 
-    return VoaRouter {
+    return AsgardRouter {
         routes: [...router.routes, route]
         compiled: false
         pattern_cache: router.pattern_cache
     }
 }
 
-micro register_guarded_route(router: VoaRouter, path: string, view_name: string, method: string, guard: string): VoaRouter {
-    let route = VoaRoute {
+micro register_guarded_route(router: AsgardRouter, path: string, view_name: string, method: string, guard: string): AsgardRouter {
+    let route = AsgardRoute {
         path: path
         view_name: view_name
         params: extract_params(path)
@@ -68,20 +68,20 @@ micro register_guarded_route(router: VoaRouter, path: string, view_name: string,
         route_meta: {}
     }
 
-    return VoaRouter {
+    return AsgardRouter {
         routes: [...router.routes, route]
         compiled: false
         pattern_cache: router.pattern_cache
     }
 }
 
-micro match_route(router: VoaRouter, path: string): VoaRoute {
+micro match_route(router: AsgardRouter, path: string): AsgardRoute {
     let result = match_route_full(router, path, "GET")
     if (result.found) {
         return result.route
     }
 
-    return VoaRoute {
+    return AsgardRoute {
         path: path
         view_name: ""
         params: []
@@ -91,7 +91,7 @@ micro match_route(router: VoaRouter, path: string): VoaRoute {
     }
 }
 
-micro match_route_full(router: VoaRouter, path: string, method: string): VoaRouteMatch {
+micro match_route_full(router: AsgardRouter, path: string, method: string): AsgardRouteMatch {
     let segments = split_path(path)
 
     loop route in router.routes {
@@ -106,7 +106,7 @@ micro match_route_full(router: VoaRouter, path: string, method: string): VoaRout
 
         let match_result = match_segments(route_segments, segments)
         if (match_result.matched) {
-            return VoaRouteMatch {
+            return AsgardRouteMatch {
                 found: true
                 route: route
                 params: match_result.params
@@ -115,9 +115,9 @@ micro match_route_full(router: VoaRouter, path: string, method: string): VoaRout
         }
     }
 
-    return VoaRouteMatch {
+    return AsgardRouteMatch {
         found: false
-        route: VoaRoute {
+        route: AsgardRoute {
             path: ""
             view_name: ""
             params: []

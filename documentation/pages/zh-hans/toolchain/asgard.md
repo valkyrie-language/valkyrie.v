@@ -71,7 +71,7 @@ my_workspace/
 │   │   └── legion.von         # 包定义
 │   ├── project-2/             # 后端项目
 │   └── shared/                # 共享库
-├── voa.workspace.v            # 工作区配置
+├── asgard.workspace.v            # 工作区配置
 └── legion.lock                # 依赖锁定
 ```
 

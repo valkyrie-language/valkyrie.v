@@ -2,10 +2,10 @@
 <div class="hmr-home">
     <Card variant="elevated" style="margin-bottom: 24px">
         <h2 style="margin:0 0 12px">HMR + DevTools 开发体验</h2>
-        <p style="margin:0; color: var(--voa-text-secondary); line-height: 1.8">
+        <p style="margin:0; color: var(--asgard-text-secondary); line-height: 1.8">
             右上角 HMR 指示器显示当前热替换状态。修改任何 <code>.awsl</code> 或 <code>.v</code> 文件，
             浏览器即时更新（<200ms），无需手动刷新。出现编译错误时，全屏错误覆盖层自动弹出。
-            按 <kbd style="padding:1px 5px; border-radius:3px; border:1px solid var(--voa-border); font-family:monospace; font-size:11px">Ctrl+Shift+D</kbd> 打开 DevTools 面板检查框架内部状态。
+            按 <kbd style="padding:1px 5px; border-radius:3px; border:1px solid var(--asgard-border); font-family:monospace; font-size:11px">Ctrl+Shift+D</kbd> 打开 DevTools 面板检查框架内部状态。
         </p>
     </Card>
 
@@ -57,8 +57,8 @@
     margin: 0;
     padding-left: 20px;
     font-size: 13px;
-    color: var(--voa-text-secondary);
+    color: var(--asgard-text-secondary);
     line-height: 2;
 }
-.hmr-list code { padding: 1px 4px; border-radius: 3px; background: var(--voa-hover); color: var(--voa-accent); font-size: 12px; }
+.hmr-list code { padding: 1px 4px; border-radius: 3px; background: var(--asgard-hover); color: var(--asgard-accent); font-size: 12px; }
 </style>

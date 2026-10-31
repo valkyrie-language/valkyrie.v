@@ -1,7 +1,7 @@
 define_config(asgard) {
     project_type = "application",
         target = "wasm32-unknown-browser-wasm",
-        name = "voa-dashboard",
+        name = "asgard-dashboard",
         version = "0.1.0",
         render {
             defaultMode = "csr"
@@ -13,7 +13,7 @@ define_config(asgard) {
             sourcemap = false
         },
         websocket {
-            url = "ws://localhost:3000/__voa_ws__",
+            url = "ws://localhost:3000/__asgard_ws__",
             reconnect = true,
             max_reconnect_attempts = 10
         }

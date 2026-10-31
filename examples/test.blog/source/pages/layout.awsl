@@ -26,12 +26,12 @@
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    background: var(--voa-bg);
-    color: var(--voa-text);
+    background: var(--asgard-bg);
+    color: var(--asgard-text);
 }
 .blog-header {
-    background: var(--voa-card);
-    border-bottom: 1px solid var(--voa-border);
+    background: var(--asgard-card);
+    border-bottom: 1px solid var(--asgard-border);
     position: sticky;
     top: 0;
     z-index: 50;
@@ -47,7 +47,7 @@
 .blog-logo {
     font-size: 20px;
     font-weight: 800;
-    color: var(--voa-text);
+    color: var(--asgard-text);
     text-decoration: none;
 }
 .blog-nav {
@@ -55,13 +55,13 @@
     gap: 20px;
 }
 .blog-nav a {
-    color: var(--voa-text-secondary);
+    color: var(--asgard-text-secondary);
     text-decoration: none;
     font-size: 14px;
-    transition: color var(--voa-transition-fast);
+    transition: color var(--asgard-transition-fast);
 }
-.blog-nav a:hover { color: var(--voa-text); }
-.blog-nav a.active { color: var(--voa-accent); font-weight: 600; }
+.blog-nav a:hover { color: var(--asgard-text); }
+.blog-nav a.active { color: var(--asgard-accent); font-weight: 600; }
 .blog-main {
     flex: 1;
     max-width: 780px;
@@ -72,8 +72,8 @@
 .blog-footer {
     text-align: center;
     padding: 24px;
-    color: var(--voa-text-tertiary);
+    color: var(--asgard-text-tertiary);
     font-size: 13px;
-    border-top: 1px solid var(--voa-border);
+    border-top: 1px solid var(--asgard-border);
 }
 </style>

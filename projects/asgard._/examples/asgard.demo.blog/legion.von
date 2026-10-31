@@ -6,7 +6,7 @@
     type: "application",
     target: "web",
     dependencies: {
-        "voa-core": "0.1.*",
+        "asgard": "0.1.*",
         "asgard.ui.core": "0.1.*",
         "asgard.ui.icon": "0.1.*",
         "asgard.theme.aether": "0.1.*",

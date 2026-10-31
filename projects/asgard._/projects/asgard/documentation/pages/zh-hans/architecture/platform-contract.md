@@ -7,7 +7,7 @@
 | 优先级 | `platform` | 交付形态 | 说明 |
 |:---|:---|:---|:---|
 | **默认** | `browser` | WASM + `boot.js` / `index.html` | `asgard.config.v` 未指定时即此路径；本地开发为 **Asgard → WASM → WebView/浏览器** |
-| **并列主产物** | `wechat-miniprogram` | WASM + `voa-runtime.js` | 与 Web 同族 WASM AOT；UI 仍为 WXML |
+| **并列主产物** | `wechat-miniprogram` | WASM + `asgard-runtime.js` | 与 Web 同族 WASM AOT；UI 仍为 WXML |
 | 次要 / 远期 | `android` / `ios` / 桌面 | 各平台原生制品 | 门禁表同样适用，但非默认开发路径 |
 
 普通 `asgard build` / `pack` **不需要** `ANDROID_HOME`、`KOTLIN_HOME` 或 Android SDK。下文 Android / Compose 章节面向该平台的契约与维护者脚本，不代表默认工作流。

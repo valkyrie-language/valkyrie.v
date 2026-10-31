@@ -1,31 +1,31 @@
 # Asgard 核心类型定义
 
-struct VoaApp {
+struct AsgardApp {
     name: string
-    config: VoaConfig
-    router: VoaRouter
-    state: VoaAppState
+    config: AsgardAppConfig
+    router: AsgardRouter
+    state: AsgardAppState
     effects: list
     middlewares: list
 }
 
-struct VoaAppState {
+struct AsgardAppState {
     is_running: bool
     start_time: i64
     request_count: i64
     error_count: i64
 }
 
-struct VoaConfig {
+struct AsgardAppConfig {
     project_type: string
     target: string
     environment: string
-    server: VoaServerConfig
-    build: VoaBuildConfig
-    hot_reload: VoaHotReloadConfig
+    server: AsgardServerConfig
+    build: AsgardBuildConfig
+    hot_reload: AsgardHotReloadConfig
 }
 
-struct VoaServerConfig {
+struct AsgardServerConfig {
     host: string
     port: int
     workers: int
@@ -34,7 +34,7 @@ struct VoaServerConfig {
     cors_origins: list
 }
 
-struct VoaBuildConfig {
+struct AsgardBuildConfig {
     output: string
     minify: bool
     sourcemap: bool
@@ -43,13 +43,13 @@ struct VoaBuildConfig {
     pwa: bool
 }
 
-struct VoaHotReloadConfig {
+struct AsgardHotReloadConfig {
     enabled: bool
     debounce_ms: int
     watch_extensions: list
 }
 
-struct VoaRequest {
+struct AsgardRequest {
     method: string
     path: string
     headers: map
@@ -58,34 +58,34 @@ struct VoaRequest {
     params: map
 }
 
-struct VoaResponse {
+struct AsgardResponse {
     status: int
     headers: map
     body: string
     content_type: string
 }
 
-struct VoaMiddleware {
+struct AsgardMiddleware {
     name: string
     priority: int
     handler: string
 }
 
-struct VoaPlugin {
+struct AsgardPlugin {
     name: string
     version: string
     init_fn: string
     destroy_fn: string
 }
 
-enum VoaEnvironment {
+enum AsgardEnvironment {
     Development
     Staging
     Production
     Test
 }
 
-enum VoaProjectType {
+enum AsgardProjectType {
     Frontend
     Backend
     Fullstack

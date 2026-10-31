@@ -2,7 +2,7 @@
 
 Asgard 的长期目标是同一套 AWSL + V 逻辑，编译到 Web / 微信小程序 / Android / iOS 等宿主。UI 策略见 **[UI 渲染策略](../architecture/ui-rendering.md)** 与 **[统一编译架构](../architecture/gui-compilation.md)**：**平台原生优先**；自渲仅在小游戏 Canvas 等场景 **有限支持**。
 
-**要点**：逻辑 AOT 为 **`*.wasm`**，**asgard ui** wire 编入同一 `.wasm` 尾段（魔数 `ASGARDUI`，8 字节）；`voa-runtime.js` 仅为 `WXWebAssembly` 加载与 setData shim。**无** `host/*.bin`，**禁止** JS 内嵌 `__ASGARD_PRODUCT__`。见 [AOT 原则](../architecture/aot-principles.md)。
+**要点**：逻辑 AOT 为 **`*.wasm`**，**asgard ui** wire 编入同一 `.wasm` 尾段（魔数 `ASGARDUI`，8 字节）；`asgard-runtime.js` 仅为 `WXWebAssembly` 加载与 setData shim。**无** `host/*.bin`，**禁止** JS 内嵌 `__ASGARD_PRODUCT__`。见 [AOT 原则](../architecture/aot-principles.md)。
 
 ## 小游戏 vs 小程序
 
@@ -52,7 +52,7 @@ define_config(asgard) {
 ```text
 asgard build
   → dist/{name}.wasm（逻辑 AOT + asgard ui 尾段）
-  → dist/voa-runtime.js（WXWebAssembly 加载 + wire 解码 + setData）
+  → dist/asgard-runtime.js（WXWebAssembly 加载 + wire 解码 + setData）
   → dist/app.json + pages/*（WXML/WXSS/JS）
 asgard pack --target mini-program
   → 补齐 project.config.json / sitemap.json；校验 .wasm 含 asgard ui

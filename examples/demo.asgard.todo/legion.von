@@ -1,10 +1,10 @@
 {
-    "name": "voa-admin",
+    "name": "asgard-admin",
     "version": "0.1.0",
     "description": "Asgard 后台管理系统 — 认证 + CRUD + 表单 + 表格",
     "type": "application",
     "dependencies": {
-        "voa-core": "0.2.*"
+        "asgard": "0.2.*"
     },
     "build": [
         { "target": "wasm32-unknown-browser-wasm" }

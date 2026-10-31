@@ -80,19 +80,19 @@ let totalApis = get_total_api_count()
     font-size: 64px;
     font-weight: 900;
     letter-spacing: -2px;
-    background: linear-gradient(135deg, var(--voa-accent), var(--voa-success));
+    background: linear-gradient(135deg, var(--asgard-accent), var(--asgard-success));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 .docs-hero-subtitle {
     margin: 8px 0 4px;
     font-size: 20px;
-    color: var(--voa-text-secondary);
+    color: var(--asgard-text-secondary);
 }
 .docs-hero-desc {
     margin: 0 0 24px;
     font-size: 16px;
-    color: var(--voa-text-tertiary);
+    color: var(--asgard-text-tertiary);
 }
 .docs-hero-actions {
     display: flex;
@@ -111,7 +111,7 @@ let totalApis = get_total_api_count()
 .docs-feature-grid p {
     margin: 0;
     font-size: 13px;
-    color: var(--voa-text-secondary);
+    color: var(--asgard-text-secondary);
 }
 .docs-stats {
     display: flex;
@@ -119,7 +119,7 @@ let totalApis = get_total_api_count()
     gap: 48px;
     margin-top: 48px;
     padding: 32px 0;
-    border-top: 1px solid var(--voa-border);
+    border-top: 1px solid var(--asgard-border);
 }
 .docs-stat-item {
     text-align: center;
@@ -128,10 +128,10 @@ let totalApis = get_total_api_count()
     display: block;
     font-size: 36px;
     font-weight: 800;
-    color: var(--voa-accent);
+    color: var(--asgard-accent);
 }
 .docs-stat-label {
     font-size: 13px;
-    color: var(--voa-text-secondary);
+    color: var(--asgard-text-secondary);
 }
 </style>

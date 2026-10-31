@@ -25,7 +25,7 @@ V 是**多平台 AOT 编译语言**。Asgard 交付的应用逻辑必须保持**
 | `android` | `classes.dex` 尾段（`ASGARDNT` + asgard ui） | `lib/*.so`、`ui.bin`、`native/*.c` |
 | `ios` | `AsgardHost` Mach-O 尾段 | `host.bin`、`ui.bin` |
 | 桌面 | `{name}.exe` / ELF / Mach-O 尾段 | 独立 `ui.bin` |
-| `wechat-miniprogram` | `*.wasm`（逻辑 + asgard ui 尾段）；`voa-runtime.js` 仅为加载 shim | `host/*.bin`、JS 内嵌产品 |
+| `wechat-miniprogram` | `*.wasm`（逻辑 + asgard ui 尾段）；`asgard-runtime.js` 仅为加载 shim | `host/*.bin`、JS 内嵌产品 |
 
 ```text
 同一业务源码
@@ -47,7 +47,7 @@ V 是**多平台 AOT 编译语言**。Asgard 交付的应用逻辑必须保持**
 
 | 禁止 | 允许 |
 |:---|:---|
-| 独立 `host/foo.bin` | 小程序逻辑+UI 在 `*.wasm`；`voa-runtime.js` 薄加载 |
+| 独立 `host/foo.bin` | 小程序逻辑+UI 在 `*.wasm`；`asgard-runtime.js` 薄加载 |
 | `libasgard_host.so` 等第二逻辑库 | Android 仅 `classes.dex` 尾段嵌入 |
 | dist 交付 `.c` / `.h` 或要求 NDK 链接 | `ASGARDNT` 内 ET_DYN 自包含 JNI 胶水 |
 | V 业务逻辑 → DEX → ART | native AOT 尾段 + JVM **壳**（无用户逻辑） |

@@ -4,10 +4,10 @@
     "description": "Asgard 官方文档站 — 使用 Asgard 自身构建（dogfooding）",
     "type": "application",
     "dependencies": {
-        "voa-core": "0.2.*",
-        "voa-router": "0.2.*",
-        "voa-effect": "0.2.*",
-        "voa-seo": "0.1.*",
-        "voa-i18n": "0.1.*"
+        "asgard": "0.2.*",
+        "asgard.router": "0.2.*",
+        "asgard-effect": "0.2.*",
+        "asgard-seo": "0.1.*",
+        "asgard-i18n": "0.1.*"
     }
 }

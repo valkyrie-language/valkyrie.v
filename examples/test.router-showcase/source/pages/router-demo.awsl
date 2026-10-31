@@ -4,8 +4,8 @@
 
     <Card variant="bordered" style="margin-bottom: 24px">
         <h3 style="margin:0 0 12px">编程式导航</h3>
-        <p style="margin:0 0 12px; color: var(--voa-text-secondary); font-size: 14px">
-            当前路径：<code style="color: var(--voa-accent)">{navState.path}</code>
+        <p style="margin:0 0 12px; color: var(--asgard-text-secondary); font-size: 14px">
+            当前路径：<code style="color: var(--asgard-accent)">{navState.path}</code>
         </p>
         <div class="demo-row">
             <Button variant="primary" label="push → /counter" @click="() => navState.push("/counter")" />
@@ -17,7 +17,7 @@
 
     <Card variant="bordered" style="margin-bottom: 24px">
         <h3 style="margin:0 0 12px">动态路由参数</h3>
-        <p style="margin:0 0 12px; color: var(--voa-text-secondary); font-size: 14px">
+        <p style="margin:0 0 12px; color: var(--asgard-text-secondary); font-size: 14px">
             导航到带有动态参数的页面（模拟 :id 路由）
         </p>
         <div class="demo-row">

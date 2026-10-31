@@ -32,7 +32,7 @@ let totalComponents = get_total_component_count()
 
 <style>
 .page-title { margin: 0 0 8px; font-size: 28px; font-weight: 800; }
-.page-desc { margin: 0 0 24px; font-size: 15px; color: var(--voa-text-secondary); }
+.page-desc { margin: 0 0 24px; font-size: 15px; color: var(--asgard-text-secondary); }
 .api-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -44,12 +44,12 @@ let totalComponents = get_total_component_count()
     justify-content: space-between;
     margin-bottom: 8px;
 }
-.api-card-name { margin: 0; font-size: 16px; font-weight: 700; color: var(--voa-accent); }
-.api-card-desc { margin: 0 0 10px; font-size: 13px; color: var(--voa-text-secondary); }
+.api-card-name { margin: 0; font-size: 16px; font-weight: 700; color: var(--asgard-accent); }
+.api-card-desc { margin: 0 0 10px; font-size: 13px; color: var(--asgard-text-secondary); }
 .api-card-stats {
     display: flex;
     gap: 12px;
     font-size: 12px;
-    color: var(--voa-text-tertiary);
+    color: var(--asgard-text-tertiary);
 }
 </style>

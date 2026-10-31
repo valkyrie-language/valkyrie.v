@@ -1,14 +1,14 @@
 {
-    "name": "voa-blog",
+    "name": "asgard-blog",
     "version": "0.1.0",
     "description": "Asgard 全栈博客 — 路由 + SSG + 数据获取 + 评论系统",
     "type": "application",
     "target": "static",
     "dependencies": {
-        "voa-core": "0.2.*",
-        "voa-router": "0.2.*",
-        "voa-effect": "0.2.*",
-        "voa-fetch": "0.1.*",
-        "voa-seo": "0.1.*"
+        "asgard": "0.2.*",
+        "asgard.router": "0.2.*",
+        "asgard-effect": "0.2.*",
+        "asgard-fetch": "0.1.*",
+        "asgard-seo": "0.1.*"
     }
 }

@@ -59,7 +59,7 @@ flowchart TB
         WebOut[".wasm + boot.js + DOM glue"]
         AndOut["classes.dex + Manifest"]
         IosOut["AsgardHost + Info.plist"]
-        MpOut["app.json + pages/* + *.wasm + voa-runtime.js shim"]
+        MpOut["app.json + pages/* + *.wasm + asgard-runtime.js shim"]
     end
 
     subgraph pack [Asgard 交付]
@@ -112,7 +112,7 @@ flowchart TB
 | `**browser`**            | `wasm32-*-browser-wasm` | `**.wasm`**（浏览器 AOT 模块）  | RenderIR → DOM 胶水；**IR 编入 WASM 制品元数据段 / 伴随 manifest**   |
 | `**android`**            | `aarch64-linux-android` | **`classes.dex`**（尾段 `ASGARDNT` + asgard ui） | 同一 dex 制品；Compose 壳 class |
 | `**ios`**                | `aarch64-apple-ios-`*   | **`AsgardHost`** Mach-O     | RenderIR **编入 Mach-O 尾段**                                        |
-| `**wechat-miniprogram`** | `wasm32-wechat-unknown-wasm` | **`*.wasm`**（逻辑 AOT） | **asgard ui 尾段** + WXML 层；`voa-runtime.js` 薄 shim |
+| `**wechat-miniprogram`** | `wasm32-wechat-unknown-wasm` | **`*.wasm`**（逻辑 AOT） | **asgard ui 尾段** + WXML 层；`asgard-runtime.js` 薄 shim |
 | `**wechat-minigame`**    | —                       | **不走本 UI 管线**            | Canvas 自渲（有限）；`legion build` + `asgard pack --target mini-game` |
 
 
@@ -146,7 +146,7 @@ Debug:    [宿主二进制制品] ⊃ Encoded(RenderIR)
 | platform             | Release dist（二进制为主）                                      |
 | -------------------- | -------------------------------------------------------- |
 | `browser`            | `index.html`、`boot.js`、`**.wasm`**、组件胶水                  |
-| `wechat-miniprogram` | `app.json`、`pages/`*（WXML/WXSS/JS）、**`*.wasm`**、`voa-runtime.js` shim |
+| `wechat-miniprogram` | `app.json`、`pages/`*（WXML/WXSS/JS）、**`*.wasm`**、`asgard-runtime.js` shim |
 | `android`            | `AndroidManifest.xml`、`**classes.dex`**（含逻辑 + 编入的 UI 描述） |
 | `ios`                | `Info.plist`、**Mach-O 可执行**（含逻辑 + 编入的 UI 描述）             |
 

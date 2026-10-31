@@ -7,7 +7,7 @@
 | **Web** | `*.wasm` | DOM glue |
 | **Android** | `classes.dex` | Compose shim 读 dex 尾段 |
 | **iOS** | `AsgardHost` | SwiftUI shim 读 Mach-O 尾段 |
-| **微信小程序** | `*.wasm` + `voa-runtime.js` | asgard ui 尾段 + WXML setData |
+| **微信小程序** | `*.wasm` + `asgard-runtime.js` | asgard ui 尾段 + WXML setData |
 | **桌面** | `{name}.exe` / ELF / Mach-O | WinUI / SwiftUI / Linux native runtime 读制品尾段 |
 
 当前策略分两条：
