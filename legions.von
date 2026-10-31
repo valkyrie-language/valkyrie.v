@@ -16,7 +16,7 @@
         "projects/unity._",
         "projects/yyds._",
         "projects/core",
-        "projects/plotter",
+        "projects/plotter._",
         "projects/std",
         "examples/test.module_system",
         "examples/leetcode_browser_wasm",

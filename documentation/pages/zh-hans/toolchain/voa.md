@@ -10,7 +10,7 @@
 
 统一编译架构：[Asgard GUI 统一编译架构](../../projects/asgard/documentation/pages/zh-hans/architecture/gui-compilation.md)。UI 策略：[UI 渲染策略](../../projects/asgard/documentation/pages/zh-hans/architecture/ui-rendering.md)。
 
-Asgard 采用约定优于配置，为应用提供类似 Next.js / Nuxt 的 **工程化构建体验**（约定目录、`asgard.config.v`）。**`asgard` 是独立 CLI**；`legion` 负责 V 包依赖与通用构建。
+Asgard 采用约定优于配置，为应用提供**工程化构建体验**（约定目录、`asgard.config.v`）。**`asgard` 是独立 CLI**；`legion` 负责 V 包依赖与通用构建。
 
 ## 核心理念
 

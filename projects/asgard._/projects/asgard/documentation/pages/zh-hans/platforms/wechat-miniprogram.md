@@ -65,7 +65,7 @@ asgard pack --target mini-program
 
 | Web | 小程序 |
 |:---|:---|
-| Solid 细粒度 DOM 绑定 | 粗粒度 `setData` |
+| 细粒度 DOM 绑定 | 粗粒度 `setData` |
 | `textContent` / `appendChild` | 静态 WXML + `Page.setData` |
 | `rxBindLoop` 等优化 | 首版全量重建子树描述 |
 

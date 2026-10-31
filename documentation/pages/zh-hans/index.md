@@ -125,7 +125,7 @@ flowchart TD
 其中数据库生态的长期边界为：
 
 - `yykv`：共享底层存储内核
-- `yydb`：单机数据库，定位接近 `sqlite + redis`
+- `yydb`：单机数据库：嵌入式、本地优先、带 KV 高速缓存能力
 - `yyds`：分布式数据库，协议兼容 `mysql / pgsql / redis`
 - `yydb` 可作为 `yyds` 的 sidecar 高速缓存，但二者不是同一个产品
 - **与 Atlas 无关**：yyds 是独立数据库生态，不是 Atlas 数据绑定 / ORM 平面；Atlas 的 VOS（schema 真源 + 默认 query；SQL 亦可）→ RegenBindings / 一次性升级见 [atlas 数据访问](../../../projects/atlas._/projects/atlas/projects/atlas/readme.md#数据访问)

@@ -1,6 +1,6 @@
 # AWSL 扩展
 
-AWSL（Asgard Web Specification Language）是 VOA 框架中的 **Vue 风格** UI 声明语言（`.awsl`）：模板、指令、**单文件组件（SFC）** 的结构借鉴 Vue，但**响应式语义接近 Solid**——状态与更新图编译进 **WASM**，浏览器侧只有加载胶水，没有独立 JS 框架 runtime。
+AWSL（Asgard Web Specification Language）是 VOA 框架中的 UI 声明语言（`.awsl`）：模板、指令、**单文件组件（SFC）**；状态与更新图编译进 **WASM**，浏览器侧只有加载胶水，没有独立 JS 框架 runtime。
 
 SFC 只存在于 AWSL：每个 `.awsl` 文件对应**一个** widget，经统一的 `compile_awsl_source` 解析、校验、降级后汇入 Valkyrie 主线。顶层 `widget` / `template`（兼容别名）、`script`、`style` 块并列写在文件里。
 
@@ -73,16 +73,16 @@ AWSL 属性 KV **不用花括号 `{}`**。分三层：
 
 模板正文 `{count}` 仍是插值，不受 KV 规则影响。
 
-### 与 Marko / Vue 的对照
+### 写法一览
 
-| | Marko | Vue | AWSL |
-|:---|:---|:---|:---|
-| 静态 | `class="a"` | `class="a"` | `class="a"` |
-| 动态 | `value=count` / `:=` | `:class="expr"` | `:bind="expr"` |
-| 事件 | `onClick() { }` 方法块 | `@click="fn"` | `@click="fn"` |
-| KV `{}` | 无（用 `${}` 正文） | 无 | 无 |
+| | AWSL |
+|:---|:---|
+| 静态 | `class="a"` |
+| 动态 | `:bind="expr"` |
+| 事件 | `@click="fn"` |
+| KV `{}` | 无（正文用 `{expr}` 插值） |
 
-Marko 用 **方法块**和 `:=` 双向绑定；AWSL 选用 **Vue 式 `@` / `:` + 引号表达式**，更适合 Valkyrie 源码片段。
+AWSL 选用 `@` / `:` + 引号表达式，更适合 Valkyrie 源码片段。
 
 ## 脚本与样式子块
 
@@ -104,7 +104,7 @@ Marko 用 **方法块**和 `:=` 双向绑定；AWSL 选用 **Vue 式 `@` / `:` +
 </style>
 ```
 
-## 响应式系统（Solid 语义）
+## 响应式系统
 
 | 写法 | 语义 |
 |:---|:---|

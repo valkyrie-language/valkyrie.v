@@ -1,6 +1,6 @@
 # atlas.cloud
 
-Atlas 云服务抽象层，对标 C# `Atlas.Cloud`。
+Atlas 云服务抽象层。
 
 ## 职责
 

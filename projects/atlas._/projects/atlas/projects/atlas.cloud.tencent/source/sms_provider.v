@@ -1,4 +1,4 @@
-# 腾讯云短信实现（对标 C# TencentSmsProvider）
+# 腾讯云短信实现
 
 namespace atlas.cloud.tencent;
 

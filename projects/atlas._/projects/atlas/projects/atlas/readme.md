@@ -1,6 +1,6 @@
 # atlas
 
-`atlas` 是后端 API 框架的 **纯 Valkyrie** 实现，对标 C# `Standard.Application.Server`（Olympus.Atlas）原型。
+`atlas` 是后端 API 框架的 **纯 Valkyrie** 实现。
 
 ## 定位
 

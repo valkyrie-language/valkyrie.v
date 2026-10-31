@@ -94,7 +94,7 @@ my-app/
 
 ### 响应式状态
 
-使用 **`let mut`** 声明响应式变量（Solid 语义，编译进 WASM）。普通 `let` 为非响应式常量。
+使用 **`let mut`** 声明响应式变量（编译进 WASM）。普通 `let` 为非响应式常量。
 
 ```awsl
 <script>

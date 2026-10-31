@@ -1,0 +1,13 @@
+{
+    version: "1",
+    name: "plotter-workspace",
+    members: [
+        "projects/plotter"
+    ],
+    dependencies: {},
+    workspace: {
+        author: "Valkyrie Team",
+        license: "MIT",
+        version: "0.1.0"
+    }
+}

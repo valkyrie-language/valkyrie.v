@@ -1,4 +1,4 @@
-# 阿里云短信实现（对标 C# Atlas.Cloud.Alibaba.AlibabaSmsProvider）
+# 阿里云短信实现
 
 namespace atlas.cloud.aliyun;
 

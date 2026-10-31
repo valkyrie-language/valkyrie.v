@@ -1,4 +1,4 @@
-# 阿里云 OSS 实现（对标 C# Atlas.Cloud.Alibaba.AlibabaBlobStorage）
+# 阿里云 OSS 实现
 
 namespace atlas.cloud.aliyun;
 

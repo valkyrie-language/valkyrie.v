@@ -2,7 +2,7 @@
 
 Legion 是 Nyar 组织面向 **Valkyrie** 的工作区入口与包管理器，提供依赖管理、版本控制、多目标编译、包发布、安全审计和脚本执行能力。
 
-同形态的生态工具链（产品形态**借鉴** Vite+，避免过拟合 Legion）。分工见 [架构边界](architecture-boundaries.md)：
+同形态的生态工具链（统一入口形态，避免过拟合 Legion）。分工见 [架构边界](architecture-boundaries.md)：
 
 - [Noodle](noodle.md) — Node.js：自带 `fmt` / `lint` / `check` + 包管理
 - [Panda](panda.md) — Python：自带 `fmt` / `lint` / `check` + 包管理
@@ -13,7 +13,7 @@ Legion 是 Nyar 组织面向 **Valkyrie** 的工作区入口与包管理器，�
 
 Legion 是 **Valkyrie** 工作区入口；包管理核心走中性 `nyar-package-manager`（经 `LEGION_PROJECT_LAYOUT` 注入 `legion.von` 等产品文件名），**不**把 Legion 文件名写死进 PM。
 
-- 形态可**借鉴** Vite+ 的统一入口思路，避免把 Legion 特化逻辑塞回 PM。
+- 保持统一入口形态，避免把 Legion 特化逻辑塞回 PM。
 - 用户脚本经 ScriptRunner 执行；工具链本身不套壳 npm / uv / biome / ruff 等外部 CLI。
 - 并列产品：[Noodle](noodle.md)（Node）、[Panda](panda.md)（Python）。
 

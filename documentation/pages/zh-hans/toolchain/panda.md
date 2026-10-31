@@ -1,6 +1,6 @@
 # Panda
 
-Panda 是面向 **Python** 的统一工具链。产品形态**借鉴** [Vite+](https://viteplus.dev/)（统一入口 + 自带质量命令），不是「Python 版 Vite+」，也不逐命令对齐 uv / poetry / pip。
+Panda 是面向 **Python** 的统一工具链：统一入口 + 自带质量命令；不是任何现有 Python PM 的换皮，也不逐命令对齐 uv / poetry / pip。
 
 与 [Legion](legion.md)、[Noodle](noodle.md) 并列，共同消费中性的 `nyar-package-manager`。分工与分层见 [架构边界](architecture-boundaries.md)。
 
