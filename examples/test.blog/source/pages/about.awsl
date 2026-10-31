@@ -44,13 +44,13 @@
 .about-content {
     font-size: 16px;
     line-height: 1.8;
-    color: var(--voa-text-secondary);
+    color: var(--asgard-text-secondary);
 }
 .about-content h2 {
     margin: 28px 0 12px;
     font-size: 20px;
     font-weight: 700;
-    color: var(--voa-text);
+    color: var(--asgard-text);
 }
 .about-content ul {
     padding-left: 20px;
@@ -59,14 +59,14 @@
     margin-bottom: 6px;
 }
 .about-code {
-    background: var(--voa-bg2);
-    border: 1px solid var(--voa-border);
-    border-radius: var(--voa-radius-lg);
+    background: var(--asgard-bg2);
+    border: 1px solid var(--asgard-border);
+    border-radius: var(--asgard-radius-lg);
     padding: 16px 20px;
     font-family: 'Cascadia Code', monospace;
     font-size: 13px;
     line-height: 1.6;
     overflow-x: auto;
-    color: var(--voa-text);
+    color: var(--asgard-text);
 }
 </style>

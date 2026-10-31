@@ -52,20 +52,20 @@ micro handleBlur() {
 }
 .voa-input-label {
     font-size: 13px;
-    color: var(--voa-text2, #8b949e);
+    color: var(--asgard-text2, #8b949e);
 }
 .voa-input {
     padding: 8px 12px;
-    border: 1px solid var(--voa-border, #333);
+    border: 1px solid var(--asgard-border, #333);
     border-radius: 6px;
-    background: var(--voa-bg, #0d1117);
-    color: var(--voa-text, #e0e0e0);
+    background: var(--asgard-bg, #0d1117);
+    color: var(--asgard-text, #e0e0e0);
     font-size: 14px;
     outline: none;
     transition: border-color 0.2s;
 }
 .voa-input:focus {
-    border-color: var(--voa-accent, #58a6ff);
+    border-color: var(--asgard-accent, #58a6ff);
 }
 .voa-input.small {
     padding: 4px 8px;

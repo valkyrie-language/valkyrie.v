@@ -37,7 +37,7 @@ micro selectItem(item) {
 
 <style>
 .voa-list {
-    border: 1px solid var(--voa-border, #21262d);
+    border: 1px solid var(--asgard-border, #21262d);
     border-radius: 8px;
     overflow: hidden;
 }
@@ -46,8 +46,8 @@ micro selectItem(item) {
     font-size: 12px;
     font-weight: 600;
     text-transform: uppercase;
-    color: var(--voa-text3, #6e7681);
-    border-bottom: 1px solid var(--voa-border, #21262d);
+    color: var(--asgard-text3, #6e7681);
+    border-bottom: 1px solid var(--asgard-border, #21262d);
     background: rgba(0, 0, 0, 0.1);
 }
 .voa-list-item {
@@ -57,17 +57,17 @@ micro selectItem(item) {
     padding: 12px 16px;
     cursor: pointer;
     transition: background 0.15s;
-    border-bottom: 1px solid var(--voa-border, #21262d);
+    border-bottom: 1px solid var(--asgard-border, #21262d);
 }
 .voa-list-item:last-child {
     border-bottom: none;
 }
 .voa-list-item:hover {
-    background: var(--voa-hover, #161b22);
+    background: var(--asgard-hover, #161b22);
 }
 .voa-list-item.active {
-    background: var(--voa-active, #1c2333);
-    color: var(--voa-accent, #58a6ff);
+    background: var(--asgard-active, #1c2333);
+    color: var(--asgard-accent, #58a6ff);
 }
 .voa-list-icon {
     font-size: 18px;
@@ -82,17 +82,17 @@ micro selectItem(item) {
 }
 .voa-list-label {
     font-size: 14px;
-    color: var(--voa-text, #e6edf3);
+    color: var(--asgard-text, #e6edf3);
 }
 .voa-list-desc {
     font-size: 12px;
-    color: var(--voa-text2, #8b949e);
+    color: var(--asgard-text2, #8b949e);
 }
 .voa-list-badge {
     font-size: 11px;
     padding: 2px 8px;
     border-radius: 12px;
-    background: var(--voa-accent, #58a6ff);
+    background: var(--asgard-accent, #58a6ff);
     color: #fff;
 }
 </style>

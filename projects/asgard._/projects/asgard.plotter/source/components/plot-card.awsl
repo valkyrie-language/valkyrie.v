@@ -30,11 +30,11 @@ let variant: utf8 = "bordered"
 
 <style>
 .asgard-plot-card {
-    background: var(--voa-card, #ffffff);
-    border: 1px solid var(--voa-border, #e5e7eb);
+    background: var(--asgard-card, #ffffff);
+    border: 1px solid var(--asgard-border, #e5e7eb);
     border-radius: 8px;
     overflow: hidden;
-    color: var(--voa-text, #1a1a2e);
+    color: var(--asgard-text, #1a1a2e);
     font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 .asgard-plot-card.elevated {
@@ -63,7 +63,7 @@ let variant: utf8 = "bordered"
     padding: 8px 16px 12px;
     font-size: 12px;
     color: #999;
-    border-top: 1px solid var(--voa-border, #e5e7eb);
+    border-top: 1px solid var(--asgard-border, #e5e7eb);
 }
 .asgard-plot {
     display: block;

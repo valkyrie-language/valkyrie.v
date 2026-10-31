@@ -30,26 +30,26 @@ let allDocs = get_component_docs()
 
 <style>
 .page-title { margin: 0 0 8px; font-size: 28px; font-weight: 800; }
-.page-desc { margin: 0 0 24px; font-size: 15px; color: var(--voa-text-secondary); }
+.page-desc { margin: 0 0 24px; font-size: 15px; color: var(--asgard-text-secondary); }
 .comp-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 12px;
 }
-.comp-card { cursor: pointer; transition: border-color var(--voa-transition-fast); }
-.comp-card:hover { border-color: var(--voa-accent); }
+.comp-card { cursor: pointer; transition: border-color var(--asgard-transition-fast); }
+.comp-card:hover { border-color: var(--asgard-accent); }
 .comp-card-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 8px;
 }
-.comp-card-name { font-size: 16px; font-weight: 700; color: var(--voa-accent); }
-.comp-card-desc { margin: 0 0 10px; font-size: 13px; color: var(--voa-text-secondary); line-height: 1.5; }
+.comp-card-name { font-size: 16px; font-weight: 700; color: var(--asgard-accent); }
+.comp-card-desc { margin: 0 0 10px; font-size: 13px; color: var(--asgard-text-secondary); line-height: 1.5; }
 .comp-card-meta {
     display: flex;
     gap: 12px;
     font-size: 11px;
-    color: var(--voa-text-tertiary);
+    color: var(--asgard-text-tertiary);
 }
 </style>

@@ -33,12 +33,12 @@ micro onUnmount() {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    background: var(--voa-bg);
-    color: var(--voa-text);
+    background: var(--asgard-bg);
+    color: var(--asgard-text);
 }
 .dash-header {
-    background: var(--voa-card);
-    border-bottom: 1px solid var(--voa-border);
+    background: var(--asgard-card);
+    border-bottom: 1px solid var(--asgard-border);
     padding: 14px 24px;
     display: flex;
     align-items: center;
@@ -50,7 +50,7 @@ micro onUnmount() {
     align-items: center;
     gap: 16px;
 }
-.dash-uptime { font-size: 13px; color: var(--voa-text-secondary); }
+.dash-uptime { font-size: 13px; color: var(--asgard-text-secondary); }
 .dash-main {
     flex: 1;
     padding: 24px;

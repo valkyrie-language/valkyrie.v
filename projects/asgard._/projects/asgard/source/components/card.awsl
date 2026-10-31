@@ -31,8 +31,8 @@ let footer: utf8 = ""
 
 <style>
 .voa-card {
-    background: var(--voa-card, #161b22);
-    border: 1px solid var(--voa-border, #21262d);
+    background: var(--asgard-card, #161b22);
+    border: 1px solid var(--asgard-border, #21262d);
     border-radius: 8px;
     overflow: hidden;
 }
@@ -44,17 +44,17 @@ let footer: utf8 = ""
 }
 .voa-card-header {
     padding: 16px 20px;
-    border-bottom: 1px solid var(--voa-border, #21262d);
+    border-bottom: 1px solid var(--asgard-border, #21262d);
 }
 .voa-card-title {
     margin: 0;
     font-size: 16px;
     font-weight: 600;
-    color: var(--voa-text, #e6edf3);
+    color: var(--asgard-text, #e6edf3);
 }
 .voa-card-subtitle {
     font-size: 13px;
-    color: var(--voa-text2, #8b949e);
+    color: var(--asgard-text2, #8b949e);
     margin-top: 4px;
 }
 .voa-card-body {
@@ -62,7 +62,7 @@ let footer: utf8 = ""
 }
 .voa-card-footer {
     padding: 12px 20px;
-    border-top: 1px solid var(--voa-border, #21262d);
+    border-top: 1px solid var(--asgard-border, #21262d);
     background: rgba(0, 0, 0, 0.1);
 }
 </style>

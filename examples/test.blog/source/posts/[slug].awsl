@@ -84,7 +84,7 @@ micro submitComment() {
     display: flex;
     gap: 12px;
     font-size: 13px;
-    color: var(--voa-text-tertiary);
+    color: var(--asgard-text-tertiary);
     margin-bottom: 12px;
 }
 .post-title {
@@ -95,19 +95,19 @@ micro submitComment() {
 }
 .post-author {
     font-size: 14px;
-    color: var(--voa-text-secondary);
+    color: var(--asgard-text-secondary);
     margin-bottom: 12px;
 }
 .post-tags { display: flex; gap: 6px; }
 .post-content {
     font-size: 16px;
     line-height: 1.8;
-    color: var(--voa-text-secondary);
+    color: var(--asgard-text-secondary);
 }
 .post-comments {
     margin-top: 48px;
     padding-top: 32px;
-    border-top: 1px solid var(--voa-border);
+    border-top: 1px solid var(--asgard-border);
 }
 .comments-title {
     margin: 0 0 20px;
@@ -118,7 +118,7 @@ micro submitComment() {
     display: flex;
     gap: 12px;
     padding: 16px 0;
-    border-bottom: 1px solid var(--voa-border);
+    border-bottom: 1px solid var(--asgard-border);
 }
 .comment-body { flex: 1; }
 .comment-header {
@@ -128,8 +128,8 @@ micro submitComment() {
     margin-bottom: 6px;
 }
 .comment-author { font-weight: 600; font-size: 14px; }
-.comment-date { font-size: 12px; color: var(--voa-text-tertiary); }
-.comment-content { margin: 0; font-size: 14px; color: var(--voa-text-secondary); line-height: 1.6; }
+.comment-date { font-size: 12px; color: var(--asgard-text-tertiary); }
+.comment-content { margin: 0; font-size: 14px; color: var(--asgard-text-secondary); line-height: 1.6; }
 .comment-form { margin-top: 24px; }
 .comment-form-title { margin: 0 0 16px; font-size: 16px; font-weight: 600; }
 .comment-form-field { margin-bottom: 12px; }
@@ -138,10 +138,10 @@ micro submitComment() {
     width: 100%;
     min-height: 100px;
     padding: 10px 12px;
-    border: 1px solid var(--voa-border);
-    border-radius: var(--voa-radius-md);
-    background: var(--voa-card);
-    color: var(--voa-text);
+    border: 1px solid var(--asgard-border);
+    border-radius: var(--asgard-radius-md);
+    background: var(--asgard-card);
+    color: var(--asgard-text);
     font-size: 14px;
     resize: vertical;
 }

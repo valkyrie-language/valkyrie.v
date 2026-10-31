@@ -49,12 +49,12 @@ micro isActive(path: utf8): bool {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    background: var(--voa-bg);
-    color: var(--voa-text);
+    background: var(--asgard-bg);
+    color: var(--asgard-text);
 }
 .docs-header {
-    background: var(--voa-card);
-    border-bottom: 1px solid var(--voa-border);
+    background: var(--asgard-card);
+    border-bottom: 1px solid var(--asgard-border);
     padding: 12px 24px;
     display: flex;
     align-items: center;
@@ -66,7 +66,7 @@ micro isActive(path: utf8): bool {
 .docs-logo {
     font-size: 18px;
     font-weight: 800;
-    color: var(--voa-text);
+    color: var(--asgard-text);
     text-decoration: none;
 }
 .docs-header-nav {
@@ -74,12 +74,12 @@ micro isActive(path: utf8): bool {
     gap: 20px;
 }
 .docs-header-nav a {
-    color: var(--voa-text-secondary);
+    color: var(--asgard-text-secondary);
     text-decoration: none;
     font-size: 14px;
 }
-.docs-header-nav a:hover { color: var(--voa-text); }
-.docs-header-nav a.active { color: var(--voa-accent); font-weight: 600; }
+.docs-header-nav a:hover { color: var(--asgard-text); }
+.docs-header-nav a.active { color: var(--asgard-accent); font-weight: 600; }
 .docs-body {
     display: flex;
     flex: 1;
@@ -88,7 +88,7 @@ micro isActive(path: utf8): bool {
     width: 240px;
     flex-shrink: 0;
     padding: 20px 16px;
-    border-right: 1px solid var(--voa-border);
+    border-right: 1px solid var(--asgard-border);
     overflow-y: auto;
     position: sticky;
     top: 52px;
@@ -98,7 +98,7 @@ micro isActive(path: utf8): bool {
 .docs-sidebar-title {
     font-size: 12px;
     font-weight: 700;
-    color: var(--voa-text-secondary);
+    color: var(--asgard-text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: 6px;
@@ -106,14 +106,14 @@ micro isActive(path: utf8): bool {
 .docs-sidebar-link {
     display: block;
     padding: 5px 10px;
-    border-radius: var(--voa-radius-sm);
-    color: var(--voa-text-secondary);
+    border-radius: var(--asgard-radius-sm);
+    color: var(--asgard-text-secondary);
     text-decoration: none;
     font-size: 13px;
-    transition: all var(--voa-transition-fast);
+    transition: all var(--asgard-transition-fast);
 }
-.docs-sidebar-link:hover { background: var(--voa-hover); color: var(--voa-text); }
-.docs-sidebar-link.active { background: var(--voa-accent-subtle); color: var(--voa-accent); font-weight: 600; }
+.docs-sidebar-link:hover { background: var(--asgard-hover); color: var(--asgard-text); }
+.docs-sidebar-link.active { background: var(--asgard-accent-subtle); color: var(--asgard-accent); font-weight: 600; }
 .docs-content {
     flex: 1;
     padding: 32px 40px;
@@ -123,8 +123,8 @@ micro isActive(path: utf8): bool {
 .docs-footer {
     text-align: center;
     padding: 16px;
-    color: var(--voa-text-tertiary);
+    color: var(--asgard-text-tertiary);
     font-size: 12px;
-    border-top: 1px solid var(--voa-border);
+    border-top: 1px solid var(--asgard-border);
 }
 </style>

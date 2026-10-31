@@ -1,7 +1,7 @@
 <widget counter>
 <div class="counter-page">
     <h2 class="demo-title">🔢 完整计数器示例</h2>
-    <p style="margin:0 0 20px; color: var(--voa-text-secondary)">
+    <p style="margin:0 0 20px; color: var(--asgard-text-secondary)">
         演示 let mut 可变状态 + 事件处理组合使用
     </p>
 
@@ -19,8 +19,8 @@
             <Button variant="ghost" label="重置" @click="() => counter = 0" />
         </div>
 
-        <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--voa-border)">
-            <p style="margin:0; font-size:13px; color: var(--voa-text-secondary)">
+        <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--asgard-border)">
+            <p style="margin:0; font-size:13px; color: var(--asgard-text-secondary)">
                 计数器状态：{counter > 0 ? '正数' : counter < 0 ? '负数' : '零'}
                 {counter > 10 ? ' 🔥 很大！' : ''}
             </p>
@@ -45,7 +45,7 @@ let mut counter: i32 = 0
     margin: 0 0 20px;
     font-size: 64px;
     font-weight: 800;
-    color: var(--voa-accent);
+    color: var(--asgard-accent);
     line-height: 1;
 }
 .demo-row {

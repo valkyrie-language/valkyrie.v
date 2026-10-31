@@ -32,7 +32,7 @@
             <div class="dash-chart">
                 <div class="dash-bar-chart">
                     <loop point in state.cpu_usage>
-                        <div class="dash-bar" :style="f\"height: {point.value}%; background: {point.value > 70 ? 'var(--voa-error)' : point.value > 50 ? 'var(--voa-warning)' : 'var(--voa-success)'}\"" />
+                        <div class="dash-bar" :style="f\"height: {point.value}%; background: {point.value > 70 ? 'var(--asgard-error)' : point.value > 50 ? 'var(--asgard-warning)' : 'var(--asgard-success)'}\"" />
                     </loop>
                 </div>
             </div>
@@ -42,7 +42,7 @@
             <div class="dash-chart">
                 <div class="dash-bar-chart">
                     <loop point in state.memory_usage>
-                        <div class="dash-bar" :style="f\"height: {point.value}%; background: var(--voa-accent)\"" />
+                        <div class="dash-bar" :style="f\"height: {point.value}%; background: var(--asgard-accent)\"" />
                     </loop>
                 </div>
             </div>
@@ -110,8 +110,8 @@ micro get_latest_value(metric_list: list): f64 {
     flex-direction: column;
     gap: 4px;
 }
-.dash-stat-label { font-size: 12px; color: var(--voa-text-secondary); }
-.dash-stat-value { font-size: 28px; font-weight: 800; color: var(--voa-accent); }
+.dash-stat-label { font-size: 12px; color: var(--asgard-text-secondary); }
+.dash-stat-value { font-size: 28px; font-weight: 800; color: var(--asgard-accent); }
 .dash-charts {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -141,22 +141,22 @@ micro get_latest_value(metric_list: list): f64 {
     align-items: center;
     gap: 10px;
     padding: 8px 0;
-    border-bottom: 1px solid var(--voa-border);
+    border-bottom: 1px solid var(--asgard-border);
     font-size: 14px;
 }
 .dash-service:last-child { border-bottom: none; }
 .dash-service-name { flex: 1; font-weight: 500; }
-.dash-service-latency { font-size: 12px; color: var(--voa-text-tertiary); font-family: monospace; }
+.dash-service-latency { font-size: 12px; color: var(--asgard-text-tertiary); font-family: monospace; }
 .dash-alert {
     display: flex;
     gap: 10px;
     padding: 10px 0;
-    border-bottom: 1px solid var(--voa-border);
+    border-bottom: 1px solid var(--asgard-border);
 }
 .dash-alert:last-child { border-bottom: none; }
 .dash-alert-icon { font-size: 16px; flex-shrink: 0; }
 .dash-alert-content { display: flex; flex-direction: column; gap: 2px; }
 .dash-alert-message { font-size: 13px; }
-.dash-alert-time { font-size: 11px; color: var(--voa-text-tertiary); }
-.dash-alert.warning .dash-alert-message { color: var(--voa-warning); }
+.dash-alert-time { font-size: 11px; color: var(--asgard-text-tertiary); }
+.dash-alert.warning .dash-alert-message { color: var(--asgard-warning); }
 </style>

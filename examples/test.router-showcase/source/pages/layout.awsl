@@ -27,12 +27,12 @@
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    background: var(--voa-bg);
-    color: var(--voa-text);
+    background: var(--asgard-bg);
+    color: var(--asgard-text);
 }
 .router-header {
-    background: var(--voa-card);
-    border-bottom: 1px solid var(--voa-border);
+    background: var(--asgard-card);
+    border-bottom: 1px solid var(--asgard-border);
     padding: 16px 24px;
     display: flex;
     align-items: center;
@@ -45,31 +45,31 @@
 }
 .router-subtitle {
     font-size: 13px;
-    color: var(--voa-text-secondary);
+    color: var(--asgard-text-secondary);
     flex: 1;
 }
 .router-nav {
     display: flex;
     gap: 4px;
     padding: 10px 24px;
-    background: var(--voa-bg2);
-    border-bottom: 1px solid var(--voa-border);
+    background: var(--asgard-bg2);
+    border-bottom: 1px solid var(--asgard-border);
 }
 .router-nav a {
     padding: 6px 14px;
-    border-radius: var(--voa-radius-md);
-    color: var(--voa-text-secondary);
+    border-radius: var(--asgard-radius-md);
+    color: var(--asgard-text-secondary);
     text-decoration: none;
     font-size: 14px;
-    transition: all var(--voa-transition-fast);
+    transition: all var(--asgard-transition-fast);
 }
 .router-nav a:hover {
-    background: var(--voa-hover);
-    color: var(--voa-text);
+    background: var(--asgard-hover);
+    color: var(--asgard-text);
 }
 .router-nav a.active {
-    background: var(--voa-accent-subtle);
-    color: var(--voa-accent);
+    background: var(--asgard-accent-subtle);
+    color: var(--asgard-accent);
 }
 .router-main {
     flex: 1;
@@ -81,8 +81,8 @@
 .router-footer {
     text-align: center;
     padding: 16px;
-    color: var(--voa-text-secondary);
+    color: var(--asgard-text-secondary);
     font-size: 13px;
-    border-top: 1px solid var(--voa-border);
+    border-top: 1px solid var(--asgard-border);
 }
 </style>

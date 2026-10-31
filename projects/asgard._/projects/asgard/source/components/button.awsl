@@ -24,22 +24,22 @@ micro handleClick() {
 }
 .voa-btn {
     padding: 8px 16px;
-    border: 1px solid var(--voa-border, #333);
+    border: 1px solid var(--asgard-border, #333);
     border-radius: 6px;
     cursor: pointer;
     font-size: 14px;
-    background: var(--voa-card, #1a1a2e);
-    color: var(--voa-text, #e0e0e0);
+    background: var(--asgard-card, #1a1a2e);
+    color: var(--asgard-text, #e0e0e0);
     transition: all 0.2s;
 }
 .voa-btn:hover {
-    background: var(--voa-hover, #2a2a3e);
-    border-color: var(--voa-accent, #58a6ff);
+    background: var(--asgard-hover, #2a2a3e);
+    border-color: var(--asgard-accent, #58a6ff);
 }
 .voa-btn.primary {
-    background: var(--voa-accent, #58a6ff);
+    background: var(--asgard-accent, #58a6ff);
     color: #fff;
-    border-color: var(--voa-accent, #58a6ff);
+    border-color: var(--asgard-accent, #58a6ff);
 }
 .voa-btn.primary:hover {
     opacity: 0.9;
