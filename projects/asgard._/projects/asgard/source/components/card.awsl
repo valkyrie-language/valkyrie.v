@@ -1,20 +1,20 @@
 <widget card>
-<div @class="voa-card {variant}">
+<div @class="asgard-card {variant}">
     <if title>
-        <div class="voa-card-header">
-            <h3 class="voa-card-title">{title}</h3>
+        <div class="asgard-card-header">
+            <h3 class="asgard-card-title">{title}</h3>
             <if subtitle>
-                <span class="voa-card-subtitle">{subtitle}</span>
+                <span class="asgard-card-subtitle">{subtitle}</span>
                 <else/>
             </if>
         </div>
         <else/>
     </if>
-    <div class="voa-card-body">
+    <div class="asgard-card-body">
         {children}
     </div>
     <if footer>
-        <div class="voa-card-footer">
+        <div class="asgard-card-footer">
             {footer}
         </div>
         <else/>
@@ -30,37 +30,37 @@ let footer: utf8 = ""
 </script>
 
 <style>
-.voa-card {
+.asgard-card {
     background: var(--asgard-card, #161b22);
     border: 1px solid var(--asgard-border, #21262d);
     border-radius: 8px;
     overflow: hidden;
 }
-.voa-card.bordered {
+.asgard-card.bordered {
     border-width: 2px;
 }
-.voa-card.elevated {
+.asgard-card.elevated {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
-.voa-card-header {
+.asgard-card-header {
     padding: 16px 20px;
     border-bottom: 1px solid var(--asgard-border, #21262d);
 }
-.voa-card-title {
+.asgard-card-title {
     margin: 0;
     font-size: 16px;
     font-weight: 600;
     color: var(--asgard-text, #e6edf3);
 }
-.voa-card-subtitle {
+.asgard-card-subtitle {
     font-size: 13px;
     color: var(--asgard-text2, #8b949e);
     margin-top: 4px;
 }
-.voa-card-body {
+.asgard-card-body {
     padding: 20px;
 }
-.voa-card-footer {
+.asgard-card-footer {
     padding: 12px 20px;
     border-top: 1px solid var(--asgard-border, #21262d);
     background: rgba(0, 0, 0, 0.1);

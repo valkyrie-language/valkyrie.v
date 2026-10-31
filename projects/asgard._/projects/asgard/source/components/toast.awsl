@@ -1,21 +1,21 @@
 <widget toast>
-<div @class="voa-toast-container {position}">
+<div @class="asgard-toast-container {position}">
     <loop toast in {toasts}>
-        <div @class="voa-toast {toast.type} {toast.closing ? 'closing' : ''}">
-            <span class="voa-toast-icon">
+        <div @class="asgard-toast {toast.type} {toast.closing ? 'closing' : ''}">
+            <span class="asgard-toast-icon">
                 <if toast.type == 'success'>✓</if>
                 <if toast.type == 'error'>✕</if>
                 <if toast.type == 'warning'>⚠</if>
                 <if toast.type == 'info'>ℹ</if>
             </span>
-            <div class="voa-toast-content">
+            <div class="asgard-toast-content">
                 <if toast.title>
-                    <span class="voa-toast-title">{toast.title}</span>
+                    <span class="asgard-toast-title">{toast.title}</span>
                     <else/>
                 </if>
-                <span class="voa-toast-message">{toast.message}</span>
+                <span class="asgard-toast-message">{toast.message}</span>
             </div>
-            <button class="voa-toast-close" @click="() => dismiss(toast.id)">✕</button>
+            <button class="asgard-toast-close" @click="() => dismiss(toast.id)">✕</button>
         </div>
     </loop>
 </div>
@@ -63,7 +63,7 @@ micro info(message) {
 </script>
 
 <style>
-.voa-toast-container {
+.asgard-toast-container {
     position: fixed;
     z-index: 2000;
     display: flex;
@@ -71,23 +71,23 @@ micro info(message) {
     gap: 8px;
     pointer-events: none;
 }
-.voa-toast-container.top-right {
+.asgard-toast-container.top-right {
     top: 16px;
     right: 16px;
 }
-.voa-toast-container.top-left {
+.asgard-toast-container.top-left {
     top: 16px;
     left: 16px;
 }
-.voa-toast-container.bottom-right {
+.asgard-toast-container.bottom-right {
     bottom: 16px;
     right: 16px;
 }
-.voa-toast-container.bottom-left {
+.asgard-toast-container.bottom-left {
     bottom: 16px;
     left: 16px;
 }
-.voa-toast {
+.asgard-toast {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -100,45 +100,45 @@ micro info(message) {
     animation: slideIn 0.3s ease;
     min-width: 280px;
 }
-.voa-toast.closing {
+.asgard-toast.closing {
     animation: slideOut 0.3s ease forwards;
 }
-.voa-toast.success {
+.asgard-toast.success {
     border-left: 3px solid #3fb950;
 }
-.voa-toast.error {
+.asgard-toast.error {
     border-left: 3px solid #da3633;
 }
-.voa-toast.warning {
+.asgard-toast.warning {
     border-left: 3px solid #d29922;
 }
-.voa-toast.info {
+.asgard-toast.info {
     border-left: 3px solid #58a6ff;
 }
-.voa-toast-icon {
+.asgard-toast-icon {
     font-size: 16px;
     flex-shrink: 0;
 }
-.voa-toast.success .voa-toast-icon { color: #3fb950; }
-.voa-toast.error .voa-toast-icon { color: #da3633; }
-.voa-toast.warning .voa-toast-icon { color: #d29922; }
-.voa-toast.info .voa-toast-icon { color: #58a6ff; }
-.voa-toast-content {
+.asgard-toast.success .asgard-toast-icon { color: #3fb950; }
+.asgard-toast.error .asgard-toast-icon { color: #da3633; }
+.asgard-toast.warning .asgard-toast-icon { color: #d29922; }
+.asgard-toast.info .asgard-toast-icon { color: #58a6ff; }
+.asgard-toast-content {
     flex: 1;
     display: flex;
     flex-direction: column;
     gap: 2px;
 }
-.voa-toast-title {
+.asgard-toast-title {
     font-size: 13px;
     font-weight: 600;
     color: var(--asgard-text, #e6edf3);
 }
-.voa-toast-message {
+.asgard-toast-message {
     font-size: 13px;
     color: var(--asgard-text2, #8b949e);
 }
-.voa-toast-close {
+.asgard-toast-close {
     border: none;
     background: none;
     color: var(--asgard-text3, #6e7681);
@@ -146,7 +146,7 @@ micro info(message) {
     padding: 4px;
     font-size: 14px;
 }
-.voa-toast-close:hover {
+.asgard-toast-close:hover {
     color: var(--asgard-text, #e6edf3);
 }
 @keyframes slideIn {

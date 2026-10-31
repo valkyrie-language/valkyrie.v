@@ -1,15 +1,15 @@
 <widget modal>
-<div @class="voa-modal-overlay {open ? 'visible' : ''}" @click="handleOverlayClick">
-    <div @class="voa-modal {size}">
-        <div class="voa-modal-header">
-            <h3 class="voa-modal-title">{title}</h3>
-            <button class="voa-modal-close" @click="close">✕</button>
+<div @class="asgard-modal-overlay {open ? 'visible' : ''}" @click="handleOverlayClick">
+    <div @class="asgard-modal {size}">
+        <div class="asgard-modal-header">
+            <h3 class="asgard-modal-title">{title}</h3>
+            <button class="asgard-modal-close" @click="close">✕</button>
         </div>
-        <div class="voa-modal-body">
+        <div class="asgard-modal-body">
             {children}
         </div>
         <if showFooter>
-            <div class="voa-modal-footer">
+            <div class="asgard-modal-footer">
                 <slot name="footer" />
             </div>
             <else/>
@@ -31,14 +31,14 @@ micro close() {
 }
 
 micro handleOverlayClick(e: MouseEvent) {
-    if closeOnOverlay && dom_class_list_contains(e.target.classList, "voa-modal-overlay") {
+    if closeOnOverlay && dom_class_list_contains(e.target.classList, "asgard-modal-overlay") {
         close()
     }
 }
 </script>
 
 <style>
-.voa-modal-overlay {
+.asgard-modal-overlay {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.6);
@@ -50,11 +50,11 @@ micro handleOverlayClick(e: MouseEvent) {
     pointer-events: none;
     transition: opacity 0.2s;
 }
-.voa-modal-overlay.visible {
+.asgard-modal-overlay.visible {
     opacity: 1;
     pointer-events: auto;
 }
-.voa-modal {
+.asgard-modal {
     background: var(--asgard-card, #161b22);
     border: 1px solid var(--asgard-border, #21262d);
     border-radius: 12px;
@@ -62,29 +62,29 @@ micro handleOverlayClick(e: MouseEvent) {
     display: flex;
     flex-direction: column;
 }
-.voa-modal.small {
+.asgard-modal.small {
     width: 400px;
 }
-.voa-modal.medium {
+.asgard-modal.medium {
     width: 560px;
 }
-.voa-modal.large {
+.asgard-modal.large {
     width: 720px;
 }
-.voa-modal-header {
+.asgard-modal-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 16px 20px;
     border-bottom: 1px solid var(--asgard-border, #21262d);
 }
-.voa-modal-title {
+.asgard-modal-title {
     margin: 0;
     font-size: 16px;
     font-weight: 600;
     color: var(--asgard-text, #e6edf3);
 }
-.voa-modal-close {
+.asgard-modal-close {
     border: none;
     background: none;
     color: var(--asgard-text2, #8b949e);
@@ -93,16 +93,16 @@ micro handleOverlayClick(e: MouseEvent) {
     padding: 4px 8px;
     border-radius: 4px;
 }
-.voa-modal-close:hover {
+.asgard-modal-close:hover {
     background: var(--asgard-hover, #2a2a3e);
     color: var(--asgard-text, #e6edf3);
 }
-.voa-modal-body {
+.asgard-modal-body {
     padding: 20px;
     overflow-y: auto;
     flex: 1;
 }
-.voa-modal-footer {
+.asgard-modal-footer {
     padding: 12px 20px;
     border-top: 1px solid var(--asgard-border, #21262d);
     display: flex;

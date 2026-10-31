@@ -13,7 +13,7 @@ define_config(asgard) {
             sourcemap = false
         },
         websocket {
-            url = "ws://localhost:3000/__voa_ws__",
+            url = "ws://localhost:3000/__asgard_ws__",
             reconnect = true,
             max_reconnect_attempts = 10
         }

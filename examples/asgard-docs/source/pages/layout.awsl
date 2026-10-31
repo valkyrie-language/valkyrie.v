@@ -40,7 +40,7 @@
 let sections = get_doc_sections()
 
 micro isActive(path: utf8): bool {
-    return __voa_get_current_path__() == path
+    return __asgard_get_current_path__() == path
 }
 </script>
 

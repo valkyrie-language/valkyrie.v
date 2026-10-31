@@ -41,7 +41,7 @@
 let steps = get_tutorial_steps()
 
 micro copy_code(code: utf8): void {
-    __voa_clipboard_write__(code)
+    __asgard_clipboard_write__(code)
 }
 </script>
 

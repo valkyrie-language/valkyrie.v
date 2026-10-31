@@ -1,6 +1,6 @@
 <widget button>
-<div class="voa-btn-wrapper">
-    <button @class="voa-btn {variant}" @click="handleClick" :disabled="disabled">
+<div class="asgard-btn-wrapper">
+    <button @class="asgard-btn {variant}" @click="handleClick" :disabled="disabled">
         {label}
     </button>
 </div>
@@ -19,10 +19,10 @@ micro handleClick() {
 </script>
 
 <style>
-.voa-btn-wrapper {
+.asgard-btn-wrapper {
     display: inline-block;
 }
-.voa-btn {
+.asgard-btn {
     padding: 8px 16px;
     border: 1px solid var(--asgard-border, #333);
     border-radius: 6px;
@@ -32,24 +32,24 @@ micro handleClick() {
     color: var(--asgard-text, #e0e0e0);
     transition: all 0.2s;
 }
-.voa-btn:hover {
+.asgard-btn:hover {
     background: var(--asgard-hover, #2a2a3e);
     border-color: var(--asgard-accent, #58a6ff);
 }
-.voa-btn.primary {
+.asgard-btn.primary {
     background: var(--asgard-accent, #58a6ff);
     color: #fff;
     border-color: var(--asgard-accent, #58a6ff);
 }
-.voa-btn.primary:hover {
+.asgard-btn.primary:hover {
     opacity: 0.9;
 }
-.voa-btn.danger {
+.asgard-btn.danger {
     background: #da3633;
     color: #fff;
     border-color: #da3633;
 }
-.voa-btn[disabled] {
+.asgard-btn[disabled] {
     opacity: 0.5;
     cursor: not-allowed;
 }
