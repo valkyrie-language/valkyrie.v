@@ -12,7 +12,7 @@
 | DI | 依赖从外部写入 `wire` 字段（生成代码调用容器 `require_*`） |
 | Wire | 声明语法（`wire` 字段）+ 注入协议（`AtlasWireable` / `apply_wire`）+ 容器（`AtlasWireContainer`） |
 
-对标关系（机制相似，实现不同）：C# 侧常见 `[Wire]` 属性 + 扫描；Valkyrie / Atlas 侧是 **`wire` declaration modifier + `WireInjector` 代码生成**，**不靠运行时反射扫描字段**。
+实现机制：Valkyrie / Atlas 侧是 **`wire` declaration modifier + `WireInjector` 代码生成**，**不靠运行时反射扫描字段**。
 
 ## 声明：`wire` 字段
 

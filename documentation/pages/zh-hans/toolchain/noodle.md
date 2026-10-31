@@ -1,6 +1,6 @@
 # Noodle
 
-Noodle 是面向 **Node.js / Web** 的统一工具链。产品形态**借鉴** [Vite+](https://viteplus.dev/)（一个入口覆盖包管理 + `fmt` / `lint` / `check`），**不是** Vite+ / npm / pnpm 换皮或逐命令对齐。
+Noodle 是面向 **Node.js / Web** 的统一工具链：一个入口覆盖包管理 + `fmt` / `lint` / `check`；不是任何现有工具链的换皮，也不逐命令对齐 npm / pnpm。
 
 与 [Legion](legion.md)、[Panda](panda.md) 并列，共同消费中性的 `nyar-package-manager`。分工与分层见 [架构边界](architecture-boundaries.md)。
 

@@ -139,8 +139,8 @@ let questions: list = [
         views: 256
     },
     {
-        title: "AWSL 的响应式原理和 Solid 有什么区别？",
-        excerpt: "听说 AWSL 借鉴了 Solid 的细粒度响应式，又引入了 algebraic effects，二者在依赖追踪与更新调度上具体有何差异？性能孰优？",
+        title: "AWSL 的细粒度响应式与 algebraic effects 如何协作？",
+        excerpt: "AWSL 的细粒度响应式与 algebraic effects，在依赖追踪与更新调度上具体有何差异？性能孰优？",
         tags: ["原理", "响应式"],
         author: "Archer",
         initial: "A",

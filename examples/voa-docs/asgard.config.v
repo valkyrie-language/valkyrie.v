@@ -17,7 +17,7 @@ define_config(asgard) {
         },
         seo {
             title = "VOA - Valkyrie Omni App Framework",
-            description = "纯 GGScript + AWSL 的全栈框架，类似 Next.js 但不写一行 C#",
+            description = "纯 GGScript + AWSL 的全栈框架",
             og_image = "/images/og-cover.png"
         }
 }

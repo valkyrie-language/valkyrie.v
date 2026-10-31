@@ -1,4 +1,4 @@
-# 腾讯云 COS 实现（对标 C# TencentBlobStorage）
+# 腾讯云 COS 实现
 
 namespace atlas.cloud.tencent;
 

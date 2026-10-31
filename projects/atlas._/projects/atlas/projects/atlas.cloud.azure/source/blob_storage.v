@@ -1,4 +1,4 @@
-# Azure Blob Storage（对标 C# AzureBlobStorage）
+# Azure Blob Storage
 
 namespace atlas.cloud.azure;
 

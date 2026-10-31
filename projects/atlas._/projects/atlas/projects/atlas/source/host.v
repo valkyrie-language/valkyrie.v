@@ -1,4 +1,4 @@
-# AtlasHost — 应用宿主构建器（对标 C# AtlasHost）
+# AtlasHost — 应用宿主构建器
 
 namespace atlas.core;
 

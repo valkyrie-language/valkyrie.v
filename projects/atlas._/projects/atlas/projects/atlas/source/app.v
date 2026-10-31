@@ -1,4 +1,4 @@
-# AtlasApp — 框架主入口（对标 C# AtlasApp）
+# AtlasApp — 框架主入口
 
 namespace atlas;
 

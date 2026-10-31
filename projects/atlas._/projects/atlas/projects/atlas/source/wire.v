@@ -1,4 +1,4 @@
-# Atlas Wire DI — 容器与注入协议（对标 C# [Wire] + SystemScanner）
+# Atlas Wire DI — 容器与注入协议
 
 namespace atlas.wire;
 

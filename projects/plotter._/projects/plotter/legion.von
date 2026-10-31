@@ -1,7 +1,7 @@
 {
     name: "plotter",
     version: "workspace",
-    description: "Valkyrie 图形语法绘图库（ggplot2 心智，SVG 优先）",
+    description: "Valkyrie 图形语法绘图库（SVG 优先）",
     type: "library",
     auto_link: {
         core: true,

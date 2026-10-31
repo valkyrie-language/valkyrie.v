@@ -3,7 +3,7 @@
     <section class="docs-hero">
         <h1 class="docs-hero-title">VOA</h1>
         <p class="docs-hero-subtitle">Valkyrie Omni App Framework</p>
-        <p class="docs-hero-desc">纯 GGScript + AWSL 的全栈框架，类似 Next.js 但不写一行 C#</p>
+        <p class="docs-hero-desc">纯 GGScript + AWSL 的全栈框架</p>
         <div class="docs-hero-actions">
             <Link href="/docs/getting-started">
                 <Button variant="primary" size="large" label="快速开始 →" />

@@ -1,4 +1,4 @@
-# AtlasResult — 统一 Action 执行结果（对标 C# AtlasResult）
+# AtlasResult — 统一 Action 执行结果
 
 namespace atlas.core;
 

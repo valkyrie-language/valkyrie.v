@@ -165,7 +165,7 @@ AWSL widget 名与模板 ABI 绑定（`:prop` / `@event`）同样必须 `snake_c
 | `.v` | Valkyrie 源码（唯一正式后缀；不用 `.vk` / `.valkyrie` 作平行后缀） |
 | `.script` | Gnosis Script 源码 |
 | `.shader` | Gnosis Shader 源码 |
-| `.awsl` | AWSL 源码（Vue 式 SFC，VOA） |
+| `.awsl` | AWSL 源码（SFC，VOA） |
 | `.widget` | Gnosis Widget 源码 |
 | `.vos` | VOS 源码（RPC / schema 场景） |
 | `.schema` | Gnosis Schema 源码 |

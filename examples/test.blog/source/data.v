@@ -29,7 +29,7 @@ let _posts: list = [
     Post {
         slug: "introducing-voa"
         title: "VOA 全栈框架正式发布"
-        excerpt: "我们很高兴地宣布 VOA —— 一个纯 GGScript + AWSL 的全栈框架，类似 Next.js 但不写一行 C#。"
+        excerpt: "我们很高兴地宣布 VOA —— 一个纯 GGScript + AWSL 的全栈框架。"
         content: "VOA 是 Valkyrie Omni App 的缩写，它将 GGScript 的表达力和 AWSL 的组件化完美结合。\n\n## 核心特性\n\n- **文件系统路由**：pages/ 目录即路由\n- **多种渲染模式**：SSR / SSG / ISR / CSR\n- **声明式副作用**：let mut 可变状态 / onMount 生命周期\n- **中间件管道**：洋葱模型请求处理\n- **HMR 热替换**：< 200ms 即时更新\n\n## 为什么不用 C#？\n\nVOA 框架本身是纯 Valkyrie 代码。C# 仅参与构建工具链和 HMR 调试服务。"
         author: "Asgard 团队"
         date: "2027-02-01"

@@ -1,4 +1,4 @@
-# Atlas.Cloud 共享 DTO（对标 C# Atlas.Cloud.Models）
+# Atlas.Cloud 共享 DTO
 
 namespace atlas.cloud;
 

@@ -1,4 +1,4 @@
-# Azure Communication Services 邮件（对标 C# AzureEmailSender）
+# Azure Communication Services 邮件
 
 namespace atlas.cloud.azure;
 
