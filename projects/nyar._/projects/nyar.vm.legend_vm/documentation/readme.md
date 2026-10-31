@@ -1,6 +1,6 @@
-# nyar.vm.legacy_vm
+# nyar.vm.legend_vm
 
-`nyar.vm.legacy_vm` 定位为基于 `PE` 的万能运行时。
+`nyar.vm.legend_vm` 定位为基于 `PE` 的万能运行时。
 
 ## 定位
 
@@ -30,10 +30,10 @@
 - 不等同于 `Nyar` 原生指令集运行时
 - 不把所有目标家族重新揉成统一大 `IR`
 
-## 与 `nyar.vm.nyar_vm` 的区别
+## 与 `nyar.vm.odin_vm` 的区别
 
-- `legacy_vm` 追求多语言兼容与通用运行时能力
-- `nyar_vm` 追求 `Nyar` 原生指令集与系统级特化优化
+- `legend_vm` 追求多语言兼容与通用运行时能力
+- `odin_vm` 追求 `Nyar` 原生指令集与系统级特化优化
 
 ## 后续可补充的文档
 
