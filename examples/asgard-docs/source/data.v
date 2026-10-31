@@ -75,7 +75,7 @@ let doc_sections: [DocSection] = [
         title: "数据获取"
         icon: "antenna"
         pages: [
-            { id: "voa-fetch", title: "voa-fetch API", order: 1 },
+            { id: "asgard-fetch", title: "asgard-fetch API", order: 1 },
             { id: "caching", title: "缓存策略", order: 2 },
             { id: "revalidation", title: "数据再验证", order: 3 }
         ]
@@ -290,17 +290,17 @@ let tutorial_steps: [TutorialStep] = [
 ]
 
 let api_packages: list = [
-    { name: "voa-core", version: "0.2.0", description: "标准库", functions: 18, components: 24 },
-    { name: "voa-router", version: "0.2.0", description: "路由系统", functions: 17, components: 3 },
-    { name: "voa-effect", version: "0.2.0", description: "响应式副作用", functions: 11, components: 0 },
-    { name: "voa-api", version: "0.2.0", description: "API Routes", functions: 22, components: 0 },
-    { name: "voa-middleware", version: "0.1.0", description: "中间件", functions: 19, components: 0 },
-    { name: "voa-fetch", version: "0.1.0", description: "数据获取", functions: 7, components: 0 },
-    { name: "voa-devtools", version: "0.1.0", description: "开发工具", functions: 35, components: 3 },
-    { name: "voa-build", version: "0.1.0", description: "构建优化", functions: 13, components: 0 },
-    { name: "voa-deploy", version: "0.1.0", description: "部署", functions: 15, components: 0 },
-    { name: "voa-seo", version: "0.1.0", description: "SEO", functions: 6, components: 0 },
-    { name: "voa-i18n", version: "0.1.0", description: "国际化", functions: 5, components: 0 }
+    { name: "asgard-core", version: "0.2.0", description: "标准库", functions: 18, components: 24 },
+    { name: "asgard-router", version: "0.2.0", description: "路由系统", functions: 17, components: 3 },
+    { name: "asgard-effect", version: "0.2.0", description: "响应式副作用", functions: 11, components: 0 },
+    { name: "asgard-api", version: "0.2.0", description: "API Routes", functions: 22, components: 0 },
+    { name: "asgard-middleware", version: "0.1.0", description: "中间件", functions: 19, components: 0 },
+    { name: "asgard-fetch", version: "0.1.0", description: "数据获取", functions: 7, components: 0 },
+    { name: "asgard-devtools", version: "0.1.0", description: "开发工具", functions: 35, components: 3 },
+    { name: "asgard-build", version: "0.1.0", description: "构建优化", functions: 13, components: 0 },
+    { name: "asgard-deploy", version: "0.1.0", description: "部署", functions: 15, components: 0 },
+    { name: "asgard-seo", version: "0.1.0", description: "SEO", functions: 6, components: 0 },
+    { name: "asgard-i18n", version: "0.1.0", description: "国际化", functions: 5, components: 0 }
 ]
 
 micro get_doc_sections(): list {
