@@ -27,15 +27,15 @@ class StaticPath {
 
 let _posts: list = [
     Post {
-        slug: "introducing-voa"
+        slug: "introducing-asgard"
         title: "Asgard 全栈框架正式发布"
         excerpt: "我们很高兴地宣布 Asgard —— 一个纯 GGScript + AWSL 的全栈框架。"
-        content: "Asgard 将 GGScript 的表达力和 AWSL 的组件化完美结合。\n\n## 核心特性\n\n- **文件系统路由**：pages/ 目录即路由\n- **多种渲染模式**：SSR / SSG / ISR / CSR\n- **声明式副作用**：let mut 可变状态 / onMount 生命周期\n- **中间件管道**：洋葱模型请求处理\n- **HMR 热替换**：< 200ms 即时更新\n\n## 为什么不用 C#？\n\nAsgard 框架本身是纯 Valkyrie 代码。C# 仅参与构建工具链和 HMR 调试服务。"
+        content: "Asgard 将 GGScript 的表达力和 AWSL 的组件化完美结合。\n\n## 核心特性\n\n- **文件系统路由**：pages/ 目录即路由\n- **多种渲染模式**：SSR / SSG / ISR / CSR\n- **声明式副作用**：let mut 可变状态 / onMount 生命周期\n- **中间件管道**：洋葱模型请求处理\n- **HMR 热替换**：< 200ms 即时更新"
         author: "Asgard 团队"
         date: "2027-02-01"
         tags: ["asgard", "框架", "发布"]
         reading_time: 5
-        cover_image: "/images/voa-cover.jpg"
+        cover_image: "/images/asgard-cover.jpg"
     },
     Post {
         slug: "awsl-component-guide"
@@ -62,8 +62,8 @@ let _posts: list = [
 ]
 
 let _comments: list = [
-    Comment { id: "c1", post_slug: "introducing-voa", author: "开发者A", content: "终于等到了！Asgard 的纯 Valkyrie 理念太棒了。", date: "2027-02-02", avatar: "A" },
-    Comment { id: "c2", post_slug: "introducing-voa", author: "开发者B", content: "HMR 体验如何？比 Vite 快吗？", date: "2027-02-03", avatar: "B" },
+    Comment { id: "c1", post_slug: "introducing-asgard", author: "开发者A", content: "终于等到了！Asgard 的纯 Valkyrie 理念太棒了。", date: "2027-02-02", avatar: "A" },
+    Comment { id: "c2", post_slug: "introducing-asgard", author: "开发者B", content: "HMR 体验如何？比 Vite 快吗？", date: "2027-02-03", avatar: "B" },
     Comment { id: "c3", post_slug: "awsl-component-guide", author: "初学者", content: "写得很清楚，终于搞懂插槽了！", date: "2027-02-06", avatar: "C" }
 ]
 
