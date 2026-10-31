@@ -1,6 +1,6 @@
-# nyar.vm.nyar_vm
+# nyar.vm.odin_vm
 
-`nyar.vm.nyar_vm` 是 `Nyar` 原生指令集运行时文档入口。
+`nyar.vm.odin_vm` 是 `Nyar` 原生指令集运行时文档入口。
 
 ## 定位
 
@@ -30,10 +30,10 @@
 - 不回退成面向所有宿主的统一兼容壳
 - 不把 `Nyar` 专属假设反向污染到公共基础层
 
-## 与 `nyar.vm.legacy_vm` 的区别
+## 与 `nyar.vm.legend_vm` 的区别
 
-- `nyar_vm` 面向 `Nyar` 原生执行模型与系统级优化
-- `legacy_vm` 面向多语言脚本与通用运行时承载
+- `odin_vm` 面向 `Nyar` 原生执行模型与系统级优化
+- `legend_vm` 面向多语言脚本与通用运行时承载
 
 ## 后续可补充的文档
 
