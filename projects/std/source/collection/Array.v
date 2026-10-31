@@ -91,12 +91,18 @@ private micro __array_get<T>(self: Array<T>, ordinal: usize): T { }
 [intrinsic("builtin.array.set")]
 private micro __array_set<T>(self: Array<T>, ordinal: usize, value: T): unit { }
 
+# 按长度构造 `[T]`：长度是运行期值、元素类型由 `T` 参数化，属于与 get/set 同族的
+# 有限、类型参数化的语言结构语义。声明只冻结语言身份，不携带目标指令、CLI 入口或
+# 后端名字表；目标侧实现由已绑定的 backend / adaptor 计划决定。
+[intrinsic("builtin.array.new")]
+private micro __array_new<T>(length: usize): [T] { }
+
 # 函数式追加：`result = push(result, item)`，必须写回返回值。公共特殊展开通道已退役：
 # push 按声明签名走普通调用链（Invoke），target provider 只能特化本合同，不得以空体替代实现。
 [host_contract]
 micro push<T>(array: Array<T>, value: T): Array<T> {
     let old_len: usize = __array_len(array)
-    let mut new_array: [T] = new [T](old_len + 1)
+    let mut new_array: [T] = __array_new::<T>(old_len + 1)
     let mut i: usize = 0
     while i < old_len {
         # `__array_get`/`__array_set` 均为 0 基下标，拷贝循环同口径。
