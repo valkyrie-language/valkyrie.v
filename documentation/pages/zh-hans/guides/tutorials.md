@@ -19,16 +19,16 @@
 
 ## 教程二：电商商城
 
-**技术栈**：`voa-core` + `voa-effect` + `voa-analytics` + `voa-api`
+**技术栈**：`asgard-core` + `asgard-effect` + `asgard-analytics` + `asgard-api`
 
 **功能**：
 
 - 商品列表（`DataTable` / `Card` / `Pagination`）
 - 商品搜索（`Select` 筛选 + `Input` 搜索）
-- 购物车（`voa-effect` 管理状态）
+- 购物车（`asgard-effect` 管理状态）
 - 结算页面（`Form` 表单验证）
 - API Routes 后端（商品 CRUD）
-- 用户行为埋点（`voa-analytics`）
+- 用户行为埋点（`asgard-analytics`）
 
 **学习目标**：组件组合、Effect 系统、API Routes、埋点
 
@@ -36,11 +36,11 @@
 
 ## 教程三：仪表盘
 
-**技术栈**：`voa-core` + `voa-auth` + WebSocket
+**技术栈**：`asgard-core` + `asgard-auth` + WebSocket
 
 **功能**：
 
-- 登录页（`voa-auth` JWT 认证）
+- 登录页（`asgard-auth` JWT 认证）
 - 统计卡片（`Card` + 图表占位）
 - 数据表格（`DataTable` 排序/分页）
 - 实时通知（WebSocket 推送）
@@ -53,7 +53,7 @@
 
 ## 教程四：作品集网站
 
-**技术栈**：`voa-core` + PWA + WASM
+**技术栈**：`asgard-core` + PWA + WASM
 
 **功能**：
 
@@ -69,7 +69,7 @@
 
 ## 教程五：实时聊天
 
-**技术栈**：`voa-core` + `voa-effect` + WebSocket + WASI
+**技术栈**：`asgard-core` + `asgard-effect` + WebSocket + WASI
 
 **功能**：
 
@@ -88,7 +88,7 @@
 ## 示例仓库结构
 
 ```
-voa-tutorials/
+asgard-tutorials/
 ├── 01-blog/            # 个人博客
 ├── 02-ecommerce/       # 电商商城
 ├── 03-dashboard/       # 仪表盘

@@ -13,7 +13,7 @@
                 <li><strong>Route-based</strong> — 每个页面自动生成独立 chunk</li>
                 <li><strong>Component-based</strong> — 动态 import 按需加载</li>
                 <li><strong>Common chunk</strong> — 共享模块自动提取</li>
-                <li><strong>Cache Groups</strong> — voa-core / vendor 分组</li>
+                <li><strong>Cache Groups</strong> — asgard-core / vendor 分组</li>
                 <li>过小 chunk 自动合并（< 10KB）</li>
                 <li>过大 chunk 自动拆分（> 244KB）</li>
                 <li><code>dynamic_import("module")</code> 懒加载 API</li>

@@ -13,14 +13,14 @@
         <ul>
             <li><strong>渲染模式</strong>：SSG（静态站点生成）</li>
             <li><strong>路由</strong>：文件系统路由（pages/ 目录）</li>
-            <li><strong>数据获取</strong>：voa-fetch + 内置缓存</li>
+            <li><strong>数据获取</strong>：asgard-fetch + 内置缓存</li>
             <li><strong>评论</strong>：客户端交互 + API Routes</li>
             <li><strong>SEO</strong>：自动 meta 标签 + Open Graph</li>
         </ul>
 
         <h2>项目结构</h2>
         <pre class="about-code">
-            voa-blog/
+            asgard-blog/
             ├── source/
             │   ├── pages/          # 页面路由
             │   │   ├── index.awsl  # 首页
