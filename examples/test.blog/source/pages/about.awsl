@@ -6,8 +6,7 @@
             这是一个使用 <strong>Asgard</strong> 框架构建的全栈博客示例。
         </p>
         <p>
-            整个项目 <strong>零行 C#</strong>，所有页面和逻辑都是纯 GGScript + AWSL。
-            C# 仅在构建工具链和 HMR 调试服务中使用。
+            整个项目 <strong>纯 Valkyrie</strong>，所有页面和逻辑都是 GGScript + AWSL。
         </p>
 
         <h2>技术栈</h2>
