@@ -1,0 +1,11 @@
+{
+    version: "1",
+    name: "yydb-workspace",
+    members: [],
+    dependencies: {},
+    workspace: {
+        author: "Valkyrie Team",
+        license: "MIT",
+        version: "0.1.0"
+    }
+}
