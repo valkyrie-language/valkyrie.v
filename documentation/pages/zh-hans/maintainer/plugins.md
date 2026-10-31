@@ -29,14 +29,14 @@ Asgard 插件系统允许第三方扩展框架能力。
 ## 插件结构
 
 ```valkyrie
-struct VoaPlugin
+struct AsgardPlugin
 {
     name: utf8,
     version: utf8,
-    hooks: [VoaPluginHook],
+    hooks: [AsgardPluginHook],
 }
 
-struct VoaPluginHook
+struct AsgardPluginHook
 {
     event: utf8,
     handler: utf8,
@@ -66,19 +66,19 @@ struct VoaPluginHook
 ## 配置示例（asgard.config.v）
 
 ```valkyrie
-let plugins: [VoaPlugin] = [
-    VoaPlugin {
-        name: "voa-plugin-compress",
+let plugins: [AsgardPlugin] = [
+    AsgardPlugin {
+        name: "asgard-plugin-compress",
         version: "0.1.0",
         hooks: [
-            VoaPluginHook { event: "after_build", handler: "compress_output", priority: 10 },
+            AsgardPluginHook { event: "after_build", handler: "compress_output", priority: 10 },
         ],
     },
-    VoaPlugin {
-        name: "voa-plugin-auth-guard",
+    AsgardPlugin {
+        name: "asgard-plugin-auth-guard",
         version: "0.1.0",
         hooks: [
-            VoaPluginHook { event: "on_request", handler: "check_authentication", priority: 1 },
+            AsgardPluginHook { event: "on_request", handler: "check_authentication", priority: 1 },
         ],
     },
 ]
@@ -86,7 +86,7 @@ let plugins: [VoaPlugin] = [
 
 ## 插件发现机制
 
-1. Legion 包管理系统扫描 `voa-plugin-*` 依赖
+1. Legion 包管理系统扫描 `asgard-plugin-*` 依赖
 2. 读取插件的 `legion.von` 中的 `plugin` 段
 3. 按 `priority` 排序执行钩子
 
