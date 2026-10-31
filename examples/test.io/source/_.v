@@ -4,16 +4,16 @@ using std.io.{print_line};
 
 ⍝ ./hello_world.exe
 [main]
-micro hello_world() {
+micro hello_world() -> i32 {
     print_line("Hello World!")
-    ExitCode(add_one(42) as i32)
+    return add_one(42) as i32
 }
 
 ⍝ ./hello_world_utf8.exe 
 [main]
-micro hello_world_utf8() -> ExitCode {
+micro hello_world_utf8() -> i32 {
     print_line("你好，世界！")
-    return ExitCode(add_two(42) as i32)
+    return add_two(42) as i32
 }
 
 micro add_one(x: isize) -> isize {
