@@ -1,5 +1,5 @@
 define_config(asgard) {
-    name = "voa_todo",
+    name = "asgard_todo",
         target = "wasm32-unknown-browser-wasm",
         entry = "source/app.v",
         html_template = "static/index.html",

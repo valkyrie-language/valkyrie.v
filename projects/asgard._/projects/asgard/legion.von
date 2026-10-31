@@ -1,5 +1,5 @@
 {
-    name: "voa_core",
+    name: "asgard",
     version: "0.1.0.0",
     description: "Asgard 框架核心运行时",
     license: "MIT",

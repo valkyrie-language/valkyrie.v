@@ -6,7 +6,7 @@
     type: "library",
     target: "lib",
     dependencies: {
-        "voa-core": "0.1.*",
+        "asgard": "0.1.*",
         "asgard.ui.icon": "0.1.*"
     },
     devDependencies: {}
