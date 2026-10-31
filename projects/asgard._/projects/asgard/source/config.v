@@ -15,8 +15,8 @@ namespace asgard;
 # 校验器（Rust `resolve_static_config` 的默认值面：output=dist、base=/、target=static、
 # 端点 host=127.0.0.1、port=3000）。
 #
-# 注意：本包 `legion.von` 的包名已由历史名 `voa_core` 迁移为 `asgard`；Asgard 定义
-# 合同以 `asgard` 为目标命名空间（设计 16 §2/§5），包身份与本文件命名空间一致。
+# 注意：本包 `legion.von` 的包名已迁移为 `asgard`；Asgard 定义合同以 `asgard`
+# 为目标命名空间（设计 16 §2/§5），包身份与本文件命名空间一致。
 
 using core::types::{Option, Some, None};
 
