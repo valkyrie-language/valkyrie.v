@@ -9,7 +9,7 @@ test.fullstack/
 │   ├── cdn+serverless.von    # 部分 implemented（静态腿）
 │   └── portable.von          # planned
 ├── apps/
-│   ├── shell/                # Asgard / VOA（asgard.config.v，SSG 默认）
+│   ├── shell/                # Asgard（asgard.config.v，SSG 默认）
 │   └── atlas/                # Atlas（atlas.config.von，非 asgard.config）
 └── packages/
     └── domain/               # 纯 library（无宿主 config）
@@ -19,22 +19,24 @@ test.fullstack/
 
 | 包 | 配置 | 流水线 |
 |:---|:---|:---|
-| `apps/shell` | `asgard.config.v` | Asgard/VOA → browser 制品 |
+| `apps/shell` | `asgard.config.v` | Asgard → browser 制品 |
 | `apps/atlas` | `atlas.config.von` | Atlas → 服务 / server 岛（planned） |
 | `packages/domain` | 仅 `legion.von` | 库；**不要**放 asgard/atlas 宿主配置 |
 
 ## 怎么试
 
 ```bash
-# 在 valkyrie.rs workspace
-cargo test -p voa deploy::
-cargo build -p voa --bin asgard
+# Rust 编译实现在 nyar-vm.rs 仓 rusty-valkyrie 包（src/asgard 模块）
+cargo test -p rusty-valkyrie asgard
+
+# asgard CLI 由 valkyrie.rs 装配层的 @nyar/valkyrie 包提供
+npm install @nyar/valkyrie
 
 # 列出 profiles 目录中的 .von
-./target/debug/asgard plan --list ../valkyrie.v/examples/test.fullstack/deploy/profiles
+asgard plan --list ../valkyrie.v/examples/test.fullstack/deploy/profiles
 
 # 校验金样例 deploy profile 并打印制品矩阵（不构建）
-./target/debug/asgard plan --profile ../valkyrie.v/examples/test.fullstack/deploy/profiles/cdn+serverless.von
+asgard plan --profile ../valkyrie.v/examples/test.fullstack/deploy/profiles/cdn+serverless.von
 
 # 仅 shell SSG 构建（需在 apps/shell 目录，且工具链可用时）
 asgard build

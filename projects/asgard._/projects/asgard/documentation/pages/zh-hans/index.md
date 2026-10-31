@@ -1,6 +1,6 @@
 # Asgard 框架文档
 
-**Asgard** 是 Valkyrie 上的 GUI 应用框架，CLI 为 **`asgard build` / `asgard dev` / `asgard pack` / `asgard plan`**（Rust 实现 crate：`voa`）。
+**Asgard** 是 Valkyrie 上的 GUI 应用框架，CLI 为 **`asgard build` / `asgard dev` / `asgard pack` / `asgard plan`**（Rust 实现：`rusty-valkyrie` 包内 `src/asgard` 模块与 `valkyrie.rs` 装配层）。
 
 本目录为 Asgard 文档的 **canonical 位置**（可随框架移出 valkyrie 主仓库）。
 
@@ -25,6 +25,6 @@
 
 ## 工具链（valkyrie.v 主文档）
 
-- [VOA 编译工具](../../../../documentation/pages/zh-hans/toolchain/voa.md)
+- [Asgard 编译工具](../../../../../../../documentation/pages/zh-hans/toolchain/asgard.md)
 - [目标三元组与 publish](../../../../documentation/pages/zh-hans/developer/target-triples.md)
 - [AWSL 语言扩展](../../../../documentation/pages/zh-hans/language/extensions/awsl-language.md)

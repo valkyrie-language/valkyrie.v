@@ -103,7 +103,7 @@ target = "clr-unity-windows-il2cpp" // Unity
 |:---|:---|:---|
 | `browser`（默认） | `index.html` + `boot.js` + **`.wasm`** | WASM AOT；RenderIR 编入制品 |
 | `wechat-miniprogram` | `app.json` + `pages/*` + **`.wasm`** + shim | WASM 逻辑 + asgard ui；WXML setData |
-| `wechat-minigame` | **不走 VOA UI** | Canvas 自渲（有限） |
+| `wechat-minigame` | **不走 Asgard UI** | Canvas 自渲（有限） |
 | `android` | **`classes.dex`** + Manifest | V→DEX；IR 编入 dex |
 | `ios` | **Mach-O** + `Info.plist` | V→Mach-O；IR 编入可执行文件 |
 
@@ -164,12 +164,12 @@ asgard.config.production.v   # 生产环境
 
 | 环境变量 | 对应配置 |
 |:---|:---|
-| `VOA_PROJECT_TYPE` | `project_type` |
-| `VOA_TARGET` | `target` |
-| `VOA_SERVER_PORT` | `server.port` |
-| `VOA_SERVER_HOST` | `server.host` |
-| `VOA_BUILD_OUTPUT` | `build.output` |
-| `VOA_ENV` | 当前环境 |
+| `ASGARD_PROJECT_TYPE` | `project_type` |
+| `ASGARD_TARGET` | `target` |
+| `ASGARD_SERVER_PORT` | `server.port` |
+| `ASGARD_SERVER_HOST` | `server.host` |
+| `ASGARD_BUILD_OUTPUT` | `build.output` |
+| `ASGARD_ENV` | 当前环境 |
 
 优先级：环境变量 > 环境配置文件 > 基础配置 > 默认值。
 

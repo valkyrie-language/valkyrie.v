@@ -1,12 +1,12 @@
-# Asgard CLI 与 VOA 编译实现
+# Asgard CLI 与编译实现
 
-**Asgard** 是 GUI 应用框架，**用户 CLI 为 `asgard`**（`asgard build` / `asgard dev` / `asgard pack`）。底层编译由 Rust crate **`voa`** 实现（`cargo build -p voa --bin asgard`）。
+**Asgard** 是 GUI 应用框架，**用户 CLI 为 `asgard`**（`asgard build` / `asgard dev` / `asgard pack`）。底层编译由 `rusty-valkyrie` 包内 `src/asgard` 模块与 `valkyrie.rs` 装配层实现。
 
-| | Asgard（用户面） | VOA（实现） |
-|:---|:---|:---|
-| 角色 | 框架 + CLI 命令 | 编译管线（解析、降级、编译、写 dist） |
-| 典型路径 | `valkyrie.v/projects/asgard/` | `valkyrie.rs/projects/voa/` |
-| 用户配置 | 依赖 `asgard` / `asgard.ui` 等包 | `asgard.config.v` |
+| | Asgard |
+|:---|:---|
+| 角色 | 框架 + CLI 命令；编译管线（解析、降级、编译、写 dist） |
+| 实现落点 | V 侧 `projects/asgard._/projects/asgard/`；Rust 侧 `rusty-valkyrie` 包内 `src/asgard` 模块与 `valkyrie.rs` 装配层 |
+| 用户配置 | 依赖 `asgard` / `asgard.ui` 等包；`asgard.config.v` |
 
 统一编译架构：[Asgard GUI 统一编译架构](../../projects/asgard/documentation/pages/zh-hans/architecture/gui-compilation.md)。UI 策略：[UI 渲染策略](../../projects/asgard/documentation/pages/zh-hans/architecture/ui-rendering.md)。
 
@@ -44,17 +44,17 @@ Asgard 采用约定优于配置，为应用提供**工程化构建体验**（约
 | `asgard pack` | 按 `publish` 组装交付物（apk / ipa / mini-program 等） |
 | `asgard add` | 添加依赖（规划中） |
 | `asgard remove` | 移除依赖（规划中） |
-| `voa install` | 安装所有依赖 |
-| `voa run` | 运行脚本 |
-| `voa clean` | 清理构建产物 |
-| `voa publish` | 发布包 |
-| `voa new` | 创建新项目 |
-| `voa check` | 类型检查与诊断 |
-| `voa fmt` | 代码格式化 |
-| `voa test` | 运行测试 |
-| `voa init` | 初始化 VOA 项目 |
-| `voa benchmark` | 性能基准测试 |
-| `voa coverage` | 代码覆盖率收集 |
+| `asgard install` | 安装所有依赖 |
+| `asgard run` | 运行脚本 |
+| `asgard clean` | 清理构建产物 |
+| `asgard publish` | 发布包 |
+| `asgard new` | 创建新项目 |
+| `asgard check` | 类型检查与诊断 |
+| `asgard fmt` | 代码格式化 |
+| `asgard test` | 运行测试 |
+| `asgard init` | 初始化 Asgard 项目 |
+| `asgard benchmark` | 性能基准测试 |
+| `asgard coverage` | 代码覆盖率收集 |
 
 ## 项目结构
 
@@ -118,7 +118,7 @@ flowchart TD
 
 ## Island 架构
 
-VOA 支持 **Hybrid Island** 架构，灵感来自 Astro，允许混合使用多种渲染模式：
+Asgard 支持 **Hybrid Island** 架构，允许混合使用多种渲染模式：
 
 | 岛屿类型 | 说明 | 适用场景 |
 |:---|:---|:---|
@@ -176,7 +176,7 @@ flowchart TD
     class WasmLane,WasmPackage,WasmArtifacts,FamilyLane,GenericPackage,GenericArtifacts delivery;
 ```
 
-VOA 不实现自己的平行编译器。它只在主线之上增加：
+Asgard 不实现自己的平行编译器。它只在主线之上增加：
 - Web 相关前置转换
 - Web 宿主约束
 - 交付阶段的资源组织

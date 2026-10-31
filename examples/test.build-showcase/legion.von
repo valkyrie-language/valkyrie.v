@@ -1,7 +1,7 @@
 {
     "name": "voa-build-showcase",
     "version": "0.1.0",
-    "description": "VOA 构建优化展示 — 代码分割 + 图片优化 + 字体优化",
+    "description": "Asgard 构建优化展示 — 代码分割 + 图片优化 + 字体优化",
     "type": "application",
     "target": "static",
     "dependencies": {

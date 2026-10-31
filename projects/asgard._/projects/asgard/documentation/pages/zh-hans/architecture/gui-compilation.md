@@ -5,12 +5,11 @@
 
 | 名称         | 角色                                                                                      |
 | ---------- | --------------------------------------------------------------------------------------- |
-| **Asgard** | **GUI 应用框架 + 用户 CLI**（`asgard build` / `dev` / `pack` / `plan`；widget、AWSL、运行时） |
-| **VOA**    | **Rust 编译实现**（crate `voa`，`asgard.config.v`；无独立 `voa` 可执行文件） |
+| **Asgard** | **GUI 应用框架 + 用户 CLI**（`asgard build` / `dev` / `pack` / `plan`；widget、AWSL、运行时）；Rust 编译实现位于 `rusty-valkyrie` 包内 `src/asgard` 模块与 `valkyrie.rs` 装配层，配置文件 `asgard.config.v` |
 | **AWSL**   | Asgard widget 的 `.awsl` 表面语法                                                            |
 
 
-**框架与 CLI 都叫 Asgard。** Rust 端编译实现 crate 名为 **`voa`**（`cargo build -p voa --bin asgard`）；不存在 `asgard-wechat-*` 等额外 Rust 二进制。子项目用 Valkyrie 点分习惯（`asgard.ui`），不用 `asgard-ui` 指框架本体。
+**框架与 CLI 都叫 Asgard。** Rust 端编译实现位于 `rusty-valkyrie` 包内 `src/asgard` 模块与 `valkyrie.rs` 装配层；不存在 `asgard-wechat-*` 等额外 Rust 二进制。子项目用 Valkyrie 点分习惯（`asgard.ui`），不用 `asgard-ui` 指框架本体。
 
 ---
 
@@ -22,7 +21,7 @@
 3. **RenderIR 编入制品** — 模板降级得到的 RenderIR **编码进最终二进制**（逻辑包或宿主 UI 包内）；**Release 不单独散落 UI 中间文件**。
 4. **Debug 多产物** — `build.mode: dev` 或开启 debug/sourcemap 时，**额外**写出 RenderIR 侧车（如 `debug/render-ir.bin`），便于检查与映射；**不算交付物**。
 5. **平台原生优先，Bifrost 并行** — 宿主默认用**原生**视图 shim 消费编入制品的 UI wire；`asgard.ui` V 源码**不**上设备。同时允许 `asgard.bifrost` 作为并行自绘后端，承接跨平台统一自绘场景（见 [UI 渲染策略](ui-rendering.md)）。
-6. **Asgard/VOA ∥ Atlas** — 客户端 GUI 走本管线；服务端 / server 岛走 Atlas（`atlas.config.von`）。二者由 deploy profile 组合，不合成 LiveView/SSR-first。
+6. **Asgard ∥ Atlas** — 客户端 GUI 走本管线；服务端 / server 岛走 Atlas（`atlas.config.von`）。二者由 deploy profile 组合，不合成 LiveView/SSR-first。
 
 ---
 
@@ -36,12 +35,12 @@ flowchart TB
         CFG["asgard.config.v platform + build.mode"]
     end
 
-    subgraph front [VOA 前端 共用]
+    subgraph front [Asgard 前端 共用]
         Parse["AWSL 解析"]
         Lower["降级 RenderIR + script 绑定"]
     end
 
-    subgraph backends [VOA 按 platform 选 AOT 后端]
+    subgraph backends [Asgard 按 platform 选 AOT 后端]
         WebBE["browser: V → WASM"]
         AndBE["android: V → classes.dex 尾段"]
         IosBE["ios: V → AsgardHost"]
@@ -63,7 +62,7 @@ flowchart TB
         MpOut["app.json + pages/* + *.wasm + voa-runtime.js shim"]
     end
 
-    subgraph pack [VOA 交付]
+    subgraph pack [Asgard 交付]
         PackCLI["asgard pack"]
     end
 
@@ -96,13 +95,13 @@ flowchart TB
 | `legion.von`      | `target` 须与 `platform` 一致（见下表）             |
 
 
-### 阶段 1 — 前端（VOA，全平台共用）
+### 阶段 1 — 前端（Asgard，全平台共用）
 
 ```
 .awsl → 解析 → 模板降级 → RenderIR + script 绑定
 ```
 
-- RenderIR 是 **VOA 内部 IR**（不进 Valkyrie HIR）。
+- RenderIR 是 **Asgard 内部 IR**（不进 Valkyrie HIR）。
 - 此阶段 **不**决定 WASM/DEX/Mach-O；只产出可供各后端消费的 IR 与合成 V 片段。
 
 ### 阶段 2 — AOT 后端（按 `platform`）
@@ -141,7 +140,7 @@ Debug:    [宿主二进制制品] ⊃ Encoded(RenderIR)
 
 首版实现若仍见独立 `ui.bin`，为 **旧 dist 兼容**；`asgard pack` 会打印废弃警告。
 
-### 阶段 4 — Package（VOA → `dist/`）
+### 阶段 4 — Package（Asgard → `dist/`）
 
 
 | platform             | Release dist（二进制为主）                                      |
@@ -154,16 +153,16 @@ Debug:    [宿主二进制制品] ⊃ Encoded(RenderIR)
 
 **不交付** Kotlin、Swift、Gradle/Xcode 源码。
 
-### 阶段 5 — 交付（VOA）
+### 阶段 5 — 交付（Asgard）
 
 
 | publish        | 命令                                      | 输入              |
 | -------------- | --------------------------------------- | --------------- |
 | `web-app`      | （浏览器直接加载 dist）                          | `dist/`         |
-| `mini-program` | `asgard pack --target mini-program` | VOA dist        |
+| `mini-program` | `asgard pack --target mini-program` | Asgard dist        |
 | `apk`          | `asgard pack --target apk`          | `dist/android/` |
 | `ipa`          | `asgard pack --target ipa`          | `dist/ios/`     |
-| `mini-game`    | `asgard pack --target mini-game`    | 非 VOA UI 管线     |
+| `mini-game`    | `asgard pack --target mini-game`    | 非 Asgard UI 管线     |
 
 
 ---
@@ -179,7 +178,7 @@ ios               aarch64-apple-ios-*         AsgardHost        尾段
 wechat-miniprogram  wasm32-wechat-unknown-wasm     *.wasm            尾段 asgard ui（无 ASGARDNT）
 ```
 
-`publish` 只选 **VOA 哪条交付链**（`asgard pack --target …`），不改变字节码族。
+`publish` 只选 **Asgard 哪条交付链**（`asgard pack --target …`），不改变字节码族。
 
 ---
 
@@ -188,13 +187,13 @@ wechat-miniprogram  wasm32-wechat-unknown-wasm     *.wasm            尾段 asga
 
 | 概念                         | 路径                                    |
 | -------------------------- | ------------------------------------- |
-| VOA（Rust 唯一 GUI 工具） | `valkyrie.rs/projects/voa/` |
-| 交付组装 | `voa/src/delivery/` |
-| 宿主编译 | `voa/src/compile.rs` |
-| RenderIR 降级 | `voa/src/awsl/lower.rs` |
-| Web WASM 后端 | `voa/src/wasm.rs` |
+| Asgard（Rust 唯一 GUI 工具） | `rusty-valkyrie` 包内 `src/asgard/` 与 `valkyrie.rs` 装配层 |
+| 交付组装 | `src/asgard/delivery/` |
+| 宿主编译 | `src/asgard/compile.rs` |
+| RenderIR 降级 | `src/asgard/awsl/lower.rs` |
+| Web WASM 后端 | `src/asgard/wasm.rs` |
 | DEX / Mach-O 编码 | `std-data/src/binary/dex/`、`mach_o/` |
-| Android/iOS Package | `voa/src/package/android/`、`ios/` |
+| Android/iOS Package | `src/asgard/package/android/`、`ios/` |
 | Asgard（V 框架；**无** Rust crate） | `valkyrie.v/projects/asgard/` |
 | `asgard.ui` | `valkyrie.v/projects/asgard.ui/`（**契约**；设备侧由原生 shim 实现） |
 
@@ -218,7 +217,7 @@ wechat-miniprogram  wasm32-wechat-unknown-wasm     *.wasm            尾段 asga
 
 ## Asgard UI v1 Wire 格式
 
-与 [`voa/src/codegen/mobile_ui_binary.rs`](../../../../../../valkyrie.rs/projects/voa/src/codegen/mobile_ui_binary.rs) 及 `asgard.ui` 解码器对齐：
+与 `rusty-valkyrie` 包内 `src/asgard/codegen/mobile_ui_binary.rs` 及 `asgard.ui` 解码器对齐：
 
 ```text
 文件 / 嵌入段:
@@ -265,5 +264,5 @@ Attr:
 - [Deploy Profile](deploy-profiles.md)
 - [UI 渲染策略](ui-rendering.md)
 - [项目配置](../configuration.md)
-- [VOA 工具](../../../../documentation/pages/zh-hans/toolchain/voa.md)
+- [Asgard 工具](../../../../../../../../documentation/pages/zh-hans/toolchain/asgard.md)
 - [目标三元组与 publish](../../../../documentation/pages/zh-hans/developer/target-triples.md)

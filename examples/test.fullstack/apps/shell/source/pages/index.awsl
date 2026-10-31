@@ -1,7 +1,7 @@
 <widget namespace="shell.pages" name="index">
 <vbox class="container">
     <text class="title">{title}</text>
-    <text class="subtitle">VOA Fullstack Demo (SSG default)</text>
+    <text class="subtitle">Asgard Fullstack Demo (SSG default)</text>
     <button @click="load_users" style="bg-blue-500 text-white px-4 py-2 rounded">加载用户</button>
     <loop user in users>
         <vbox class="card">

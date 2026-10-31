@@ -1,4 +1,4 @@
-# iOS IPA（Asgard + VOA）
+# iOS IPA（Asgard）
 
 iOS 走 **Mach-O 字节码交付**：逻辑 V→Mach-O，RenderIR **编入可执行文件 / 应用包**。**无 WASM、无 Swift 源码**。见 [统一编译架构](../architecture/gui-compilation.md)。
 

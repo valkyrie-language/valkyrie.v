@@ -338,7 +338,7 @@ flowchart LR
 ├── test/              # 测试源码 (*.v) — 仅 legion test 时编译
 ├── script/            # 可执行脚本入口
 ├── dist/              # 最终部署产物 (仅 legion build 产出)
-└── asgard.config.v       # VOA 前端构建配置 (仅 AWSL 项目)
+└── asgard.config.v       # Asgard 前端构建配置 (仅 AWSL 项目)
 ```
 
 ---

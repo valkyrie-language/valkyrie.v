@@ -319,9 +319,9 @@ Asgard **平台原生优先**；自渲仅小游戏等有限场景。详见 [UI �
 | publish | 含义 | 逻辑字节码 | 典型工具链 |
 |:---|:---|:---|:---|
 | `wasm-module` | 裸 WASM 模块 | **WASM** | 库 / 嵌入 |
-| `web-app` | Web 应用 | **WASM**（仅 Web） | VOA `platform: browser` |
+| `web-app` | Web 应用 | **WASM**（仅 Web） | Asgard `platform: browser` |
 | `extension` | 浏览器扩展 | WASM | 后续 |
-| `mini-game` | 微信小游戏 | 小游戏运行时 | `asgard pack --target mini-game`（自渲，非 VOA GUI） |
+| `mini-game` | 微信小游戏 | 小游戏运行时 | `asgard pack --target mini-game`（自渲，非 Asgard GUI） |
 | `mini-program` | 微信小程序 | **WASM**（`wasm32-wechat-unknown-wasm`） | `asgard build` + `asgard pack --target mini-program` |
 | `apk` | Android | **DEX** | `asgard build` + `asgard pack --target apk` |
 | `ipa` | iOS | **Mach-O** | `asgard build` + `asgard pack --target ipa` |

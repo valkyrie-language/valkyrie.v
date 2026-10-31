@@ -90,7 +90,7 @@ boot.js + 胶水（仅加载与句柄绑定）
 
 - **默认**：`static` / 页面壳走 **SSG**（构建期 HTML），`hydrated` 岛客户端激活。
 - **可选**：`server` 岛 = Atlas 在 **请求时** 返回 HTML **片段**（partial），不是整站 SSR。
-- 流水线：**Asgard/VOA**（客户端 GUI 制品）∥ **Atlas**（服务 / server 岛）；由 **deploy profile** 选拓扑。
+- 流水线：**Asgard**（客户端 GUI 制品）∥ **Atlas**（服务 / server 岛）；由 **deploy profile** 选拓扑。
 - 多平台 = 多份制品进入 `ArtifactSet` / 部署矩阵，**不是**一个二进制通吃。
 
 部署维度（`cdn+serverless` vs `portable` 等）只影响交付组合，不改变模板前置转换：
@@ -103,7 +103,7 @@ boot.js + 胶水（仅加载与句柄绑定）
 flowchart TD
     Template[模板语义 SSG 默认]
     Partition[Partition]
-    AsgardLane[Asgard / VOA 客户端]
+    AsgardLane[Asgard 客户端]
     AtlasLane[Atlas 服务 / server 岛]
     StaticArt[SSG + hydrated 制品]
     ServerArt[Server partial 制品 planned]

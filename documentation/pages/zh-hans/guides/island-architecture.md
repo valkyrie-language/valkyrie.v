@@ -1,6 +1,6 @@
 # Island 架构
 
-VOA / Asgard 支持 **Hybrid Island** 架构（灵感来自 Astro）。页面由多种独立岛屿组成；**默认交付是 SSG**，不是 SSR-first / LiveView。
+Asgard 支持 **Hybrid Island** 架构。页面由多种独立岛屿组成；**默认交付是 SSG**，不是 SSR-first / LiveView。
 
 ## 岛屿类型
 
@@ -37,7 +37,7 @@ VOA / Asgard 支持 **Hybrid Island** 架构（灵感来自 Astro）。页面由
 
 - `static`：构建期写入 HTML，永不水化。
 - `hydrated`：SSG 占位 + 客户端按需水化。
-- `server`：构建期可留槽位；**运行时**由 Atlas 返回 HTML 片段（与 Asgard/VOA 客户端流水线并行，见 [Deploy Profile](../../../../projects/asgard._/projects/asgard/documentation/pages/zh-hans/architecture/deploy-profiles.md)）。
+- `server`：构建期可留槽位；**运行时**由 Atlas 返回 HTML 片段（与 Asgard 客户端流水线并行，见 [Deploy Profile](../../../../projects/asgard._/projects/asgard/documentation/pages/zh-hans/architecture/deploy-profiles.md)）。
 
 ## 水化策略
 

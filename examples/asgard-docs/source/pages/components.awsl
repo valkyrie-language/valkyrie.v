@@ -1,7 +1,7 @@
 <widget components>
 <div class="components-page">
     <h1 class="page-title">组件库</h1>
-    <p class="page-desc">VOA 提供 {length(allDocs)} 个内置组件，覆盖通用、布局、表单、数据展示、反馈五大类。</p>
+    <p class="page-desc">Asgard 提供 {length(allDocs)} 个内置组件，覆盖通用、布局、表单、数据展示、反馈五大类。</p>
 
     <div class="comp-grid">
         <loop doc in allDocs>

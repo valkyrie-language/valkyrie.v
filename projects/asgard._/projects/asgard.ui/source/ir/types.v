@@ -1,4 +1,4 @@
-# RenderIR 与 script 绑定类型（与 VOA mobile_ui_binary 对齐）
+# RenderIR 与 script 绑定类型（与 Asgard mobile_ui_binary 对齐）
 
 namespace asgard.ui.ir;
 

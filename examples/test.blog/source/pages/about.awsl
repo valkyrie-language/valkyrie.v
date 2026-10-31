@@ -1,9 +1,9 @@
 <widget about>
 <div class="about-page">
-    <h1 class="about-title">关于 VOA Blog</h1>
+    <h1 class="about-title">关于 Asgard Blog</h1>
     <div class="about-content">
         <p>
-            这是一个使用 <strong>VOA (Valkyrie Omni App)</strong> 框架构建的全栈博客示例。
+            这是一个使用 <strong>Asgard</strong> 框架构建的全栈博客示例。
         </p>
         <p>
             整个项目 <strong>零行 C#</strong>，所有页面和逻辑都是纯 GGScript + AWSL。

@@ -1,4 +1,4 @@
-# VOA JS Builtin — Performance
+# Asgard JS Builtin — Performance
 # [js_builtin] 直接映射 JS 内置 Performance API，无依赖
 # now() 是纯函数，mark/measure 有副作用
 

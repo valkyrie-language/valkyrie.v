@@ -1,7 +1,7 @@
 <widget index>
 <div class="blog-home">
     <section class="blog-hero">
-        <h1 class="blog-hero-title">VOA Blog</h1>
+        <h1 class="blog-hero-title">Asgard Blog</h1>
         <p class="blog-hero-subtitle">使用纯 GGScript + AWSL 构建的全栈博客</p>
     </section>
 

@@ -1,4 +1,4 @@
-# VOA JS Builtin — Storage
+# Asgard JS Builtin — Storage
 # [js_builtin] 直接映射 JS 内置 Storage API，无依赖
 # Storage 有副作用（IO），不标注 pure
 

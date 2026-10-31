@@ -13,7 +13,7 @@ Asgard 侧绘图 UI 壳：把 `plotter` 几何接到页面或报告。
 | `PlotGrid` | `source/components/plot-grid.awsl` | `columns`, `items[{title,svg_html}]` |
 | `InteractiveColPlot` | `source/components/interactive-col-plot.awsl` | `title`, `series[{key,label,value_text,fill,height_pct}]` |
 
-`InteractiveColPlot` 用 `on:click` + `<script>` micros（pin / toggle / tooltip），由 voa hydrate 编入 WASM。
+`InteractiveColPlot` 用 `on:click` + `<script>` micros（pin / toggle / tooltip），由 Asgard hydrate 编入 WASM。
 
 ## Helpers
 

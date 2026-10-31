@@ -1,4 +1,4 @@
-# VOA 核心类型定义
+# Asgard 核心类型定义
 
 struct VoaApp {
     name: string

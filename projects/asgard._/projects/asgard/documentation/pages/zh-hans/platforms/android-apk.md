@@ -1,4 +1,4 @@
-# Android APK（Asgard + VOA）
+# Android APK（Asgard）
 
 Android 的 **唯一逻辑制品** 是 `classes.dex`：native AOT 与 asgard ui wire **均编入 dex 尾段**（`ASGARDNT` + asgard ui）。**无** 独立 `ui.bin`、`libasgard_host.so`、**无** 外部 C/NDK 链接步骤。见 [AOT 原则](../architecture/aot-principles.md) 与 [平台契约硬门禁](../architecture/platform-contract.md)。
 

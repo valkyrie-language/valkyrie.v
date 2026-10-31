@@ -1,8 +1,8 @@
-# VOA 官方教程
+# Asgard 官方教程
 
 ## 教程一：个人博客
 
-**技术栈**：Asgard/VOA（**SSG 默认**）+ 可选 SEO 元标签
+**技术栈**：Asgard（**SSG 默认**）+ 可选 SEO 元标签
 
 **功能**：
 
@@ -98,6 +98,6 @@ voa-tutorials/
 
 每个教程目录含：
 
-- `asgard.config.v` — VOA 项目配置
+- `asgard.config.v` — Asgard 项目配置
 - `source/` — 源码（`.v` + `.awsl`）
 - `assets/` — 静态资源

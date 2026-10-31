@@ -1,4 +1,4 @@
-# VOA 应用生命周期
+# Asgard 应用生命周期
 
 using voa_core.types
 

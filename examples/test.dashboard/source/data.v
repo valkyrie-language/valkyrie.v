@@ -1,4 +1,4 @@
-# VOA 实时仪表盘数据层 — 使用静态数据
+# Asgard 实时仪表盘数据层 — 使用静态数据
 
 struct MetricPoint {
     timestamp: i32

@@ -1,6 +1,6 @@
 # AWSL 扩展
 
-AWSL（Asgard Web Specification Language）是 VOA 框架中的 UI 声明语言（`.awsl`）：模板、指令、**单文件组件（SFC）**；状态与更新图编译进 **WASM**，浏览器侧只有加载胶水，没有独立 JS 框架 runtime。
+AWSL（Asgard Web Specification Language）是 Asgard 框架中的 UI 声明语言（`.awsl`）：模板、指令、**单文件组件（SFC）**；状态与更新图编译进 **WASM**，浏览器侧只有加载胶水，没有独立 JS 框架 runtime。
 
 SFC 只存在于 AWSL：每个 `.awsl` 文件对应**一个** widget，经统一的 `compile_awsl_source` 解析、校验、降级后汇入 Valkyrie 主线。顶层 `widget` / `template`（兼容别名）、`script`、`style` 块并列写在文件里。
 
