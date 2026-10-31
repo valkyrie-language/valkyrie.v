@@ -33,7 +33,7 @@ Legion 管理的是**程序集**的依赖关系图，而不仅仅是包。包是
 
 | 模式 | 说明 | 配置文件 |
 |:---|:---|:---|
-| **Workspace** | 多包工作区，统一管理相互依赖的多个子包 | `voa.workspace.v` |
+| **Workspace** | 多包工作区，统一管理相互依赖的多个子包 | `asgard.workspace.v` |
 | **Package** | 单包开发，独立库或应用 | `legion.von` |
 | **Script** | 一次性脚本执行，无需配置文件 | 无 |
 
@@ -43,7 +43,7 @@ flowchart LR
     Package[Package]
     Script[Script]
 
-    WorkspaceConfig[voa.workspace.v]
+    WorkspaceConfig[asgard.workspace.v]
     PackageConfig[legion.von]
     NoConfig[无配置文件]
 

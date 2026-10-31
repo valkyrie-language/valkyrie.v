@@ -4,7 +4,7 @@
 
 ```
 test.fullstack/
-├── voa.workspace.v
+├── asgard.workspace.v
 ├── deploy/profiles/          # deploy.profile 示例
 │   ├── cdn+serverless.von    # 部分 implemented（静态腿）
 │   └── portable.von          # planned
