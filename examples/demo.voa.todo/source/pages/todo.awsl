@@ -1,7 +1,7 @@
 <widget todo>
 <div class="todo-app">
     <h1>待办事项</h1>
-    <div class="subtitle">VOA + AWSL + WASM 演示</div>
+    <div class="subtitle">Asgard + AWSL + WASM 演示</div>
 
     <TodoInput />
 

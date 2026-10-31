@@ -1,4 +1,4 @@
-# 微信小程序（Asgard / VOA）
+# 微信小程序（Asgard）
 
 Asgard 的长期目标是同一套 AWSL + V 逻辑，编译到 Web / 微信小程序 / Android / iOS 等宿主。UI 策略见 **[UI 渲染策略](../architecture/ui-rendering.md)** 与 **[统一编译架构](../architecture/gui-compilation.md)**：**平台原生优先**；自渲仅在小游戏 Canvas 等场景 **有限支持**。
 
@@ -15,7 +15,7 @@ Asgard 的长期目标是同一套 AWSL + V 逻辑，编译到 Web / 微信小�
 | UI | 小游戏 / **Canvas（自渲，有限）** | WXML / WXSS（**原生**） |
 | 逻辑 | **`*.wasm`（AOT）** | **`*.wasm`（AOT）** |
 | RenderIR | 不适用本管线 | **asgard ui 尾段编入 `.wasm`** |
-| VOA | 不走 VOA UI | `platform: wechat-miniprogram` |
+| Asgard | 不走 Asgard UI | `platform: wechat-miniprogram` |
 | 打包 | `asgard pack --target mini-game` | `asgard pack --target mini-program` |
 
 ## 配置

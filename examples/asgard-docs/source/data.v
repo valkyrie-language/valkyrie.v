@@ -1,4 +1,4 @@
-# VOA 文档站数据层 — 导航 + 文档内容 + 组件目录 + 教程步骤
+# Asgard 文档站数据层 — 导航 + 文档内容 + 组件目录 + 教程步骤
 
 struct DocSection {
     id: string
@@ -235,9 +235,9 @@ let component_docs: [ComponentDoc] = [
 let tutorial_steps: [TutorialStep] = [
     TutorialStep {
         id: "create-project"
-        title: "创建 VOA 项目"
-        description: "使用 voa init 命令创建你的第一个 VOA 项目。"
-        code: "voa init my-app"
+        title: "创建 Asgard 项目"
+        description: "使用 asgard init 命令创建你的第一个 Asgard 项目。"
+        code: "asgard init my-app"
         expected_output: "项目创建成功"
         hint: "确保已安装 Valkyrie SDK 和 pnpm"
         order: 1
@@ -254,7 +254,7 @@ let tutorial_steps: [TutorialStep] = [
     TutorialStep {
         id: "use-components"
         title: "使用组件"
-        description: "VOA 提供 24 个内置组件，直接使用即可。"
+        description: "Asgard 提供 24 个内置组件，直接使用即可。"
         code: "Card title=welcome"
         expected_output: "显示一个带按钮的卡片"
         hint: "组件名使用 PascalCase"
@@ -281,8 +281,8 @@ let tutorial_steps: [TutorialStep] = [
     TutorialStep {
         id: "deploy"
         title: "部署上线"
-        description: "使用 voa export 导出静态文件，然后部署到任意平台。"
-        code: "voa export"
+        description: "使用 asgard export 导出静态文件，然后部署到任意平台。"
+        code: "asgard export"
         expected_output: "静态文件已生成到 dist/"
         hint: "SSG 模式的页面会被预渲染为纯 HTML"
         order: 6

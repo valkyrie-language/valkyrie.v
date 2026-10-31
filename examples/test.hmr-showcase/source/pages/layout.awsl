@@ -1,7 +1,7 @@
 <widget layout>
 <div class="showcase-layout">
     <header class="showcase-header">
-        <h1 class="showcase-title">⚡ VOA HMR + DevTools</h1>
+        <h1 class="showcase-title">⚡ Asgard HMR + DevTools</h1>
         <span class="showcase-subtitle">热模块替换 · 错误覆盖层 · DevTools 面板</span>
         <div class="showcase-hmr">
             <HmrIndicator />

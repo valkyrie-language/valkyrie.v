@@ -1,8 +1,8 @@
 <widget index>
 <div class="docs-home">
     <section class="docs-hero">
-        <h1 class="docs-hero-title">VOA</h1>
-        <p class="docs-hero-subtitle">Valkyrie Omni App Framework</p>
+        <h1 class="docs-hero-title">Asgard</h1>
+        <p class="docs-hero-subtitle">Valkyrie GUI 全栈应用框架</p>
         <p class="docs-hero-desc">纯 GGScript + AWSL 的全栈框架</p>
         <div class="docs-hero-actions">
             <Link href="/docs/getting-started">

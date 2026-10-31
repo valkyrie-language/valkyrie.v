@@ -1,5 +1,5 @@
 define_config(asgard) {
-    name = "voa-docs",
+    name = "asgard-docs",
         version = "0.1.0",
         render {
             defaultMode = "ssg",
@@ -16,7 +16,7 @@ define_config(asgard) {
             ]
         },
         seo {
-            title = "VOA - Valkyrie Omni App Framework",
+            title = "Asgard - Valkyrie GUI 全栈应用框架",
             description = "纯 GGScript + AWSL 的全栈框架",
             og_image = "/images/og-cover.png"
         }

@@ -1,7 +1,7 @@
 {
     "name": "voa-blog",
     "version": "0.1.0",
-    "description": "VOA 全栈博客 — 路由 + SSG + 数据获取 + 评论系统",
+    "description": "Asgard 全栈博客 — 路由 + SSG + 数据获取 + 评论系统",
     "type": "application",
     "target": "static",
     "dependencies": {

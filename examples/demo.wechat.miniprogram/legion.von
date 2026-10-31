@@ -1,7 +1,7 @@
 {
     name: "demo.wechat.miniprogram",
     version: "0.1.0",
-    description: "微信小程序 VOA 示例 -- WXML/WXSS + .wasm（逻辑 + asgard ui）",
+    description: "微信小程序 Asgard 示例 -- WXML/WXSS + .wasm（逻辑 + asgard ui）",
     auto_link: {
         core: true,
         std: false

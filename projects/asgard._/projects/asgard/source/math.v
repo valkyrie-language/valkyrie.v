@@ -1,4 +1,4 @@
-# VOA JS Builtin — Math
+# Asgard JS Builtin — Math
 # [js_builtin] 直接映射 JS 内置 Math API，无依赖
 # Math 函数全部是纯函数，标注 pure，可被 DCE 消除无用调用
 

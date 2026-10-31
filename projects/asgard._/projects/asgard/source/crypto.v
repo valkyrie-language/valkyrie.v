@@ -1,4 +1,4 @@
-# VOA JS Builtin — Crypto
+# Asgard JS Builtin — Crypto
 # [js_builtin] 直接映射 JS 内置 Crypto API，无依赖
 # getRandomValues 有副作用（填充随机值），randomUUID 有副作用
 

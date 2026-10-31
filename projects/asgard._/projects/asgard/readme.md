@@ -8,8 +8,7 @@
 |:---|:---|
 | **Asgard** | 框架（本包及 `asgard.router` 等子项目） |
 | **Asgard Bifrost** | Asgard 的跨平台自绘渲染引擎（`asgard.bifrost`） |
-| **Asgard** | **框架 + CLI**（`asgard build` / `asgard dev` / `asgard pack`） |
-| **VOA** | **Rust 编译 crate**（`valkyrie.rs/projects/voa/`，配置文件 `asgard.config.v`） |
+| **Asgard** | **框架 + CLI**（`asgard build` / `asgard dev` / `asgard pack`）；Rust 编译实现位于 `rusty-valkyrie` 包内 `src/asgard` 模块与 `valkyrie.rs` 装配层，配置文件 `asgard.config.v` |
 
 文档入口：[documentation/pages/zh-hans/index.md](documentation/pages/zh-hans/index.md)
 

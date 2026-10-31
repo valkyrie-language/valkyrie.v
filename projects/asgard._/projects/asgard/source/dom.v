@@ -1,4 +1,4 @@
-# VOA JS Builtin — DOM
+# Asgard JS Builtin — DOM
 # [js_builtin] 直接映射 JS 内置 DOM API，无依赖
 # DOM 操作全部有副作用，不标注 pure
 

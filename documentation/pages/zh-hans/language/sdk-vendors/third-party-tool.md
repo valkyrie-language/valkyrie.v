@@ -60,7 +60,7 @@
 
 ## 微信小游戏交付
 
-微信**小游戏**走 VOA 交付链，推荐流程：
+微信**小游戏**走 Asgard 交付链，推荐流程：
 
 1. 读取项目 manifest 与 target / publish 信息
 2. 隐式注入 `tencent.wechat.sdk`（`publish: ["mini-game"]`）
@@ -95,7 +95,7 @@
 |:---|:---|:---|
 | publish | `mini-game` | `mini-program` |
 | SDK | `tencent.wechat.sdk`（`host: wechat`） | `tencent.wechat.miniprogram.sdk`（`host: wechat`） |
-| UI | 小游戏运行时 / Canvas（非 VOA DOM） | 声明式 WXML/WXSS + `setData` |
+| UI | 小游戏运行时 / Canvas（非 Asgard DOM） | 声明式 WXML/WXSS + `setData` |
 | 交付 | `asgard pack --target mini-game` | `asgard pack --target mini-program` |
 | 编译入口 | `legion build`（`target: wasm32-wechat-unknown-wasm`） | `asgard build`（`platform: wechat-miniprogram`，`target: wasm32-wechat-unknown-wasm`） |
 

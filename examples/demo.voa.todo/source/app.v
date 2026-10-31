@@ -1,4 +1,4 @@
-# VOA Todo 应用入口
+# Asgard Todo 应用入口
 # 注册路由并挂载到 DOM
 
 using voa_todo.data
@@ -22,8 +22,8 @@ micro register_routes(): void {
 # 应用主入口
 [main]
 micro main(): unit {
-    voa_log("VOA Todo 启动")
+    voa_log("Asgard Todo 启动")
     register_routes()
     voa_mount("#app")
-    voa_log("VOA Todo 启动完成")
+    voa_log("Asgard Todo 启动完成")
 }

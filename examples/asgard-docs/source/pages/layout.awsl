@@ -1,7 +1,7 @@
 <widget layout>
 <div class="docs-layout">
     <header class="docs-header">
-        <a class="docs-logo" href="/">VOA Docs</a>
+        <a class="docs-logo" href="/">Asgard Docs</a>
         <nav class="docs-header-nav">
             <Link href="/docs/getting-started">文档</Link>
             <Link href="/components">组件</Link>
@@ -31,7 +31,7 @@
 </div>
 
 <footer class="docs-footer">
-    <p>© 2027 Asgard VOA — 使用 VOA 自身构建 🐶</p>
+    <p>© 2027 Asgard — 使用 Asgard 自身构建 🐶</p>
 </footer>
 </div>
 </widget>

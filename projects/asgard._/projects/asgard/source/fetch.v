@@ -1,4 +1,4 @@
-# VOA JS Builtin — Fetch
+# Asgard JS Builtin — Fetch
 # [js_builtin] 直接映射 JS 内置 fetch API，无依赖
 # fetch 有副作用（网络 IO），不标注 pure
 

@@ -1,12 +1,12 @@
 # 平台契约硬门禁（Platform Contract）
 
-跨平台 UiHost / ASGARD 交付物由 **单一门禁表** 约束，防止各平台交付物 drift。实现位于 `valkyrie.rs/projects/voa/src/platform_contract/`；表驱动测试见 `tests/platform_contract.rs`。
+跨平台 UiHost / ASGARD 交付物由 **单一门禁表** 约束，防止各平台交付物 drift。实现位于 `rusty-valkyrie` 包内 `src/asgard/platform_contract/` 子模块，表驱动门禁由该模块约束。
 
 ## 默认路径与主产物
 
 | 优先级 | `platform` | 交付形态 | 说明 |
 |:---|:---|:---|:---|
-| **默认** | `browser` | WASM + `boot.js` / `index.html` | `asgard.config.v` 未指定时即此路径；本地开发为 **VOA → WASM → WebView/浏览器** |
+| **默认** | `browser` | WASM + `boot.js` / `index.html` | `asgard.config.v` 未指定时即此路径；本地开发为 **Asgard → WASM → WebView/浏览器** |
 | **并列主产物** | `wechat-miniprogram` | WASM + `voa-runtime.js` | 与 Web 同族 WASM AOT；UI 仍为 WXML |
 | 次要 / 远期 | `android` / `ios` / 桌面 | 各平台原生制品 | 门禁表同样适用，但非默认开发路径 |
 

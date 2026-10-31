@@ -1,8 +1,8 @@
-# VOA 快速开始
+# Asgard 快速开始
 
 ## 概述
 
-VOA（Valkyrie of Asgard）是 Valkyrie 生态里 **Asgard GUI** 的编译实现（Rust crate `voa`，用户 CLI 为 `asgard`）。前端默认 **SSG**；可选 Atlas **server 岛 HTML 片段**，不是 SSR-first / LiveView。
+Asgard 是 Valkyrie 生态里的 **GUI 应用框架**，用户 CLI 为 `asgard`（编译实现位于 `rusty-valkyrie` 包内 `src/asgard` 模块与 `valkyrie.rs` 装配层）。前端默认 **SSG**；可选 Atlas **server 岛 HTML 片段**，不是 SSR-first / LiveView。
 
 ## 核心特性
 
@@ -19,8 +19,8 @@ VOA（Valkyrie of Asgard）是 Valkyrie 生态里 **Asgard GUI** 的编译实现
 ## 安装
 
 ```bash
-# 从 valkyrie.rs workspace 构建 CLI
-cargo build -p voa --bin asgard
+# asgard CLI 由 valkyrie.rs 装配层的 @nyar/valkyrie 包提供
+npm install @nyar/valkyrie
 ```
 
 ## 创建项目
@@ -35,7 +35,7 @@ cargo build -p voa --bin asgard
 
 ```
 my-app/
-├── asgard.config.v          # Asgard / VOA 客户端配置
+├── asgard.config.v          # Asgard 客户端配置
 ├── source/
 │   ├── main.v
 │   └── Hello.awsl
@@ -77,7 +77,7 @@ my-app/
 </widget>
 
 <script>
-    let title: string = "Hello VOA"
+    let title: string = "Hello Asgard"
     let message: string = "Welcome to AWSL"
     let loading: bool = false
     let data: string = ""

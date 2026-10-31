@@ -1,4 +1,4 @@
-# VOA JS Builtin — Timer
+# Asgard JS Builtin — Timer
 # [js_builtin] 直接映射 JS 内置 Timer API，无依赖
 # Timer 有副作用（调度），不标注 pure
 

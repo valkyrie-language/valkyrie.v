@@ -1,4 +1,4 @@
-# VOA JS Builtin — URL
+# Asgard JS Builtin — URL
 # [js_builtin] 直接映射 JS 内置 URL API，无依赖
 # URL 操作是纯函数，标注 pure
 

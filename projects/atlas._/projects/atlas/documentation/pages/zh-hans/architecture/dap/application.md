@@ -87,7 +87,7 @@ ShopApplication_edge    →  平台入口（短生命周期） →  同一 ShopH
 | `atlas.adaptor.azure` 等 | 厂商运行时 → 上述薄桥 |
 | `atlas.cloud.*` | **云服务 API**（存储 / 短信等），**不是**部署入口壳 |
 
-Adaptor **不含** VOA 概念，也不替代 Host 上的业务组装。
+Adaptor **不含** Asgard 概念，也不替代 Host 上的业务组装。
 
 ## 框架对照（不是「每个产品手写 App」）
 

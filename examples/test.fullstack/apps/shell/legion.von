@@ -1,7 +1,7 @@
 {
     name: "fullstack-shell",
     version: "0.1.0.0",
-    description: "Fullstack 金样例 — Asgard/VOA shell（SSG 默认）",
+    description: "Fullstack 金样例 — Asgard shell（SSG 默认）",
     license: "MIT",
     type: "application",
     target: "wasm32-unknown-browser-wasm",

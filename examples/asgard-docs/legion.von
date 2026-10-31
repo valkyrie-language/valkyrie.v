@@ -1,7 +1,7 @@
 {
-    "name": "voa-docs",
+    "name": "asgard-docs",
     "version": "0.1.0",
-    "description": "VOA 官方文档站 — 使用 Asgard 自身构建（dogfooding）",
+    "description": "Asgard 官方文档站 — 使用 Asgard 自身构建（dogfooding）",
     "type": "application",
     "dependencies": {
         "voa-core": "0.2.*",

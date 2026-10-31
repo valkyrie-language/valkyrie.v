@@ -62,6 +62,6 @@ v1 解码器（无版本字节）仍可读旧包；v2 解码器读取版本字�
 
 ## 金样例
 
-`valkyrie.rs/projects/voa/tests/asgard_ui_golden.rs` 对 Counter / If 模板编码快照；四套解码器（Rust encode、V `decode_package`、Kotlin/Swift 生成运行时、JS `mp_ir_runtime`）须与本文一致。
+`rusty-valkyrie` 包 `tests/asgard/` 的 `asgard_ui_golden` 测试对 Counter / If 模板编码快照；四套解码器（Rust encode、V `decode_package`、Kotlin/Swift 生成运行时、JS `mp_ir_runtime`）须与本文一致。
 
-参考实现：[`mobile_ui_binary.rs`](../../../../../../valkyrie.rs/projects/voa/src/codegen/mobile_ui_binary.rs)
+参考实现：`rusty-valkyrie` 包内 `src/asgard/codegen/mobile_ui_binary.rs`

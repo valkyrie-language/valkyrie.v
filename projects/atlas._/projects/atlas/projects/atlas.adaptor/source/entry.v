@@ -1,4 +1,4 @@
-# 平台部署入口 — Atlas HTTP 原生桥接（无 VOA 依赖）
+# 平台部署入口 — Atlas HTTP 原生桥接（无 Asgard 依赖）
 
 namespace atlas.adaptor;
 

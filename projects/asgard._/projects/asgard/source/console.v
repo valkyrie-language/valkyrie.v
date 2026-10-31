@@ -1,4 +1,4 @@
-# VOA JS Builtin — Console
+# Asgard JS Builtin — Console
 # [js_builtin] 直接映射 JS 内置全局对象，无依赖
 # console 是副作用函数，不标注 pure
 

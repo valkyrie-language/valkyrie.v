@@ -1,9 +1,9 @@
 <widget index>
 <div class="home-page">
     <Card variant="elevated">
-        <h2 style="margin:0 0 8px">欢迎使用 VOA Router + Effect</h2>
+        <h2 style="margin:0 0 8px">欢迎使用 Asgard Router + Effect</h2>
         <p style="margin:0; color: var(--voa-text-secondary); line-height:1.8">
-            本示例展示了 VOA 框架的两大核心能力：
+            本示例展示了 Asgard 框架的两大核心能力：
         </p>
         <div style="display:flex; gap:16px; margin-top:16px">
             <Card variant="filled" style="flex:1">

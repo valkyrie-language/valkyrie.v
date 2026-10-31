@@ -3,18 +3,18 @@
 一次开发 ≠ 一个二进制跑全平台。正确模型：
 
 1. **同一业务源码**（workspace 多包）
-2. **按 `platform` 出制品**（Asgard/VOA 每平台一份逻辑+UI 制品；Atlas 另出服务制品）
+2. **按 `platform` 出制品**（Asgard 每平台一份逻辑+UI 制品；Atlas 另出服务制品）
 3. **`deploy.profile` 选拓扑**（部署时选用一个或多个制品，而不是改编译语义）
 
 ## 三条流水线 / 配置面
 
 | 面 | 配置 | 流水线 | 职责 |
 |:---|:---|:---|:---|
-| 客户端 GUI | `asgard.config.v` | Asgard / VOA | 按 `platform` AOT；默认 **SSG** 静态页 + hydrated 岛 |
+| 客户端 GUI | `asgard.config.v` | Asgard | 按 `platform` AOT；默认 **SSG** 静态页 + hydrated 岛 |
 | 服务端 | `atlas.config.von` | Atlas | HTTP / 运行时；可选 **server 岛 HTML 片段**（非 LiveView） |
 | 部署拓扑 | `deploy/profiles/*.von` | 编排（CLI `asgard plan`） | 声明要构建哪些制品、如何挂载 |
 
-Asgard/VOA ∥ Atlas：**两条独立流水线**，由 deploy profile 组合，而不是合成一个全平台二进制。
+Asgard ∥ Atlas：**两条独立流水线**，由 deploy profile 组合，而不是合成一个全平台二进制。
 
 ## Profile 契约（最小）
 

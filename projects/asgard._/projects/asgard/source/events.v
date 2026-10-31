@@ -1,4 +1,4 @@
-# VOA DOM / 组件事件类型 — AWSL 处理器请用具体类型，避免 any
+# Asgard DOM / 组件事件类型 — AWSL 处理器请用具体类型，避免 any
 
 struct DomTokenList {}
 

@@ -1,7 +1,7 @@
 <widget tutorial>
 <div class="tutorial-page">
     <h1 class="page-title">交互式教程</h1>
-    <p class="page-desc">6 步掌握 VOA 全栈开发，从创建项目到部署上线。</p>
+    <p class="page-desc">6 步掌握 Asgard 全栈开发，从创建项目到部署上线。</p>
 
     <div class="tutorial-steps">
         <loop step in steps>

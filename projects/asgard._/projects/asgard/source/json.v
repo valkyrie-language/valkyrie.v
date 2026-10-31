@@ -1,4 +1,4 @@
-# VOA JS Builtin — JSON
+# Asgard JS Builtin — JSON
 # [js_builtin] 直接映射 JS 内置 JSON API，无依赖
 # JSON.parse 有副作用（可能抛异常），JSON.stringify 也有副作用（可能抛异常）
 # 但从纯函数语义上，给定相同输入输出确定，标注 pure
