@@ -18,7 +18,7 @@ namespace asgard;
 # 注意：本包 `legion.von` 的包名已迁移为 `asgard`；Asgard 定义合同以 `asgard`
 # 为目标命名空间（设计 16 §2/§5），包身份与本文件命名空间一致。
 
-using core::types::{Option, Some, None};
+using std::types::{Option, Some, None};
 
 # 产物类型。首轮唯一取值 `static`（浏览器静态站点），其它产物类型明确拒绝；缺省也是
 # `static`。这是配置内的产物类型，不是 CLI/N-API 参数，也不是 V 编译器 target triple。

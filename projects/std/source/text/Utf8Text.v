@@ -344,7 +344,7 @@ imply Utf8Text {
     }
 }
 
-imply Utf8Text: core::primitive::Equal {
+imply Utf8Text: std::primitive::Equal {
     infix `==`(self, other: utf8): bool {
         return self.equals_repr(other._repr)
     }
@@ -354,7 +354,7 @@ imply Utf8Text: core::primitive::Equal {
     }
 }
 
-imply Utf8Text: core::primitive::Identical {
+imply Utf8Text: std::primitive::Identical {
     infix `===`(self, other: utf8): bool {
         return self == other
     }

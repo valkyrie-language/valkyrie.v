@@ -4,14 +4,14 @@
 
 #region i32 比较
 
-[host_provider(core::primitive::__i32_eq)]
+[host_provider(std::primitive::__i32_eq)]
 [ovm_operator("i32.eq")]
 micro i32_eq(a: i32, b: i32): bool
 
 [ovm_operator("i32.ne")]
 micro i32_ne(a: i32, b: i32): bool
 
-[host_provider(core::primitive::__i32_lt)]
+[host_provider(std::primitive::__i32_lt)]
 [ovm_operator("i32.lt")]
 micro i32_lt(a: i32, b: i32): bool
 
