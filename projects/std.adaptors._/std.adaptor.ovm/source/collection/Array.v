@@ -1,6 +1,37 @@
 namespace std.adaptor.ovm.collection;
 
-# E3 目标私有合同缺口：ovm 后端没有可编码数组 length/get/set/new 的正式助记符合同
-# （`[ovm_operator]` 表仅 numeric），Odin VM 私有的 `CallIntrinsic` 不对外作为库实现来源。
-# 在目标私有合同定案前，本 adaptor 不提供 `std.collection.array` 合同实现；
-# 调用按缺 provider 结构化失败闭合，不得恢复 `[intrinsic]` 注解、名字表或链接豁免。
+# `std.collection.array` 合同经 `nyar.host` 正式宿主导入实现（无 intrinsic、无名字表）：
+# OVM 在加载期把 `array.new`/`array.length`/`array.get`/`array.set` 解析为冻结的
+# `HostOp`，热路径按枚举分派操作 `LayoutObject` 元素槽；未知符号加载期拒绝。
+
+[host_provider(std::collection::array::length)]
+private micro array_host_length<T>(array: [T]): usize {
+    return __array_ovm_length::<T>(array)
+}
+
+[host_provider(std::collection::array::get)]
+private micro array_host_get<T>(array: [T], index: usize): T {
+    return __array_ovm_get::<T>(array, index)
+}
+
+[host_provider(std::collection::array::set)]
+private micro array_host_set<T>(array: [T], index: usize, value: T): unit {
+    __array_ovm_set::<T>(array, index, value)
+}
+
+[host_provider(std::collection::array::new)]
+private micro array_host_new<T>(length: usize): [T] {
+    return __array_ovm_new::<T>(length)
+}
+
+[ovm("array.length"), pure]
+private micro __array_ovm_length<T>(array: [T]): usize { }
+
+[ovm("array.get"), pure]
+private micro __array_ovm_get<T>(array: [T], index: usize): T { }
+
+[ovm("array.set")]
+private micro __array_ovm_set<T>(array: [T], index: usize, value: T): unit { }
+
+[ovm("array.new"), pure]
+private micro __array_ovm_new<T>(length: usize): [T] { }
