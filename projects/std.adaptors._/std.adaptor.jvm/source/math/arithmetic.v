@@ -81,22 +81,23 @@ micro f64_div(a: f64, b: f64): f64
 #endregion
 
 #region 比较
-# 只绑定项目已声明的 `eq` / `lt` host 合同；结果槽固定为 i32（0/1）。
+# 只绑定项目已声明的 `eq` / `lt` host 合同；返回类型必须与合同声明同源（`bool`），
+# JVM 侧展开的分支序列压入 `int` 0/1，由冻结计划的 `result_type = I32` 承载。
 
 [host_provider(std::primitive::__i32_eq)]
 [jvm_operator("integer.compare_equal")]
-micro i32_eq(a: i32, b: i32): i32
+micro i32_eq(a: i32, b: i32): bool
 
 [host_provider(std::primitive::__i32_lt)]
 [jvm_operator("integer.compare_less_than")]
-micro i32_lt(a: i32, b: i32): i32
+micro i32_lt(a: i32, b: i32): bool
 
 [host_provider(std::primitive::__i64_eq)]
 [jvm_operator("long.compare_equal")]
-micro i64_eq(a: i64, b: i64): i32
+micro i64_eq(a: i64, b: i64): bool
 
 [host_provider(std::primitive::__i64_lt)]
 [jvm_operator("long.compare_less_than")]
-micro i64_lt(a: i64, b: i64): i32
+micro i64_lt(a: i64, b: i64): bool
 
 #endregion

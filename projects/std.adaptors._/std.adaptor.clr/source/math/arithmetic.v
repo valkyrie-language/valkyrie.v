@@ -85,22 +85,23 @@ micro f64_neg(a: f64): f64
 #endregion
 
 #region 比较
-# 只绑定项目已声明的 `eq` / `lt` host 合同；结果槽固定为 i32（0/1）。
+# 只绑定项目已声明的 `eq` / `lt` host 合同；返回类型必须与合同声明同源（`bool`），
+# MSIL 比较 opcode 压入的结果槽由冻结计划的 `result_type = I32` 承载。
 
 [host_provider(std::primitive::__i32_eq)]
 [clr_operator("i32.eq")]
-micro i32_eq(a: i32, b: i32): i32
+micro i32_eq(a: i32, b: i32): bool
 
 [host_provider(std::primitive::__i32_lt)]
 [clr_operator("i32.lt")]
-micro i32_lt(a: i32, b: i32): i32
+micro i32_lt(a: i32, b: i32): bool
 
 [host_provider(std::primitive::__i64_eq)]
 [clr_operator("i64.eq")]
-micro i64_eq(a: i64, b: i64): i32
+micro i64_eq(a: i64, b: i64): bool
 
 [host_provider(std::primitive::__i64_lt)]
 [clr_operator("i64.lt")]
-micro i64_lt(a: i64, b: i64): i32
+micro i64_lt(a: i64, b: i64): bool
 
 #endregion
