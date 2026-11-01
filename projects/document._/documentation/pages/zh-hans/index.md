@@ -1,6 +1,6 @@
 # notedown 文档处理与渲染框架 workspace
 
-`notedown._` 承载文档语义 IR 与格式导入导出能力，是 `panduck` / `pandark` / `vutex` 等下游产品的事实底座。
+`document._` 承载文档语义 IR 与格式导入导出能力，是 `panduck` / `pandark` / `vutex` 等下游产品的事实底座。
 
 ## 核心分层
 

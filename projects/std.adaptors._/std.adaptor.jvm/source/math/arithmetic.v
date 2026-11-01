@@ -58,6 +58,32 @@ micro i64_neg(a: i64): i64
 
 #endregion
 
+#region i64 位运算
+# `land`/`lor`/`lxor` 为单指令；`lshl`/`lshr` 的位移量是 `int`，
+# `i64` 位移量的 `l2i` 截窄由 JVM backend 冻结配方显式给出，不在本文件推断。
+
+[host_provider(std::primitive::__i64_and)]
+[jvm_operator("long.and")]
+micro i64_and(a: i64, b: i64): i64
+
+[host_provider(std::primitive::__i64_or)]
+[jvm_operator("long.or")]
+micro i64_or(a: i64, b: i64): i64
+
+[host_provider(std::primitive::__i64_xor)]
+[jvm_operator("long.xor")]
+micro i64_xor(a: i64, b: i64): i64
+
+[host_provider(std::primitive::__i64_shl)]
+[jvm_operator("long.shift_left")]
+micro i64_shl(a: i64, b: i64): i64
+
+[host_provider(std::primitive::__i64_shr)]
+[jvm_operator("long.shift_right")]
+micro i64_shr(a: i64, b: i64): i64
+
+#endregion
+
 #region f64 算术
 # JVM 没有 `dneg`；`__f64_neg` 需要 `dconst_0 + dsub` 序列而当前配方层没有浮点零常量，
 # 因此不声明该 provider，避免静默错误语义。

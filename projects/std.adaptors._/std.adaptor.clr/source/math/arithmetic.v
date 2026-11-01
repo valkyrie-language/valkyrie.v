@@ -59,6 +59,32 @@ micro i64_neg(a: i64): i64
 
 #endregion
 
+#region i64 位运算
+# `and`/`or`/`xor` 为单 opcode；`shl`/`shr` 的位移量是 `int32`，
+# `i64` 位移量的 `conv.i4` 截窄由 CLR backend 冻结配方显式给出，不在本文件推断。
+
+[host_provider(std::primitive::__i64_and)]
+[clr_operator("i64.and")]
+micro i64_and(a: i64, b: i64): i64
+
+[host_provider(std::primitive::__i64_or)]
+[clr_operator("i64.or")]
+micro i64_or(a: i64, b: i64): i64
+
+[host_provider(std::primitive::__i64_xor)]
+[clr_operator("i64.xor")]
+micro i64_xor(a: i64, b: i64): i64
+
+[host_provider(std::primitive::__i64_shl)]
+[clr_operator("i64.shl")]
+micro i64_shl(a: i64, b: i64): i64
+
+[host_provider(std::primitive::__i64_shr)]
+[clr_operator("i64.shr")]
+micro i64_shr(a: i64, b: i64): i64
+
+#endregion
+
 #region f64 算术
 # MSIL `neg` 对浮点保留 -0.0，与语言语义一致。
 

@@ -1,6 +1,6 @@
 # notedown._
 
-`notedown._` 是文档处理与渲染框架 `notedown` 的顶层 workspace。
+`document._` 是文档处理与渲染框架 `notedown` 的顶层 workspace。
 
 ## 定位
 

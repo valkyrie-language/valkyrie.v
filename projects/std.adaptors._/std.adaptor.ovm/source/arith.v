@@ -104,6 +104,32 @@ micro i64_ge(a: i64, b: i64): bool
 
 #endregion
 
+#region i64 位运算
+# OVM 没有 i64 头码：与 i64 算术/比较同轨，经 `nyar.host` 冻结宿主导入服务，
+# 符号由 runtime `parse_host_op` 解析，未知符号在模块加载期结构化失败。
+
+[host_provider(std::primitive::__i64_and)]
+[ovm("i64_and")]
+micro i64_and(a: i64, b: i64): i64
+
+[host_provider(std::primitive::__i64_or)]
+[ovm("i64_or")]
+micro i64_or(a: i64, b: i64): i64
+
+[host_provider(std::primitive::__i64_xor)]
+[ovm("i64_xor")]
+micro i64_xor(a: i64, b: i64): i64
+
+[host_provider(std::primitive::__i64_shl)]
+[ovm("i64_shl")]
+micro i64_shl(a: i64, b: i64): i64
+
+[host_provider(std::primitive::__i64_shr)]
+[ovm("i64_shr")]
+micro i64_shr(a: i64, b: i64): i64
+
+#endregion
+
 #region f64 算术
 
 [host_provider(std::primitive::__f64_add)]
