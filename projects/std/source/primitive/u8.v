@@ -69,6 +69,26 @@ imply u8 {
     bit_shift_right(self, rhs: Self): Self {
         __u8_shr(self, rhs)
     }
+
+    infix `&`(self, rhs: Self): Self {
+        self.bit_and(rhs)
+    }
+
+    infix `|`(self, rhs: Self): Self {
+        self.bit_or(rhs)
+    }
+
+    infix `^`(self, rhs: Self): Self {
+        self.bit_xor(rhs)
+    }
+
+    infix `<<`(self, rhs: Self): Self {
+        self.bit_shift_left(rhs)
+    }
+
+    infix `>>`(self, rhs: Self): Self {
+        self.bit_shift_right(rhs)
+    }
 }
 
 # region u8 内部指令映射

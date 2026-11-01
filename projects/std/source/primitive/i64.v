@@ -65,6 +65,26 @@ imply i64 {
     bit_shift_right(self, rhs: Self): Self {
         __i64_shr(self, rhs)
     }
+
+    infix `&`(self, rhs: Self): Self {
+        self.bit_and(rhs)
+    }
+
+    infix `|`(self, rhs: Self): Self {
+        self.bit_or(rhs)
+    }
+
+    infix `^`(self, rhs: Self): Self {
+        self.bit_xor(rhs)
+    }
+
+    infix `<<`(self, rhs: Self): Self {
+        self.bit_shift_left(rhs)
+    }
+
+    infix `>>`(self, rhs: Self): Self {
+        self.bit_shift_right(rhs)
+    }
 }
 
 imply i64: Equal {

@@ -69,6 +69,26 @@ imply u32 {
     bit_shift_right(self, rhs: Self): Self {
         __u32_shr(self, rhs)
     }
+
+    infix `&`(self, rhs: Self): Self {
+        self.bit_and(rhs)
+    }
+
+    infix `|`(self, rhs: Self): Self {
+        self.bit_or(rhs)
+    }
+
+    infix `^`(self, rhs: Self): Self {
+        self.bit_xor(rhs)
+    }
+
+    infix `<<`(self, rhs: Self): Self {
+        self.bit_shift_left(rhs)
+    }
+
+    infix `>>`(self, rhs: Self): Self {
+        self.bit_shift_right(rhs)
+    }
 }
 
 [host_contract]
