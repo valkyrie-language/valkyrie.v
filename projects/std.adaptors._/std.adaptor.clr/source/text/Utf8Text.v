@@ -8,18 +8,22 @@ namespace std.adaptor.clr.text;
 # - `Utf16Text` owns the raw UTF-16 code-unit surface (`get_Length` / `Substring` OK).
 
 [host_provider(std::text::Utf8Text::length)]
-micro host_length(value: std.text.utf8): i32 {
-    return utf8_scalar_length(value)
+micro host_length(value: std.text.utf8): usize {
+    return utf8_scalar_length(value) as usize
 }
 
 [host_provider(std::text::Utf8Text::slice)]
-micro host_slice(value: std.text.utf8, start: i32, count: i32): std.text.utf8 {
-    return utf8_scalar_slice(value, start, count)
+micro host_slice(value: std.text.utf8, start: usize, count: usize): std.text.utf8 {
+    return utf8_scalar_slice(value, start as i32, count as i32)
 }
 
 [host_provider(std::text::Utf8Text::index_of)]
-micro host_index_of(value: std.text.utf8, other: std.text.utf8): i32 {
-    return utf8_scalar_index_of(value, other)
+micro host_index_of(value: std.text.utf8, other: std.text.utf8): Option<usize> {
+    let index: i32 = utf8_scalar_index_of(value, other)
+    if index < 0 {
+        return std::types::option_none::<usize>()
+    }
+    return Some(index as usize)
 }
 
 private micro utf8_scalar_length(value: std.text.utf8): i32 {
