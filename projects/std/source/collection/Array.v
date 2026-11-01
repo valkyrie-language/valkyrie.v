@@ -11,7 +11,7 @@ class Array<T> {
 imply Array<T> {
     [host_contract]
     micro length(self): usize {
-        return __array_len(self)
+        return std::array::length(self)
     }
 
     micro is_empty(self): bool {
@@ -20,8 +20,8 @@ imply Array<T> {
 
     [host_contract]
     micro `get`(self, ordinal: usize): Option<T> {
-        # 对外序数是 1 基（`first()` 取 1、`last()` 取 length），`__array_get` 是 0 基下标，必须减一。
-        return Some(__array_get(self, ordinal - 1))
+        # 对外序数是 1 基（`first()` 取 1、`last()` 取 length），`std::array::get` 是 0 基下标，必须减一。
+        return Some(std::array::get(self, ordinal - 1))
     }
 
     [host_contract]
@@ -30,9 +30,9 @@ imply Array<T> {
             return
         }
 
-        # 默认体必须语义正确：对外序数 1 基，`__array_set` 是 0 基下标写入（与 `__array_get` 同形）。
+        # 默认体必须语义正确：对外序数 1 基，`std::array::set` 是 0 基下标写入（与 `std::array::get` 同形）。
         # target provider 只能特化本合同，不能以空体替代实现。
-        __array_set(self, ordinal - 1, value)
+        std::array::set(self, ordinal - 1, value)
     }
 
     micro first(self): Option<T> {
