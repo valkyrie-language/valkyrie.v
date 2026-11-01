@@ -6,6 +6,7 @@
         "std.data.binary.class",
         "std.data.binary.jar",
         "std.data.binary.wasm",
+        "std.data.text.markdown",
         "std.data.text.msil",
         "std.data.text.valkyrie",
         "std.data.text.von",

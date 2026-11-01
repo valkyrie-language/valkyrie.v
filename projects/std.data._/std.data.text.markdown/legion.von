@@ -1,0 +1,14 @@
+{
+    name: "std.data.text.markdown",
+    version: "workspace",
+    description: "Markdown 文本解析库 - 词法、无损 CST、语义 AST",
+    type: "library",
+    dependencies: { "std": { version: "workspace" }
+    },
+    build: [
+        { target: "ovm" },
+        { target: "clr" },
+        { target: "jvm" },
+        { target: "wasm" }
+    ]
+}
