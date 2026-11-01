@@ -68,7 +68,7 @@ imply AsciiIterator: std::iterator::Iterator {
 
     micro next(mut self): Option<char> {
         if !self.has_next() {
-            return option_none::<char>()
+            return std::types::option_none::<char>()
         }
 
         let value: char = self._text._bytes⁅self._offset⁆ as char

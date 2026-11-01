@@ -167,7 +167,7 @@ imply Utf8Text {
         let mut bytes: [u8] = []
         let mut index: usize = start_byte
         while index < end_byte && index < self._repr.length {
-            bytes = std::collection::push(bytes, self._repr⁅index⁆)
+            bytes = std::collection::push(bytes, self._repr⁅index⁆.unwrap())
             index = index + 1
         }
 
@@ -179,7 +179,7 @@ imply Utf8Text {
             return 0
         }
 
-        let byte: u32 = self._repr⁅index⁆ as u32
+        let byte: u32 = self._repr⁅index⁆.unwrap() as u32
         if byte <= 0x7F {
             return 1
         }
@@ -221,7 +221,7 @@ imply Utf8Text {
         }
 
         if value._repr.length > self._repr.length {
-            return option_none::<usize>()
+            return std::types::option_none::<usize>()
         }
 
         let mut offset: usize = 0
@@ -229,7 +229,7 @@ imply Utf8Text {
             let mut matched: bool = true
             let mut inner: usize = 0
             while inner < value._repr.length {
-                if self._repr⁅offset + inner⁆ != value._repr⁅inner⁆ {
+                if self._repr⁅offset + inner⁆.unwrap() != value._repr⁅inner⁆.unwrap() {
                     matched = false
                     break
                 }
@@ -251,18 +251,18 @@ imply Utf8Text {
             offset = offset + self.char_width(offset)
         }
 
-        return option_none::<usize>()
+        return std::types::option_none::<usize>()
     }
 
     micro char_at(self, index: usize) -> Option<char> {
         if index >= self.length() {
-            return option_none::<char>()
+            return std::types::option_none::<char>()
         }
         let start: usize = self.byte_offset(index)
         if start >= self._repr.length {
-            return option_none::<char>()
+            return std::types::option_none::<char>()
         }
-        let first: u8 = self._repr⁅start⁆
+        let first: u8 = self._repr⁅start⁆.unwrap()
         let width: usize = self.char_width(start)
         let mut code_point: u32 = 0
         if width == 1 {
@@ -270,18 +270,18 @@ imply Utf8Text {
         }
         else if width == 2 && start + 1 < self._repr.length {
             code_point = ((first as u32) & 0x1F) << 6
-            code_point = code_point | ((self._repr⁅start + 1⁆ as u32) & 0x3F)
+            code_point = code_point | ((self._repr⁅start + 1⁆.unwrap() as u32) & 0x3F)
         }
         else if width == 3 && start + 2 < self._repr.length {
             code_point = ((first as u32) & 0x0F) << 12
-            code_point = code_point | (((self._repr⁅start + 1⁆ as u32) & 0x3F) << 6)
-            code_point = code_point | ((self._repr⁅start + 2⁆ as u32) & 0x3F)
+            code_point = code_point | (((self._repr⁅start + 1⁆.unwrap() as u32) & 0x3F) << 6)
+            code_point = code_point | ((self._repr⁅start + 2⁆.unwrap() as u32) & 0x3F)
         }
         else if width == 4 && start + 3 < self._repr.length {
             code_point = ((first as u32) & 0x07) << 18
-            code_point = code_point | (((self._repr⁅start + 1⁆ as u32) & 0x3F) << 12)
-            code_point = code_point | (((self._repr⁅start + 2⁆ as u32) & 0x3F) << 6)
-            code_point = code_point | ((self._repr⁅start + 3⁆ as u32) & 0x3F)
+            code_point = code_point | (((self._repr⁅start + 1⁆.unwrap() as u32) & 0x3F) << 12)
+            code_point = code_point | (((self._repr⁅start + 2⁆.unwrap() as u32) & 0x3F) << 6)
+            code_point = code_point | ((self._repr⁅start + 3⁆.unwrap() as u32) & 0x3F)
         }
         else {
             code_point = first as u32
@@ -305,7 +305,7 @@ imply Utf8Text: std::iterator::IntoIterator {
 
 imply Utf8Text {
     suffix `⁅ ⁆`(self, cardinal: usize): u8 {
-        return self._repr⁅cardinal⁆
+        return self._repr⁅cardinal⁆.unwrap()
     }
 
     suffix `⁅ ⁆=`(mut self, cardinal: usize, value: u8): unit {
@@ -318,7 +318,7 @@ imply Utf8Text {
         }
         let mut index: usize = 0
         while index < self._repr.length {
-            if self._repr⁅index⁆ != other_repr⁅index⁆ {
+            if self._repr⁅index⁆.unwrap() != other_repr⁅index⁆.unwrap() {
                 return false
             }
             index = index + 1
@@ -330,13 +330,13 @@ imply Utf8Text {
         let mut bytes: [u8] = []
         let mut index: usize = 0
         while index < self._repr.length {
-            bytes = std::collection::push(bytes, self._repr⁅index⁆)
+            bytes = std::collection::push(bytes, self._repr⁅index⁆.unwrap())
             index = index + 1
         }
 
         index = 0
         while index < other._repr.length {
-            bytes = std::collection::push(bytes, other._repr⁅index⁆)
+            bytes = std::collection::push(bytes, other._repr⁅index⁆.unwrap())
             index = index + 1
         }
 
