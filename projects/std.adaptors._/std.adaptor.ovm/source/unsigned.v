@@ -1,6 +1,7 @@
 # std.adaptor.ovm: 无符号与指针宽度整数的目标绑定
-# 只登记 OVM 真正具备的指令：位宽相同且语义相同的加、减、乘与等值比较。
-# 无符号除余、无符号比较与逻辑右移在 VM 中没有对应指令，必须保持未绑合并结构化失败；
+# 只登记 OVM 真正具备的指令：位宽相同且语义相同的加、减、乘、等值比较与无符号比较
+# （`i32.lt_u`/`i32.le_u`/`i32.gt_u`/`i32.ge_u` 是 VM 冻结的无符号比较头码）。
+# 无符号除余与逻辑右移在 VM 中没有对应指令，必须保持未绑合并结构化失败；
 # u8/u16 需要截断，VM 没有掩码指令，因此不提供 provider。
 
 #region u32
@@ -21,6 +22,10 @@ micro u32_mul(a: u32, b: u32): u32
 [ovm_operator("i32.eq")]
 micro u32_eq(a: u32, b: u32): bool
 
+[host_provider(std::primitive::__u32_lt)]
+[ovm_operator("i32.lt_u")]
+micro u32_lt(a: u32, b: u32): bool
+
 #endregion
 
 #region usize（OVM 指针宽度为 32 位）
@@ -40,6 +45,10 @@ micro usize_mul(a: usize, b: usize): usize
 [host_provider(std::primitive::__usize_eq)]
 [ovm_operator("i32.eq")]
 micro usize_eq(a: usize, b: usize): bool
+
+[host_provider(std::primitive::__usize_lt)]
+[ovm_operator("i32.lt_u")]
+micro usize_lt(a: usize, b: usize): bool
 
 #endregion
 
