@@ -1,5 +1,11 @@
 namespace std.collection.test;
 
+using! std::iterator::{Iterator, IntoIterator, FromIterator}
+using! std::iterator::{EnumerateIterator, FilterIterator, FilterMapIterator, MapIterator, SkipIterator, SkipWhileIterator, TakeIterator, TakeWhileIterator}
+using! std::iterator::{all, any, contains, count, find, first, fold, for_each, last, nth, position, reduce}
+using! std::iterator::{collect, collect_array, collect_array_list}
+using! std::collection::ArrayList
+
 [test]
 micro `test iterator collect to array`() {
     let result: [i32] = [1, 2, 3]
@@ -248,11 +254,11 @@ micro `test iterator enumerate uses 1 based ordinal`() {
     }
 
     let pair: (ordinal: usize, value: i32) = first_pair.unwrap()
-    if pair.1 != 1 {
+    if pair.ordinal != 1 {
         panic("iterator enumerate ordinal base test failed")
     }
 
-    if pair.2 != 10 {
+    if pair.value != 10 {
         panic("iterator enumerate value test failed")
     }
 }

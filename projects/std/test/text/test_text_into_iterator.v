@@ -1,3 +1,8 @@
+using! std::text::{utf8, Utf8Text}
+using! std::iterator::{Iterator, IntoIterator, FromIterator}
+using! std::iterator::{all, any, contains, count, find, first, fold, for_each, last, nth, position, reduce}
+using! std::iterator::{collect, collect_array, collect_array_list}
+
 [test]
 micro `test utf8 text into_iterator count and skip`() {
     let value: utf8 = Utf8Text::from_bytes([65, 228, 189, 160, 66])

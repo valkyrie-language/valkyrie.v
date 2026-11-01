@@ -1,3 +1,5 @@
+using! std::text::{utf16, Utf16Text, Utf16Iterator}
+
 [test]
 micro `test utf16 iterator`() {
     let value: utf16 = "A😀B"

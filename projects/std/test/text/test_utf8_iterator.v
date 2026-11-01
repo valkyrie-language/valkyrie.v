@@ -1,3 +1,5 @@
+using! std::text::{utf8, Utf8Text, Utf8Iterator}
+
 [test]
 micro `test utf8 iterator`() {
     let value: utf8 = Utf8Text::from_bytes([65, 194, 162, 228, 189, 160, 240, 159, 152, 128])
