@@ -2,10 +2,6 @@
     name: "std",
     version: "2020.0.0.0",
     description: "Valkyrie 标准库 -- 跨平台统一接口, 编译时分发到各平台 SDK",
-    auto_link: {
-        core: true,
-        std: false
-    },
     dependencies: {},
     build: [
         {

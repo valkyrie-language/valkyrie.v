@@ -3,8 +3,7 @@
     version: "0.0.0.0",
     description: "Hello World 多目标编译测试",
     license: "MIT",
-    dependencies: {
-        "std": true
+    dependencies: { "std": true
     },
     build: [
         {

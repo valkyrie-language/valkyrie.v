@@ -3,11 +3,7 @@
     version: "0.0.0.0",
     description: "模块系统跨项目导入契约测试",
     license: "MIT",
-    auto_link: {
-        core: true,
-        std: false
-    },
-    dependencies: {
+    dependencies: { "std": { version: "workspace" },
         "nyar": { version: "workspace" }
     },
     build: [

@@ -10,7 +10,6 @@
         "projects/atlas.cloud.azure",
         "projects/atlas.cloud.tencent",
         "../atlas.tools",
-        "../core",
         "../std"
     ],
     dependencies: {},

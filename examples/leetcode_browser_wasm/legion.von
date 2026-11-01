@@ -3,11 +3,7 @@
     version: "0.0.0.0",
     description: "LeetCode 风格题解：browser-wasm + 可移植 js capability（无 Node API）",
     license: "MIT",
-    auto_link: {
-        core: true,
-        std: false
-    },
-    dependencies: {
+    dependencies: { "std": { version: "workspace" },
         "std": "workspace"
     },
     build: [

@@ -3,8 +3,7 @@
     version: "0.0.0.0",
     description: "文件系统功能测试",
     license: "MIT",
-    dependencies: {
-        "std": true
+    dependencies: { "std": true
     },
     build: [
         {

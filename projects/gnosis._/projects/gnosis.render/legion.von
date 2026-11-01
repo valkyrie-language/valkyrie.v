@@ -3,8 +3,7 @@
     version: "workspace",
     description: "2D 渲染最小 draw path",
     author: "Valkyrie Team",
-    auto_link: { core: true, std: true, "gnosis.gpu": true },
-    dependencies: { "gnosis.gpu": { version: "workspace" } },
+    dependencies: { "gnosis.gpu": { version: "workspace" }, "std": { version: "workspace" } },
     build: [{ target: "ovm" }],
     engines: { vcc: "0.1.*" }
 }

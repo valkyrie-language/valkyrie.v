@@ -1,7 +1,6 @@
 {
     name: "usize_cmp",
     version: "0.1.0",
-    auto_link: { core: true, std: false },
-    dependencies: {},
+    dependencies: { "std": { version: "workspace" } },
     build: [{ target: "clr", msil: true }]
 }

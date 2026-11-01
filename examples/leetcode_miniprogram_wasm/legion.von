@@ -3,11 +3,7 @@
     version: "0.0.0.0",
     description: "LeetCode 风格题解：微信小程序 wasm + js glue",
     license: "MIT",
-    auto_link: {
-        core: true,
-        std: false
-    },
-    dependencies: {
+    dependencies: { "std": { version: "workspace" },
         "std": "workspace"
     },
     build: [

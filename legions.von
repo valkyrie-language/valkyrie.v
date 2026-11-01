@@ -17,7 +17,6 @@
         "projects/yyds._",
         "projects/yydb._",
         "projects/notedown._",
-        "projects/core",
         "projects/plotter._",
         "projects/std",
         "examples/test.module_system",
@@ -29,10 +28,6 @@
         author: "Valkyrie Team",
         license: "MIT",
         version: "0.1.0",
-        auto_link: {
-            core: false,
-            std: false
-        },
         auto_log: true,
         diagnostics: {
             format: "pretty",
