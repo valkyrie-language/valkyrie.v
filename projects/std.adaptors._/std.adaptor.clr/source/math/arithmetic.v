@@ -157,3 +157,46 @@ micro i64_eq(a: i64, b: i64): bool
 micro i64_lt(a: i64, b: i64): bool
 
 #endregion
+
+#region u32（CLR 以 `int32` 承载）
+# 加、减、乘按 2^32 取模与有符号同形；与/或/异或/左移为单 opcode；
+# 无符号小于用原生 `clt.un`。逻辑右移需要的 `shr.un` 尚未进入冻结 opcode 集，
+# 无符号除余需要的 `div.un`/`rem.un` 同样未冻结，因此都不声明，保持结构化失败。
+
+[host_provider(std::primitive::__u32_add)]
+[clr_operator("i32.add")]
+micro u32_add(a: u32, b: u32): u32
+
+[host_provider(std::primitive::__u32_sub)]
+[clr_operator("i32.sub")]
+micro u32_sub(a: u32, b: u32): u32
+
+[host_provider(std::primitive::__u32_mul)]
+[clr_operator("i32.mul")]
+micro u32_mul(a: u32, b: u32): u32
+
+[host_provider(std::primitive::__u32_and)]
+[clr_operator("i32.and")]
+micro u32_and(a: u32, b: u32): u32
+
+[host_provider(std::primitive::__u32_or)]
+[clr_operator("i32.or")]
+micro u32_or(a: u32, b: u32): u32
+
+[host_provider(std::primitive::__u32_xor)]
+[clr_operator("i32.xor")]
+micro u32_xor(a: u32, b: u32): u32
+
+[host_provider(std::primitive::__u32_shl)]
+[clr_operator("i32.shl")]
+micro u32_shl(a: u32, b: u32): u32
+
+[host_provider(std::primitive::__u32_eq)]
+[clr_operator("i32.eq")]
+micro u32_eq(a: u32, b: u32): bool
+
+[host_provider(std::primitive::__u32_lt)]
+[clr_operator("i32.lt.un")]
+micro u32_lt(a: u32, b: u32): bool
+
+#endregion

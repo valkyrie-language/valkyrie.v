@@ -154,3 +154,50 @@ micro i64_eq(a: i64, b: i64): bool
 micro i64_lt(a: i64, b: i64): bool
 
 #endregion
+
+#region u32（JVM 以 `int` 承载）
+# 与/或/异或与左移按位等价；右移必须绑定逻辑右移 `iushr`，不能用有符号 `ishr`。
+# 无符号除余在 JVM 上需要 `Integer.divideUnsigned`/`remainderUnsigned` 静态调用，
+# 配方层尚未冻结该形态，因此不声明 `__u32_div`/`__u32_rem`，保持结构化失败。
+
+[host_provider(std::primitive::__u32_add)]
+[jvm_operator("integer.add")]
+micro u32_add(a: u32, b: u32): u32
+
+[host_provider(std::primitive::__u32_sub)]
+[jvm_operator("integer.subtract")]
+micro u32_sub(a: u32, b: u32): u32
+
+[host_provider(std::primitive::__u32_mul)]
+[jvm_operator("integer.multiply")]
+micro u32_mul(a: u32, b: u32): u32
+
+[host_provider(std::primitive::__u32_and)]
+[jvm_operator("integer.and")]
+micro u32_and(a: u32, b: u32): u32
+
+[host_provider(std::primitive::__u32_or)]
+[jvm_operator("integer.or")]
+micro u32_or(a: u32, b: u32): u32
+
+[host_provider(std::primitive::__u32_xor)]
+[jvm_operator("integer.xor")]
+micro u32_xor(a: u32, b: u32): u32
+
+[host_provider(std::primitive::__u32_shl)]
+[jvm_operator("integer.shift_left")]
+micro u32_shl(a: u32, b: u32): u32
+
+[host_provider(std::primitive::__u32_shr)]
+[jvm_operator("integer.shift_right_unsigned")]
+micro u32_shr(a: u32, b: u32): u32
+
+[host_provider(std::primitive::__u32_eq)]
+[jvm_operator("integer.compare_equal")]
+micro u32_eq(a: u32, b: u32): bool
+
+[host_provider(std::primitive::__u32_lt)]
+[jvm_operator("integer.compare_less_than_unsigned")]
+micro u32_lt(a: u32, b: u32): bool
+
+#endregion
