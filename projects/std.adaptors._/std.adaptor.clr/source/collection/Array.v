@@ -1,25 +1,25 @@
 namespace std.adaptor.clr.collection;
 
-# Array::length uses std `[intrinsic("array.len")]` `__array_len` (f64.add pattern), not host_provider.
+# `std.collection.array` 合同经 `System.Array` 正式导入实现（无 intrinsic、无名字表）。
 
-[host_provider(std::collection::Array::get)]
-private micro array_host_get<T>(array: [T], ordinal: usize): Option<T> {
-    let item_count: usize = __array_clr_length::<T>(array)
-    if ordinal == 0 || ordinal > item_count {
-        return None
-    }
-
-    return Some(__array_clr_get::<T>(array, ordinal - 1))
+[host_provider(std::collection::array::length)]
+private micro array_host_length<T>(array: [T]): usize {
+    return __array_clr_length::<T>(array)
 }
 
-[host_provider(std::collection::Array::set)]
-private micro array_host_set<T>(array: [T], ordinal: usize, value: T): unit {
-    let item_count: usize = __array_clr_length::<T>(array)
-    if ordinal == 0 || ordinal > item_count {
-        return
-    }
+[host_provider(std::collection::array::get)]
+private micro array_host_get<T>(array: [T], index: usize): T {
+    return __array_clr_get::<T>(array, index)
+}
 
-    __array_clr_set::<T>(array, ordinal - 1, value)
+[host_provider(std::collection::array::set)]
+private micro array_host_set<T>(array: [T], index: usize, value: T): unit {
+    __array_clr_set::<T>(array, index, value)
+}
+
+[host_provider(std::collection::array::new)]
+private micro array_host_new<T>(length: usize): [T] {
+    return __array_clr_new::<T>(length)
 }
 
 [clr("System.Runtime", "System.Array", "get_Length"), pure]
@@ -30,3 +30,8 @@ private micro __array_clr_get<T>(array: [T], index: usize): T { }
 
 [clr("System.Runtime", "System.Array", "SetValue")]
 private micro __array_clr_set<T>(array: [T], index: usize, value: T): unit { }
+
+# `Array.CreateInstance(Type, Int32)`：元素类型参数由后端按 `T` 合成（编码能力待后端复核，
+# 不通过则记 clr 目标私有合同缺口，不得回退 intrinsic）。
+[clr("System.Runtime", "System.Array", "CreateInstance"), pure]
+private micro __array_clr_new<T>(length: usize): [T] { }

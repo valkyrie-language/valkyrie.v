@@ -11,7 +11,7 @@ class Array<T> {
 imply Array<T> {
     [host_contract]
     micro length(self): usize {
-        return std::array::length(self)
+        return std::collection::array::length(self)
     }
 
     micro is_empty(self): bool {
@@ -20,8 +20,12 @@ imply Array<T> {
 
     [host_contract]
     micro `get`(self, ordinal: usize): Option<T> {
-        # 对外序数是 1 基（`first()` 取 1、`last()` 取 length），`std::array::get` 是 0 基下标，必须减一。
-        return Some(std::array::get(self, ordinal - 1))
+        if ordinal == 0 || ordinal > self.length() {
+            return None
+        }
+
+        # 对外序数是 1 基（`first()` 取 1、`last()` 取 length），`std::collection::array::get` 是 0 基下标，必须减一。
+        return Some(std::collection::array::get(self, ordinal - 1))
     }
 
     [host_contract]
@@ -30,9 +34,9 @@ imply Array<T> {
             return
         }
 
-        # 默认体必须语义正确：对外序数 1 基，`std::array::set` 是 0 基下标写入（与 `std::array::get` 同形）。
+        # 默认体必须语义正确：对外序数 1 基，`std::collection::array::set` 是 0 基下标写入（与 `std::collection::array::get` 同形）。
         # target provider 只能特化本合同，不能以空体替代实现。
-        std::array::set(self, ordinal - 1, value)
+        std::collection::array::set(self, ordinal - 1, value)
     }
 
     micro first(self): Option<T> {
@@ -81,36 +85,23 @@ imply Array<T> {
     }
 }
 
-[intrinsic("builtin.array.length")]
-private micro __array_len<T>(self: Array<T>): usize { }
-
-[intrinsic("builtin.array.get")]
-private micro __array_get<T>(self: Array<T>, ordinal: usize): T { }
-
-# 0 基下标写入；`Array.set` 默认体与 target provider 共用同一合同。
-[intrinsic("builtin.array.set")]
-private micro __array_set<T>(self: Array<T>, ordinal: usize, value: T): unit { }
-
-# 按长度构造 `[T]`：长度是运行期值、元素类型由 `T` 参数化，属于与 get/set 同族的
-# 有限、类型参数化的语言结构语义。声明只冻结语言身份，不携带目标指令、CLI 入口或
-# 后端名字表；目标侧实现由已绑定的 backend / adaptor 计划决定。
-[intrinsic("builtin.array.new")]
-private micro __array_new<T>(length: usize): [T] { }
-
-# 函数式追加：`result = push(result, item)`，必须写回返回值。公共特殊展开通道已退役：
-# push 按声明签名走普通调用链（Invoke），target provider 只能特化本合同，不得以空体替代实现。
+# 函数式追加：`result = push(result, item)`，必须写回返回值。push 按声明签名走普通调用链
+# （Invoke），默认体是真实实现：经 `std.collection.array` 合同分配新数组并逐项拷贝。
+# 分配、元素初始化、长度溢出（`old_len + 1` 达 usize 上限）、泛型元素表示与 GC、
+# 失败与资源责任全部由 `std::collection::array::new` 的目标 provider 承担；
+# 缺 provider 时结构化失败闭合，不得空体成功或链接豁免。
 [host_contract]
 micro push<T>(array: Array<T>, value: T): Array<T> {
-    let old_len: usize = __array_len(array)
-    let mut new_array: [T] = __array_new::<T>(old_len + 1)
+    let old_len: usize = std::collection::array::length(array)
+    let new_array: [T] = std::collection::array::new::<T>(old_len + 1)
     let mut i: usize = 0
     while i < old_len {
-        # `__array_get`/`__array_set` 均为 0 基下标，拷贝循环同口径。
-        __array_set(new_array, i, __array_get(array, i))
+        # 合同 `get`/`set` 均为 0 基下标，拷贝循环同口径。
+        std::collection::array::set(new_array, i, std::collection::array::get(array, i))
         i = i + 1
     }
 
-    __array_set(new_array, old_len, value)
+    std::collection::array::set(new_array, old_len, value)
     return new_array
 }
 
@@ -118,7 +109,7 @@ micro push<T>(array: Array<T>, value: T): Array<T> {
 # 越界（`ordinal == 0` 或 `ordinal > length + 1`）返回原数组，即 `ArrayList.insert`
 # no-op 分支的函数式等价。
 micro insert<T>(array: Array<T>, ordinal: usize, value: T): Array<T> {
-    let size: usize = __array_len(array)
+    let size: usize = std::collection::array::length(array)
     if ordinal == 0 || ordinal > size + 1 {
         return array
     }
@@ -127,13 +118,13 @@ micro insert<T>(array: Array<T>, ordinal: usize, value: T): Array<T> {
     let mut items: [T] = []
     let mut index: usize = 0
     while index < ordinal - 1 {
-        items = push(items, __array_get(array, index))
+        items = push(items, std::collection::array::get(array, index))
         index = index + 1
     }
 
     items = push(items, value)
     while index < size {
-        items = push(items, __array_get(array, index))
+        items = push(items, std::collection::array::get(array, index))
         index = index + 1
     }
 
@@ -144,12 +135,12 @@ micro insert<T>(array: Array<T>, ordinal: usize, value: T): Array<T> {
 # 处的元素。合同局限：返回类型 `Option<T>` 无法同时写回收缩后的数组，本函数不移除元素、
 # 不改变数组长度；需要真正收缩的调用方必须使用 `ArrayList.remove`。
 micro remove<T>(array: Array<T>, ordinal: usize): Option<T> {
-    let size: usize = __array_len(array)
+    let size: usize = std::collection::array::length(array)
     if ordinal == 0 || ordinal > size {
         return None
     }
 
-    return Some(__array_get(array, ordinal - 1))
+    return Some(std::collection::array::get(array, ordinal - 1))
 }
 
 structure ArrayIterator<T> {

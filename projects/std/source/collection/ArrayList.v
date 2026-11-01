@@ -121,8 +121,8 @@ imply ArrayList<T> {
             return None
         }
 
-        # `__array_get` 是底层 0 基下标，ArrayList 的序数是 1 基，必须减一。
-        return Some(__array_get(self._items, ordinal - 1))
+        # 合同 `std::collection::array::get` 是底层 0 基下标，ArrayList 的序数是 1 基，必须减一。
+        return Some(std::collection::array::get(self._items, ordinal - 1))
     }
 
     # glue 需要裸元素；`get` 返回 `Option<T>` 不能复用。
@@ -130,7 +130,7 @@ imply ArrayList<T> {
     [library_glue(at)]
     micro at(self, ordinal: usize): T {
         # 与 `get` 同口径：1 基序数，底层 0 基下标。
-        return __array_get(self._items, ordinal - 1)
+        return std::collection::array::get(self._items, ordinal - 1)
     }
 
     [host_contract]
