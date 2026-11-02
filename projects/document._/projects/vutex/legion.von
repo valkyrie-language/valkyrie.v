@@ -3,7 +3,7 @@
     version: "workspace",
     description: "VuTeX document typesetting and layout (Valkyrie)",
     type: "library",
-    dependencies: { "std": { version: "workspace" }, "notedown": { version: "workspace" } },
+    dependencies: { "std": { version: "workspace" }, "document.layout": { version: "workspace" }, "document.vector": { version: "workspace" } },
     build: [
         {
             target: "ovm"

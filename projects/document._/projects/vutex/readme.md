@@ -1,16 +1,20 @@
 # vutex
 
-文档排版与渲染（Valkyrie 实现）。
+文档排版与数学排版内核（Valkyrie 实现）。
 
 ## 定位
 
-- 消费 `notedown` 的 `DocumentGraph`，产出 layout plan（page / block / line / table / pagination）与 presentation
+- TeX 数学子集：`\frac`、`\sqrt`、上下标（`^`/`_`）、希腊字母（小写命令名）、常见运算符
+- 链路：源文本 → 数学 AST → `document.layout` 盒树 → `document.vector` SVG 矢量文本
+- 输出确定：同输入同字节；畸形源返回 `None`，不产占位树
 
 ## 边界
 
-- 不重实现格式 parser，不拥有第二份文档 IR
+- 不做全 TeX：仅上述数学子集；其余命令按未支持处理
+- 度量是字符单元（等宽假设），真实字体度量经 provider 接入后替换
+- 联合上下标的列基线取下标行（v0 近似）；单独上标/下标精确
 - HTML 渲染走 asgard/ssg 路径，不在本包自造 HTML 渲染器
 
 ## 当前状态
 
-骨架落位。
+数学子集解析、盒排版与 SVG 发射已落地；正反测试齐备。
