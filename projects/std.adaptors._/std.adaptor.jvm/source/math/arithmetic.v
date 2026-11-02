@@ -174,3 +174,19 @@ micro u32_eq(a: u32, b: u32): bool
 micro u32_lt(a: u32, b: u32): bool
 
 #endregion
+
+#region u64（JVM 以 `long` 承载）
+# 等值按位级等价绑定；无符号小于冻结为 `long.compare_less_than_unsigned`
+# （JVM 没有无符号 `lcmp`，backend 展开为符号位翻转序列）。
+# 无符号除余需要 `Long.divideUnsigned`/`remainderUnsigned` 静态调用，配方层尚未冻结该形态，
+# 因此不声明 `__u64_div`/`__u64_rem`，保持结构化失败。
+
+[host_provider(std::primitive::__u64_eq)]
+[jvm_operator("long.compare_equal")]
+micro u64_eq(a: u64, b: u64): bool
+
+[host_provider(std::primitive::__u64_lt)]
+[jvm_operator("long.compare_less_than_unsigned")]
+micro u64_lt(a: u64, b: u64): bool
+
+#endregion

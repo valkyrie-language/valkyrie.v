@@ -71,6 +71,11 @@ micro u64_mul(a: u64, b: u64): u64
 [ovm("i64_eq")]
 micro u64_eq(a: u64, b: u64): bool
 
+# 无符号小于：宿主符号 `i64_lt_u` 按无符号位型比较（最高位为 1 时与有符号 `i64_lt` 结论相反）。
+[host_provider(std::primitive::__u64_lt)]
+[ovm("i64_lt_u")]
+micro u64_lt(a: u64, b: u64): bool
+
 # 与/或/异或/左移对 64 位无符号与有符号语义一致，经 `nyar.host` 宿主导入，
 # 符号由 runtime `parse_host_op` 解析，未知符号在模块加载期结构化失败。
 [host_provider(std::primitive::__u64_and)]

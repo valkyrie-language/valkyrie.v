@@ -174,3 +174,17 @@ micro u32_eq(a: u32, b: u32): bool
 micro u32_lt(a: u32, b: u32): bool
 
 #endregion
+
+#region u64（CLR 以 `int64` 承载）
+# 等值按位级等价绑定；无符号小于用原生 `clt.un`，MSIL `clt.un` 对 `int64` 载体同形。
+# 无符号除余需要的 `div.un`/`rem.un` 尚未进入冻结 opcode 集，不声明，保持结构化失败。
+
+[host_provider(std::primitive::__u64_eq)]
+[clr_operator("i64.eq")]
+micro u64_eq(a: u64, b: u64): bool
+
+[host_provider(std::primitive::__u64_lt)]
+[clr_operator("i64.lt.un")]
+micro u64_lt(a: u64, b: u64): bool
+
+#endregion
