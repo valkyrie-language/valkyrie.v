@@ -66,6 +66,10 @@ micro main() -> i32 {
     if code != 0 {
         return (1500 + code) as i32
     }
+    code = conformance_c16_fail_closed(database::database_memory_open)
+    if code != 0 {
+        return (1600 + code) as i32
+    }
     return 0
 }
 
@@ -142,4 +146,9 @@ micro conformance_memory_c14() -> i64 {
 [export]
 micro conformance_memory_c15() -> i64 {
     return conformance_c15_index_surface(database::database_memory_open)
+}
+
+[export]
+micro conformance_memory_c16() -> i64 {
+    return conformance_c16_fail_closed(database::database_memory_open)
 }
