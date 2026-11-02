@@ -15,7 +15,7 @@ micro `test iterator collect to array`() {
         })
         .collect()
 
-    if result.length != 3 {
+    if result.length() != 3 {
         panic("iterator collect array length test failed")
     }
 
@@ -56,7 +56,7 @@ micro `test iterator take count and collect`() {
         .take(3)
         .collect_array()
 
-    if result.length != 3 {
+    if result.length() != 3 {
         panic("iterator take collect length test failed")
     }
 
@@ -181,7 +181,7 @@ micro `test iterator take_while and skip_while`() {
         })
         .collect_array()
 
-    if taken.length != 2 || taken[0] != 1 || taken[1] != 2 {
+    if taken.length() != 2 || taken⁅0⁆ != 1 || taken⁅1⁆ != 2 {
         panic("iterator take_while value test failed")
     }
 
@@ -192,7 +192,7 @@ micro `test iterator take_while and skip_while`() {
         })
         .collect_array()
 
-    if skipped.length != 2 || skipped[0] != 3 || skipped[1] != 1 {
+    if skipped.length() != 2 || skipped⁅0⁆ != 3 || skipped⁅1⁆ != 1 {
         panic("iterator skip_while value test failed")
     }
 
@@ -222,7 +222,7 @@ micro `test iterator filter_map`() {
         })
         .collect_array()
 
-    if result.length != 2 || result[0] != 20 || result[1] != 40 {
+    if result.length() != 2 || result⁅0⁆ != 20 || result⁅1⁆ != 40 {
         panic("iterator filter_map value test failed")
     }
 

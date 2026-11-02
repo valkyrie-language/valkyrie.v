@@ -9,7 +9,7 @@ using! std::iterator::{collect, collect_array, collect_array_list}
 micro `test array methods`() {
     let values: [i32] = [1, 2, 3]
 
-    if values.length != 3 {
+    if values.length() != 3 {
         panic("array property test failed")
     }
 }
@@ -25,7 +25,7 @@ micro `test array list host binding`() {
         panic("array list length test failed")
     }
 
-    if list.length != 3 {
+    if list.length() != 3 {
         panic("array list property test failed")
     }
 

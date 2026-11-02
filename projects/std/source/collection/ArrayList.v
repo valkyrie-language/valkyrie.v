@@ -16,7 +16,7 @@ imply ArrayList<T> {
 
     [host_contract]
     micro capacity(self): usize {
-        return self._items.length
+        return self._items.length()
     }
 
     [host_contract]
@@ -45,17 +45,17 @@ imply ArrayList<T> {
 
         # 纯 V 构造路径：函数式 `push` 重建并写回（与 `Utf8Text.concat_repr` 同形），
         # 不依赖 pending 的自由 `insert` lowering。序数 1 基、`⁅ ⁆` 0 基。
-        # `⁅ ⁆` 返回 `Option<T>`，循环上界由序数守卫保证在界内，`unwrap` 不会失败。
+        # `⁅ ⁆` 是 `Cardinal` 自动取值（裸 `T`）；循环上界由序数守卫保证在界内，越界不可达。
         let mut items: [T] = []
         let mut index: usize = 0
         while index < ordinal - 1 {
-            items = push(items, self._items⁅index⁆.unwrap())
+            items = push(items, self._items⁅index⁆)
             index = index + 1
         }
 
         items = push(items, value)
         while index < size {
-            items = push(items, self._items⁅index⁆.unwrap())
+            items = push(items, self._items⁅index⁆)
             index = index + 1
         }
 
@@ -70,18 +70,18 @@ imply ArrayList<T> {
         }
 
         # 与 `insert` 同形的纯 V 重建路径；返回被移除元素，长度收缩一。
-        # 序数守卫已保证 `ordinal - 1` 与循环下标在界内，`unwrap` 不会失败。
-        let removed: T = self._items⁅ordinal - 1⁆.unwrap()
+        # 序数守卫已保证 `ordinal - 1` 与循环下标在界内，`⁅ ⁆` 自动取值不会越界。
+        let removed: T = self._items⁅ordinal - 1⁆
         let mut items: [T] = []
         let mut index: usize = 0
         while index < ordinal - 1 {
-            items = push(items, self._items⁅index⁆.unwrap())
+            items = push(items, self._items⁅index⁆)
             index = index + 1
         }
 
         index = index + 1
         while index < size {
-            items = push(items, self._items⁅index⁆.unwrap())
+            items = push(items, self._items⁅index⁆)
             index = index + 1
         }
 
@@ -97,7 +97,7 @@ imply ArrayList<T> {
     [host_contract]
     [library_glue(length)]
     micro length(self): usize {
-        return self._items.length
+        return self._items.length()
     }
 
     micro is_empty(self): bool {
@@ -144,20 +144,14 @@ imply ArrayList<T> {
         self._items::[ordinal - 1] = value
     }
 
+    # Names must match HIR sugar (`suffix [ ]`).
+    # 序数算子 `[ ]` / `[ ]=` 是 `std::primitive::Ordinal` 的过渡形态，随 Ordinal 接入迁移。
     suffix `[ ]`(self, ordinal: usize): Option<T> {
         return self.get(ordinal)
     }
 
     suffix `[ ]=`(mut self, ordinal: usize, value: T): unit {
         self.set(ordinal, value)
-    }
-
-    suffix `⁅ ⁆`(self, cardinal: usize): Option<T> {
-        return self.get(cardinal + 1)
-    }
-
-    suffix `⁅ ⁆=`(mut self, cardinal: usize, value: T): unit {
-        self.set(cardinal + 1, value)
     }
 
     [host_contract]
@@ -171,6 +165,40 @@ imply ArrayList<T> {
         }
 
         return false
+    }
+}
+
+# 0 基索引读写合同：`⁅ ⁆` / `⁅ ⁆=` 与同源的 `get_cardinal` / `set_cardinal`；
+# 序数语义（1 基）由 `Ordinal` 委托本合同实现。元素个数由 `length` 承担，与本合同无关。
+imply ArrayList<T>: std::primitive::Cardinal {
+    type Element = T;
+
+    # 0 基索引自动取值；越界结构化失败（合同语义见 `std::primitive::Cardinal`）。
+    suffix `⁅ ⁆`(self, offset: usize): T {
+        if offset >= self.length() {
+            std::types::panic("Cardinal ⁅ ⁆ 越界：offset 超出元素个数")
+        }
+
+        return std::collection::array::get(self._items, offset)
+    }
+
+    # 0 基索引写入，只改元素不改元素个数；越界结构化失败，不许静默丢弃写入。
+    suffix `⁅ ⁆=`(mut self, offset: usize, value: T): unit {
+        if offset >= self.length() {
+            std::types::panic("Cardinal ⁅ ⁆= 越界：offset 超出元素个数")
+        }
+
+        std::collection::array::set(self._items, offset, value)
+    }
+
+    # 与 `⁅ ⁆` 同源：命名方法形态，互为委托，不维护第二套索引访问逻辑。
+    micro get_cardinal(self, offset: usize): T {
+        return self⁅offset⁆
+    }
+
+    # 与 `⁅ ⁆=` 同源：命名方法形态，互为委托。
+    micro set_cardinal(mut self, offset: usize, value: T): unit {
+        self⁅offset⁆ = value
     }
 }
 

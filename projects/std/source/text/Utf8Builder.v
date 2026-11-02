@@ -16,9 +16,9 @@ imply Utf8Builder {
 
     ⍝ 从已存在文本创建一个构造器, 该文本会被消耗
     micro new(text: Utf8Text) -> Self {
-        let mut bytes: ArrayList<u8> = ArrayList::new(text._repr.length)
+        let mut bytes: ArrayList<u8> = ArrayList::new(text._repr.length())
         let mut index: usize = 0
-        while index < text._repr.length {
+        while index < text._repr.length() {
             bytes.push(text._repr⁅index⁆)
             index = index + 1
         }
@@ -60,7 +60,7 @@ imply Utf8Builder {
 
     micro append(mut self, text: &Utf8Text): unit {
         let mut index: usize = 0
-        while index < text._repr.length {
+        while index < text._repr.length() {
             self.bytes.push(text._repr⁅index⁆)
             index = index + 1
         }
@@ -121,7 +121,8 @@ imply Utf8Builder {
         let mut index: usize = digits.length()
         while index > 0 {
             index = index - 1
-            self.bytes.push(digits⁅index⁆.unwrap())
+            # 倒数下标 `index ∈ [0, digits.length() - 1]`，界内明确，`⁅ ⁆` 自动取值不会越界。
+            self.bytes.push(digits⁅index⁆)
         }
     }
 }

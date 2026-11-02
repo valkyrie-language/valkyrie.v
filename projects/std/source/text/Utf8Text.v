@@ -21,7 +21,7 @@ imply Utf8Text {
     }
 
     micro byte_length(self) -> usize {
-        return self._repr.length
+        return self._repr.length()
     }
 
     # Unicode scalar count (std). CLR host_provider must not flatten to String.get_Length.
@@ -29,7 +29,7 @@ imply Utf8Text {
     micro length(self) -> usize {
         let mut index: usize = 0
         let mut count: usize = 0
-        while index < self._repr.length {
+        while index < self._repr.length() {
             let width: usize = self.char_width(index)
             if width == 0 {
                 break
@@ -160,14 +160,14 @@ imply Utf8Text {
         let start_byte: usize = self.byte_offset(start_index)
         let end_byte: usize = self.byte_offset(start_index + count_value)
 
-        if start_byte >= self._repr.length || start_byte >= end_byte {
+        if start_byte >= self._repr.length() || start_byte >= end_byte {
             return Utf8Text { _repr: [] }
         }
 
         let mut bytes: [u8] = []
         let mut index: usize = start_byte
-        while index < end_byte && index < self._repr.length {
-            bytes = std::collection::push(bytes, self._repr⁅index⁆.unwrap())
+        while index < end_byte && index < self._repr.length() {
+            bytes = std::collection::push(bytes, self._repr⁅index⁆)
             index = index + 1
         }
 
@@ -175,11 +175,11 @@ imply Utf8Text {
     }
 
     private micro char_width(self, index: usize) -> usize {
-        if index >= self._repr.length {
+        if index >= self._repr.length() {
             return 0
         }
 
-        let byte: u32 = self._repr⁅index⁆.unwrap() as u32
+        let byte: u32 = self._repr⁅index⁆ as u32
         if byte <= 0x7F {
             return 1
         }
@@ -202,7 +202,7 @@ imply Utf8Text {
     private micro byte_offset(self, char_index: usize) -> usize {
         let mut byte_index: usize = 0
         let mut current_char: usize = 0
-        while byte_index < self._repr.length && current_char < char_index {
+        while byte_index < self._repr.length() && current_char < char_index {
             let width: usize = self.char_width(byte_index)
             if width == 0 {
                 return byte_index
@@ -216,20 +216,20 @@ imply Utf8Text {
     }
 
     private micro index_of_repr(self, value: utf8) -> Option<usize> {
-        if value._repr.length == 0 {
+        if value._repr.length() == 0 {
             return Some(0)
         }
 
-        if value._repr.length > self._repr.length {
+        if value._repr.length() > self._repr.length() {
             return std::types::option_none::<usize>()
         }
 
         let mut offset: usize = 0
-        while offset + value._repr.length <= self._repr.length {
+        while offset + value._repr.length() <= self._repr.length() {
             let mut matched: bool = true
             let mut inner: usize = 0
-            while inner < value._repr.length {
-                if self._repr⁅offset + inner⁆.unwrap() != value._repr⁅inner⁆.unwrap() {
+            while inner < value._repr.length() {
+                if self._repr⁅offset + inner⁆ != value._repr⁅inner⁆ {
                     matched = false
                     break
                 }
@@ -259,29 +259,29 @@ imply Utf8Text {
             return std::types::option_none::<char>()
         }
         let start: usize = self.byte_offset(index)
-        if start >= self._repr.length {
+        if start >= self._repr.length() {
             return std::types::option_none::<char>()
         }
-        let first: u8 = self._repr⁅start⁆.unwrap()
+        let first: u8 = self._repr⁅start⁆
         let width: usize = self.char_width(start)
         let mut code_point: u32 = 0
         if width == 1 {
             code_point = first as u32
         }
-        else if width == 2 && start + 1 < self._repr.length {
+        else if width == 2 && start + 1 < self._repr.length() {
             code_point = ((first as u32) & 0x1F) << 6
-            code_point = code_point | ((self._repr⁅start + 1⁆.unwrap() as u32) & 0x3F)
+            code_point = code_point | ((self._repr⁅start + 1⁆ as u32) & 0x3F)
         }
-        else if width == 3 && start + 2 < self._repr.length {
+        else if width == 3 && start + 2 < self._repr.length() {
             code_point = ((first as u32) & 0x0F) << 12
-            code_point = code_point | (((self._repr⁅start + 1⁆.unwrap() as u32) & 0x3F) << 6)
-            code_point = code_point | ((self._repr⁅start + 2⁆.unwrap() as u32) & 0x3F)
+            code_point = code_point | (((self._repr⁅start + 1⁆ as u32) & 0x3F) << 6)
+            code_point = code_point | ((self._repr⁅start + 2⁆ as u32) & 0x3F)
         }
-        else if width == 4 && start + 3 < self._repr.length {
+        else if width == 4 && start + 3 < self._repr.length() {
             code_point = ((first as u32) & 0x07) << 18
-            code_point = code_point | (((self._repr⁅start + 1⁆.unwrap() as u32) & 0x3F) << 12)
-            code_point = code_point | (((self._repr⁅start + 2⁆.unwrap() as u32) & 0x3F) << 6)
-            code_point = code_point | ((self._repr⁅start + 3⁆.unwrap() as u32) & 0x3F)
+            code_point = code_point | (((self._repr⁅start + 1⁆ as u32) & 0x3F) << 12)
+            code_point = code_point | (((self._repr⁅start + 2⁆ as u32) & 0x3F) << 6)
+            code_point = code_point | ((self._repr⁅start + 3⁆ as u32) & 0x3F)
         }
         else {
             code_point = first as u32
@@ -304,21 +304,13 @@ imply Utf8Text: std::iterator::IntoIterator {
 }
 
 imply Utf8Text {
-    suffix `⁅ ⁆`(self, cardinal: usize): u8 {
-        return self._repr⁅cardinal⁆.unwrap()
-    }
-
-    suffix `⁅ ⁆=`(mut self, cardinal: usize, value: u8): unit {
-        self._repr⁅cardinal⁆ = value
-    }
-
     private micro equals_repr(self, other_repr: [u8]) -> bool {
-        if self._repr.length != other_repr.length {
+        if self._repr.length() != other_repr.length() {
             return false
         }
         let mut index: usize = 0
-        while index < self._repr.length {
-            if self._repr⁅index⁆.unwrap() != other_repr⁅index⁆.unwrap() {
+        while index < self._repr.length() {
+            if self._repr⁅index⁆ != other_repr⁅index⁆ {
                 return false
             }
             index = index + 1
@@ -329,19 +321,76 @@ imply Utf8Text {
     private micro concat_repr(self, other: utf8) -> utf8 {
         let mut bytes: [u8] = []
         let mut index: usize = 0
-        while index < self._repr.length {
-            bytes = std::collection::push(bytes, self._repr⁅index⁆.unwrap())
+        while index < self._repr.length() {
+            bytes = std::collection::push(bytes, self._repr⁅index⁆)
             index = index + 1
         }
 
         index = 0
-        while index < other._repr.length {
-            bytes = std::collection::push(bytes, other._repr⁅index⁆.unwrap())
+        while index < other._repr.length() {
+            bytes = std::collection::push(bytes, other._repr⁅index⁆)
             index = index + 1
         }
 
         return Utf8Text { _repr: bytes }
     }
+}
+
+# 0 基标量索引读写合同：`⁅ ⁆` / `⁅ ⁆=` 与同源的 `get_cardinal` / `set_cardinal`。
+# 索引按 Unicode 标量计数（与 `length` 的计数单位一致）；`char` 是 u16 code unit，
+# astral 标量无法表示（类型系统层缺口，已记录）。元素个数由 `length` 承担，与本合同无关。
+imply Utf8Text: std::primitive::Cardinal {
+    type Element = char;
+
+    # 0 基标量索引自动取值（UTF-8 解码为 `char`）；越界结构化失败（合同语义见 `std::primitive::Cardinal`）。
+    suffix `⁅ ⁆`(self, offset: usize): char {
+        let found: Option<char> = self.char_at(offset)
+        if found.is_none() {
+            std::types::panic("Utf8Text ⁅ ⁆ 越界：offset 超出元素个数")
+        }
+
+        return found.unwrap()
+    }
+
+    # 按标量写入 `char`：新旧字符的 UTF-8 宽度可以不同，经 slice/concat 重建内部存储；
+    # 替换一个标量为一个标量，元素个数不变，字节长度可变。越界结构化失败。
+    suffix `⁅ ⁆=`(mut self, offset: usize, value: char): unit {
+        let size: usize = self.length()
+        if offset >= size {
+            std::types::panic("Utf8Text ⁅ ⁆= 越界：offset 超出元素个数")
+        }
+
+        let head: utf8 = self.slice(0, offset)
+        let tail: utf8 = self.slice(offset + 1, size - offset - 1)
+        let replacement: utf8 = encode_char_as_utf8(value)
+        self._repr = (head + replacement + tail)._repr
+    }
+
+    # 与 `⁅ ⁆` 同源：命名方法形态，互为委托，不维护第二套索引访问逻辑。
+    micro get_cardinal(self, offset: usize): char {
+        return self⁅offset⁆
+    }
+
+    # 与 `⁅ ⁆=` 同源：命名方法形态，互为委托。
+    micro set_cardinal(mut self, offset: usize, value: char): unit {
+        self⁅offset⁆ = value
+    }
+}
+
+# `char`（u16 code unit）的 UTF-8 编码：1 至 3 字节。
+# 已知缺口（类型系统层）：`char` 是 u16 code unit，astral 标量（> U+FFFF）无法表示，
+# 本函数只需覆盖 u16 值域，不做代理对合成。
+micro encode_char_as_utf8(code: char): utf8 {
+    let value: u32 = code as u32
+    if value <= 0x7F {
+        return Utf8Text::from_bytes([value as u8])
+    }
+
+    if value <= 0x7FF {
+        return Utf8Text::from_bytes([(0xC0 + (value >> 6)) as u8, (0x80 + (value & 0x3F)) as u8])
+    }
+
+    return Utf8Text::from_bytes([(0xE0 + (value >> 12)) as u8, (0x80 + ((value >> 6) & 0x3F)) as u8, (0x80 + (value & 0x3F)) as u8])
 }
 
 imply Utf8Text: std::primitive::Equal {
