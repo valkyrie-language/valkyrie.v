@@ -1,21 +1,21 @@
 namespace std.data.text.dejavu;
 
-using std.data::{DataCstNode, DataDiagnostic, DataOutcome, DataToken, data_diagnostic_code, data_outcome_diagnostics, data_outcome_value, data_source_from_text, new_data_settings};
+using std.data::{DataCstNode, Diagnostic, DataOutcome, DataToken, data_diagnostic_code, data_outcome_diagnostics, data_outcome_value, data_source_from_text, new_data_settings};
 
 # 语法段测试：正例覆盖 if/loop/插值/表达式优先级 CST 形状；反例覆盖
 # 越界控制流、未闭合语句、未支持表面、悬空 closer、空标签与 trim 违规。
 
 micro parse_source(source: utf8) -> DataOutcome<DataCstNode<TemplateTokenKind>> {
-    let tokens: [DataToken<TemplateTokenKind>] = data_outcome_value(template_lex(data_source_from_text(source), new_data_settings(64, 0)))
+    let tokens: [DataToken<TemplateTokenKind>] = data_outcome_value_or(template_lex(data_source_from_text(source), new_data_settings(64, 0)), [])
     return template_parse(tokens, new_data_settings(64, 0))
 }
 
 micro first_diagnostic_code(outcome: DataOutcome<DataCstNode<TemplateTokenKind>>) -> utf8 {
-    let diagnostics: [DataDiagnostic] = data_outcome_diagnostics(outcome)
+    let diagnostics: [Diagnostic] = data_outcome_diagnostics(outcome)
     if diagnostics.length() == 0 {
         return ""
     }
-    return data_diagnostic_code(diagnostics⁅0⁆.unwrap())
+    return diagnostic_code(diagnostics⁅0⁆.unwrap())
 }
 
 [test]
@@ -24,7 +24,7 @@ micro test_parse_if_shape() -> unit {
     if data_outcome_diagnostics(outcome).length() != 0 {
         panic("clean if template must parse without diagnostics")
     }
-    let root: DataCstNode<TemplateTokenKind> = data_outcome_value(outcome)
+    let root: DataCstNode<TemplateTokenKind> = data_outcome_value_or(outcome, data_cst_missing(new_span(0, 0), "test fallback"))
     let children: [DataCstNode<TemplateTokenKind>] = template_cst_children(root)
     if children.length() != 1 {
         panic("root must hold exactly the if node")
@@ -53,7 +53,7 @@ micro test_parse_loop_shape() -> unit {
     if data_outcome_diagnostics(outcome).length() != 0 {
         panic("clean loop template must parse without diagnostics")
     }
-    let root: DataCstNode<TemplateTokenKind> = data_outcome_value(outcome)
+    let root: DataCstNode<TemplateTokenKind> = data_outcome_value_or(outcome, data_cst_missing(new_span(0, 0), "test fallback"))
     let children: [DataCstNode<TemplateTokenKind>] = template_cst_children(root)
     if children.length() != 1 {
         panic("root must hold exactly the loop node")
@@ -69,7 +69,7 @@ micro test_parse_expression_precedence() -> unit {
     if data_outcome_diagnostics(outcome).length() != 0 {
         panic("clean expression must parse without diagnostics")
     }
-    let root: DataCstNode<TemplateTokenKind> = data_outcome_value(outcome)
+    let root: DataCstNode<TemplateTokenKind> = data_outcome_value_or(outcome, data_cst_missing(new_span(0, 0), "test fallback"))
     let interpolation: DataCstNode<TemplateTokenKind> = template_cst_children(root)⁅0⁆.unwrap()
     if template_cst_node_kind(interpolation) != NodeInterpolation {
         panic("interpolation node expected")
@@ -117,7 +117,7 @@ micro test_parse_unsupported_surface_rejected() -> unit {
     if first_diagnostic_code(outcome) != "template.parse.unsupported_statement" {
         panic("unsupported_statement diagnostic expected")
     }
-    let root: DataCstNode<TemplateTokenKind> = data_outcome_value(outcome)
+    let root: DataCstNode<TemplateTokenKind> = data_outcome_value_or(outcome, data_cst_missing(new_span(0, 0), "test fallback"))
     let children: [DataCstNode<TemplateTokenKind>] = template_cst_children(root)
     if children.length() != 1 {
         panic("root must hold the unsupported node")

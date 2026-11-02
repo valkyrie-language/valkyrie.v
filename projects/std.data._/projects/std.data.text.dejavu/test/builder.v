@@ -2,7 +2,7 @@ namespace std.data.text.dejavu;
 
 using std.data.text::{ExpressionMissing, Identifier, IfNode, InterpolationNode, LiteralNumber, LiteralString, LoopNode, TemplateDocument, TemplateExpression, TemplateNode, TextNode};
 
-using std.data::{DataCstNode, DataDiagnostic, DataOutcome, DataSettings, DataSource, DataToken, data_diagnostic_code, data_outcome_diagnostics, data_outcome_value, data_source_from_bytes, data_source_from_text, new_data_settings};
+using std.data::{DataCstNode, Diagnostic, DataOutcome, DataSettings, DataSource, DataToken, data_diagnostic_code, data_outcome_diagnostics, data_outcome_value, data_source_from_bytes, data_source_from_text, new_data_settings};
 
 # 语义段测试：正例覆盖文本/插值/控制流映射与字面量求值准备；反例覆盖
 # 重复对象键、缺席映射与二进制源。
@@ -11,9 +11,9 @@ using std.data::{DataCstNode, DataDiagnostic, DataOutcome, DataSettings, DataSou
 micro build_source(source: utf8) -> DataOutcome<TemplateDocument> {
     let data_source: DataSource = data_source_from_text(source)
     let settings: DataSettings = new_data_settings(64, 0)
-    let tokens: [DataToken<TemplateTokenKind>] = data_outcome_value(template_lex(data_source, settings))
+    let tokens: [DataToken<TemplateTokenKind>] = data_outcome_value_or(template_lex(data_source, settings), [])
     let parsed: DataOutcome<DataCstNode<TemplateTokenKind>> = template_parse(tokens, settings)
-    return template_build(data_outcome_value(parsed), data_source, settings)
+    return template_build(data_outcome_value_or(parsed, data_cst_missing(new_span(0, 0), "test fallback")), data_source, settings)
 }
 
 [test]
@@ -22,7 +22,7 @@ micro test_build_text_and_interpolation() -> unit {
     if data_outcome_diagnostics(outcome).length() != 0 {
         panic("clean template must build without diagnostics")
     }
-    let document: TemplateDocument = data_outcome_value(outcome)
+    let document: TemplateDocument = data_outcome_value_or(outcome, TemplateDocument { body: [], expressions: [] })
     if document.body.length() != 2 {
         panic("expected text node and interpolation node")
     }
@@ -61,7 +61,7 @@ micro test_build_text_and_interpolation() -> unit {
 [test]
 micro test_build_if_loop_structure() -> unit {
     let outcome: DataOutcome<TemplateDocument> = build_source("<% if x %>a<% else %>b<% end if %>")
-    let document: TemplateDocument = data_outcome_value(outcome)
+    let document: TemplateDocument = data_outcome_value_or(outcome, TemplateDocument { body: [], expressions: [] })
     if document.body.length() != 1 {
         panic("expected single if node")
     }
@@ -80,7 +80,7 @@ micro test_build_if_loop_structure() -> unit {
         }
     }
     let looped: DataOutcome<TemplateDocument> = build_source("<% loop item in xs %><% item %><% end loop %>")
-    let loop_document: TemplateDocument = data_outcome_value(looped)
+    let loop_document: TemplateDocument = data_outcome_value_or(looped, TemplateDocument { body: [], expressions: [] })
     let loop_node: TemplateNode = loop_document.body⁅0⁆.unwrap()
     match loop_node {
         case LoopNode(payload): {
@@ -100,7 +100,7 @@ micro test_build_if_loop_structure() -> unit {
 [test]
 micro test_build_literals() -> unit {
     let outcome: DataOutcome<TemplateDocument> = build_source("<% 42 %>")
-    let document: TemplateDocument = data_outcome_value(outcome)
+    let document: TemplateDocument = data_outcome_value_or(outcome, TemplateDocument { body: [], expressions: [] })
     let first_node: TemplateNode = document.body⁅0⁆.unwrap()
     match first_node {
         case InterpolationNode(payload): {
@@ -121,7 +121,7 @@ micro test_build_literals() -> unit {
         }
     }
     let text_outcome: DataOutcome<TemplateDocument> = build_source("<% 'hi' %>")
-    let text_document: TemplateDocument = data_outcome_value(text_outcome)
+    let text_document: TemplateDocument = data_outcome_value_or(text_outcome, TemplateDocument { body: [], expressions: [] })
     let text_node: TemplateNode = text_document.body⁅0⁆.unwrap()
     match text_node {
         case InterpolationNode(payload): {
@@ -146,11 +146,11 @@ micro test_build_literals() -> unit {
 [test]
 micro test_build_duplicate_key_rejected() -> unit {
     let outcome: DataOutcome<TemplateDocument> = build_source("<% { a: 1, a: 2 } %>")
-    let diagnostics: [DataDiagnostic] = data_outcome_diagnostics(outcome)
+    let diagnostics: [Diagnostic] = data_outcome_diagnostics(outcome)
     if diagnostics.length() == 0 {
         panic("duplicate key must register a diagnostic")
     }
-    if data_diagnostic_code(diagnostics⁅0⁆.unwrap()) != "template.build.duplicate_key" {
+    if diagnostic_code(diagnostics⁅0⁆.unwrap()) != "template.build.duplicate_key" {
         panic("diagnostic code mismatch")
     }
 }
@@ -158,7 +158,7 @@ micro test_build_duplicate_key_rejected() -> unit {
 [test]
 micro test_build_missing_maps_faithfully() -> unit {
     let outcome: DataOutcome<TemplateDocument> = build_source("<% %>")
-    let document: TemplateDocument = data_outcome_value(outcome)
+    let document: TemplateDocument = data_outcome_value_or(outcome, TemplateDocument { body: [], expressions: [] })
     let first_node: TemplateNode = document.body⁅0⁆.unwrap()
     match first_node {
         case InterpolationNode(payload): {
@@ -185,8 +185,8 @@ micro test_build_binary_source_rejected() -> unit {
     let settings: DataSettings = new_data_settings(64, 0)
     let tokens: [DataToken<TemplateTokenKind>] = []
     let parsed: DataOutcome<DataCstNode<TemplateTokenKind>> = template_parse(tokens, settings)
-    let outcome: DataOutcome<TemplateDocument> = template_build(data_outcome_value(parsed), data_source_from_bytes([60, 37]), settings)
-    if data_diagnostic_code(data_outcome_diagnostics(outcome)⁅0⁆.unwrap()) != "template.build.binary_source" {
+    let outcome: DataOutcome<TemplateDocument> = template_build(data_outcome_value_or(parsed, data_cst_missing(new_span(0, 0), "test fallback")), data_source_from_bytes([60, 37]), settings)
+    if diagnostic_code(data_outcome_diagnostics(outcome)⁅0⁆.unwrap()) != "template.build.binary_source" {
         panic("diagnostic code mismatch")
     }
 }

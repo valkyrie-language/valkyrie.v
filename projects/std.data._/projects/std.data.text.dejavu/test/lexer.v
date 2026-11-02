@@ -1,6 +1,6 @@
 namespace std.data.text.dejavu;
 
-using std.data::{DataDiagnostic, DataOutcome, DataToken, data_diagnostic_code, data_outcome_diagnostics, data_outcome_has_errors, data_outcome_value, data_source_from_bytes, data_source_from_text, new_data_settings};
+using std.data::{Diagnostic, DataOutcome, DataToken, data_diagnostic_code, data_outcome_diagnostics, data_outcome_has_errors, data_outcome_value, data_source_from_bytes, data_source_from_text, new_data_settings};
 
 # 词法段测试：正例覆盖定界/trim/注释/转义/无损覆盖；反例覆盖单独管道、
 # 非法码位、未闭合注释与二进制源。
@@ -8,7 +8,7 @@ using std.data::{DataDiagnostic, DataOutcome, DataToken, data_diagnostic_code, d
 [test]
 micro test_lex_interpolation_tokens() -> unit {
     let source: utf8 = "Hello <% name %>!"
-    let tokens: [DataToken<TemplateTokenKind>] = data_outcome_value(template_lex(data_source_from_text(source), new_data_settings(64, 0)))
+    let tokens: [DataToken<TemplateTokenKind>] = data_outcome_value_or(template_lex(data_source_from_text(source), new_data_settings(64, 0)), [])
     if tokens.length() != 7 {
         panic("expected text, open, whitespace, identifier, whitespace, close, text")
     }
@@ -25,7 +25,7 @@ micro test_lex_interpolation_tokens() -> unit {
         panic("code close expected")
     }
     let span_start: usize = tokens⁅3⁆.unwrap().span.start
-    let span_stop: usize = tokens⁅3⁆.unwrap().span.stop
+    let span_stop: usize = tokens⁅3⁆.unwrap().span.end
     if source.slice(span_start, span_stop - span_start) != "name" {
         panic("identifier lexeme mismatch")
     }
@@ -34,7 +34,7 @@ micro test_lex_interpolation_tokens() -> unit {
 [test]
 micro test_lex_covers_source_losslessly() -> unit {
     let source: utf8 = "a <%_ x + 1 -%> b <# note #> <%! c"
-    let tokens: [DataToken<TemplateTokenKind>] = data_outcome_value(template_lex(data_source_from_text(source), new_data_settings(64, 0)))
+    let tokens: [DataToken<TemplateTokenKind>] = data_outcome_value_or(template_lex(data_source_from_text(source), new_data_settings(64, 0)), [])
     let mut cursor: usize = 0
     let mut index: usize = 0
     while index < tokens.length() {
@@ -42,7 +42,7 @@ micro test_lex_covers_source_losslessly() -> unit {
         if token.span.start != cursor {
             panic("token stream has gap or overlap")
         }
-        cursor = token.span.stop
+        cursor = token.span.end
         index = index + 1
     }
     if cursor != source.length() {
@@ -52,7 +52,7 @@ micro test_lex_covers_source_losslessly() -> unit {
 
 [test]
 micro test_lex_trim_markers_split_text() -> unit {
-    let tokens: [DataToken<TemplateTokenKind>] = data_outcome_value(template_lex(data_source_from_text("hello  <%_ x %>"), new_data_settings(64, 0)))
+    let tokens: [DataToken<TemplateTokenKind>] = data_outcome_value_or(template_lex(data_source_from_text("hello  <%_ x %>"), new_data_settings(64, 0)), [])
     # text "hello" + Trimmed "  " + CodeOpen{ws} + ...
     if tokens.length() < 4 {
         panic("expected trimmed split before code open")
@@ -63,7 +63,7 @@ micro test_lex_trim_markers_split_text() -> unit {
     if tokens⁅1⁆.unwrap().kind != Trimmed {
         panic("trimmed token expected")
     }
-    let span: usize = tokens⁅0⁆.unwrap().span.stop
+    let span: usize = tokens⁅0⁆.unwrap().span.end
     if "hello  <%_ x %>".slice(0, span) != "hello" {
         panic("trailing horizontal whitespace must be stripped from text")
     }
@@ -71,7 +71,7 @@ micro test_lex_trim_markers_split_text() -> unit {
 
 [test]
 micro test_lex_comment_and_escape() -> unit {
-    let tokens: [DataToken<TemplateTokenKind>] = data_outcome_value(template_lex(data_source_from_text("a<# c #>b<%!"), new_data_settings(64, 0)))
+    let tokens: [DataToken<TemplateTokenKind>] = data_outcome_value_or(template_lex(data_source_from_text("a<# c #>b<%!"), new_data_settings(64, 0)), [])
     if tokens.length() != 4 {
         panic("expected text, comment, text, escape")
     }
@@ -86,11 +86,11 @@ micro test_lex_comment_and_escape() -> unit {
 [test]
 micro test_lex_unclosed_comment_registers_diagnostic() -> unit {
     let outcome: DataOutcome<[DataToken<TemplateTokenKind>]> = template_lex(data_source_from_text("a<# open"), new_data_settings(64, 0))
-    let diagnostics: [DataDiagnostic] = data_outcome_diagnostics(outcome)
+    let diagnostics: [Diagnostic] = data_outcome_diagnostics(outcome)
     if diagnostics.length() != 1 {
         panic("unclosed comment must register exactly one diagnostic")
     }
-    if data_diagnostic_code(diagnostics⁅0⁆.unwrap()) != "template.lex.unclosed_comment" {
+    if diagnostic_code(diagnostics⁅0⁆.unwrap()) != "template.lex.unclosed_comment" {
         panic("diagnostic code mismatch")
     }
     if !data_outcome_has_errors(outcome) {
@@ -101,7 +101,7 @@ micro test_lex_unclosed_comment_registers_diagnostic() -> unit {
 [test]
 micro test_lex_single_pipe_is_illegal() -> unit {
     let outcome: DataOutcome<[DataToken<TemplateTokenKind>]> = template_lex(data_source_from_text("<% a | b %>"), new_data_settings(64, 0))
-    let tokens: [DataToken<TemplateTokenKind>] = data_outcome_value(outcome)
+    let tokens: [DataToken<TemplateTokenKind>] = data_outcome_value_or(outcome, [])
     let mut found_illegal: bool = false
     let mut index: usize = 0
     while index < tokens.length() {
@@ -113,11 +113,11 @@ micro test_lex_single_pipe_is_illegal() -> unit {
     if !found_illegal {
         panic("single pipe must produce an illegal token")
     }
-    let diagnostics: [DataDiagnostic] = data_outcome_diagnostics(outcome)
+    let diagnostics: [Diagnostic] = data_outcome_diagnostics(outcome)
     if diagnostics.length() != 1 {
         panic("single pipe must register exactly one diagnostic")
     }
-    if data_diagnostic_code(diagnostics⁅0⁆.unwrap()) != "template.lex.single_pipe" {
+    if diagnostic_code(diagnostics⁅0⁆.unwrap()) != "template.lex.single_pipe" {
         panic("diagnostic code mismatch")
     }
 }
@@ -125,10 +125,10 @@ micro test_lex_single_pipe_is_illegal() -> unit {
 [test]
 micro test_lex_binary_source_rejected() -> unit {
     let outcome: DataOutcome<[DataToken<TemplateTokenKind>]> = template_lex(data_source_from_bytes([60, 37]), new_data_settings(64, 0))
-    if data_outcome_value(outcome).length() != 0 {
+    if data_outcome_value_or(outcome, []).length() != 0 {
         panic("binary source must produce an empty token stream")
     }
-    if data_diagnostic_code(data_outcome_diagnostics(outcome)⁅0⁆.unwrap()) != "template.lex.binary_source" {
+    if diagnostic_code(data_outcome_diagnostics(outcome)⁅0⁆.unwrap()) != "template.lex.binary_source" {
         panic("diagnostic code mismatch")
     }
 }

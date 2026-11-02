@@ -1,6 +1,7 @@
 namespace std.data.text.dejavu;
 
-using std.data::{DataDiagnostic, DataOutcome, DataSeverity, DataSource, DataToken, Error, Warning, data_outcome_with, new_data_diagnostic, new_data_span, new_data_token};
+using std.diagnostic::{Diagnostic, Error, Severity, Span, Warning, new_diagnostic, new_span};
+using std.data::{DataOutcome, DataSource, DataToken, data_outcome_partial, new_data_token};
 
 # 词法段：模板源文本 -> token 流。
 #
@@ -200,7 +201,7 @@ micro template_string_close_at(text: utf8, quote_start: usize, limit: usize) -> 
     let mut cursor: usize = quote_start + 1
     while cursor < limit {
         let c: char = text⁅cursor⁆
-        if c == '\\' {
+        if c == r'\' {
             cursor = cursor + 2
             continue
         }
@@ -221,7 +222,7 @@ class TemplateLexer {
     _text_start: usize
     _pending_trim: TemplateTrim
     _tokens: [DataToken<TemplateTokenKind>]
-    _diagnostics: [DataDiagnostic]
+    _diagnostics: [Diagnostic]
 }
 
 imply TemplateLexer {
@@ -245,7 +246,7 @@ imply TemplateLexer {
         return self._tokens
     }
 
-    micro diagnostics(self) -> [DataDiagnostic] {
+    micro diagnostics(self) -> [Diagnostic] {
         return self._diagnostics
     }
 
@@ -253,8 +254,8 @@ imply TemplateLexer {
         self._tokens = push(self._tokens, new_data_token(kind, start, stop))
     }
 
-    micro diagnose(mut self, code: utf8, severity: DataSeverity, message: utf8, start: usize, stop: usize) -> unit {
-        self._diagnostics = push(self._diagnostics, new_data_diagnostic(code, severity, message, new_data_span(start, stop)))
+    micro diagnose(mut self, code: utf8, severity: Severity, message: utf8, start: usize, stop: usize) -> unit {
+        self._diagnostics = push(self._diagnostics, new_diagnostic(code, severity, message, new_span(start, stop)))
     }
 
     # 冲刷 [self._text_start, stop) 的文本：头部应用上一标签的右 marker，
@@ -344,7 +345,7 @@ imply TemplateLexer {
         let mut found: bool = false
         while cursor < self._length {
             let c: char = self.char_at(cursor)
-            if c == '"' || c == '\'' {
+            if c == '"' || c == "'" {
                 let quote_close: usize = template_string_close_at(self._text, cursor, self._length)
                 if quote_close >= self._length {
                     cursor = self._length
@@ -405,7 +406,7 @@ imply TemplateLexer {
                 self.emit(CodeWhitespace, run_start, cursor)
                 continue
             }
-            if c == '"' || c == '\'' {
+            if c == '"' || c == "'" {
                 let quote_close: usize = template_string_close_at(self._text, cursor, stop)
                 if quote_close >= stop {
                     self.emit(String, cursor, stop)
@@ -674,10 +675,10 @@ micro template_lex(source: DataSource, settings: DataSettings) -> DataOutcome<[D
         case Text(payload):
             return template_lex_text(payload.text)
         case Bytes(payload):
-            let mut diagnostics: [DataDiagnostic] = []
-            diagnostics = push(diagnostics, new_data_diagnostic("template.lex.binary_source", Error, "模板是文本格式，不接受字节源", new_data_span(0, 0)))
+            let mut diagnostics: [Diagnostic] = []
+            diagnostics = push(diagnostics, new_diagnostic("template.lex.binary_source", Error, "模板是文本格式，不接受字节源", new_span(0, 0)))
             let empty: [DataToken<TemplateTokenKind>] = []
-            return data_outcome_with(empty, diagnostics)
+            return data_outcome_partial(empty, diagnostics)
     }
 }
 
@@ -685,5 +686,5 @@ micro template_lex(source: DataSource, settings: DataSettings) -> DataOutcome<[D
 micro template_lex_text(text: utf8) -> DataOutcome<[DataToken<TemplateTokenKind>]> {
     let mut lexer: TemplateLexer = TemplateLexer::new(text)
     lexer.scan()
-    return data_outcome_with(lexer.tokens(), lexer.diagnostics())
+    return data_outcome_partial(lexer.tokens(), lexer.diagnostics())
 }

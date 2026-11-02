@@ -1,8 +1,9 @@
 namespace std.data.text.dejavu;
 
-using std.data.text::{Binary, BreakNode, Call, CommentNode, ContinueNode, ExpressionMissing, ExpressionPoison, Identifier, IfNode, Index, InterpolationNode, LiteralFalse, LiteralNull, LiteralNumber, LiteralString, LiteralTrue, LoopNode, Member, MissingNode, ObjectLiteral, OpAdd, OpAnd, OpDivide, OpEqual, OpGreater, OpGreaterEqual, OpIdentity, OpIn, OpLess, OpLessEqual, OpMultiply, OpNegate, OpNot, OpNotEqual, OpOr, OpRemainder, OpSubtract, Pipe, PoisonNode, Test, TemplateBinaryOperator, TemplateDocument, TemplateExpression, TemplateIfBranch, TemplateNode, TemplateObjectEntry, TemplateUnaryOperator, TextNode, Unary};
+using std.data.text::{Binary, BreakNode, Call, CommentNode, ContinueNode, ExpressionMissing, ExpressionPoison, Identifier, IfNode, Index, InterpolationNode, LiteralFalse, LiteralNull, LiteralNumber, LiteralString, LiteralTrue, LoopNode, Member, MissingNode, ObjectLiteral, OpAdd, OpAnd, OpDivide, OpEqual, OpGreater, OpGreaterEqual, OpIdentity, OpIn, OpLess, OpLessEqual, OpMultiply, OpNegate, OpNot, OpNotEqual, OpOr, OpRemainder, OpSubtract, Pipe, PoisonNode, Test, TemplateBinaryOperator, TemplateDocument, TemplateExpression, TemplateIfBranch, TemplateImportName, TemplateNode, TemplateObjectEntry, TemplateParameter, TemplateUnaryOperator, TextNode, Unary};
 
-using std.data::{DataCstNode, DataDiagnostic, DataOutcome, DataSettings, DataSource, DataSpan, Error, data_cst_span, data_outcome_with, new_data_diagnostic, new_data_span};
+using std.diagnostic::{Diagnostic, Error, Span, new_diagnostic, new_span};
+using std.data::{DataCstNode, DataOutcome, DataSettings, DataSource, data_cst_span, data_outcome_partial};
 
 # 语义段：CST -> AST。唯一做语法到语义结构映射的一层。
 #
@@ -21,7 +22,7 @@ using std.data::{DataCstNode, DataDiagnostic, DataOutcome, DataSettings, DataSou
 class TemplateBuilder {
     _text: utf8
     _expressions: [TemplateExpression]
-    _diagnostics: [DataDiagnostic]
+    _diagnostics: [Diagnostic]
     _max_depth: usize
 }
 
@@ -35,7 +36,7 @@ imply TemplateBuilder {
         }
     }
 
-    micro diagnostics(self) -> [DataDiagnostic] {
+    micro diagnostics(self) -> [Diagnostic] {
         return self._diagnostics
     }
 
@@ -43,12 +44,12 @@ imply TemplateBuilder {
         return self._expressions
     }
 
-    micro diagnose(mut self, code: utf8, message: utf8, span: DataSpan) -> unit {
-        self._diagnostics = push(self._diagnostics, new_data_diagnostic(code, Error, message, span))
+    micro diagnose(mut self, code: utf8, message: utf8, span: Span) -> unit {
+        self._diagnostics = push(self._diagnostics, new_diagnostic(code, Error, message, span))
     }
 
-    micro lexeme(self, span: DataSpan) -> utf8 {
-        return self._text.slice(span.start, span.stop - span.start)
+    micro lexeme(self, span: Span) -> utf8 {
+        return self._text.slice(span.start, span.end - span.start)
     }
 
     micro add_expression(mut self, expression: TemplateExpression) -> usize {
@@ -87,7 +88,7 @@ imply TemplateBuilder {
         let leaf_kind: TemplateTokenKind? = template_cst_token_kind(child)
         if leaf_kind.is_some() {
             let kind: TemplateTokenKind = leaf_kind.unwrap()
-            let span: DataSpan = data_cst_span(child)
+            let span: Span = data_cst_span(child)
             if kind == Text {
                 return TextNode { text: self.lexeme(span) }
             }
@@ -140,7 +141,7 @@ imply TemplateBuilder {
             index = index + 1
         }
         # 结构性缺席：parser 必然已插入 Missing，此处兜底。
-        let span: DataSpan = data_cst_span(node)
+        let span: Span = data_cst_span(node)
         self.diagnose("template.build.missing_expression", "插值缺少表达式子树", span)
         return InterpolationNode { expression: self.add_expression(ExpressionMissing { reason: "missing interpolation expression" }) }
     }
@@ -309,7 +310,7 @@ imply TemplateBuilder {
 
     micro build_expression(mut self, node: DataCstNode<TemplateTokenKind>, depth: usize) -> usize {
         if depth > self._max_depth {
-            let span: DataSpan = data_cst_span(node)
+            let span: Span = data_cst_span(node)
             self.diagnose("template.build.max_depth_exceeded", "表达式嵌套深度超限", span)
             return self.add_expression(ExpressionPoison { reason: "max depth exceeded" })
         }
@@ -351,12 +352,12 @@ imply TemplateBuilder {
         if kind == NodeExpressionGroup {
             return self.build_group(node, depth)
         }
-        let span: DataSpan = data_cst_span(node)
+        let span: Span = data_cst_span(node)
         self.diagnose("template.build.unexpected_node", "表达式位出现非表达式节点", span)
         return self.add_expression(ExpressionPoison { reason: "unexpected node in expression" })
     }
 
-    micro build_expression_leaf(mut self, kind: TemplateTokenKind, span: DataSpan) -> usize {
+    micro build_expression_leaf(mut self, kind: TemplateTokenKind, span: Span) -> usize {
         if kind == String {
             return self.add_expression(LiteralString { value: self.unquote(span) })
         }
@@ -383,7 +384,7 @@ imply TemplateBuilder {
     }
 
     # 去引号：首尾码点均为同一引号时去掉；未闭合（词法已诊断）只去首引号。
-    micro unquote(self, span: DataSpan) -> utf8 {
+    micro unquote(self, span: Span) -> utf8 {
         let text: utf8 = self.lexeme(span)
         let length: usize = text.length()
         if length < 2 {
@@ -394,7 +395,7 @@ imply TemplateBuilder {
         }
         let first: char = text⁅0⁆
         let last: char = text⁅length - 1⁆
-        if (first == '"' || first == '\'') && last == first {
+        if (first == '"' || first == "'") && last == first {
             return text.slice(1, length - 2)
         }
         return text.slice(1, length - 1)
@@ -421,7 +422,7 @@ imply TemplateBuilder {
         let left: usize = self.build_expression(children⁅0⁆.unwrap(), depth + 1)
         let right: usize = self.build_expression(children⁅children.length() - 1⁆.unwrap(), depth + 1)
         if !operator_found {
-            let span: DataSpan = data_cst_span(node)
+            let span: Span = data_cst_span(node)
             self.diagnose("template.build.missing_operator", "二元表达式缺少运算符", span)
         }
         return self.add_expression(Binary { operator: operator, left: left, right: right })
@@ -482,7 +483,7 @@ imply TemplateBuilder {
             index = index + 1
         }
         if filter.length() == 0 {
-            let span: DataSpan = data_cst_span(node)
+            let span: Span = data_cst_span(node)
             self.diagnose("template.build.missing_filter", "管道缺少过滤器名", span)
         }
         return self.add_expression(Pipe { expression: source_expression, filter: filter, arguments: arguments })
@@ -851,11 +852,11 @@ micro template_build(node: DataCstNode<TemplateTokenKind>, source: DataSource, s
         case Text(payload):
             let mut builder: TemplateBuilder = TemplateBuilder::new(payload.text, settings.max_depth)
             let document: TemplateDocument = builder.build_document(node)
-            return data_outcome_with(document, builder.diagnostics())
+            return data_outcome_partial(document, builder.diagnostics())
         case Bytes(payload):
-            let mut diagnostics: [DataDiagnostic] = []
-            diagnostics = push(diagnostics, new_data_diagnostic("template.build.binary_source", Error, "模板是文本格式，不接受字节源", new_data_span(0, 0)))
+            let mut diagnostics: [Diagnostic] = []
+            diagnostics = push(diagnostics, new_diagnostic("template.build.binary_source", Error, "模板是文本格式，不接受字节源", new_span(0, 0)))
             let empty: TemplateDocument = TemplateDocument { body: [], expressions: [] }
-            return data_outcome_with(empty, diagnostics)
+            return data_outcome_partial(empty, diagnostics)
     }
 }
