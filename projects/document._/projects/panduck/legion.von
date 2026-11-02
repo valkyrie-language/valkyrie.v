@@ -1,0 +1,12 @@
+{
+    name: "panduck",
+    version: "workspace",
+    description: "Panduck conversion orchestration (Valkyrie)",
+    type: "library",
+    dependencies: { "std": { version: "workspace" }, "notedown": { version: "workspace" } },
+    build: [
+        {
+            target: "ovm"
+        }
+    ]
+}

@@ -15,6 +15,7 @@
 
 ## 当前状态
 
-规划中，先完成 workspace 与文档骨架。
+- `notedown`：文档语义 IR（Block / Inline / DocumentGraph / 校验）已入树，markdown → IR 链路待接 `std.data` 三段管线
+- `panduck` / `pandark` / `vutex`：骨架落位（`legion.von` + 边界文档），代码按各自 readme 的边界说明逐块开工
 
 文档入口：[documentation/pages/zh-hans/index.md](documentation/pages/zh-hans/index.md)

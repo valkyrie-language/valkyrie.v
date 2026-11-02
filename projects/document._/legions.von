@@ -2,7 +2,10 @@
     version: "1",
     name: "notedown-workspace",
     members: [
-        "projects/notedown"
+        "projects/notedown",
+        "projects/panduck",
+        "projects/pandark",
+        "projects/vutex"
     ],
     dependencies: {},
     workspace: {

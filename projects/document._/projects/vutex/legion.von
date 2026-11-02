@@ -1,0 +1,12 @@
+{
+    name: "vutex",
+    version: "workspace",
+    description: "VuTeX document typesetting and layout (Valkyrie)",
+    type: "library",
+    dependencies: { "std": { version: "workspace" }, "notedown": { version: "workspace" } },
+    build: [
+        {
+            target: "ovm"
+        }
+    ]
+}

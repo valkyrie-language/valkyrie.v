@@ -1,0 +1,12 @@
+{
+    name: "pandark",
+    version: "workspace",
+    description: "Pandark structured page extraction (Valkyrie)",
+    type: "library",
+    dependencies: { "std": { version: "workspace" }, "notedown": { version: "workspace" } },
+    build: [
+        {
+            target: "ovm"
+        }
+    ]
+}
