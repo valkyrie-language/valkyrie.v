@@ -30,7 +30,7 @@ micro data_text_digest(text: utf8) -> usize {
     let length: usize = text.length()
     let mut index: usize = 0
     while index < length {
-        let code_point: usize = (text.char_at(index).unwrap() as u32) as usize
+        let code_point: usize = (text⁅index⁆ as u32) as usize
         digest = digest * 33 + code_point
         index = index + 1
     }

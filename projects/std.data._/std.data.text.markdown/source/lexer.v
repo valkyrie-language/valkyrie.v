@@ -101,8 +101,9 @@ micro is_text_code_point(code_point: u32) -> bool {
     return true
 }
 
+# 0 基码点索引：`⁅ ⁆` 直接给出 `char`，转 `u32` 即码点值。
 micro code_point_at(source: utf8, index: usize) -> u32 {
-    return source.char_at(index).unwrap() as u32
+    return source⁅index⁆ as u32
 }
 
 micro markdown_lex(source: utf8) -> DataOutcome<[MarkdownToken]> {

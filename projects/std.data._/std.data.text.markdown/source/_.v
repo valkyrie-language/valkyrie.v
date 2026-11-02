@@ -6,28 +6,3 @@ structure TextSpan {
     start: usize
     stop: usize
 }
-
-structure MarkdownDiagnostic {
-    message: utf8
-    span: TextSpan
-}
-
-[tag(MarkdownParseResultKind)]
-unite MarkdownParseResult<T> {
-    [tag(0)]
-    [constructor]
-    Fine { value: T }
-    [tag(1)]
-    [constructor]
-    Fail { error: MarkdownDiagnostic }
-}
-
-micro new_markdown_diagnostic(message: utf8, start: usize, stop: usize) -> MarkdownDiagnostic {
-    return MarkdownDiagnostic {
-        message: message,
-        span: TextSpan {
-            start: start,
-            stop: stop
-        }
-    }
-}

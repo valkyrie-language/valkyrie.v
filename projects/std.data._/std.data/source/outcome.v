@@ -45,6 +45,14 @@ micro data_diagnostic_with_related(code: utf8, severity: DataSeverity, message: 
     }
 }
 
+micro data_diagnostic_code(diagnostic: DataDiagnostic) -> utf8 {
+    return diagnostic.code
+}
+
+micro data_diagnostic_span(diagnostic: DataDiagnostic) -> DataSpan {
+    return diagnostic.span
+}
+
 micro data_severity_is_error(severity: DataSeverity) -> bool {
     match severity {
         case Error:
