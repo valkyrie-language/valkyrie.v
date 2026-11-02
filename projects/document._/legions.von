@@ -8,6 +8,7 @@
         "projects/document.vector",
         "projects/document.plot",
         "projects/document.mermaid",
+        "projects/document.markdown",
         "projects/notedown",
         "projects/panduck",
         "projects/pandark",
