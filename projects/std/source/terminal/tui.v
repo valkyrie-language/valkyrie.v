@@ -163,7 +163,7 @@ imply TuiRuntime {
     micro binding_get(self, name: utf8) -> utf8 {
         let mut i: usize = 0
         while i < self.bindings.length() {
-            let b: Binding = self.bindings.get(i + 1).unwrap()
+            let b: Binding = self.bindings.get((i + 1) as isize).unwrap()
             if b.name == name {
                 return b.value
             }
@@ -189,9 +189,9 @@ imply TuiRuntime {
     micro binding_set(mut self, name: utf8, value: utf8) -> unit {
         let mut i: usize = 0
         while i < self.bindings.length() {
-            let b: Binding = self.bindings.get(i + 1).unwrap()
+            let b: Binding = self.bindings.get((i + 1) as isize).unwrap()
             if b.name == name {
-                self.bindings.set(i + 1, Binding { name: name, value: value })
+                self.bindings.set((i + 1) as isize, Binding { name: name, value: value })
                 return
             }
             i = i + 1
@@ -244,7 +244,7 @@ imply TuiRuntime {
             if remaining <= 0 {
                 break
             }
-            let w: Widget = self.roots.get(i + 1).unwrap()
+            let w: Widget = self.roots.get((i + 1) as isize).unwrap()
             let used: i32 = self.render_widget(w, row, 0, self.term_cols, remaining)
             row = row + used
             remaining = remaining - used
@@ -318,7 +318,7 @@ imply TuiRuntime {
             if remaining <= 0 {
                 break
             }
-            let child: Widget = children.get(i + 1).unwrap()
+            let child: Widget = children.get((i + 1) as isize).unwrap()
             let used: i32 = self.render_widget(child, cur_row, col, width, remaining)
             cur_row = cur_row + used
             remaining = remaining - used
@@ -341,7 +341,7 @@ imply TuiRuntime {
             if i as i32 == count - 1 {
                 actual_w = width - child_width * (count - 1)
             }
-            let child: Widget = children.get(i + 1).unwrap()
+            let child: Widget = children.get((i + 1) as isize).unwrap()
             let used: i32 = self.render_widget(child, row, cur_col, actual_w, height)
             cur_col = cur_col + actual_w
             if used > max_height {
@@ -421,7 +421,7 @@ imply TuiRuntime {
         if self.focus_index >= self.focusables.length() as i32 {
             self.focus_index = 0
         }
-        let f: Focusable = self.focusables.get(self.focus_index as usize + 1).unwrap()
+        let f: Focusable = self.focusables.get((self.focus_index as usize + 1) as isize).unwrap()
         move_to(f.row, f.col)
         set_reverse(1)
         if f.kind == 1 {
@@ -466,7 +466,7 @@ imply TuiRuntime {
                 i = i + 1
                 continue
             }
-            let f: Focusable = self.focusables.get(i + 1).unwrap()
+            let f: Focusable = self.focusables.get((i + 1) as isize).unwrap()
             let dr: i32 = f.row - cur.row
             let dc: i32 = f.col - cur.col
             let mut valid: bool = false
@@ -558,7 +558,7 @@ imply TuiRuntime {
         if self.focus_index >= self.focusables.length() as i32 {
             self.focus_index = 0
         }
-        let f: Focusable = self.focusables.get(self.focus_index as usize + 1).unwrap()
+        let f: Focusable = self.focusables.get((self.focus_index as usize + 1) as isize).unwrap()
         if f.kind == 2 {
             self.binding_toggle(f.binding)
             self.render()

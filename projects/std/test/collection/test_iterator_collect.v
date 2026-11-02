@@ -19,7 +19,7 @@ micro `test iterator collect to array`() {
         panic("iterator collect array length test failed")
     }
 
-    if result[0] != 2 || result[1] != 3 || result[2] != 4 {
+    if result⁅0⁆ != 2 || result⁅1⁆ != 3 || result⁅2⁆ != 4 {
         panic("iterator collect array value test failed")
     }
 }
@@ -60,7 +60,7 @@ micro `test iterator take count and collect`() {
         panic("iterator take collect length test failed")
     }
 
-    if result[0] != 1 || result[1] != 2 || result[2] != 3 {
+    if result⁅0⁆ != 1 || result⁅1⁆ != 2 || result⁅2⁆ != 3 {
         panic("iterator take collect value test failed")
     }
 }

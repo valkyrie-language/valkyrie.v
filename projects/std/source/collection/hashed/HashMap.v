@@ -72,6 +72,31 @@ imply HashMap<K, V>: Map<K, V> {
     }
 }
 
+# 序数合同：键即索引，`Index = K` 与 `isize` / `usize` 无关。
+# 只有位置/键访问语义、没有 0 基偏移计数语义，因此不实现 `Cardinal`；
+# 读写直接委托底层 `SwissTable`。命名 `get` 由 `Map` 提供（签名 `get(K)` 与本合同
+# 的抽象命名读路径完全同签名同语义，重复落在同一类型上会使调用解析并列），
+# `set` 则由本 impl 按 `[ ]=` 同源给出。
+imply HashMap<K, V>: std::operator::Ordinal {
+    type Index = K;
+    type Element = V;
+
+    # 键缺失（键不在映射中）返回 `None`，与 `Map::get` 同口径。
+    suffix `[ ]`(self, key: K): Option<V> {
+        return self._impl.get(key)
+    }
+
+    # 键写入即插入；键不存在时新增，存在时覆盖。
+    suffix `[ ]=`(mut self, key: K, value: V) {
+        let previous: Option<V> = self._impl.insert(key, value)
+    }
+
+    # 与 `[ ]=` 同源：命名方法形态，互为委托。
+    micro set(mut self, key: K, value: V) {
+        self[key] = value
+    }
+}
+
 imply HashMap<K, V> {
     [host_contract]
     micro new(capacity: usize): Self {

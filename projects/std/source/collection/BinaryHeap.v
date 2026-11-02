@@ -53,14 +53,14 @@ imply BinaryHeap<T> {
         let mut cursor: usize = index
         while cursor > 0 {
             let parent: usize = (cursor - 1) / 2
-            let current: T = self.data.get(cursor + 1).unwrap()
-            let parent_value: T = self.data.get(parent + 1).unwrap()
+            let current: T = self.data.get((cursor + 1) as isize).unwrap()
+            let parent_value: T = self.data.get((parent + 1) as isize).unwrap()
             if current >= parent_value {
                 break
             }
 
-            self.data.set(cursor + 1, parent_value)
-            self.data.set(parent + 1, current)
+            self.data.set((cursor + 1) as isize, parent_value)
+            self.data.set((parent + 1) as isize, current)
             cursor = parent
         }
     }
@@ -73,11 +73,11 @@ imply BinaryHeap<T> {
             let right: usize = 2 * cursor + 2
             let mut smallest: usize = cursor
 
-            if left < length && self.data.get(left + 1).unwrap() < self.data.get(smallest + 1).unwrap() {
+            if left < length && self.data.get((left + 1) as isize).unwrap() < self.data.get((smallest + 1) as isize).unwrap() {
                 smallest = left
             }
 
-            if right < length && self.data.get(right + 1).unwrap() < self.data.get(smallest + 1).unwrap() {
+            if right < length && self.data.get((right + 1) as isize).unwrap() < self.data.get((smallest + 1) as isize).unwrap() {
                 smallest = right
             }
 
@@ -85,9 +85,9 @@ imply BinaryHeap<T> {
                 break
             }
 
-            let current: T = self.data.get(cursor + 1).unwrap()
-            self.data.set(cursor + 1, self.data.get(smallest + 1).unwrap())
-            self.data.set(smallest + 1, current)
+            let current: T = self.data.get((cursor + 1) as isize).unwrap()
+            self.data.set((cursor + 1) as isize, self.data.get((smallest + 1) as isize).unwrap())
+            self.data.set((smallest + 1) as isize, current)
             cursor = smallest
         }
     }

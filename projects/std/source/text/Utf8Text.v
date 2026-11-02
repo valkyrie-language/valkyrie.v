@@ -377,6 +377,42 @@ imply Utf8Text: std::operator::Cardinal {
     }
 }
 
+# 1 基序数读写合同：`[ ]` / `[ ]=` 与同源的 `get` / `set`。
+# `Index` 取 `isize`（负数落入越界判定，读返回 `None`）；实际访问委托 `Cardinal`
+# 的 0 基标量偏移，本 impl 不重复存储访问逻辑。
+imply Utf8Text: std::operator::Ordinal {
+    type Index = isize;
+    type Element = char;
+
+    # 序数 1 基；越界读返回 `None`（位置缺失是可恢复常态）。
+    suffix `[ ]`(self, ordinal: isize): Option<char> {
+        if ordinal < 1 || ordinal > self.length() as isize {
+            return None
+        }
+
+        return Some(self.get_cardinal((ordinal - 1) as usize))
+    }
+
+    # 越界写结构化失败，不许静默丢弃写入。
+    suffix `[ ]=`(mut self, ordinal: isize, value: char): unit {
+        if ordinal < 1 || ordinal > self.length() as isize {
+            std::types::panic("Ordinal [ ]= 越界：序数超出 [1, 元素个数]")
+        }
+
+        self.set_cardinal((ordinal - 1) as usize, value)
+    }
+
+    # 与 `[ ]` 同源：命名方法形态，互为委托。
+    micro get(self, ordinal: isize): Option<char> {
+        return self[ordinal]
+    }
+
+    # 与 `[ ]=` 同源：命名方法形态，互为委托。
+    micro set(mut self, ordinal: isize, value: char): unit {
+        self[ordinal] = value
+    }
+}
+
 # `char`（u16 code unit）的 UTF-8 编码：1 至 3 字节。
 # 已知缺口（类型系统层）：`char` 是 u16 code unit，astral 标量（> U+FFFF）无法表示，
 # 本函数只需覆盖 u16 值域，不做代理对合成。

@@ -18,27 +18,6 @@ imply Array<T> {
         return self.length() == 0
     }
 
-    [host_contract]
-    micro `get`(self, ordinal: usize): Option<T> {
-        if ordinal == 0 || ordinal > self.length() {
-            return None
-        }
-
-        # 对外序数是 1 基（`first()` 取 1、`last()` 取 length），`std::collection::array::get` 是 0 基下标，必须减一。
-        return Some(std::collection::array::get(self, ordinal - 1))
-    }
-
-    [host_contract]
-    micro `set`(mut self, ordinal: usize, value: T): unit {
-        if ordinal == 0 || ordinal > self.length() {
-            return
-        }
-
-        # 默认体必须语义正确：对外序数 1 基，`std::collection::array::set` 是 0 基下标写入（与 `std::collection::array::get` 同形）。
-        # target provider 只能特化本合同，不能以空体替代实现。
-        std::collection::array::set(self, ordinal - 1, value)
-    }
-
     micro first(self): Option<T> {
         return self.get(1)
     }
@@ -49,7 +28,7 @@ imply Array<T> {
             return None
         }
 
-        return self.get(item_count)
+        return self.get(item_count as isize)
     }
 
     micro contains(self, value: T): bool
@@ -57,7 +36,7 @@ imply Array<T> {
     {
         let mut i: usize = 1
         while i <= self.length() {
-            if self.get(i).unwrap() == value {
+            if self.get(i as isize).unwrap() == value {
                 return true
             }
 
@@ -65,16 +44,6 @@ imply Array<T> {
         }
 
         return false
-    }
-
-    # Names must match HIR sugar (`suffix [ ]`).
-    # 序数算子 `[ ]` / `[ ]=` 是 `std::operator::Ordinal` 的过渡形态，随 Ordinal 接入迁移。
-    suffix `[ ]`(self, ordinal: usize): Option<T> {
-        return self.get(ordinal)
-    }
-
-    suffix `[ ]=`(mut self, ordinal: usize, value: T): unit {
-        self.set(ordinal, value)
     }
 }
 
@@ -109,6 +78,42 @@ imply Array<T>: std::operator::Cardinal {
     # 与 `⁅ ⁆=` 同源：命名方法形态，互为委托。
     micro set_cardinal(mut self, offset: usize, value: T): unit {
         self⁅offset⁆ = value
+    }
+}
+
+# 1 基序数读写合同：算子 `[ ]` / `[ ]=` 与同源的命名 `get` / `set` 全部由本 impl 提供。
+# `Index` 取 `isize`：负数落入越界判定，读返回 `None`；写越界结构化失败。
+# 实际访问一律落到 `Cardinal`（0 基偏移 `ordinal - 1`），本 impl 不重复存储访问逻辑。
+imply Array<T>: std::operator::Ordinal {
+    type Index = isize;
+    type Element = T;
+
+    # 序数 1 基；越界读返回 `None`（位置缺失是可恢复常态）。
+    suffix `[ ]`(self, ordinal: isize): Option<T> {
+        if ordinal < 1 || ordinal > self.length() as isize {
+            return None
+        }
+
+        return Some(self.get_cardinal((ordinal - 1) as usize))
+    }
+
+    # 越界写结构化失败，不许静默丢弃写入。
+    suffix `[ ]=`(mut self, ordinal: isize, value: T): unit {
+        if ordinal < 1 || ordinal > self.length() as isize {
+            std::types::panic("Ordinal [ ]= 越界：序数超出 [1, 元素个数]")
+        }
+
+        self.set_cardinal((ordinal - 1) as usize, value)
+    }
+
+    # 与 `[ ]` 同源：命名方法形态，互为委托。
+    micro get(self, ordinal: isize): Option<T> {
+        return self[ordinal]
+    }
+
+    # 与 `[ ]=` 同源：命名方法形态，互为委托。
+    micro set(mut self, ordinal: isize, value: T): unit {
+        self[ordinal] = value
     }
 }
 
@@ -215,7 +220,7 @@ imply ArrayIterator<T>: std::iterator::Iterator {
             return None
         }
 
-        let value: T = self._array.get(self._index + 1).unwrap()
+        let value: T = self._array.get((self._index + 1) as isize).unwrap()
         self._index = self._index + 1
         return Some(value)
     }

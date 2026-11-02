@@ -114,44 +114,15 @@ imply ArrayList<T> {
             return None
         }
 
-        return self.get(size)
-    }
-
-    [host_contract]
-    micro `get`(self, ordinal: usize): Option<T> {
-        if ordinal == 0 || ordinal > self.length() {
-            return None
-        }
-
-        # 合同 `std::collection::array::get` 是底层 0 基下标，ArrayList 的序数是 1 基，必须减一。
-        return Some(std::collection::array::get(self._items, ordinal - 1))
+        return self.get(size as isize)
     }
 
     # glue 需要裸元素；`get` 返回 `Option<T>` 不能复用。
     [host_contract]
     [library_glue(at)]
     micro at(self, ordinal: usize): T {
-        # 与 `get` 同口径：1 基序数，底层 0 基下标。
-        return std::collection::array::get(self._items, ordinal - 1)
-    }
-
-    [host_contract]
-    micro `set`(mut self, ordinal: usize, value: T): unit {
-        if ordinal == 0 || ordinal > self.length() {
-            return
-        }
-
-        self._items::[ordinal - 1] = value
-    }
-
-    # Names must match HIR sugar (`suffix [ ]`).
-    # 序数算子 `[ ]` / `[ ]=` 是 `std::operator::Ordinal` 的过渡形态，随 Ordinal 接入迁移。
-    suffix `[ ]`(self, ordinal: usize): Option<T> {
-        return self.get(ordinal)
-    }
-
-    suffix `[ ]=`(mut self, ordinal: usize, value: T): unit {
-        self.set(ordinal, value)
+        # 与 `get` 同口径：1 基序数，越界结构化失败（位置缺失在 glue 路径上不可恢复）。
+        return self[(ordinal as isize)].unwrap()
     }
 
     [host_contract]
@@ -199,6 +170,43 @@ imply ArrayList<T>: std::operator::Cardinal {
     # 与 `⁅ ⁆=` 同源：命名方法形态，互为委托。
     micro set_cardinal(mut self, offset: usize, value: T): unit {
         self⁅offset⁆ = value
+    }
+}
+
+# 1 基序数读写合同：算子 `[ ]` / `[ ]=` 与同源的命名 `get` / `set` 全部由本 impl 提供。
+# `Index` 取 `isize`：负数落入越界判定，读返回 `None`；写越界结构化失败。
+# 实际访问一律落到 `Cardinal`（0 基偏移 `ordinal - 1`），本 impl 不重复存储访问逻辑。
+# 类型自有 `usize` glue 方法 `at` 保留在固有 impl，同源委托算子。
+imply ArrayList<T>: std::operator::Ordinal {
+    type Index = isize;
+    type Element = T;
+
+    # 序数 1 基；越界读返回 `None`（位置缺失是可恢复常态）。
+    suffix `[ ]`(self, ordinal: isize): Option<T> {
+        if ordinal < 1 || ordinal > self.length() as isize {
+            return None
+        }
+
+        return Some(self.get_cardinal((ordinal - 1) as usize))
+    }
+
+    # 越界写结构化失败，不许静默丢弃写入。
+    suffix `[ ]=`(mut self, ordinal: isize, value: T): unit {
+        if ordinal < 1 || ordinal > self.length() as isize {
+            std::types::panic("Ordinal [ ]= 越界：序数超出 [1, 元素个数]")
+        }
+
+        self.set_cardinal((ordinal - 1) as usize, value)
+    }
+
+    # 与 `[ ]` 同源：命名方法形态，互为委托。
+    micro get(self, ordinal: isize): Option<T> {
+        return self[ordinal]
+    }
+
+    # 与 `[ ]=` 同源：命名方法形态，互为委托。
+    micro set(mut self, ordinal: isize, value: T): unit {
+        self[ordinal] = value
     }
 }
 
@@ -256,7 +264,7 @@ imply ArrayListIterator<T>: std::iterator::Iterator {
             return None
         }
 
-        let value: T = self._list.get(self._index + 1).unwrap()
+        let value: T = self._list.get((self._index + 1) as isize).unwrap()
         self._index = self._index + 1
         return Some(value)
     }
