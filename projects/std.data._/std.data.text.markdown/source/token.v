@@ -28,6 +28,18 @@ unite MarkdownTokenKind {
     Colon
 
     Illegal
+
+    # ── CST 容器类（语法段产出；token 类不变）──
+    NodeDocument
+    NodeHeading
+    NodeParagraph
+    NodeTable
+    NodeTableRow
+    NodeList
+    NodeListItem
+    NodeFence
+    NodeFootnoteDef
+    NodeThematicBreak
 }
 
 structure MarkdownToken {

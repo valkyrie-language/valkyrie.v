@@ -3,7 +3,7 @@
     version: "workspace",
     description: "Markdown 文本解析库 - 词法、无损 CST、语义 AST",
     type: "library",
-    dependencies: { "std": { version: "workspace" }
+    dependencies: { "std": { version: "workspace" }, "document": { version: "workspace" }, "document.render": { version: "workspace" }, "document.plot": { version: "workspace" }, "vutex": { version: "workspace" }, "std.data.text.mermaid": { version: "workspace" }, "std.data.text.tex": { version: "workspace" }
     },
     build: [
         { target: "ovm" },
