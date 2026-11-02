@@ -30,6 +30,26 @@ unite MathNode {
         superscript: [MathNode]
         subscript: [MathNode]
     }
+    [constructor]
+    MathMatrix {
+        rows: [[MathNode]]
+    }
+    [constructor]
+    MathBigOp {
+        symbol: utf8
+        under: [MathNode]
+        over: [MathNode]
+    }
+    [constructor]
+    MathDelimited {
+        left: utf8
+        right: utf8
+        content: [MathNode]
+    }
+    [constructor]
+    MathAligned {
+        rows: [[MathNode]]
+    }
 }
 
 micro math_symbol(text: utf8) -> MathNode {
@@ -62,5 +82,33 @@ micro math_scripts(base: MathNode, superscript: [MathNode], subscript: [MathNode
         base: [base],
         superscript: superscript,
         subscript: subscript
+    }
+}
+
+micro math_matrix(rows: [[MathNode]]) -> MathNode {
+    return MathMatrix {
+        rows: rows
+    }
+}
+
+micro math_big_op(symbol: utf8, under: [MathNode], over: [MathNode]) -> MathNode {
+    return MathBigOp {
+        symbol: symbol,
+        under: under,
+        over: over
+    }
+}
+
+micro math_delimited(left: utf8, right: utf8, content: [MathNode]) -> MathNode {
+    return MathDelimited {
+        left: left,
+        right: right,
+        content: content
+    }
+}
+
+micro math_aligned(rows: [[MathNode]]) -> MathNode {
+    return MathAligned {
+        rows: rows
     }
 }
