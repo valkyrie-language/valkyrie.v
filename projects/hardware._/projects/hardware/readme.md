@@ -58,8 +58,18 @@ source/
   整体待编译器类型身份链修复后落地，当前 API 面保持数值/布尔/聚合。
 - 函数值聚合字段：函数类型作为聚合字段时构造器不可解析；kernel 行为以 trait/参数传递，
   不存入聚合（std 的 `MapIterator` 同形字段亦按目标 gate）。
-- `[test]` 入口 unresolved 泛洪：`legion test` 的 test 入口语义组注入 prelude 后
-  `std.primitive` 算子候选不可见（`infix +`/`!=` unresolved，`[export]` 路径正常），
+- `[test]` 入口双重断链：test 语义组注入 prelude 后 `std.primitive` 算子候选不可见
+  （裸 `infix +`/`!=` 即 unresolved）；经 std 泛型（`push` → `array::new::<T>`）的开放实例
+  在 test 根下报「调用实例没有定义或显式导入合同」。两条在 `[export]` 路径均不存在；
   `test/` 套件暂不能作为执行证据，以消费方 `[export]` harness 实测替代。归属编译器侧。
+- OVM 运行时 host import 缺口：`nyar.host::i64_lt_u` 在 OVM 加载期不识别。std `push`
+  的 V 默认体含 `usize` 比较，凡经 `push` 重建数组的模块在 OVM 加载期被拒；本包循环一律
+  i64 计数 + `as usize`（所属面：`source/backend/cpu.v`），buffer/queue 层 OVM 执行因此暂停点。
+- OVM 函数值调度缺口：函数值间接调用在 OVM 后端构建期 panic（未绑定调用实例）。
+  `hardware_dispatch_map` 的 mapper 与 `Kernel.apply` 因此在 OVM 暂不可编译，
+  wasm lane 已实测通过；JVM/CLR 未在本批验收范围。
 - `let` 绑定 match 联合类型：`let x: T = match ...` 与控制流 join 上裸整数字面量
   （i32 原始身份 vs 名义身份）分裂被拒；本包代码一律 `return match` 且分支齐型。
+- OVM 枚举返回边界：`hardware_enumerate_devices` 在 OVM 真实执行返回
+  「expected i64, got null」——聚合数组字面量 `[device]` 的物化/返回边界缺口；
+  设备构造与 `hardware_device_equals` 在 OVM 已实测通过。
