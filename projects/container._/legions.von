@@ -4,7 +4,7 @@
     members: [
         "projects/container",
         "projects/container.oci",
-        "projects/container.docker"
+        "projects/docker"
     ],
     dependencies: {},
     workspace: {

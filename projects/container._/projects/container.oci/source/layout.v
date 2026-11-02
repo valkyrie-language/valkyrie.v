@@ -1,5 +1,6 @@
-namespace oci;
+namespace container.oci;
 
+using container::{Digest};
 using std.data::{DataDiagnostic, Error, new_data_diagnostic, new_data_span};
 using std.io::{directory_exists, file_exists, read_file_text};
 
