@@ -1,0 +1,14 @@
+{
+    name: "std.data.binary.codec",
+    version: "workspace",
+    description: "std.data 二进制字节编解码能力层 - 字节视图、偏移基址、端序与位级读取（独立于任何容器格式）",
+    type: "library",
+    dependencies: { "std.data": { version: "workspace" }
+    },
+    build: [
+        { target: "ovm" },
+        { target: "clr" },
+        { target: "jvm" },
+        { target: "wasm" }
+    ]
+}

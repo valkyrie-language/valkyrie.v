@@ -1,9 +1,11 @@
 namespace std.data.text.markdown;
 
+using std.data::{DataOutcome, data_outcome_value, data_outcome_diagnostics, data_diagnostic_code, data_diagnostic_span};
+
 [test]
 micro test_markdown_lex_covers_source_losslessly() -> unit {
     let source: utf8 = "# Title\n\nHello **world** `code` [link](target)\r\n> quote\n- item"
-    let tokens: [MarkdownToken] = markdown_lex(source)
+    let tokens: [MarkdownToken] = data_outcome_value(markdown_lex(source))
     let mut cursor: usize = 0
     let mut index: usize = 0
     while index < tokens.length() {
@@ -25,7 +27,7 @@ micro test_markdown_lex_covers_source_losslessly() -> unit {
 [test]
 micro test_markdown_lex_heading_tokens() -> unit {
     let source: utf8 = "# Title"
-    let tokens: [MarkdownToken] = markdown_lex(source)
+    let tokens: [MarkdownToken] = data_outcome_value(markdown_lex(source))
     if tokens.length() != 3 {
         panic("expected hash, whitespace and text tokens")
     }
@@ -43,7 +45,7 @@ micro test_markdown_lex_heading_tokens() -> unit {
 [test]
 micro test_markdown_lex_run_markers_and_unclosed_fence() -> unit {
     let source: utf8 = "```rust"
-    let tokens: [MarkdownToken] = markdown_lex(source)
+    let tokens: [MarkdownToken] = data_outcome_value(markdown_lex(source))
     if tokens.length() != 2 {
         panic("expected backtick run plus text")
     }
@@ -57,7 +59,7 @@ micro test_markdown_lex_run_markers_and_unclosed_fence() -> unit {
         panic("fence language text mismatch")
     }
     # 未闭合反引号：lexer 不报错，只产出 run token；未闭合判定是 parser 的事。
-    let open_tokens: [MarkdownToken] = markdown_lex("`` x")
+    let open_tokens: [MarkdownToken] = data_outcome_value(markdown_lex("`` x"))
     if open_tokens.length() != 3 || open_tokens⁅0⁆.kind != Backtick || open_tokens⁅0⁆.span.stop != 2 {
         panic("unclosed backtick run should still lex as run token")
     }
@@ -65,7 +67,7 @@ micro test_markdown_lex_run_markers_and_unclosed_fence() -> unit {
 
 [test]
 micro test_markdown_lex_newline_and_illegal() -> unit {
-    let tokens: [MarkdownToken] = markdown_lex("a\r\nb")
+    let tokens: [MarkdownToken] = data_outcome_value(markdown_lex("a\r\nb"))
     if tokens.length() != 3 {
         panic("expected text, newline and text tokens")
     }
@@ -73,11 +75,25 @@ micro test_markdown_lex_newline_and_illegal() -> unit {
         panic("crlf should be one newline token")
     }
     let bad_source: utf8 = std::text::Utf8Text::from_bytes([97, 1, 98])
-    let bad_tokens: [MarkdownToken] = markdown_lex(bad_source)
+    let bad_outcome: DataOutcome<[MarkdownToken]> = markdown_lex(bad_source)
+    let bad_tokens: [MarkdownToken] = data_outcome_value(bad_outcome)
     if bad_tokens.length() != 3 {
         panic("expected text, illegal and text tokens")
     }
     if bad_tokens⁅1⁆.kind != Illegal || bad_tokens⁅1⁆.span.start != 1 || bad_tokens⁅1⁆.span.stop != 2 {
         panic("illegal code point token mismatch")
+    }
+    # 错误容许：非法码位不中断扫描（后续 text token 仍在），且登记 Warning 诊断。
+    if bad_tokens⁅2⁆.kind != Text {
+        panic("scanning must continue after illegal code point")
+    }
+    if data_outcome_diagnostics(bad_outcome).length() != 1 {
+        panic("illegal code point must register exactly one diagnostic")
+    }
+    if !data_diagnostic_code(data_outcome_diagnostics(bad_outcome)⁅0⁆.unwrap()).equals("markdown.lex.illegal_code_point") {
+        panic("diagnostic code mismatch")
+    }
+    if data_diagnostic_span(data_outcome_diagnostics(bad_outcome)⁅0⁆.unwrap()).start != 1 {
+        panic("diagnostic span mismatch")
     }
 }

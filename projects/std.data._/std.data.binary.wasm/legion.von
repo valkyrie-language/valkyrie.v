@@ -3,7 +3,8 @@
     version: "workspace",
     description: "WASM 二进制编解码 — decode/encode .wasm（同构 std-data::binary::wasm）",
     type: "library",
-    dependencies: {},
+    dependencies: { "std.data": { version: "workspace" }
+    },
     build: [
         { target: "ovm" },
         { target: "clr" },
