@@ -13,7 +13,7 @@ OCI image-spec 规范化落地：spec 字段校验、schema 细节。通用概�
 
 ## 诊断码表（文法层，`std.data` 容许式）
 
-`oci.digest.*` 与 `container.digest.*` 同表（oci 委托核心，码随核心登记）；
+digest 诊断码统一为核心 `container.digest.*`（oci 委托核心，不另立码表）；
 `oci.layout.missing_root` / `missing_layout_file` / `unsupported_layout_version` / `missing_index` / `missing_blobs_directory` / `blob_missing`。
 
 ## 当前已知限制

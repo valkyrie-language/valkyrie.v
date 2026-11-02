@@ -56,7 +56,7 @@ micro test_digest_parse_missing_separator() -> unit {
     if !data_outcome_has_errors(outcome) {
         panic("missing separator must error")
     }
-    if !oci_digest_test_has_code(data_outcome_diagnostics(outcome), "oci.digest.missing_separator") {
+    if !oci_digest_test_has_code(data_outcome_diagnostics(outcome), "container.digest.missing_separator") {
         panic("must report missing_separator")
     }
 }
@@ -64,7 +64,7 @@ micro test_digest_parse_missing_separator() -> unit {
 [test]
 micro test_digest_parse_empty_algorithm() -> unit {
     let outcome = oci_digest_parse(":" + oci_digest_test_sha256_zeros())
-    if !oci_digest_test_has_code(data_outcome_diagnostics(outcome), "oci.digest.empty_algorithm") {
+    if !oci_digest_test_has_code(data_outcome_diagnostics(outcome), "container.digest.empty_algorithm") {
         panic("must report empty_algorithm")
     }
 }
@@ -72,7 +72,7 @@ micro test_digest_parse_empty_algorithm() -> unit {
 [test]
 micro test_digest_parse_empty_encoded() -> unit {
     let outcome = oci_digest_parse("sha256:")
-    if !oci_digest_test_has_code(data_outcome_diagnostics(outcome), "oci.digest.empty_encoded") {
+    if !oci_digest_test_has_code(data_outcome_diagnostics(outcome), "container.digest.empty_encoded") {
         panic("must report empty_encoded")
     }
 }
@@ -80,7 +80,7 @@ micro test_digest_parse_empty_encoded() -> unit {
 [test]
 micro test_digest_parse_bad_algorithm_character() -> unit {
     let outcome = oci_digest_parse("SHA256:" + oci_digest_test_sha256_zeros())
-    if !oci_digest_test_has_code(data_outcome_diagnostics(outcome), "oci.digest.bad_algorithm_character") {
+    if !oci_digest_test_has_code(data_outcome_diagnostics(outcome), "container.digest.bad_algorithm_character") {
         panic("uppercase algorithm must report bad_algorithm_character")
     }
 }
@@ -88,7 +88,7 @@ micro test_digest_parse_bad_algorithm_character() -> unit {
 [test]
 micro test_digest_parse_bad_encoded_character() -> unit {
     let outcome = oci_digest_parse("sha256:????????????????????????????????????????????????????????????????")
-    if !oci_digest_test_has_code(data_outcome_diagnostics(outcome), "oci.digest.bad_encoded_character") {
+    if !oci_digest_test_has_code(data_outcome_diagnostics(outcome), "container.digest.bad_encoded_character") {
         panic("non-charset encoded chars must report bad_encoded_character")
     }
 }
@@ -100,7 +100,7 @@ micro test_digest_validate_unsupported_algorithm() -> unit {
         panic("blake3 should pass generic grammar")
     }
     let validated = oci_digest_validate_registered(data_outcome_value_or(outcome, oci_digest_test_empty_digest()))
-    if !oci_digest_test_has_code(data_outcome_diagnostics(validated), "oci.digest.unsupported_algorithm") {
+    if !oci_digest_test_has_code(data_outcome_diagnostics(validated), "container.digest.unsupported_algorithm") {
         panic("unregistered algorithm must report unsupported_algorithm")
     }
 }
@@ -109,7 +109,7 @@ micro test_digest_validate_unsupported_algorithm() -> unit {
 micro test_digest_validate_bad_length() -> unit {
     let outcome = oci_digest_parse("sha256:0000")
     let validated = oci_digest_validate_registered(data_outcome_value_or(outcome, oci_digest_test_empty_digest()))
-    if !oci_digest_test_has_code(data_outcome_diagnostics(validated), "oci.digest.bad_encoded_length") {
+    if !oci_digest_test_has_code(data_outcome_diagnostics(validated), "container.digest.bad_encoded_length") {
         panic("wrong length must report bad_encoded_length")
     }
 }
@@ -127,7 +127,7 @@ micro test_digest_validate_uppercase_rejected() -> unit {
         panic("uppercase should pass generic grammar")
     }
     let validated = oci_digest_validate_registered(data_outcome_value_or(outcome, oci_digest_test_empty_digest()))
-    if !oci_digest_test_has_code(data_outcome_diagnostics(validated), "oci.digest.bad_encoded_case") {
+    if !oci_digest_test_has_code(data_outcome_diagnostics(validated), "container.digest.bad_encoded_case") {
         panic("uppercase must report bad_encoded_case")
     }
 }
