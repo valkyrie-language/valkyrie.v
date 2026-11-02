@@ -81,6 +81,10 @@ imply u32 {
     infix `>>`(self, rhs: Self): Self {
         self.bit_shift_right(rhs)
     }
+
+    bit_not(self): Self {
+        self.bit_xor(0xFFFFFFFF as u32)
+    }
 }
 
 [host_contract]

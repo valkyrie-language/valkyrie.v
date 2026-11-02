@@ -26,14 +26,6 @@ imply i8 {
         __i8_rem(self, rhs)
     }
 
-    infix `==`(self, rhs: Self): bool {
-        __i8_eq(self, rhs)
-    }
-
-    infix `!=`(self, rhs: Self): bool {
-        !(self == rhs)
-    }
-
     infix `<`(self, rhs: Self): bool {
         __i8_lt(self, rhs)
     }
@@ -93,6 +85,10 @@ imply i8 {
     infix `>>`(self, rhs: Self): Self {
         self.bit_shift_right(rhs)
     }
+
+    bit_not(self): Self {
+        self.bit_xor(-1)
+    }
 }
 
 # region i8 内部指令映射
@@ -135,3 +131,23 @@ private micro __i8_shl(lhs: i8, rhs: i8): i8
 [host_contract]
 private micro __i8_shr(lhs: i8, rhs: i8): i8
 # end region
+
+imply i8: Equal {
+    infix `==`(self, rhs: Self): bool {
+        return __i8_eq(self, rhs)
+    }
+
+    infix `!=`(self, rhs: Self): bool {
+        return !(self == rhs)
+    }
+}
+
+imply i8: Identical {
+    infix `===`(self, rhs: Self): bool {
+        return self == rhs
+    }
+
+    infix `=!=`(self, rhs: Self): bool {
+        return self != rhs
+    }
+}

@@ -85,6 +85,10 @@ imply i64 {
     infix `>>`(self, rhs: Self): Self {
         self.bit_shift_right(rhs)
     }
+
+    bit_not(self): Self {
+        self.bit_xor(-1)
+    }
 }
 
 imply i64: Equal {

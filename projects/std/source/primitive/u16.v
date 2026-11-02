@@ -26,14 +26,6 @@ imply u16 {
         __u16_rem(self, rhs)
     }
 
-    infix `==`(self, rhs: Self): bool {
-        __u16_eq(self, rhs)
-    }
-
-    infix `!=`(self, rhs: Self): bool {
-        !(self == rhs)
-    }
-
     infix `<`(self, rhs: Self): bool {
         __u16_lt(self, rhs)
     }
@@ -89,6 +81,10 @@ imply u16 {
     infix `>>`(self, rhs: Self): Self {
         self.bit_shift_right(rhs)
     }
+
+    bit_not(self): Self {
+        self.bit_xor(0xFFFF as u16)
+    }
 }
 
 # region u16 内部指令映射
@@ -128,3 +124,23 @@ private micro __u16_shl(lhs: u16, rhs: u16): u16
 [host_contract]
 private micro __u16_shr(lhs: u16, rhs: u16): u16
 # end region
+imply u16: Equal {
+    infix `==`(self, rhs: Self): bool {
+        return __u16_eq(self, rhs)
+    }
+
+    infix `!=`(self, rhs: Self): bool {
+        return !(self == rhs)
+    }
+}
+
+imply u16: Identical {
+    infix `===`(self, rhs: Self): bool {
+        return self == rhs
+    }
+
+    infix `=!=`(self, rhs: Self): bool {
+        return self != rhs
+    }
+}
+

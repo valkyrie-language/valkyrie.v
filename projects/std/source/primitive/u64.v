@@ -81,6 +81,11 @@ imply u64 {
     infix `>>`(self, rhs: Self): Self {
         self.bit_shift_right(rhs)
     }
+
+    # 全 1 掩码以 hi/lo 组合表达：编译器对超 i64 上限的 64 位十六进制字面量溢栈。
+    bit_not(self): Self {
+        self.bit_xor(((0xFFFFFFFF as u64) << 32) | (0xFFFFFFFF as u64))
+    }
 }
 
 [host_contract]
