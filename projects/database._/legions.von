@@ -1,7 +1,9 @@
 {
     version: "1",
     name: "database-workspace",
-    members: [],
+    members: [
+        "projects/yykv"
+    ],
     dependencies: {},
     workspace: {
         author: "Valkyrie Team",
