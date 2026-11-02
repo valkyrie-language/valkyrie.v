@@ -1,6 +1,6 @@
 # std.data.text.valkyrie
 
-Valkyrie 源码文本模型包：AST / CST / 词法 / `TextSpan`（同构自 Rust `std-data::text::valkyrie`）。
+Valkyrie 源码文本模型包：AST / CST / 词法 / `TextSpan`。
 
 ## 命名约定（硬约束）
 

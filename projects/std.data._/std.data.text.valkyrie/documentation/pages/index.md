@@ -1,6 +1,6 @@
 # std.data.text.valkyrie
 
-Valkyrie source-text models: AST / CST / lexer / `TextSpan` (isomorphic to Rust `std-data::text::valkyrie`).
+Valkyrie source-text models: AST / CST / lexer / `TextSpan`.
 
 ## Naming (hard rule)
 

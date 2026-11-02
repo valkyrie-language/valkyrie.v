@@ -20,13 +20,13 @@ using std.diagnostic::{Diagnostic, Error, Span, new_diagnostic, new_span};
 #
 # 数组访问纪律：本层一律用基数 `⁅ ⁆`（0 基、返回裸值）并自行做边界检查——
 # 序数 `[ ]`/`get`（1 基、`Option`）不用于连续下标访问，`Option` 不参与算术。
-# `⁅ ⁆` 越界 panic 路径当前各后端尚无 raise 目标合同（编译器缺口），本层所有
-# 访问点前置边界检查，动态上永不越界，不依赖 panic 行为兜底。
+# `⁅ ⁆` 越界 panic 路径当前各后端尚无 raise 目标合同，本层所有访问点前置
+# 边界检查，动态上永不越界，不依赖 panic 行为兜底。
 
 # 字节序：多字节整数读取时的字节排列。
 # 纯标记（二选一、无 payload）必须是 `enums`；`unite` 是带 payload 的可区分
-# 联合（引用语义），拿它当布尔/枚举是类型选择错误。裸 enums 的 match 在 MIR
-# lowering 缺 extractor 身份是编译器缺口，不为它改类型设计。
+# 联合（引用语义），拿它当布尔/枚举是类型选择错误。裸 enums 的 match 在当前
+# lowering 下无 extractor 身份可用，这是实现侧现状，不为它改类型设计。
 enums DataEndian {
     Little
     Big
