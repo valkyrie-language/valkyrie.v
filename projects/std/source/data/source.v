@@ -25,16 +25,9 @@ unite DataSource {
 # 内容指纹：djb2 同形的确定性折叠（usize 回绕），非加密、非安全边界。
 # 仅用于缓存命中判定与变更检测，同一格式同一输入类型内自洽即可。
 # 常数语义：5381 是 djb2 定义的种子，33 是 djb2 定义的乘数，均为算法自身常数。
+# 文本指纹按原始 UTF-8 字节折叠（显式 `bytes` 视图），与字节输入同一条实现。
 micro data_text_digest(text: utf8) -> usize {
-    let mut digest: usize = 5381
-    let length: usize = text.length()
-    let mut index: usize = 0
-    while index < length {
-        let code_point: usize = (text⁅index⁆ as u32) as usize
-        digest = digest * 33 + code_point
-        index = index + 1
-    }
-    return digest
+    return data_bytes_digest(text.bytes())
 }
 
 micro data_bytes_digest(bytes: [u8]) -> usize {

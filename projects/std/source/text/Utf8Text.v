@@ -30,13 +30,83 @@ imply Utf8Text {
         return self._repr
     }
 
-    # 按字节偏移读取单个字节；越界返回 `None`。
-    micro byte_at(self, index: usize): Option<u8> {
-        if index >= self._repr.length() {
-            return std::types::option_none::<u8>()
+    # 按字节偏移读取单个字节，O(1)；越界结构化失败。
+    # 调用方不查边界时用 `⁅ ⁆`（同源委托），需要 `Option` 语义时自行先比长度。
+    micro byte_at(self, offset: usize): u8 {
+        if offset >= self._repr.length() {
+            std::types::panic("Utf8Text byte_at 越界：offset 超出字节长度")
         }
 
-        return Some(self._repr⁅index⁆)
+        return self._repr⁅offset⁆
+    }
+
+    # `start`（字节偏移）处码点的 UTF-8 宽度（1..4），O(1)；越界返回 0。
+    # 低层解码原语，供 `character_at` 与迭代器共用（单一实现来源）。
+    micro char_width_at(self, start: usize) -> usize {
+        if start >= self._repr.length() {
+            return 0
+        }
+
+        let byte: u32 = self._repr⁅start⁆ as u32
+        if byte <= 0x7F {
+            return 1
+        }
+
+        if byte >= 0xC2 && byte <= 0xDF {
+            return 2
+        }
+
+        if byte >= 0xE0 && byte <= 0xEF {
+            return 3
+        }
+
+        if byte >= 0xF0 && byte <= 0xF4 {
+            return 4
+        }
+
+        return 1
+    }
+
+    # 按字节偏移解码一个码点为 `char`（`start` 必须是码点边界，由调用点保证），O(1)。
+    # 解码逻辑只此一份：`character_at`、序数合同与迭代器全部经由本方法。
+    micro character_at_byte(self, start: usize) -> char {
+        let first: u8 = self._repr⁅start⁆
+        let width: usize = self.char_width_at(start)
+        let mut code_point: u32 = 0
+        if width == 1 {
+            code_point = first as u32
+        }
+        else if width == 2 && start + 1 < self._repr.length() {
+            code_point = ((first as u32) & 0x1F) << 6
+            code_point = code_point | ((self._repr⁅start + 1⁆ as u32) & 0x3F)
+        }
+        else if width == 3 && start + 2 < self._repr.length() {
+            code_point = ((first as u32) & 0x0F) << 12
+            code_point = code_point | (((self._repr⁅start + 1⁆ as u32) & 0x3F) << 6)
+            code_point = code_point | ((self._repr⁅start + 2⁆ as u32) & 0x3F)
+        }
+        else if width == 4 && start + 3 < self._repr.length() {
+            code_point = ((first as u32) & 0x07) << 18
+            code_point = code_point | (((self._repr⁅start + 1⁆ as u32) & 0x3F) << 12)
+            code_point = code_point | (((self._repr⁅start + 2⁆ as u32) & 0x3F) << 6)
+            code_point = code_point | ((self._repr⁅start + 3⁆ as u32) & 0x3F)
+        }
+        else {
+            code_point = first as u32
+        }
+
+        return code_point as u16 as char
+    }
+
+    # 取第 `index` 个码点（0 基）解码为 `char`。定位需从头扫描，单次 O(n)——
+    # 只用于偶发单点查询；顺序扫描一律用 `byte_indicates` / `Utf8Iterator`
+    # （均摊 O(1) 前进），把 `character_at` 放进循环就是 O(n²)。
+    micro character_at(self, index: usize): char {
+        if index >= self.length() {
+            std::types::panic("Utf8Text character_at 越界：index 超出元素个数")
+        }
+
+        return self.character_at_byte(self.byte_offset(index))
     }
 
     # Unicode scalar count (std). CLR host_provider must not flatten to String.get_Length.
@@ -45,7 +115,7 @@ imply Utf8Text {
         let mut index: usize = 0
         let mut count: usize = 0
         while index < self._repr.length() {
-            let width: usize = self.char_width(index)
+            let width: usize = self.char_width_at(index)
             if width == 0 {
                 break
             }
@@ -189,36 +259,11 @@ imply Utf8Text {
         return Utf8Text { _repr: bytes }
     }
 
-    private micro char_width(self, index: usize) -> usize {
-        if index >= self._repr.length() {
-            return 0
-        }
-
-        let byte: u32 = self._repr⁅index⁆ as u32
-        if byte <= 0x7F {
-            return 1
-        }
-
-        if byte >= 0xC2 && byte <= 0xDF {
-            return 2
-        }
-
-        if byte >= 0xE0 && byte <= 0xEF {
-            return 3
-        }
-
-        if byte >= 0xF0 && byte <= 0xF4 {
-            return 4
-        }
-
-        return 1
-    }
-
     private micro byte_offset(self, char_index: usize) -> usize {
         let mut byte_index: usize = 0
         let mut current_char: usize = 0
         while byte_index < self._repr.length() && current_char < char_index {
-            let width: usize = self.char_width(byte_index)
+            let width: usize = self.char_width_at(byte_index)
             if width == 0 {
                 return byte_index
             }
@@ -316,100 +361,73 @@ imply Utf8Text {
     }
 }
 
-# 0 基码点索引读写合同：`⁅ ⁆` / `⁅ ⁆=` 与同源的 `get_cardinal` / `set_cardinal`。
-# 索引空间是 Unicode 标量（码点），与 `length` 的计数单位一致；字节访问走显式
-# `bytes` / `byte_at` 视图，不混入本合同。`char` 是 u16 code unit，astral 标量
-# 无法表示（类型系统层缺口，已记录）。元素个数由 `length` 承担，与本合同无关。
+# 0 基字节索引合同：`⁅ ⁆` ≡ `byte_at`（返回 `u8`），O(1)；写入同理按字节。
+# 字符（码点）访问不走本合同——走序数 `[ ]` / `character_at`。
+# `char` 是 u16 code unit，astral 标量无法表示（类型系统层限制）。
 imply Utf8Text: std::operator::Cardinal {
-    type Element = char;
+    type Element = u8;
 
-    # 0 基码点索引自动取值（UTF-8 解码为 `char`）；越界结构化失败（合同语义见 `std::operator::Cardinal`）。
-    # 解码逻辑只此一份：命名方法、序数合同与迭代器全部经由本算子或显式字节视图，无第二套访问路径。
-    suffix `⁅ ⁆`(self, offset: usize): char {
-        if offset >= self.length() {
-            std::types::panic("Utf8Text ⁅ ⁆ 越界：offset 超出元素个数")
-        }
-
-        let start: usize = self.byte_offset(offset)
-        let first: u8 = self._repr⁅start⁆
-        let width: usize = self.char_width(start)
-        let mut code_point: u32 = 0
-        if width == 1 {
-            code_point = first as u32
-        }
-        else if width == 2 && start + 1 < self._repr.length() {
-            code_point = ((first as u32) & 0x1F) << 6
-            code_point = code_point | ((self._repr⁅start + 1⁆ as u32) & 0x3F)
-        }
-        else if width == 3 && start + 2 < self._repr.length() {
-            code_point = ((first as u32) & 0x0F) << 12
-            code_point = code_point | (((self._repr⁅start + 1⁆ as u32) & 0x3F) << 6)
-            code_point = code_point | ((self._repr⁅start + 2⁆ as u32) & 0x3F)
-        }
-        else if width == 4 && start + 3 < self._repr.length() {
-            code_point = ((first as u32) & 0x07) << 18
-            code_point = code_point | (((self._repr⁅start + 1⁆ as u32) & 0x3F) << 12)
-            code_point = code_point | (((self._repr⁅start + 2⁆ as u32) & 0x3F) << 6)
-            code_point = code_point | ((self._repr⁅start + 3⁆ as u32) & 0x3F)
-        }
-        else {
-            code_point = first as u32
-        }
-
-        return code_point as u16 as char
+    # 0 基字节索引自动取值，O(1)；越界结构化失败（合同语义见 `std::operator::Cardinal`）。
+    # 单一实现来源：本算子只委托 `byte_at`，不内联第二份读取逻辑。
+    suffix `⁅ ⁆`(self, offset: usize): u8 {
+        return self.byte_at(offset)
     }
 
-    # 按标量写入 `char`：新旧字符的 UTF-8 宽度可以不同，经 slice/concat 重建内部存储；
-    # 替换一个标量为一个标量，元素个数不变，字节长度可变。越界结构化失败。
-    suffix `⁅ ⁆=`(mut self, offset: usize, value: char): unit {
-        let size: usize = self.length()
-        if offset >= size {
-            std::types::panic("Utf8Text ⁅ ⁆= 越界：offset 超出元素个数")
+    # 0 基字节写入，只改该字节不改长度；写进多字节码点内部会破坏编码，
+    # 属调用方责任（字节级合同是原始视图）。越界结构化失败。
+    suffix `⁅ ⁆=`(mut self, offset: usize, value: u8): unit {
+        if offset >= self._repr.length() {
+            std::types::panic("Utf8Text ⁅ ⁆= 越界：offset 超出字节长度")
         }
 
-        let head: utf8 = self.slice(0, offset)
-        let tail: utf8 = self.slice(offset + 1, size - offset - 1)
-        let replacement: utf8 = encode_char_as_utf8(value)
-        self._repr = (head + replacement + tail)._repr
+        self._repr⁅offset⁆ = value
     }
 
-    # 与 `⁅ ⁆` 同源：命名方法形态，互为委托，不维护第二套索引访问逻辑。
-    micro get_cardinal(self, offset: usize): char {
-        return self⁅offset⁆
+    # 与 `⁅ ⁆` 同源：命名方法形态，互为委托。
+    micro get_cardinal(self, offset: usize): u8 {
+        return self.byte_at(offset)
     }
 
     # 与 `⁅ ⁆=` 同源：命名方法形态，互为委托。
-    micro set_cardinal(mut self, offset: usize, value: char): unit {
+    micro set_cardinal(mut self, offset: usize, value: u8): unit {
         self⁅offset⁆ = value
     }
 }
 
-# 1 基序数读写合同：`[ ]` / `[ ]=` 与同源的 `get` / `set`，索引空间同为码点。
-# `Index` 取 `isize`（负数落入越界判定，读返回 `None`）；实际访问委托 `Cardinal`
-# 的 0 基码点偏移，本 impl 不重复存储访问逻辑。
+# 1 基序数读写合同：`[ ]` / `[ ]=` 与同源的 `get` / `set`，索引空间是 Unicode
+# 标量（码点）。定位第 index 个字符必须从头扫描，单次 O(n)——只用于偶发单点
+# 查询；顺序扫描一律用 `byte_indicates` / `Utf8Iterator`（均摊 O(1) 前进），
+# 把 `text[index]` 放进循环就是 O(n²)，热路径禁止。`Index` 取 `isize`（负数落入
+# 越界判定，读返回 `None`）；实际访问委托 `character_at`，本 impl 不内联解码。
 imply Utf8Text: std::operator::Ordinal {
     type Index = isize;
     type Element = char;
 
-    # 序数 1 基；越界读返回 `None`（位置缺失是可恢复常态）。
+    # 序数 1 基；越界读返回 `None`（位置缺失是可恢复常态）。单次 O(n)。
     suffix `[ ]`(self, ordinal: isize): Option<char> {
         if ordinal < 1 || ordinal > self.length() as isize {
             return None
         }
 
-        return Some(self.get_cardinal((ordinal - 1) as usize))
+        return Some(self.character_at((ordinal - 1) as usize))
     }
 
-    # 越界写结构化失败，不许静默丢弃写入。
+    # 按标量写入 `char`：新旧字符的 UTF-8 宽度可以不同，经 slice/concat 重建内部
+    # 存储；替换一个标量为一个标量，元素个数不变，字节长度可变。越界结构化失败。
     suffix `[ ]=`(mut self, ordinal: isize, value: char): unit {
         if ordinal < 1 || ordinal > self.length() as isize {
             std::types::panic("Ordinal [ ]= 越界：序数超出 [1, 元素个数]")
         }
 
-        self.set_cardinal((ordinal - 1) as usize, value)
+        let index: usize = (ordinal - 1) as usize
+        let size: usize = self.length()
+        let head: utf8 = self.slice(0, index)
+        let tail: utf8 = self.slice(index + 1, size - index - 1)
+        let replacement: utf8 = encode_char_as_utf8(value)
+        self._repr = (head + replacement + tail)._repr
     }
 
-    # 与 `[ ]` 同源：命名方法形态，互为委托。
+    # 与 `[ ]` 同源：命名方法形态，互为委托。单次 O(n)。
     micro get(self, ordinal: isize): Option<char> {
         return self[ordinal]
     }
@@ -420,8 +438,55 @@ imply Utf8Text: std::operator::Ordinal {
     }
 }
 
+# ── 线性扫描迭代器 ─────────────────────────────────────────────
+# `byte_indicates`：一次线性扫描同时产出字节偏移与字符（`(usize, char)` 二元组）。
+# 总代价 O(n)、均摊 O(1)/元素（解出字符后直接跳过整个码点，不重新从头扫）；
+# 产出的偏移是字节偏移，可直接用于 `slice` / `byte_at`。
+structure Utf8ByteIndicator {
+    text: &Utf8Text
+    offset: usize
+}
+
+micro byte_indicates(text: &Utf8Text) -> Utf8ByteIndicator {
+    return Utf8ByteIndicator { text: text, offset: 0 }
+}
+
+# 从指定字节偏移起步（切片/回退重扫用）：`offset` 必须落在码点边界；
+# 不在边界（指向续字节）或越出字节长度即结构化失败。
+micro byte_indicates_from(text: &Utf8Text, offset: usize) -> Utf8ByteIndicator {
+    if offset > text.byte_length() {
+        std::types::panic("byte_indicates_from 越界：offset 超出字节长度")
+    }
+    if offset < text.byte_length() {
+        let lead: u32 = text.byte_at(offset) as u32
+        if (lead & 0xC0) == 0x80 {
+            std::types::panic("byte_indicates_from 的 offset 不在码点边界")
+        }
+    }
+    return Utf8ByteIndicator { text: text, offset: offset }
+}
+
+imply Utf8ByteIndicator: std::iterator::Iterator {
+    type Item = (usize, char);
+
+    micro has_next(self) -> bool {
+        return self.offset < self.text.byte_length()
+    }
+
+    micro next(mut self) -> Option<(usize, char)> {
+        if !self.has_next() {
+            return None
+        }
+
+        let start: usize = self.offset
+        let ch: char = self.text.character_at_byte(start)
+        self.offset = self.offset + self.text.char_width_at(start)
+        return Some((start, ch))
+    }
+}
+
 # `char`（u16 code unit）的 UTF-8 编码：1 至 3 字节。
-# 已知缺口（类型系统层）：`char` 是 u16 code unit，astral 标量（> U+FFFF）无法表示，
+# 限制说明：`char` 是 u16 code unit，astral 标量（> U+FFFF）无法表示，
 # 本函数只需覆盖 u16 值域，不做代理对合成。
 micro encode_char_as_utf8(code: char): utf8 {
     let value: u32 = code as u32

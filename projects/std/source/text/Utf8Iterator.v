@@ -28,56 +28,10 @@ imply Utf8Iterator: std::iterator::Iterator {
             return std::types::option_none::<char>()
         }
 
-        # 迭代器内部按字节偏移推进（实现细节），读取经文本的显式字节视图；
-        # 对外产出按码点（`Item = char`），与 `Utf8Text` 的码点索引空间一致。
-        let repr: [u8] = self._text.bytes()
-        let first: u8 = repr⁅self._offset⁆
-        let width: usize = self.char_width(first)
-        let mut code_point: u32 = 0
-
-        if width == 1 {
-            code_point = first as u32
-        }
-        else if width == 2 && self._offset + 1 < repr.length() {
-            code_point = ((first as u32) & 0x1F) << 6
-            code_point = code_point | ((repr⁅self._offset + 1⁆ as u32) & 0x3F)
-        }
-        else if width == 3 && self._offset + 2 < repr.length() {
-            code_point = ((first as u32) & 0x0F) << 12
-            code_point = code_point | (((repr⁅self._offset + 1⁆ as u32) & 0x3F) << 6)
-            code_point = code_point | ((repr⁅self._offset + 2⁆ as u32) & 0x3F)
-        }
-        else if width == 4 && self._offset + 3 < repr.length() {
-            code_point = ((first as u32) & 0x07) << 18
-            code_point = code_point | (((repr⁅self._offset + 1⁆ as u32) & 0x3F) << 12)
-            code_point = code_point | (((repr⁅self._offset + 2⁆ as u32) & 0x3F) << 6)
-            code_point = code_point | ((repr⁅self._offset + 3⁆ as u32) & 0x3F)
-        }
-        else {
-            code_point = first as u32
-        }
-
-        self._offset = self._offset + width
-        return Some(code_point as u16 as char)
-    }
-
-    private micro char_width(self, first: u8) -> usize {
-        if first <= 0x7F {
-            return 1
-        }
-
-        if first >= 0xC2 && first <= 0xDF {
-            return 2
-        }
-
-        if first >= 0xE0 && first <= 0xEF {
-            return 3
-        }
-
-        if first >= 0xF0 && first <= 0xF4 {
-            return 4
-        }
-
-        return 1
+        # 迭代器内部按字节偏移推进（实现细节），解码委托 `Utf8Text` 的
+        # `character_at_byte` / `char_width_at`（单一实现来源，不内联第二份解码）。
+        let ch: char = self._text.character_at_byte(self._offset)
+        self._offset = self._offset + self._text.char_width_at(self._offset)
+        return Some(ch)
     }
 }
