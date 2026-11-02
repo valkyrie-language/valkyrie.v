@@ -6,6 +6,7 @@
         "projects/document.layout",
         "projects/document.render",
         "projects/document.vector",
+        "projects/document.plot",
         "projects/notedown",
         "projects/panduck",
         "projects/pandark",
