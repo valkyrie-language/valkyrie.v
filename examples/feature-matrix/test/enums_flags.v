@@ -1,6 +1,7 @@
 namespace feature_matrix.test;
 
 unite Option<T> {
+    [constructor]
     Some {
         value: T,
     },
