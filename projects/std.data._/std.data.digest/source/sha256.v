@@ -81,42 +81,42 @@ micro sha256_compress(mut lanes: [u64], block: [u8]) -> [u64] {
     let mut w: [u64] = []
     let mut fill: usize = 0
     while fill < 64 {
-        w = std::collection::push(w, 0 as u64)
+        w = w.push(0 as u64)
         fill = fill + 1
     }
     let mut t: usize = 0
     while t < 16 {
         let base: usize = t * 4
-        let b0: u64 = std::collection::array::get(block, base) as u64
-        let b1: u64 = std::collection::array::get(block, base + 1) as u64
-        let b2: u64 = std::collection::array::get(block, base + 2) as u64
-        let b3: u64 = std::collection::array::get(block, base + 3) as u64
-        std::collection::array::set(w, t, (b0 << 24) | (b1 << 16) | (b2 << 8) | b3)
+        let b0: u64 = block⁅base⁆ as u64
+        let b1: u64 = block⁅base + 1⁆ as u64
+        let b2: u64 = block⁅base + 2⁆ as u64
+        let b3: u64 = block⁅base + 3⁆ as u64
+        w⁅t⁆ = (b0 << 24) | (b1 << 16) | (b2 << 8) | b3
         t = t + 1
     }
     while t < 64 {
-        let word: u64 = (sha256_small_sigma1(std::collection::array::get(w, t - 2))
-            + std::collection::array::get(w, t - 7)
-            + sha256_small_sigma0(std::collection::array::get(w, t - 15))
-            + std::collection::array::get(w, t - 16)) & sha256_mask()
-        std::collection::array::set(w, t, word)
+        let word: u64 = (sha256_small_sigma1(w⁅t - 2⁆)
+            + w⁅t - 7⁆
+            + sha256_small_sigma0(w⁅t - 15⁆)
+            + w⁅t - 16⁆) & sha256_mask()
+        w⁅t⁆ = word
         t = t + 1
     }
 
-    let mut a: u64 = std::collection::array::get(lanes, 0)
-    let mut b: u64 = std::collection::array::get(lanes, 1)
-    let mut c: u64 = std::collection::array::get(lanes, 2)
-    let mut d: u64 = std::collection::array::get(lanes, 3)
-    let mut e: u64 = std::collection::array::get(lanes, 4)
-    let mut f: u64 = std::collection::array::get(lanes, 5)
-    let mut g: u64 = std::collection::array::get(lanes, 6)
-    let mut h: u64 = std::collection::array::get(lanes, 7)
+    let mut a: u64 = lanes⁅0⁆
+    let mut b: u64 = lanes⁅1⁆
+    let mut c: u64 = lanes⁅2⁆
+    let mut d: u64 = lanes⁅3⁆
+    let mut e: u64 = lanes⁅4⁆
+    let mut f: u64 = lanes⁅5⁆
+    let mut g: u64 = lanes⁅6⁆
+    let mut h: u64 = lanes⁅7⁆
 
     t = 0
     while t < 64 {
         let t1: u64 = (h + sha256_big_sigma1(e) + sha256_ch(e, f, g)
-            + std::collection::array::get(round_constants, t)
-            + std::collection::array::get(w, t)) & sha256_mask()
+            + round_constants⁅t⁆
+            + w⁅t⁆) & sha256_mask()
         let t2: u64 = (sha256_big_sigma0(a) + sha256_maj(a, b, c)) & sha256_mask()
         h = g
         g = f
@@ -129,24 +129,24 @@ micro sha256_compress(mut lanes: [u64], block: [u8]) -> [u64] {
         t = t + 1
     }
 
-    std::collection::array::set(lanes, 0, (a + std::collection::array::get(lanes, 0)) & sha256_mask())
-    std::collection::array::set(lanes, 1, (b + std::collection::array::get(lanes, 1)) & sha256_mask())
-    std::collection::array::set(lanes, 2, (c + std::collection::array::get(lanes, 2)) & sha256_mask())
-    std::collection::array::set(lanes, 3, (d + std::collection::array::get(lanes, 3)) & sha256_mask())
-    std::collection::array::set(lanes, 4, (e + std::collection::array::get(lanes, 4)) & sha256_mask())
-    std::collection::array::set(lanes, 5, (f + std::collection::array::get(lanes, 5)) & sha256_mask())
-    std::collection::array::set(lanes, 6, (g + std::collection::array::get(lanes, 6)) & sha256_mask())
-    std::collection::array::set(lanes, 7, (h + std::collection::array::get(lanes, 7)) & sha256_mask())
+    lanes⁅0⁆ = (a + lanes⁅0⁆) & sha256_mask()
+    lanes⁅1⁆ = (b + lanes⁅1⁆) & sha256_mask()
+    lanes⁅2⁆ = (c + lanes⁅2⁆) & sha256_mask()
+    lanes⁅3⁆ = (d + lanes⁅3⁆) & sha256_mask()
+    lanes⁅4⁆ = (e + lanes⁅4⁆) & sha256_mask()
+    lanes⁅5⁆ = (f + lanes⁅5⁆) & sha256_mask()
+    lanes⁅6⁆ = (g + lanes⁅6⁆) & sha256_mask()
+    lanes⁅7⁆ = (h + lanes⁅7⁆) & sha256_mask()
     return lanes
 }
 
 # 从 pending 头部摘出恰好一个 64 字节块，返回剩余 pending。
 micro sha256_take_block(mut pending: [u8]) -> [u8] {
     let mut rest: [u8] = []
-    let length: usize = std::collection::array::length(pending)
+    let length: usize = pending.length()
     let mut index: usize = 64
     while index < length {
-        rest = std::collection::push(rest, std::collection::array::get(pending, index))
+        rest = rest.push(pending⁅index⁆)
         index = index + 1
     }
     return rest
@@ -157,7 +157,7 @@ micro sha256_head_block(pending: [u8]) -> [u8] {
     let mut block: [u8] = []
     let mut index: usize = 0
     while index < 64 {
-        block = std::collection::push(block, std::collection::array::get(pending, index))
+        block = block.push(pending⁅index⁆)
         index = index + 1
     }
     return block
@@ -165,14 +165,14 @@ micro sha256_head_block(pending: [u8]) -> [u8] {
 
 imply DigestSha256 {
     micro update(mut self, bytes: [u8]) -> unit {
-        let length: usize = std::collection::array::length(bytes)
+        let length: usize = bytes.length()
         let mut index: usize = 0
         while index < length {
-            self.pending = std::collection::push(self.pending, std::collection::array::get(bytes, index))
+            self.pending = self.pending.push(bytes⁅index⁆)
             index = index + 1
         }
         self.total = self.total + length
-        while std::collection::array::length(self.pending) >= 64 {
+        while self.pending.length() >= 64 {
             self.lanes = sha256_compress(self.lanes, sha256_head_block(self.pending))
             self.pending = sha256_take_block(self.pending)
         }
@@ -181,17 +181,17 @@ imply DigestSha256 {
     # 读出 32 字节原始摘要。填充：0x80、清零至距块尾 8 字节、大端 64 位比特长度。
     micro finalize(mut self) -> [u8] {
         let bit_length: u64 = (self.total * 8) as u64
-        self.pending = std::collection::push(self.pending, 0x80 as u8)
-        while std::collection::array::length(self.pending) % 64 != 56 {
-            self.pending = std::collection::push(self.pending, 0 as u8)
+        self.pending = self.pending.push(0x80 as u8)
+        while self.pending.length() % 64 != 56 {
+            self.pending = self.pending.push(0 as u8)
         }
         let mut shift: usize = 0
         while shift < 8 {
             let lane: u64 = (bit_length >> (((7 - shift) * 8) as u64)) & 0xFF
-            self.pending = std::collection::push(self.pending, lane as u8)
+            self.pending = self.pending.push(lane as u8)
             shift = shift + 1
         }
-        while std::collection::array::length(self.pending) >= 64 {
+        while self.pending.length() >= 64 {
             self.lanes = sha256_compress(self.lanes, sha256_head_block(self.pending))
             self.pending = sha256_take_block(self.pending)
         }
@@ -199,11 +199,11 @@ imply DigestSha256 {
         let mut out: [u8] = []
         let mut lane_index: usize = 0
         while lane_index < 8 {
-            let word: u64 = std::collection::array::get(self.lanes, lane_index)
+            let word: u64 = self.lanes⁅lane_index⁆
             let mut byte_index: usize = 0
             while byte_index < 4 {
                 let byte: u64 = (word >> (((3 - byte_index) * 8) as u64)) & 0xFF
-                out = std::collection::push(out, byte as u8)
+                out = out.push(byte as u8)
                 byte_index = byte_index + 1
             }
             lane_index = lane_index + 1

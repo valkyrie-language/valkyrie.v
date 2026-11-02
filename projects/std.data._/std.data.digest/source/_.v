@@ -44,10 +44,10 @@ micro digest_crc32_new() -> DigestCrc32 {
 
 imply DigestCrc32 {
     micro update(mut self, bytes: [u8]) -> unit {
-        let length: usize = std::collection::array::length(bytes)
+        let length: usize = bytes.length()
         let mut index: usize = 0
         while index < length {
-            let byte: u64 = std::collection::array::get(bytes, index) as u64
+            let byte: u64 = bytes⁅index⁆ as u64
             self.crc = self.crc ^ byte
             let mut bit: usize = 0
             while bit < 8 {
@@ -91,10 +91,10 @@ micro digest_adler32_new() -> DigestAdler32 {
 
 imply DigestAdler32 {
     micro update(mut self, bytes: [u8]) -> unit {
-        let length: usize = std::collection::array::length(bytes)
+        let length: usize = bytes.length()
         let mut index: usize = 0
         while index < length {
-            let byte: u32 = std::collection::array::get(bytes, index) as u32
+            let byte: u32 = bytes⁅index⁆ as u32
             self.a = (self.a + byte) % adler32_modulus()
             self.b = (self.b + self.a) % adler32_modulus()
             index = index + 1

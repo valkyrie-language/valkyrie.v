@@ -31,15 +31,15 @@ micro abc_bytes() -> [u8] {
 
 # 逐字节判等：等长且每位一致。
 micro digest_bytes_equal(actual: [u8], expected: [u8]) -> bool {
-    let actual_length: usize = std::collection::array::length(actual)
-    let expected_length: usize = std::collection::array::length(expected)
+    let actual_length: usize = actual.length()
+    let expected_length: usize = expected.length()
     if actual_length != expected_length {
         return false
     }
     let mut index: usize = 0
     while index < expected_length {
-        let a: u64 = std::collection::array::get(actual, index) as u64
-        let b: u64 = std::collection::array::get(expected, index) as u64
+        let a: u64 = actual⁅index⁆ as u64
+        let b: u64 = expected⁅index⁆ as u64
         if a != b {
             return false
         }
@@ -79,7 +79,7 @@ micro test_sha256_streaming_across_blocks() -> unit {
     let mut input: [u8] = []
     let mut index: usize = 0
     while index < 200 {
-        input = std::collection::push(input, (index % 256) as u8)
+        input = input.push((index % 256) as u8)
         index = index + 1
     }
     let oneshot: [u8] = digest_sha256(input)
@@ -87,19 +87,19 @@ micro test_sha256_streaming_across_blocks() -> unit {
     let mut part: [u8] = []
     index = 0
     while index < 70 {
-        part = std::collection::push(part, std::collection::array::get(input, index))
+        part = part.push(input⁅index⁆)
         index = index + 1
     }
     state.update(part)
     part = []
     while index < 140 {
-        part = std::collection::push(part, std::collection::array::get(input, index))
+        part = part.push(input⁅index⁆)
         index = index + 1
     }
     state.update(part)
     part = []
     while index < 200 {
-        part = std::collection::push(part, std::collection::array::get(input, index))
+        part = part.push(input⁅index⁆)
         index = index + 1
     }
     state.update(part)
@@ -112,15 +112,15 @@ micro test_sha256_streaming_across_blocks() -> unit {
 [test]
 micro test_sha256_hex_output() -> unit {
     let hex: [u8] = digest_hex(digest_sha256(abc_bytes()))
-    if std::collection::array::length(hex) != 64 {
+    if hex.length() != 64 {
         std::types::panic("sha256 hex must be 64 ascii bytes")
     }
     # "ba7816bf" 前缀。
     let head: [u8] = [0x62 as u8, 0x61 as u8, 0x37 as u8, 0x38 as u8, 0x31 as u8, 0x36 as u8, 0x62 as u8, 0x66 as u8]
     let mut index: usize = 0
     while index < 8 {
-        let a: u64 = std::collection::array::get(hex, index) as u64
-        let b: u64 = std::collection::array::get(head, index) as u64
+        let a: u64 = hex⁅index⁆ as u64
+        let b: u64 = head⁅index⁆ as u64
         if a != b {
             std::types::panic("sha256 hex head mismatch")
         }

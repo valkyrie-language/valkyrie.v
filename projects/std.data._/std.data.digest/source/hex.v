@@ -14,12 +14,12 @@ micro digest_hex_digit(nibble: u64) -> u8 {
 
 micro digest_hex(bytes: [u8]) -> [u8] {
     let mut out: [u8] = []
-    let length: usize = std::collection::array::length(bytes)
+    let length: usize = bytes.length()
     let mut index: usize = 0
     while index < length {
-        let byte: u64 = std::collection::array::get(bytes, index) as u64
-        out = std::collection::push(out, digest_hex_digit(byte >> 4))
-        out = std::collection::push(out, digest_hex_digit(byte & 15))
+        let byte: u64 = bytes⁅index⁆ as u64
+        out = out.push(digest_hex_digit(byte >> 4))
+        out = out.push(digest_hex_digit(byte & 15))
         index = index + 1
     }
     return out
