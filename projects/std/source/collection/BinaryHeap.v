@@ -26,7 +26,7 @@ imply BinaryHeap<T> {
             return self.data.remove(1)
         }
 
-        let result: T = self.data.get(1)
+        let result: T = self.data.get(1).unwrap()
         let last: T = self.data.remove(length).unwrap()
         self.data.set(1, last)
         self.sift_down(0)
@@ -53,8 +53,8 @@ imply BinaryHeap<T> {
         let mut cursor: usize = index
         while cursor > 0 {
             let parent: usize = (cursor - 1) / 2
-            let current: T = self.data.get((cursor + 1) as isize)
-            let parent_value: T = self.data.get((parent + 1) as isize)
+            let current: T = self.data.get((cursor + 1) as isize).unwrap()
+            let parent_value: T = self.data.get((parent + 1) as isize).unwrap()
             if current >= parent_value {
                 break
             }
@@ -73,11 +73,11 @@ imply BinaryHeap<T> {
             let right: usize = 2 * cursor + 2
             let mut smallest: usize = cursor
 
-            if left < length && self.data.get((left + 1) as isize) < self.data.get((smallest + 1) as isize) {
+            if left < length && self.data.get((left + 1) as isize).unwrap() < self.data.get((smallest + 1) as isize).unwrap() {
                 smallest = left
             }
 
-            if right < length && self.data.get((right + 1) as isize) < self.data.get((smallest + 1) as isize) {
+            if right < length && self.data.get((right + 1) as isize).unwrap() < self.data.get((smallest + 1) as isize).unwrap() {
                 smallest = right
             }
 
@@ -85,8 +85,8 @@ imply BinaryHeap<T> {
                 break
             }
 
-            let current: T = self.data.get((cursor + 1) as isize)
-            self.data.set((cursor + 1) as isize, self.data.get((smallest + 1) as isize))
+            let current: T = self.data.get((cursor + 1) as isize).unwrap()
+            self.data.set((cursor + 1) as isize, self.data.get((smallest + 1) as isize).unwrap())
             self.data.set((smallest + 1) as isize, current)
             cursor = smallest
         }

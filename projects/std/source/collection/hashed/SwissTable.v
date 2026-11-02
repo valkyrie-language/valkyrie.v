@@ -41,7 +41,7 @@ imply SwissTable<K, V> {
             return None
         }
 
-        let entry: SwissTableEntry<K, V> = self._entries.get(slot.unwrap() + 1).unwrap()
+        let entry: SwissTableEntry<K, V> = self._entries.get(slot.unwrap() + 1).unwrap().unwrap()
         return Some(entry.value)
     }
 
@@ -60,9 +60,9 @@ imply SwissTable<K, V> {
         }
 
         let index: usize = slot.unwrap()
-        let state: i32 = self._states.get(index + 1)
+        let state: i32 = self._states.get(index + 1).unwrap()
         if state == 1 {
-            let old: SwissTableEntry<K, V> = self._entries.get(index + 1).unwrap()
+            let old: SwissTableEntry<K, V> = self._entries.get(index + 1).unwrap().unwrap()
             self._entries.set(index + 1, Some(SwissTableEntry {
                 key: key,
                 value: value,
@@ -94,7 +94,7 @@ imply SwissTable<K, V> {
         }
 
         let index: usize = slot.unwrap()
-        let entry: SwissTableEntry<K, V> = self._entries.get(index + 1).unwrap()
+        let entry: SwissTableEntry<K, V> = self._entries.get(index + 1).unwrap().unwrap()
         self._states.set(index + 1, 2)
         self._entries.set(index + 1, None)
         self._length = self._length - 1
@@ -111,8 +111,8 @@ imply SwissTable<K, V> {
         let mut result: ArrayList<K> = ArrayList::new(self._length)
         let mut index: usize = 0
         while index < self._states.length() {
-            if self._states.get(index + 1) == 1 {
-                let entry: SwissTableEntry<K, V> = self._entries.get(index + 1).unwrap()
+            if self._states.get(index + 1).unwrap() == 1 {
+                let entry: SwissTableEntry<K, V> = self._entries.get(index + 1).unwrap().unwrap()
                 result.push(entry.key)
             }
 
@@ -126,8 +126,8 @@ imply SwissTable<K, V> {
         let mut result: ArrayList<V> = ArrayList::new(self._length)
         let mut index: usize = 0
         while index < self._states.length() {
-            if self._states.get(index + 1) == 1 {
-                let entry: SwissTableEntry<K, V> = self._entries.get(index + 1).unwrap()
+            if self._states.get(index + 1).unwrap() == 1 {
+                let entry: SwissTableEntry<K, V> = self._entries.get(index + 1).unwrap().unwrap()
                 result.push(entry.value)
             }
 
@@ -165,8 +165,8 @@ imply SwissTable<K, V> {
     micro iterator(self, f: micro(K, V) -> unit) -> unit {
         let mut index: usize = 0
         while index < self._states.length() {
-            if self._states.get(index + 1) == 1 {
-                let entry: SwissTableEntry<K, V> = self._entries.get(index + 1).unwrap()
+            if self._states.get(index + 1).unwrap() == 1 {
+                let entry: SwissTableEntry<K, V> = self._entries.get(index + 1).unwrap().unwrap()
                 f(entry.key, entry.value)
             }
 
@@ -186,13 +186,13 @@ imply SwissTable<K, V> {
         let mut index: usize = key_hash % slot_count
         let mut probe: usize = 0
         while probe < slot_count {
-            let state: i32 = self._states.get(index + 1)
+            let state: i32 = self._states.get(index + 1).unwrap()
             if state == 0 {
                 return None
             }
 
             if state == 1 {
-                let entry: SwissTableEntry<K, V> = self._entries.get(index + 1).unwrap()
+                let entry: SwissTableEntry<K, V> = self._entries.get(index + 1).unwrap().unwrap()
                 if entry.hash == key_hash && entry.key == key {
                     return Some(index)
                 }
@@ -213,7 +213,7 @@ imply SwissTable<K, V> {
         let mut index: usize = key_hash % slot_count
         let mut probe: usize = 0
         while probe < slot_count {
-            let state: i32 = self._states.get(index + 1)
+            let state: i32 = self._states.get(index + 1).unwrap()
             if state == 0 {
                 if first_deleted.is_some() {
                     return first_deleted
@@ -229,7 +229,7 @@ imply SwissTable<K, V> {
             }
 
             if state == 1 {
-                let entry: SwissTableEntry<K, V> = self._entries.get(index + 1).unwrap()
+                let entry: SwissTableEntry<K, V> = self._entries.get(index + 1).unwrap().unwrap()
                 if entry.hash == key_hash && entry.key == key {
                     return Some(index)
                 }
@@ -273,8 +273,8 @@ imply SwissTable<K, V> {
 
         let mut cursor: usize = 0
         while cursor < old_states.length() {
-            if old_states.get(cursor + 1) == 1 {
-                let entry: SwissTableEntry<K, V> = old_entries.get(cursor + 1).unwrap()
+            if old_states.get(cursor + 1).unwrap() == 1 {
+                let entry: SwissTableEntry<K, V> = old_entries.get(cursor + 1).unwrap().unwrap()
                 self.insert(entry.key, entry.value)
             }
 

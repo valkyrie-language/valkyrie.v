@@ -153,23 +153,18 @@ imply Utf16Text: std::operator::Ordinal {
         self.set_cardinal((ordinal - 1) as usize, value)
     }
 
-    # 与 `[ ]` 同源：命名方法形态，互为委托。
-    micro get(self, ordinal: isize): char {
-        return self[ordinal]
-    }
-
-    # 与 `[ ]=` 同源：命名方法形态，互为委托。
-    micro set(mut self, ordinal: isize, value: char): unit {
-        self[ordinal] = value
-    }
-
-    # 可恢复形态：越界返回 `None`，不触发 panic。
-    micro try_get(self, ordinal: isize): Option<char> {
+    # 命名读路径：可恢复形态，越界返回 `None`。
+    micro get(self, ordinal: isize): Option<char> {
         if ordinal < 1 || ordinal > self.length() as isize {
             return None
         }
 
         return Some(self.get_cardinal((ordinal - 1) as usize))
+    }
+
+    # 与 `[ ]=` 同源：命名方法形态，互为委托。
+    micro set(mut self, ordinal: isize, value: char): unit {
+        self[ordinal] = value
     }
 }
 

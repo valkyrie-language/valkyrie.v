@@ -74,16 +74,20 @@ imply HashMap<K, V>: Map<K, V> {
 
 # 序数合同：键即索引，`Index = K` 与 `isize` / `usize` 无关。
 # 只有位置/键访问语义、没有 0 基偏移计数语义，因此不实现 `Cardinal`；
-# 读写直接委托底层 `SwissTable`。命名 `get` 由 `Map` 提供（签名 `get(K)` 与本合同
-# 的抽象命名读路径完全同签名同语义，重复落在同一类型上会使调用解析并列），
-# `set` 则由本 impl 按 `[ ]=` 同源给出。
+# 读写直接委托底层 `SwissTable`。命名 `get` 由 `Map` 提供（`get(K) -> Option<V>`
+# 与本合同的命名读路径同签名同语义，天然满足），`set` 由本 impl 按 `[ ]=` 同源给出。
 imply HashMap<K, V>: std::operator::Ordinal {
     type Index = K;
     type Element = V;
 
-    # 键缺失（键不在映射中）返回 `None`，与 `Map::get` 同口径。
-    suffix `[ ]`(self, key: K): Option<V> {
-        return self._impl.get(key)
+    # 键即索引的主访问：裸 `V`，键缺失结构化失败（panic）。
+    # 可恢复形态走 `Map::get`（`Option<V>`），不要靠 panic 判存在性。
+    suffix `[ ]`(self, key: K): V {
+        let result: Option<V> = self._impl.get(key)
+        if result.is_none() {
+            std::types::panic("HashMap [ ] 键缺失：主访问是裸值形态")
+        }
+        return result.unwrap()
     }
 
     # 键写入即插入；键不存在时新增，存在时覆盖。

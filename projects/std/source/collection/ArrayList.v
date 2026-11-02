@@ -105,7 +105,7 @@ imply ArrayList<T> {
     }
 
     micro first(self): Option<T> {
-        return self.try_get(1)
+        return self.get(1)
     }
 
     micro last(self): Option<T> {
@@ -114,10 +114,10 @@ imply ArrayList<T> {
             return None
         }
 
-        return self.try_get(size as isize)
+        return self.get(size as isize)
     }
 
-    # glue 需要裸元素；`get` 主访问即裸值，与 glue 同口径。
+    # glue 需要裸元素；下标 `[ ]` 即裸值，与 glue 同口径。
     [host_contract]
     [library_glue(at)]
     micro at(self, ordinal: usize): T {
@@ -200,23 +200,18 @@ imply ArrayList<T>: std::operator::Ordinal {
         self.set_cardinal((ordinal - 1) as usize, value)
     }
 
-    # 与 `[ ]` 同源：命名方法形态，互为委托。
-    micro get(self, ordinal: isize): T {
-        return self[ordinal]
-    }
-
-    # 与 `[ ]=` 同源：命名方法形态，互为委托。
-    micro set(mut self, ordinal: isize, value: T): unit {
-        self[ordinal] = value
-    }
-
-    # 可恢复形态：越界返回 `None`，不触发 panic。
-    micro try_get(self, ordinal: isize): Option<T> {
+    # 命名读路径：可恢复形态，越界返回 `None`（位置缺失由调用方处理）。
+    micro get(self, ordinal: isize): Option<T> {
         if ordinal < 1 || ordinal > self.length() as isize {
             return None
         }
 
         return Some(self.get_cardinal((ordinal - 1) as usize))
+    }
+
+    # 与 `[ ]=` 同源：命名方法形态，互为委托。
+    micro set(mut self, ordinal: isize, value: T): unit {
+        self[ordinal] = value
     }
 }
 
@@ -274,7 +269,7 @@ imply ArrayListIterator<T>: std::iterator::Iterator {
             return None
         }
 
-        let value: T = self._list.get((self._index + 1) as isize)
+        let value: T = self._list.get((self._index + 1) as isize).unwrap()
         self._index = self._index + 1
         return Some(value)
     }

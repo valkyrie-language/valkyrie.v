@@ -19,7 +19,7 @@ imply Array<T> {
     }
 
     micro first(self): Option<T> {
-        return self.try_get(1)
+        return self.get(1)
     }
 
     micro last(self): Option<T> {
@@ -28,7 +28,7 @@ imply Array<T> {
             return None
         }
 
-        return self.try_get(item_count as isize)
+        return self.get(item_count as isize)
     }
 
     micro contains(self, value: T): bool
@@ -36,7 +36,7 @@ imply Array<T> {
     {
         let mut i: usize = 1
         while i <= self.length() {
-            if self.get(i as isize) == value {
+            if self.get(i as isize).unwrap() == value {
                 return true
             }
 
@@ -114,23 +114,18 @@ imply Array<T>: std::operator::Ordinal {
         self.set_cardinal((ordinal - 1) as usize, value)
     }
 
-    # 与 `[ ]` 同源：命名方法形态，互为委托。
-    micro get(self, ordinal: isize): T {
-        return self[ordinal]
-    }
-
-    # 与 `[ ]=` 同源：命名方法形态，互为委托。
-    micro set(mut self, ordinal: isize, value: T): unit {
-        self[ordinal] = value
-    }
-
-    # 可恢复形态：越界返回 `None`，不触发 panic。
-    micro try_get(self, ordinal: isize): Option<T> {
+    # 命名读路径：可恢复形态，越界返回 `None`（位置缺失由调用方处理）。
+    micro get(self, ordinal: isize): Option<T> {
         if ordinal < 1 || ordinal > self.length() as isize {
             return None
         }
 
         return Some(self.get_cardinal((ordinal - 1) as usize))
+    }
+
+    # 与 `[ ]=` 同源：命名方法形态，互为委托。
+    micro set(mut self, ordinal: isize, value: T): unit {
+        self[ordinal] = value
     }
 }
 
@@ -237,7 +232,7 @@ imply ArrayIterator<T>: std::iterator::Iterator {
             return None
         }
 
-        let value: T = self._array.get((self._index + 1) as isize)
+        let value: T = self._array.get((self._index + 1) as isize).unwrap()
         self._index = self._index + 1
         return Some(value)
     }

@@ -21,11 +21,11 @@ micro quick_sort_range<T>(list: ArrayList<T>, lo: usize, hi: usize, cmp: micro(T
 }
 
 micro partition<T>(list: ArrayList<T>, lo: usize, hi: usize, cmp: micro(T, T) -> i32): usize {
-    let pivot: T = list.get((hi + 1) as isize)
+    let pivot: T = list.get((hi + 1) as isize).unwrap()
     let mut i: usize = lo
     let mut j: usize = lo
     while j < hi {
-        if cmp(list.get((j + 1) as isize), pivot) <= 0 {
+        if cmp(list.get((j + 1) as isize).unwrap(), pivot) <= 0 {
             swap(list, i, j)
             i = i + 1
         }
@@ -36,8 +36,8 @@ micro partition<T>(list: ArrayList<T>, lo: usize, hi: usize, cmp: micro(T, T) ->
 }
 
 micro swap<T>(list: ArrayList<T>, a: usize, b: usize): unit {
-    let tmp: T = list.get((a + 1) as isize)
-    let b_val: T = list.get((b + 1) as isize)
+    let tmp: T = list.get((a + 1) as isize).unwrap()
+    let b_val: T = list.get((b + 1) as isize).unwrap()
     list.set((a + 1) as isize, b_val)
     list.set((b + 1) as isize, tmp)
 }
@@ -64,34 +64,34 @@ micro merge<T>(list: ArrayList<T>, left: usize, mid: usize, right: usize, cmp: m
     let mut right_arr: ArrayList<T> = ArrayList::new(0)
     let mut i: usize = left
     while i <= mid {
-        left_arr.push(list.get((i + 1) as isize))
+        left_arr.push(list.get((i + 1) as isize).unwrap())
         i = i + 1
     }
     i = mid + 1
     while i <= right {
-        right_arr.push(list.get((i + 1) as isize))
+        right_arr.push(list.get((i + 1) as isize).unwrap())
         i = i + 1
     }
     let mut a: usize = 0
     let mut b: usize = 0
     let mut k: usize = left
     while a < left_arr.length() && b < right_arr.length() {
-        if cmp(left_arr.get((a + 1) as isize), right_arr.get((b + 1) as isize)) <= 0 {
-            list.set((k + 1) as isize, left_arr.get((a + 1) as isize))
+        if cmp(left_arr.get((a + 1) as isize).unwrap(), right_arr.get((b + 1) as isize).unwrap()) <= 0 {
+            list.set((k + 1) as isize, left_arr.get((a + 1) as isize).unwrap())
             a = a + 1
         } else {
-            list.set((k + 1) as isize, right_arr.get((b + 1) as isize))
+            list.set((k + 1) as isize, right_arr.get((b + 1) as isize).unwrap())
             b = b + 1
         }
         k = k + 1
     }
     while a < left_arr.length() {
-        list.set((k + 1) as isize, left_arr.get((a + 1) as isize))
+        list.set((k + 1) as isize, left_arr.get((a + 1) as isize).unwrap())
         a = a + 1
         k = k + 1
     }
     while b < right_arr.length() {
-        list.set((k + 1) as isize, right_arr.get((b + 1) as isize))
+        list.set((k + 1) as isize, right_arr.get((b + 1) as isize).unwrap())
         b = b + 1
         k = k + 1
     }
