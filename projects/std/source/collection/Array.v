@@ -45,6 +45,13 @@ imply Array<T> {
 
         return false
     }
+
+    # 函数式追加的方法形态：与同命名自由函数同源委托，返回新数组，调用方必须
+    # 写回返回值。语义与 `ArrayList.push` 一致（追加一个元素），只是不可变数组
+    # 的结果是值而不是就地修改。
+    micro push(self, value: T): Array<T> {
+        return push(self, value)
+    }
 }
 
 # 0 基索引读写合同：`⁅ ⁆` / `⁅ ⁆=` 与同源的 `get_cardinal` / `set_cardinal`；
