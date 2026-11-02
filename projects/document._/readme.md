@@ -28,4 +28,4 @@
 - `panduck` / `pandark` / `vutex`（tex 类产品位）全部冻结；tex 当前无代码，等核心稳定再迁
 - 产品级解析器必须把结果映射进核心模型，不许各自造树、不许各自渲染
 
-文档入口：[documentation/pages/zh-hans/index.md](documentation/pages/zh-hans/index.md)
+文档入口：[documentation/pages/zh-hans/index.md](documentation/pages/zh-hans/index.md)；设计文档：[核心合同](documentation/pages/zh-hans/core-contract.md)、[conformance 用例表](documentation/pages/zh-hans/conformance-matrix.md)、[notedown 迁移映射](documentation/pages/zh-hans/notedown-migration.md)
