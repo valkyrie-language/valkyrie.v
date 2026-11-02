@@ -1,24 +1,17 @@
 namespace media;
 
-using std.data::{DataOutcome, DataDiagnostic, Error, Warning, data_outcome_of, data_outcome_with, data_outcome_has_errors, data_outcome_diagnostics, data_outcome_value, new_data_diagnostic, new_data_span};
+using std.data::{DataOutcome, data_outcome_of, data_outcome_partial, data_outcome_failed, data_outcome_has_errors, data_outcome_diagnostics, data_outcome_value_or};
+using std.diagnostic::{Diagnostic, Error, Warning, new_diagnostic, new_span};
 using std.data.binary.codec::{DataByteCursor, Little, data_byte_cursor, data_byte_view_of};
 
 # bmp.v — BMP（Windows V3 / BITMAPINFOHEADER，24 位 BI_RGB）读写适配器。
 #
 # 布局：14 字节文件头 + 40 字节信息头 + 像素数据；像素行自底向上（正高度），
 # 行字节数按 4 字节对齐补零，像素按 BGR 字节序存储。
-# 本批范围：仅 24 位无压缩；top-down（负高度）与调色板位深结构化失败，不猜测解析。
+# 当前范围：仅 24 位无压缩；top-down（负高度）与调色板位深结构化失败，不猜测解析。
 #
-# 数值纪律：字节/字值一律先 `as u64` 再比较 —— wasm 后端无 u8/u16 比较 provider；
-# 右移经 u64 载道（wasm 后端 `u32 >> n` 缺陷）。
-
-micro media_bmp_magic_b() -> u64 {
-    return 66
-}
-
-micro media_bmp_magic_m() -> u64 {
-    return 77
-}
+# 字符纪律：魔数等 ASCII 记号用字符/字节字面量（'B'、b'B'）；字节/字段值一律
+# 先拓宽再比较；右移经 u64 载道（wasm 后端 `u32 >> n` 缺陷）。
 
 # 文件头 14 + 信息头 40。
 micro media_bmp_header_total_bytes() -> u64 {
@@ -88,26 +81,24 @@ micro media_internal_bmp_file_too_large(file_bytes: u64) -> bool {
 # 一次分配整个文件后按偏移填充；保留字段与行填充显式写零，不依赖分配初值。
 micro media_bmp_write(source: MediaRaster) -> DataOutcome<[u8]> {
     if !media_raster_is_consistent(source) {
-        return data_outcome_with(
-            [],
-            [new_data_diagnostic("media.image.buffer_length_mismatch", Error, "源栅格几何与像素缓冲长度不符", new_data_span(0, 0))]
+        return data_outcome_failed(
+            [new_diagnostic("media.image.buffer_length_mismatch", Error, "源栅格几何与像素缓冲长度不符", new_span(0, 0))]
         )
     }
-    let rgb: MediaRaster = data_outcome_value(media_color_convert(source, Rgb8))
+    let rgb: MediaRaster = data_outcome_value_or(media_color_convert(source, Rgb8), media_raster_empty_sentinel(Rgb8))
     let row_bytes: usize = media_internal_bmp_row_bytes(rgb.width)
     let padding: usize = media_internal_bmp_row_padding(rgb.width)
     let stride: u64 = ((row_bytes + padding) as u64) * (rgb.height as u64)
     let file_bytes: u64 = media_bmp_header_total_bytes() + stride
     if media_internal_bmp_file_too_large(file_bytes) {
-        return data_outcome_with(
-            [],
-            [new_data_diagnostic("media.image.too_large", Error, "BMP 文件字节总量超过 2^32-1 上限", new_data_span(0, 0))]
+        return data_outcome_failed(
+            [new_diagnostic("media.image.too_large", Error, "BMP 文件字节总量超过 2^32-1 上限", new_span(0, 0))]
         )
     }
     let out: [u8] = std::collection::array::new::<u8>(file_bytes as usize)
     # 魔数 'B' 'M'
-    std::collection::array::set(out, 0, media_bmp_magic_b() as u8)
-    std::collection::array::set(out, 1, media_bmp_magic_m() as u8)
+    std::collection::array::set(out, 0, b'B')
+    std::collection::array::set(out, 1, b'M')
     media_internal_write_u32_le(out, 2, file_bytes)
     media_internal_write_u32_le(out, 6, 0)
     media_internal_write_u32_le(out, 10, media_bmp_header_total_bytes())
@@ -145,105 +136,94 @@ micro media_bmp_write(source: MediaRaster) -> DataOutcome<[u8]> {
     return data_outcome_of(out)
 }
 
-# BMP 读入：头字段逐项校验；行数据截断保留已读前缀（其余为零初始化）。
+# BMP 读入：头字段逐项校验，硬性失败一律 `Failed`（无值）；
+# 行数据截断保留已读前缀（其余为零初始化）走 `Partial`。
 micro media_bmp_read(bytes: [u8]) -> DataOutcome<MediaRaster> {
-    let placeholder: MediaRaster = media_raster_placeholder(Rgb8)
     let mut cursor: DataByteCursor = data_byte_cursor(data_byte_view_of(bytes))
     if (cursor.remaining() as u64) < media_bmp_header_total_bytes() {
-        return data_outcome_with(
-            placeholder,
-            [new_data_diagnostic("media.bmp.truncated_header", Error, "输入不足 54 字节头", new_data_span(0, 0))]
+        return data_outcome_failed(
+            [new_diagnostic("media.bmp.truncated_header", Error, "输入不足 54 字节头", new_span(0, 0))]
         )
     }
-    let magic_b: u64 = data_outcome_value(cursor.read_u8()) as u64
-    let magic_m: u64 = data_outcome_value(cursor.read_u8()) as u64
-    if magic_b != media_bmp_magic_b() || magic_m != media_bmp_magic_m() {
-        return data_outcome_with(
-            placeholder,
-            [new_data_diagnostic("media.bmp.bad_magic", Error, "魔数非 BM", new_data_span(0, 2))]
+    let magic_b: u32 = data_outcome_value_or(cursor.read_u8(), 0 as u8) as u32
+    let magic_m: u32 = data_outcome_value_or(cursor.read_u8(), 0 as u8) as u32
+    if magic_b != 'B' || magic_m != 'M' {
+        return data_outcome_failed(
+            [new_diagnostic("media.bmp.bad_magic", Error, "魔数非 BM", new_span(0, 2))]
         )
     }
-    let declared_file_size: u64 = data_outcome_value(cursor.read_u32(Little)) as u64
-    let mut diagnostics: [DataDiagnostic] = []
+    let declared_file_size: u64 = data_outcome_value_or(cursor.read_u32(Little), 0 as u32) as u64
+    let mut diagnostics: [Diagnostic] = []
     if declared_file_size != std::collection::array::length(bytes) as u64 {
-        diagnostics = std::collection::push(diagnostics, new_data_diagnostic("media.bmp.size_field_mismatch", Warning, "文件长度与头声明不符", new_data_span(2, 6)))
+        diagnostics = std::collection::push(diagnostics, new_diagnostic("media.bmp.size_field_mismatch", Warning, "文件长度与头声明不符", new_span(2, 6)))
     }
     let skip_reserved: DataOutcome<usize> = cursor.skip(4)
     if data_outcome_has_errors(skip_reserved) {
-        return data_outcome_with(placeholder, data_outcome_diagnostics(skip_reserved))
+        return data_outcome_failed(data_outcome_diagnostics(skip_reserved))
     }
-    let data_offset: u64 = data_outcome_value(cursor.read_u32(Little)) as u64
-    let header_size: u64 = data_outcome_value(cursor.read_u32(Little)) as u64
+    let data_offset: u64 = data_outcome_value_or(cursor.read_u32(Little), 0 as u32) as u64
+    let header_size: u64 = data_outcome_value_or(cursor.read_u32(Little), 0 as u32) as u64
     if header_size != media_bmp_info_header_bytes() {
-        return data_outcome_with(
-            placeholder,
-            [new_data_diagnostic("media.bmp.unsupported_header_size", Error, "信息头尺寸不是 40（仅支持 BITMAPINFOHEADER）", new_data_span(14, 18))]
+        return data_outcome_failed(
+            [new_diagnostic("media.bmp.unsupported_header_size", Error, "信息头尺寸不是 40（仅支持 BITMAPINFOHEADER）", new_span(14, 18))]
         )
     }
-    let raw_width: u64 = data_outcome_value(cursor.read_u32(Little)) as u64
-    let raw_height: u64 = data_outcome_value(cursor.read_u32(Little)) as u64
+    let raw_width: u64 = data_outcome_value_or(cursor.read_u32(Little), 0 as u32) as u64
+    let raw_height: u64 = data_outcome_value_or(cursor.read_u32(Little), 0 as u32) as u64
     if raw_width == 0 || raw_height == 0 {
-        return data_outcome_with(
-            placeholder,
-            [new_data_diagnostic("media.bmp.invalid_dimension", Error, "宽度或高度为 0", new_data_span(18, 26))]
+        return data_outcome_failed(
+            [new_diagnostic("media.bmp.invalid_dimension", Error, "宽度或高度为 0", new_span(18, 26))]
         )
     }
     if raw_width >= media_bmp_signed_positive_limit() {
-        return data_outcome_with(
-            placeholder,
-            [new_data_diagnostic("media.bmp.invalid_dimension", Error, "宽度为负值（非法）", new_data_span(18, 22))]
+        return data_outcome_failed(
+            [new_diagnostic("media.bmp.invalid_dimension", Error, "宽度为负值（非法）", new_span(18, 22))]
         )
     }
     if raw_height >= media_bmp_signed_positive_limit() {
-        return data_outcome_with(
-            placeholder,
-            [new_data_diagnostic("media.bmp.unsupported_layout", Error, "高度为负（top-down 行序）未在第一批落地", new_data_span(22, 26))]
+        return data_outcome_failed(
+            [new_diagnostic("media.bmp.unsupported_layout", Error, "高度为负（top-down 行序）暂不提供", new_span(22, 26))]
         )
     }
-    let planes: u64 = data_outcome_value(cursor.read_u16(Little)) as u64
+    let planes: u64 = data_outcome_value_or(cursor.read_u16(Little), 0 as u16) as u64
     if planes != media_bmp_planes_expected() {
-        return data_outcome_with(
-            placeholder,
-            [new_data_diagnostic("media.bmp.bad_planes", Error, "planes 字段不是 1", new_data_span(26, 28))]
+        return data_outcome_failed(
+            [new_diagnostic("media.bmp.bad_planes", Error, "planes 字段不是 1", new_span(26, 28))]
         )
     }
-    let bit_depth: u64 = data_outcome_value(cursor.read_u16(Little)) as u64
+    let bit_depth: u64 = data_outcome_value_or(cursor.read_u16(Little), 0 as u16) as u64
     if bit_depth != media_bmp_bit_depth_supported() {
-        return data_outcome_with(
-            placeholder,
-            [new_data_diagnostic("media.bmp.unsupported_bit_depth", Error, "位深不是 24", new_data_span(28, 30))]
+        return data_outcome_failed(
+            [new_diagnostic("media.bmp.unsupported_bit_depth", Error, "位深不是 24", new_span(28, 30))]
         )
     }
-    let compression: u64 = data_outcome_value(cursor.read_u32(Little)) as u64
+    let compression: u64 = data_outcome_value_or(cursor.read_u32(Little), 0 as u32) as u64
     if compression != media_bmp_compression_rgb() {
-        return data_outcome_with(
-            placeholder,
-            [new_data_diagnostic("media.bmp.unsupported_compression", Error, "压缩方式不是 0（BI_RGB）", new_data_span(30, 34))]
+        return data_outcome_failed(
+            [new_diagnostic("media.bmp.unsupported_compression", Error, "压缩方式不是 0（BI_RGB）", new_span(30, 34))]
         )
     }
     # 信息头剩余字段（图像大小、分辨率、色表）无语义消费，跳到数据偏移。
     let skip_rest: DataOutcome<usize> = cursor.skip(18)
     if data_outcome_has_errors(skip_rest) {
-        return data_outcome_with(placeholder, data_outcome_diagnostics(skip_rest))
+        return data_outcome_failed(data_outcome_diagnostics(skip_rest))
     }
     if data_offset < media_bmp_header_total_bytes() {
-        return data_outcome_with(
-            placeholder,
-            [new_data_diagnostic("media.bmp.bad_data_offset", Error, "像素数据偏移小于头长", new_data_span(10, 14))]
+        return data_outcome_failed(
+            [new_diagnostic("media.bmp.bad_data_offset", Error, "像素数据偏移小于头长", new_span(10, 14))]
         )
     }
     let skip_gap: DataOutcome<usize> = cursor.skip((data_offset - media_bmp_header_total_bytes()) as usize)
     if data_outcome_has_errors(skip_gap) {
-        return data_outcome_with(
-            placeholder,
-            [new_data_diagnostic("media.bmp.bad_data_offset", Error, "像素数据偏移越出输入", new_data_span(10, 14))]
+        return data_outcome_failed(
+            [new_diagnostic("media.bmp.bad_data_offset", Error, "像素数据偏移越出输入", new_span(10, 14))]
         )
     }
     let raster_outcome: DataOutcome<MediaRaster> = media_raster(raw_width as usize, raw_height as usize, Rgb8)
     if data_outcome_has_errors(raster_outcome) {
-        return data_outcome_with(placeholder, data_outcome_diagnostics(raster_outcome))
+        return data_outcome_failed(data_outcome_diagnostics(raster_outcome))
     }
-    let raster: MediaRaster = data_outcome_value(raster_outcome)
+    let raster: MediaRaster = data_outcome_value_or(raster_outcome, media_raster_empty_sentinel(Rgb8))
     let row_bytes: usize = media_internal_bmp_row_bytes(raster.width)
     let padding: usize = media_internal_bmp_row_padding(raster.width)
     let mut file_row: usize = 0
@@ -259,9 +239,9 @@ micro media_bmp_read(bytes: [u8]) -> DataOutcome<MediaRaster> {
                 truncated = true
             } else {
                 let target_base: usize = (image_row * raster.width + pixel) * 3
-                std::collection::array::set(raster.pixels, target_base, data_outcome_value(red_step))
-                std::collection::array::set(raster.pixels, target_base + 1, data_outcome_value(green_step))
-                std::collection::array::set(raster.pixels, target_base + 2, data_outcome_value(blue_step))
+                std::collection::array::set(raster.pixels, target_base, data_outcome_value_or(red_step, 0 as u8))
+                std::collection::array::set(raster.pixels, target_base + 1, data_outcome_value_or(green_step, 0 as u8))
+                std::collection::array::set(raster.pixels, target_base + 2, data_outcome_value_or(blue_step, 0 as u8))
                 pixel = pixel + 1
             }
         }
@@ -275,7 +255,7 @@ micro media_bmp_read(bytes: [u8]) -> DataOutcome<MediaRaster> {
     }
     if truncated {
         let at: usize = cursor.position()
-        diagnostics = std::collection::push(diagnostics, new_data_diagnostic("media.bmp.truncated_raster", Error, "行数据（含 4 字节对齐填充）不足", new_data_span(at, at)))
+        diagnostics = std::collection::push(diagnostics, new_diagnostic("media.bmp.truncated_raster", Error, "行数据（含 4 字节对齐填充）不足", new_span(at, at)))
     }
-    return data_outcome_with(raster, diagnostics)
+    return data_outcome_partial(raster, diagnostics)
 }
