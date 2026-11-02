@@ -1,0 +1,21 @@
+{
+    name: "asgard.render.host.ovm",
+    description: "asgard.render 合同族的 OVM 宿主绑定 — 仅 SSG 构建宿主（feature `asgard.ssg.dom`）选用",
+    dependencies: {
+        "asgard.render": "workspace"
+    },
+    sdk_vendor: {
+        organization: "valkyrie",
+        host: "ovm",
+        kind: "distribution-default",
+        targets: ["ovm"]
+    },
+    build: [
+        {
+            target: "ovm"
+        }
+    ],
+    engines: {
+        vcc: "0.1.*"
+    }
+}

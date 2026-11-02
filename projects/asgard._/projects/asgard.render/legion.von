@@ -1,0 +1,10 @@
+{
+    name: "asgard.render",
+    version: "0.1.0.0",
+    description: "Asgard 渲染宿主合同 — DOM 树构建操作面（合同族声明，无目标绑定）",
+    license: "MIT",
+    type: "library",
+    target: "lib",
+    dependencies: {},
+    devDependencies: {}
+}

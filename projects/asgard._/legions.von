@@ -5,6 +5,8 @@
         "projects/asgard",
         "projects/asgard.bifrost",
         "projects/asgard.plotter",
+        "projects/asgard.render",
+        "projects/asgard.render.host.ovm",
         "projects/asgard.router",
         "projects/asgard.ui",
         "projects/asgard.ui.core",
