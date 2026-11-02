@@ -1,13 +1,19 @@
 namespace container.oci;
 
-using std.data::{data_diagnostic_code, data_outcome_diagnostics, data_outcome_has_errors, data_outcome_value};
+using std.data::{data_diagnostic_code, data_outcome_diagnostics, data_outcome_has_errors, data_outcome_value_or};
+using std.diagnostic::{Diagnostic};
 
 # 64 个 '0'，合法 sha256 编码段。
 micro oci_digest_test_sha256_zeros() -> utf8 {
     return "0000000000000000000000000000000000000000000000000000000000000000"
 }
 
-micro oci_digest_test_has_code(diagnostics: [DataDiagnostic], code: utf8) -> bool {
+# `data_outcome_value_or` 的回退值：解析失败时返回空 digest。
+micro oci_digest_test_empty_digest() -> Digest {
+    return Digest { algorithm: "", encoded: "" }
+}
+
+micro oci_digest_test_has_code(diagnostics: [Diagnostic], code: utf8) -> bool {
     let mut index: usize = 0
     while index < diagnostics.length() {
         if data_diagnostic_code(std::collection::array::get(diagnostics, index)) == code {
@@ -25,7 +31,7 @@ micro test_digest_parse_sha256_ok() -> unit {
     if data_outcome_has_errors(outcome) {
         panic("valid sha256 digest must parse without error")
     }
-    let digest = data_outcome_value(outcome)
+    let digest = data_outcome_value_or(outcome, oci_digest_test_empty_digest())
     if digest.algorithm != "sha256" {
         panic("algorithm mismatch")
     }
@@ -37,7 +43,7 @@ micro test_digest_parse_sha256_ok() -> unit {
 [test]
 micro test_digest_validate_registered_sha256_ok() -> unit {
     let outcome = oci_digest_parse("sha256:" + oci_digest_test_sha256_zeros())
-    let digest = data_outcome_value(outcome)
+    let digest = data_outcome_value_or(outcome, oci_digest_test_empty_digest())
     let validated = oci_digest_validate_registered(digest)
     if data_outcome_has_errors(validated) {
         panic("registered sha256 must validate")
@@ -93,7 +99,7 @@ micro test_digest_validate_unsupported_algorithm() -> unit {
     if data_outcome_has_errors(outcome) {
         panic("blake3 should pass generic grammar")
     }
-    let validated = oci_digest_validate_registered(data_outcome_value(outcome))
+    let validated = oci_digest_validate_registered(data_outcome_value_or(outcome, oci_digest_test_empty_digest()))
     if !oci_digest_test_has_code(data_outcome_diagnostics(validated), "oci.digest.unsupported_algorithm") {
         panic("unregistered algorithm must report unsupported_algorithm")
     }
@@ -102,7 +108,7 @@ micro test_digest_validate_unsupported_algorithm() -> unit {
 [test]
 micro test_digest_validate_bad_length() -> unit {
     let outcome = oci_digest_parse("sha256:0000")
-    let validated = oci_digest_validate_registered(data_outcome_value(outcome))
+    let validated = oci_digest_validate_registered(data_outcome_value_or(outcome, oci_digest_test_empty_digest()))
     if !oci_digest_test_has_code(data_outcome_diagnostics(validated), "oci.digest.bad_encoded_length") {
         panic("wrong length must report bad_encoded_length")
     }
@@ -120,7 +126,7 @@ micro test_digest_validate_uppercase_rejected() -> unit {
     if data_outcome_has_errors(outcome) {
         panic("uppercase should pass generic grammar")
     }
-    let validated = oci_digest_validate_registered(data_outcome_value(outcome))
+    let validated = oci_digest_validate_registered(data_outcome_value_or(outcome, oci_digest_test_empty_digest()))
     if !oci_digest_test_has_code(data_outcome_diagnostics(validated), "oci.digest.bad_encoded_case") {
         panic("uppercase must report bad_encoded_case")
     }
@@ -129,7 +135,7 @@ micro test_digest_validate_uppercase_rejected() -> unit {
 [test]
 micro test_digest_round_trip_and_blob_path() -> unit {
     let text: utf8 = "sha256:" + oci_digest_test_sha256_zeros()
-    let digest = data_outcome_value(oci_digest_parse(text))
+    let digest = data_outcome_value_or(oci_digest_parse(text), oci_digest_test_empty_digest())
     if oci_digest_to_string(digest) != text {
         panic("digest round-trip must equal input")
     }
@@ -141,8 +147,8 @@ micro test_digest_round_trip_and_blob_path() -> unit {
 
 [test]
 micro test_digest_equals() -> unit {
-    let left = data_outcome_value(oci_digest_parse("sha256:" + oci_digest_test_sha256_zeros()))
-    let right = data_outcome_value(oci_digest_parse("sha256:" + oci_digest_test_sha256_zeros()))
+    let left = data_outcome_value_or(oci_digest_parse("sha256:" + oci_digest_test_sha256_zeros()), oci_digest_test_empty_digest())
+    let right = data_outcome_value_or(oci_digest_parse("sha256:" + oci_digest_test_sha256_zeros()), oci_digest_test_empty_digest())
     if !oci_digest_equals(left, right) {
         panic("same digest must be equal")
     }

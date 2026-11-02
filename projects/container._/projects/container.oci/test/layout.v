@@ -1,8 +1,9 @@
 namespace container.oci;
 
 using std.data::{data_diagnostic_code};
+using std.diagnostic::{Diagnostic};
 
-micro oci_layout_test_has_code(diagnostics: [DataDiagnostic], code: utf8) -> bool {
+micro oci_layout_test_has_code(diagnostics: [Diagnostic], code: utf8) -> bool {
     let mut index: usize = 0
     while index < diagnostics.length() {
         if data_diagnostic_code(std::collection::array::get(diagnostics, index)) == code {

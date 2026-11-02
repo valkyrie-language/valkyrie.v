@@ -1,5 +1,7 @@
 namespace container;
 
+using std.data::{data_outcome_value_or};
+
 # Reference：镜像引用 `name[:tag][@digest]`，解析与规范化。
 #
 # 规范化规则：
@@ -53,7 +55,7 @@ micro container_reference_parse_digested(name: utf8, digest_text: utf8) -> Refer
     if !container_reference_is_valid_name(name) {
         container_failure_raise_reference("container.reference.invalid", "非法 name：" + name)
     }
-    let parsed = data_outcome_value(container_digest_parse(digest_text))
+    let parsed = data_outcome_value_or(container_digest_parse(digest_text), Digest { algorithm: "", encoded: "" })
     if parsed.algorithm.length() == 0 {
         container_failure_raise_reference("container.reference.invalid", "非法 digest：" + digest_text)
     }

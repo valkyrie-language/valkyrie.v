@@ -1,6 +1,6 @@
 namespace container.oci;
 
-using std.data::{data_outcome_value};
+using std.data::{data_outcome_value_or};
 
 micro oci_descriptor_test_sha256_zeros() -> utf8 {
     return "0000000000000000000000000000000000000000000000000000000000000000"
@@ -8,7 +8,7 @@ micro oci_descriptor_test_sha256_zeros() -> utf8 {
 
 [test]
 micro test_descriptor_construction_and_blob_path() -> unit {
-    let digest = data_outcome_value(oci_digest_parse("sha256:" + oci_descriptor_test_sha256_zeros()))
+    let digest = data_outcome_value_or(oci_digest_parse("sha256:" + oci_descriptor_test_sha256_zeros()), Digest { algorithm: "", encoded: "" })
     let descriptor: Descriptor = Descriptor {
         media_type: oci_media_type_layer_tar(),
         digest: digest,
@@ -40,7 +40,7 @@ micro test_descriptor_empty_detector() -> unit {
     if !oci_descriptor_is_empty(empty_descriptor) {
         panic("zero descriptor must be empty")
     }
-    let digest = data_outcome_value(oci_digest_parse("sha256:" + oci_descriptor_test_sha256_zeros()))
+    let digest = data_outcome_value_or(oci_digest_parse("sha256:" + oci_descriptor_test_sha256_zeros()), Digest { algorithm: "", encoded: "" })
     let non_empty: Descriptor = Descriptor {
         media_type: oci_media_type_layer_tar(),
         digest: digest,

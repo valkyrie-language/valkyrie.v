@@ -1,7 +1,7 @@
 namespace container.oci;
 
 using container::{Digest};
-using std.data::{DataDiagnostic, Error, new_data_diagnostic, new_data_span};
+using std.diagnostic::{Diagnostic, Error, new_diagnostic, new_span};
 using std.io::{directory_exists, file_exists, read_file_text};
 
 # OCI Image Layout（image-spec image-layout.md）目录结构校验。
@@ -42,46 +42,46 @@ micro oci_layout_blob_path(root: utf8, digest: Digest) -> utf8 {
 
 # 校验 image layout 结构：根目录、oci-layout、index.json、blobs/。
 # oci-layout 版本仅做字符串包含检查（不解析 JSON）。
-micro oci_layout_validate_structure(root: utf8) -> [DataDiagnostic] {
-    let mut diagnostics: [DataDiagnostic] = []
+micro oci_layout_validate_structure(root: utf8) -> [Diagnostic] {
+    let mut diagnostics: [Diagnostic] = []
 
     if !directory_exists(root) {
-        diagnostics = push(diagnostics, new_data_diagnostic("oci.layout.missing_root", Error, "image layout 根目录不存在", new_data_span(0, 0)))
+        diagnostics = push(diagnostics, new_diagnostic("oci.layout.missing_root", Error, "image layout 根目录不存在", new_span(0, 0)))
         return diagnostics
     }
 
     let marker_path: utf8 = oci_layout_marker_path(root)
     if !file_exists(marker_path) {
-        diagnostics = push(diagnostics, new_data_diagnostic("oci.layout.missing_layout_file", Error, "缺少 oci-layout 标记文件", new_data_span(0, 0)))
+        diagnostics = push(diagnostics, new_diagnostic("oci.layout.missing_layout_file", Error, "缺少 oci-layout 标记文件", new_span(0, 0)))
     } else {
         let marker_text: utf8 = read_file_text(marker_path)
         if !marker_text.index_of(oci_layout_version_supported()).is_some() {
-            diagnostics = push(diagnostics, new_data_diagnostic("oci.layout.unsupported_layout_version", Error, "oci-layout 版本不受支持", new_data_span(0, 0)))
+            diagnostics = push(diagnostics, new_diagnostic("oci.layout.unsupported_layout_version", Error, "oci-layout 版本不受支持", new_span(0, 0)))
         }
     }
 
     let index_path: utf8 = oci_layout_index_path(root)
     if !file_exists(index_path) {
-        diagnostics = push(diagnostics, new_data_diagnostic("oci.layout.missing_index", Error, "缺少 index.json", new_data_span(0, 0)))
+        diagnostics = push(diagnostics, new_diagnostic("oci.layout.missing_index", Error, "缺少 index.json", new_span(0, 0)))
     }
 
     let blobs_path: utf8 = oci_layout_blobs_path(root)
     if !directory_exists(blobs_path) {
-        diagnostics = push(diagnostics, new_data_diagnostic("oci.layout.missing_blobs_directory", Error, "缺少 blobs/ 目录", new_data_span(0, 0)))
+        diagnostics = push(diagnostics, new_diagnostic("oci.layout.missing_blobs_directory", Error, "缺少 blobs/ 目录", new_span(0, 0)))
     }
 
     return diagnostics
 }
 
 # 校验一组描述符引用的 blob 在 layout 中存在（不校验内容摘要一致性）。
-micro oci_layout_validate_descriptor_blobs(root: utf8, descriptors: [Descriptor]) -> [DataDiagnostic] {
-    let mut diagnostics: [DataDiagnostic] = []
+micro oci_layout_validate_descriptor_blobs(root: utf8, descriptors: [Descriptor]) -> [Diagnostic] {
+    let mut diagnostics: [Diagnostic] = []
     let mut index: usize = 0
     while index < descriptors.length() {
         let descriptor = std::collection::array::get(descriptors, index)
         let blob_path: utf8 = oci_layout_blob_path(root, descriptor.digest)
         if !file_exists(blob_path) {
-            diagnostics = push(diagnostics, new_data_diagnostic("oci.layout.blob_missing", Error, "描述符引用的 blob 不存在", new_data_span(0, 0)))
+            diagnostics = push(diagnostics, new_diagnostic("oci.layout.blob_missing", Error, "描述符引用的 blob 不存在", new_span(0, 0)))
         }
         index = index + 1
     }

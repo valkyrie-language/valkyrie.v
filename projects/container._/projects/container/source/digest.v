@@ -1,7 +1,8 @@
 namespace container;
 
-using std.data::{DataDiagnostic, DataOutcome, Error, data_outcome_with, new_data_diagnostic, new_data_span};
+using std.data::{DataOutcome, data_outcome_partial};
 using std.data.digest::{digest_sha256, digest_sha512, digest_hex_text};
+using std.diagnostic::{Diagnostic, Error, new_diagnostic, new_span};
 
 # 内容寻址摘要（算法无关，算法族可扩展）。
 #
@@ -109,13 +110,13 @@ micro container_digest_is_lower_hex(code_point: u32) -> bool {
 micro container_digest_parse(text: utf8) -> DataOutcome<Digest> {
     let length: usize = text.length()
     if length == 0 {
-        return data_outcome_with(
+        return data_outcome_partial(
             Digest { algorithm: "", encoded: "" },
-            [new_data_diagnostic("container.digest.empty", Error, "digest 不能为空", new_data_span(0, 0))]
+            [new_diagnostic("container.digest.empty", Error, "digest 不能为空", new_span(0, 0))]
         )
     }
 
-    let mut diagnostics: [DataDiagnostic] = []
+    let mut diagnostics: [Diagnostic] = []
     let mut separator: usize = 0
     let mut found: bool = false
     let mut index: usize = 0
@@ -129,17 +130,17 @@ micro container_digest_parse(text: utf8) -> DataOutcome<Digest> {
     }
 
     if !found {
-        diagnostics = push(diagnostics, new_data_diagnostic("container.digest.missing_separator", Error, "digest 缺少 `:` 分隔符", new_data_span(0, length)))
-        return data_outcome_with(Digest { algorithm: "", encoded: "" }, diagnostics)
+        diagnostics = push(diagnostics, new_diagnostic("container.digest.missing_separator", Error, "digest 缺少 `:` 分隔符", new_span(0, length)))
+        return data_outcome_partial(Digest { algorithm: "", encoded: "" }, diagnostics)
     }
 
     if separator == 0 {
-        diagnostics = push(diagnostics, new_data_diagnostic("container.digest.empty_algorithm", Error, "digest 算法段为空", new_data_span(0, 0)))
+        diagnostics = push(diagnostics, new_diagnostic("container.digest.empty_algorithm", Error, "digest 算法段为空", new_span(0, 0)))
     } else {
         index = 0
         while index < separator {
             if !container_digest_is_algorithm_char(text⁅index⁆ as u32) {
-                diagnostics = push(diagnostics, new_data_diagnostic("container.digest.bad_algorithm_character", Error, "digest 算法段含非法字符", new_data_span(index, index + 1)))
+                diagnostics = push(diagnostics, new_diagnostic("container.digest.bad_algorithm_character", Error, "digest 算法段含非法字符", new_span(index, index + 1)))
             }
             index = index + 1
         }
@@ -147,12 +148,12 @@ micro container_digest_parse(text: utf8) -> DataOutcome<Digest> {
 
     let encoded_start: usize = separator + 1
     if encoded_start >= length {
-        diagnostics = push(diagnostics, new_data_diagnostic("container.digest.empty_encoded", Error, "digest 编码段为空", new_data_span(length, length)))
+        diagnostics = push(diagnostics, new_diagnostic("container.digest.empty_encoded", Error, "digest 编码段为空", new_span(length, length)))
     } else {
         index = encoded_start
         while index < length {
             if !container_digest_is_generic_encoded_char(text⁅index⁆ as u32) {
-                diagnostics = push(diagnostics, new_data_diagnostic("container.digest.bad_encoded_character", Error, "digest 编码段含非法字符", new_data_span(index, index + 1)))
+                diagnostics = push(diagnostics, new_diagnostic("container.digest.bad_encoded_character", Error, "digest 编码段含非法字符", new_span(index, index + 1)))
             }
             index = index + 1
         }
@@ -160,7 +161,7 @@ micro container_digest_parse(text: utf8) -> DataOutcome<Digest> {
 
     let algorithm: utf8 = text.slice(0, separator)
     let encoded: utf8 = text.slice(encoded_start, length - encoded_start)
-    return data_outcome_with(Digest { algorithm: algorithm, encoded: encoded }, diagnostics)
+    return data_outcome_partial(Digest { algorithm: algorithm, encoded: encoded }, diagnostics)
 }
 
 # 注册层校验（错误容许）：算法已注册则查编码长度与 hex 约束；未注册给 unsupported。
@@ -170,7 +171,7 @@ micro container_digest_validate_registered(digest: Digest) -> DataOutcome<Digest
 }
 
 micro container_digest_validate_with_registrations(registrations: [DigestAlgorithmRegistration], digest: Digest) -> DataOutcome<Digest> {
-    let mut diagnostics: [DataDiagnostic] = []
+    let mut diagnostics: [Diagnostic] = []
     let algorithm: utf8 = digest.algorithm
     let encoded: utf8 = digest.encoded
     let encoded_length: usize = encoded.length()
@@ -178,26 +179,26 @@ micro container_digest_validate_with_registrations(registrations: [DigestAlgorit
     let found: Option<DigestAlgorithmRegistration> = container_digest_lookup_registration(registrations, algorithm)
     match found {
         case None: {
-            diagnostics = push(diagnostics, new_data_diagnostic("container.digest.unsupported_algorithm", Error, "未注册的摘要算法", new_data_span(0, algorithm.length())))
-            return data_outcome_with(digest, diagnostics)
+            diagnostics = push(diagnostics, new_diagnostic("container.digest.unsupported_algorithm", Error, "未注册的摘要算法", new_span(0, algorithm.length())))
+            return data_outcome_partial(digest, diagnostics)
         }
         case Some(registration): {
             if encoded_length != registration.encoded_length {
-                diagnostics = push(diagnostics, new_data_diagnostic("container.digest.bad_encoded_length", Error, "摘要编码段长度不符", new_data_span(0, encoded_length)))
+                diagnostics = push(diagnostics, new_diagnostic("container.digest.bad_encoded_length", Error, "摘要编码段长度不符", new_span(0, encoded_length)))
             }
             if registration.lower_hex {
                 let mut index: usize = 0
                 while index < encoded_length {
                     let code_point: u32 = encoded⁅index⁆ as u32
                     if code_point >= 'A' && code_point <= 'Z' {
-                        diagnostics = push(diagnostics, new_data_diagnostic("container.digest.bad_encoded_case", Error, "digest 编码段必须为小写", new_data_span(index, index + 1)))
+                        diagnostics = push(diagnostics, new_diagnostic("container.digest.bad_encoded_case", Error, "digest 编码段必须为小写", new_span(index, index + 1)))
                     } else if !container_digest_is_lower_hex(code_point) {
-                        diagnostics = push(diagnostics, new_data_diagnostic("container.digest.bad_encoded_character", Error, "digest 编码段含非法字符", new_data_span(index, index + 1)))
+                        diagnostics = push(diagnostics, new_diagnostic("container.digest.bad_encoded_character", Error, "digest 编码段含非法字符", new_span(index, index + 1)))
                     }
                     index = index + 1
                 }
             }
-            return data_outcome_with(digest, diagnostics)
+            return data_outcome_partial(digest, diagnostics)
         }
     }
 }
