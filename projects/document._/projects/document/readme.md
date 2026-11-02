@@ -20,4 +20,7 @@
 
 ## 当前状态
 
-骨架落位，模型按核心合同逐块开工。
+模型层已落地：Block/Inline 种类和与构造器、元数据与文档本体、`DocumentError`；
+`document_validate` 预检（B1-B6、I2-I3、脚注/参考文献键唯一，聚合不首错返回）；
+`document_index` / `document_toc` 编号 pass（R1-R8，跳级不补段）；
+`AssetTable` 资源表（R9-R12，纯函数无 IO）。正反测试齐备。
