@@ -1907,6 +1907,42 @@ micro template_kind_is_comma(kind: TemplateTokenKind) -> bool {
     }
 }
 
+micro template_kind_is_assign(kind: TemplateTokenKind) -> bool {
+    match kind {
+        case Assign:
+            return true
+        else:
+            return false
+    }
+}
+
+micro template_kind_is_keyword_as(kind: TemplateTokenKind) -> bool {
+    match kind {
+        case KeywordAs:
+            return true
+        else:
+            return false
+    }
+}
+
+# 参数默认值只许字面量 token。
+micro template_kind_is_literal_token(kind: TemplateTokenKind) -> bool {
+    match kind {
+        case String:
+            return true
+        case Number:
+            return true
+        case LiteralTrue:
+            return true
+        case LiteralFalse:
+            return true
+        case LiteralNull:
+            return true
+        else:
+            return false
+    }
+}
+
 # 三段合同入口：语法段。
 micro template_parse(tokens: [DataToken<TemplateTokenKind>], settings: DataSettings) -> DataOutcome<DataCstNode<TemplateTokenKind>> {
     let mut parser: TemplateParser = TemplateParser::new(tokens, settings.max_depth)

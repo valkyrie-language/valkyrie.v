@@ -1,6 +1,6 @@
 namespace std.data.text.dejavu;
 
-using std.data.text::{Binary, BreakNode, Call, CommentNode, ContinueNode, ExpressionMissing, ExpressionPoison, Identifier, IfNode, Index, InterpolationNode, LiteralFalse, LiteralNull, LiteralNumber, LiteralString, LiteralTrue, LoopNode, Member, MissingNode, ObjectLiteral, OpAdd, OpAnd, OpDivide, OpEqual, OpGreater, OpGreaterEqual, OpIdentity, OpIn, OpLess, OpLessEqual, OpMultiply, OpNegate, OpNot, OpNotEqual, OpOr, OpRemainder, OpSubtract, Pipe, PoisonNode, Test, TemplateBinaryOperator, TemplateDocument, TemplateExpression, TemplateIfBranch, TemplateImportName, TemplateNode, TemplateObjectEntry, TemplateParameter, TemplateUnaryOperator, TextNode, Unary};
+using std.data.text::{Binary, BlockNode, BreakNode, Call, CallNode, CommentNode, ContinueNode, ExpressionMissing, ExpressionPoison, ExtendsNode, Identifier, IfNode, ImportNode, IncludeNode, Index, InterpolationNode, LiteralFalse, LiteralNull, LiteralNumber, LiteralString, LiteralTrue, LoopNode, MacroNode, Member, MissingNode, ObjectLiteral, OpAdd, OpAnd, OpDivide, OpEqual, OpGreater, OpGreaterEqual, OpIdentity, OpIn, OpLess, OpLessEqual, OpMultiply, OpNegate, OpNot, OpNotEqual, OpOr, OpRemainder, OpSubtract, PartialNode, Pipe, PoisonNode, SuperNode, Test, TemplateBinaryOperator, TemplateDocument, TemplateExpression, TemplateIfBranch, TemplateImportName, TemplateNode, TemplateObjectEntry, TemplateParameter, TemplateUnaryOperator, TextNode, Unary};
 
 using std.diagnostic::{Diagnostic, Error, Span, new_diagnostic, new_span};
 using std.data::{DataCstNode, DataOutcome, DataSettings, DataSource, data_cst_span, data_outcome_partial};
@@ -14,10 +14,17 @@ using std.data::{DataCstNode, DataOutcome, DataSettings, DataSource, data_cst_sp
 # 恢复语义：CST 的 `Missing`/`Poison` 子树如实映射为 AST 的 `MissingNode`/`PoisonNode`
 # （表达式侧为 `ExpressionMissing`/`ExpressionPoison`），不擅自修补语义；
 # 诊断透传 parser 结果并可补充（本段补充 `template.build.duplicate_key`、
+# `template.build.duplicate_parameter`、`template.build.caller_reserved`、
 # `template.build.max_depth_exceeded`）。
 #
 # 字符串字面量只去引号，内容保持原样（反斜杠不展开——与既有模板合同一致：
 # 反斜杠仅在词法阶段参与闭引号匹配）。
+
+# 参数区扫描产出：参数列表 + 扫描停止位置（调用点从该位置续扫头区终点）。
+structure TemplateParameterScan {
+    parameters: [TemplateParameter]
+    stop: usize
+}
 
 class TemplateBuilder {
     _text: utf8
@@ -121,6 +128,30 @@ imply TemplateBuilder {
         }
         if node_kind == NodeContinue {
             return ContinueNode
+        }
+        if node_kind == NodeExtends {
+            return self.build_extends(child)
+        }
+        if node_kind == NodeBlock {
+            return self.build_block(child)
+        }
+        if node_kind == NodeSuper {
+            return SuperNode
+        }
+        if node_kind == NodeInclude {
+            return self.build_include(child)
+        }
+        if node_kind == NodePartial {
+            return self.build_partial(child)
+        }
+        if node_kind == NodeMacro {
+            return self.build_macro(child)
+        }
+        if node_kind == NodeCall {
+            return self.build_call_statement(child)
+        }
+        if node_kind == NodeImport {
+            return self.build_import(child)
         }
         if node_kind == NodeUnsupported {
             return PoisonNode { reason: "unsupported statement surface" }
@@ -304,6 +335,391 @@ imply TemplateBuilder {
         }
         let body: [TemplateNode] = self.build_body_segment(children, index)
         return LoopNode { item: item, iterable: iterable, body: body }
+    }
+
+    # ── 继承 / 包含 / partial / 宏 / 导入 ──
+
+    # extends：头区内首个表达式位子节点为父模板表达式。
+    micro build_extends(mut self, node: DataCstNode<TemplateTokenKind>) -> TemplateNode? {
+        let children: [DataCstNode<TemplateTokenKind>] = template_cst_children(node)
+        let mut index: usize = 0
+        while index < children.length() {
+            let child: DataCstNode<TemplateTokenKind> = children⁅index⁆.unwrap()
+            if template_cst_is_expression_site(child) {
+                let parent: usize = self.build_expression(child, 1)
+                return ExtendsNode { parent: parent }
+            }
+            index = index + 1
+        }
+        # 结构性缺席：parser 必然已插入 Missing 并被上面捕获，此处兜底。
+        let span: Span = data_cst_span(node)
+        self.diagnose("template.build.missing_expression", "extends 缺少父模板表达式", span)
+        return ExtendsNode { parent: self.add_expression(ExpressionMissing { reason: "missing extends expression" }) }
+    }
+
+    # block：头区内首个 Identifier 叶子为名称；body 从头区终点之后起。
+    micro build_block(mut self, node: DataCstNode<TemplateTokenKind>) -> TemplateNode? {
+        let children: [DataCstNode<TemplateTokenKind>] = template_cst_children(node)
+        let mut name: utf8 = ""
+        let mut index: usize = 0
+        let mut head_done: bool = false
+        while index < children.length() && !head_done {
+            let child: DataCstNode<TemplateTokenKind> = children⁅index⁆.unwrap()
+            let leaf_kind: TemplateTokenKind? = template_cst_token_kind(child)
+            if leaf_kind.is_some() {
+                let kind: TemplateTokenKind = leaf_kind.unwrap()
+                if kind == Identifier && name.length() == 0 {
+                    name = self.lexeme(data_cst_span(child))
+                }
+                if template_cst_is_head_end(child) {
+                    head_done = true
+                }
+            }
+            else {
+                head_done = self.head_missing_ends_tag(child)
+            }
+            index = index + 1
+        }
+        let body: [TemplateNode] = self.build_body_segment(children, index)
+        return BlockNode { name: name, body: body }
+    }
+
+    # include：首个表达式位为 path；`with` 之后的首个表达式位为 with_expression；
+    # `only` 与 `without context` 均置 only（without context 同空 with 的独占语义）。
+    micro build_include(mut self, node: DataCstNode<TemplateTokenKind>) -> TemplateNode? {
+        let children: [DataCstNode<TemplateTokenKind>] = template_cst_children(node)
+        let mut path: usize = 0
+        let mut path_found: bool = false
+        let mut with_handle: usize = 0
+        let mut with_found: bool = false
+        let mut seen_with: bool = false
+        let mut only: bool = false
+        let mut index: usize = 0
+        while index < children.length() {
+            let child: DataCstNode<TemplateTokenKind> = children⁅index⁆.unwrap()
+            let leaf_kind: TemplateTokenKind? = template_cst_token_kind(child)
+            if leaf_kind.is_some() {
+                let kind: TemplateTokenKind = leaf_kind.unwrap()
+                if kind == KeywordWith {
+                    seen_with = true
+                }
+                if kind == KeywordOnly {
+                    only = true
+                }
+                if kind == KeywordWithout {
+                    only = true
+                }
+            }
+            if template_cst_is_expression_site(child) {
+                if !path_found {
+                    path = self.build_expression(child, 1)
+                    path_found = true
+                }
+                else {
+                    if seen_with && !with_found {
+                        with_handle = self.build_expression(child, 1)
+                        with_found = true
+                    }
+                }
+            }
+            index = index + 1
+        }
+        if !path_found {
+            let span: Span = data_cst_span(node)
+            self.diagnose("template.build.missing_expression", "include 缺少路径表达式", span)
+            path = self.add_expression(ExpressionMissing { reason: "missing include path" })
+        }
+        if with_found {
+            return IncludeNode { path: path, with_expression: with_handle, only: only }
+        }
+        return IncludeNode { path: path, with_expression: null, only: only }
+    }
+
+    # partial：头区为参数区（逗号分隔，可带字面量默认值）；body 从头区终点之后起。
+    micro build_partial(mut self, node: DataCstNode<TemplateTokenKind>) -> TemplateNode? {
+        let children: [DataCstNode<TemplateTokenKind>] = template_cst_children(node)
+        let scan: TemplateParameterScan = self.build_parameter_scan(children, 0)
+        let mut index: usize = scan.stop
+        let mut head_done: bool = false
+        while index < children.length() && !head_done {
+            let child: DataCstNode<TemplateTokenKind> = children⁅index⁆.unwrap()
+            if template_cst_is_head_end(child) {
+                head_done = true
+            }
+            else {
+                head_done = self.head_missing_ends_tag(child)
+            }
+            index = index + 1
+        }
+        let body: [TemplateNode] = self.build_body_segment(children, index)
+        return PartialNode { parameters: scan.parameters, body: body }
+    }
+
+    # macro：ParenOpen 之前的首个 Identifier 叶子为名称；括号内为参数区；
+    # body 从头区终点之后起。
+    micro build_macro(mut self, node: DataCstNode<TemplateTokenKind>) -> TemplateNode? {
+        let children: [DataCstNode<TemplateTokenKind>] = template_cst_children(node)
+        let mut name: utf8 = ""
+        let mut parameters: [TemplateParameter] = []
+        let mut seen_paren: bool = false
+        let mut index: usize = 0
+        let mut head_done: bool = false
+        while index < children.length() && !head_done {
+            let child: DataCstNode<TemplateTokenKind> = children⁅index⁆.unwrap()
+            let leaf_kind: TemplateTokenKind? = template_cst_token_kind(child)
+            if leaf_kind.is_some() {
+                let kind: TemplateTokenKind = leaf_kind.unwrap()
+                if kind == Identifier && !seen_paren && name.length() == 0 {
+                    name = self.lexeme(data_cst_span(child))
+                }
+                if kind == ParenOpen && !seen_paren {
+                    seen_paren = true
+                    let scan: TemplateParameterScan = self.build_parameter_scan(children, index + 1)
+                    parameters = scan.parameters
+                    index = scan.stop
+                    continue
+                }
+                if template_cst_is_head_end(child) {
+                    head_done = true
+                }
+            }
+            else {
+                head_done = self.head_missing_ends_tag(child)
+            }
+            index = index + 1
+        }
+        let body: [TemplateNode] = self.build_body_segment(children, index)
+        return MacroNode { name: name, parameters: parameters, body: body }
+    }
+
+    # call：可选括号内的 Identifier 叶子为 caller 参数（重名与 `caller` 保留名
+    # 在此诊断）；括号外的首个表达式位为宏调用；body 从头区终点之后起。
+    # callee 只取真实表达式子树/叶子，parser 的 Missing 占位不映射为 callee
+    # （缺席由本段兜底诊断补齐）。
+    micro build_call_statement(mut self, node: DataCstNode<TemplateTokenKind>) -> TemplateNode? {
+        let children: [DataCstNode<TemplateTokenKind>] = template_cst_children(node)
+        let mut caller_parameters: [utf8] = []
+        let mut callee: usize = 0
+        let mut callee_found: bool = false
+        let mut in_paren: bool = false
+        let mut index: usize = 0
+        let mut head_done: bool = false
+        while index < children.length() && !head_done {
+            let child: DataCstNode<TemplateTokenKind> = children⁅index⁆.unwrap()
+            let leaf_kind: TemplateTokenKind? = template_cst_token_kind(child)
+            if leaf_kind.is_some() {
+                let kind: TemplateTokenKind = leaf_kind.unwrap()
+                if kind == ParenOpen && !callee_found {
+                    in_paren = true
+                }
+                if kind == ParenClose && in_paren {
+                    in_paren = false
+                }
+                if kind == Identifier && in_paren {
+                    let parameter_name: utf8 = self.lexeme(data_cst_span(child))
+                    let mut duplicate: bool = false
+                    let mut at: usize = 0
+                    while at < caller_parameters.length() {
+                        if caller_parameters⁅at⁆.unwrap() == parameter_name {
+                            duplicate = true
+                        }
+                        at = at + 1
+                    }
+                    if duplicate {
+                        self.diagnose("template.build.duplicate_parameter", "caller 参数名重复", data_cst_span(child))
+                    }
+                    if parameter_name == "caller" {
+                        self.diagnose("template.build.caller_reserved", "`caller` 为保留名，不可用作参数", data_cst_span(child))
+                    }
+                    caller_parameters = push(caller_parameters, parameter_name)
+                }
+                if !in_paren && !callee_found && template_cst_is_expression_site(child) {
+                    callee = self.build_expression(child, 1)
+                    callee_found = true
+                }
+                if template_cst_is_head_end(child) {
+                    head_done = true
+                }
+            }
+            else {
+                if in_paren && template_cst_is_missing_node(child) {
+                    in_paren = false
+                }
+                if !in_paren && !callee_found && template_cst_is_node(child) && template_cst_is_expression_site(child) {
+                    callee = self.build_expression(child, 1)
+                    callee_found = true
+                }
+                head_done = self.head_missing_ends_tag(child)
+            }
+            index = index + 1
+        }
+        if !callee_found {
+            let span: Span = data_cst_span(node)
+            self.diagnose("template.build.missing_expression", "call 缺少宏调用表达式", span)
+            callee = self.add_expression(ExpressionMissing { reason: "missing call callee" })
+        }
+        let body: [TemplateNode] = self.build_body_segment(children, index)
+        return CallNode { callee: callee, caller_parameters: caller_parameters, body: body }
+    }
+
+    # from/import：首个 String 叶子为路径（缺席为 Missing 占位映射的 ExpressionMissing）；
+    # `import` 之后的 Identifier 序列为导入名，`as` 后的 Identifier 为别名。
+    micro build_import(mut self, node: DataCstNode<TemplateTokenKind>) -> TemplateNode? {
+        let children: [DataCstNode<TemplateTokenKind>] = template_cst_children(node)
+        let mut path: usize = 0
+        let mut path_found: bool = false
+        let mut names: [TemplateImportName] = []
+        let mut pending_name: utf8 = ""
+        let mut has_pending: bool = false
+        let mut seen_import: bool = false
+        let mut expect_alias: bool = false
+        let mut index: usize = 0
+        while index < children.length() {
+            let child: DataCstNode<TemplateTokenKind> = children⁅index⁆.unwrap()
+            let leaf_kind: TemplateTokenKind? = template_cst_token_kind(child)
+            if leaf_kind.is_some() {
+                let kind: TemplateTokenKind = leaf_kind.unwrap()
+                if kind == String && !path_found {
+                    path = self.build_expression_leaf(kind, data_cst_span(child))
+                    path_found = true
+                }
+                if kind == KeywordImport {
+                    seen_import = true
+                }
+                if kind == KeywordAs && seen_import {
+                    expect_alias = true
+                }
+                if kind == Identifier && seen_import {
+                    if expect_alias && has_pending {
+                        names = push(names, TemplateImportName { name: pending_name, alias: self.lexeme(data_cst_span(child)) })
+                        has_pending = false
+                        expect_alias = false
+                    }
+                    else {
+                        if has_pending {
+                            names = push(names, TemplateImportName { name: pending_name, alias: null })
+                        }
+                        pending_name = self.lexeme(data_cst_span(child))
+                        has_pending = true
+                        expect_alias = false
+                    }
+                }
+            }
+            else {
+                if !path_found && template_cst_is_missing_node(child) {
+                    path = self.add_expression(ExpressionMissing { reason: template_cst_missing_reason(child) })
+                    path_found = true
+                }
+            }
+            index = index + 1
+        }
+        if has_pending {
+            names = push(names, TemplateImportName { name: pending_name, alias: null })
+        }
+        if !path_found {
+            let span: Span = data_cst_span(node)
+            self.diagnose("template.build.missing_expression", "`from` 缺少路径", span)
+            path = self.add_expression(ExpressionMissing { reason: "missing import path" })
+        }
+        return ImportNode { path: path, names: names }
+    }
+
+    # 参数区扫描：Identifier 起新参数，Assign 后首个字面量叶子为默认值；
+    # 重名产 `template.build.duplicate_parameter`，`caller` 保留名产
+    # `template.build.caller_reserved`。扫描在闭标/闭括号/下一标签开标叶子或
+    # "未闭合" Missing 处停止；其余 Missing/Poison 占位跳过（parser 已诊断）。
+    micro build_parameter_scan(mut self, children: [DataCstNode<TemplateTokenKind>], from: usize) -> TemplateParameterScan {
+        let mut parameters: [TemplateParameter] = []
+        let mut pending_name: utf8 = ""
+        let mut pending_span: Span = new_span(0, 0)
+        let mut pending_default: usize = 0
+        let mut has_pending: bool = false
+        let mut has_default: bool = false
+        let mut expecting_default: bool = false
+        let mut index: usize = from
+        let mut scanning: bool = true
+        while scanning && index < children.length() {
+            let child: DataCstNode<TemplateTokenKind> = children⁅index⁆.unwrap()
+            let leaf_kind: TemplateTokenKind? = template_cst_token_kind(child)
+            if leaf_kind.is_some() {
+                let kind: TemplateTokenKind = leaf_kind.unwrap()
+                if template_cst_is_head_end(child) || kind == ParenClose || kind == CodeOpen {
+                    scanning = false
+                }
+                else {
+                    if kind == Identifier {
+                        if has_pending {
+                            parameters = self.finish_parameter(parameters, pending_name, pending_default, has_default, pending_span)
+                        }
+                        pending_name = self.lexeme(data_cst_span(child))
+                        pending_span = data_cst_span(child)
+                        has_pending = true
+                        has_default = false
+                        expecting_default = false
+                    }
+                    if kind == Assign {
+                        expecting_default = has_pending
+                    }
+                    if expecting_default && self.is_literal_leaf(kind) {
+                        pending_default = self.build_expression_leaf(kind, data_cst_span(child))
+                        has_default = true
+                        expecting_default = false
+                    }
+                }
+            }
+            else {
+                if self.head_missing_ends_tag(child) {
+                    scanning = false
+                }
+                else {
+                    if expecting_default && template_cst_is_missing_node(child) {
+                        expecting_default = false
+                    }
+                }
+            }
+            index = index + 1
+        }
+        if has_pending {
+            parameters = self.finish_parameter(parameters, pending_name, pending_default, has_default, pending_span)
+        }
+        return TemplateParameterScan { parameters: parameters, stop: index }
+    }
+
+    # 参数收尾：重名与保留名诊断后追加参数；`default` 缺席为 null。
+    micro finish_parameter(mut self, existing: [TemplateParameter], name: utf8, default: usize, has_default: bool, span: Span) -> [TemplateParameter] {
+        let mut duplicate: bool = false
+        let mut index: usize = 0
+        while index < existing.length() {
+            if existing⁅index⁆.unwrap().name == name {
+                duplicate = true
+            }
+            index = index + 1
+        }
+        if duplicate {
+            self.diagnose("template.build.duplicate_parameter", "参数名重复", span)
+        }
+        if name == "caller" {
+            self.diagnose("template.build.caller_reserved", "`caller` 为保留名，不可用作参数", span)
+        }
+        if has_default {
+            return push(existing, TemplateParameter { name: name, default: default })
+        }
+        return push(existing, TemplateParameter { name: name, default: null })
+    }
+
+    # 字面量叶子判定（参数默认值只许这几类，parser 已先行约束）。
+    micro is_literal_leaf(self, kind: TemplateTokenKind) -> bool {
+        return kind == String || kind == Number || kind == LiteralTrue || kind == LiteralFalse || kind == LiteralNull
+    }
+
+    # 头区占位判定：reason 含"未闭合"的 Missing/Poison 才是头区终点
+    # （其余占位是 head 内部的缺席占位，不终止头区扫描）。
+    micro head_missing_ends_tag(self, child: DataCstNode<TemplateTokenKind>) -> bool {
+        if template_cst_is_missing_node(child) || template_cst_is_poison_node(child) {
+            let reason: utf8 = template_cst_missing_or_poison_reason(child)
+            return template_text_contains(reason, "未闭合")
+        }
+        return false
     }
 
     # ── 表达式（CST 子树 -> arena 下标）──
