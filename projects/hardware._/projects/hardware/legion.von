@@ -1,0 +1,14 @@
+{
+    name: "hardware",
+    version: "workspace",
+    description: "异构设备抽象 - Device/Buffer/Queue/Kernel 合同、CPU 参考后端、host capability 接入面",
+    type: "library",
+    dependencies: { "std": { version: "workspace" }
+    },
+    build: [
+        { target: "ovm" },
+        { target: "clr" },
+        { target: "jvm" },
+        { target: "wasm" }
+    ]
+}
