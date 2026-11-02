@@ -1,0 +1,17 @@
+{
+    name: "container",
+    version: "workspace",
+    description: "container 核心合同：内容寻址、描述符、media 注册表、引用、registry 合同、运行时模型与失败模型",
+    type: "library",
+    dependencies: {
+        "std": { version: "workspace" },
+        "std.data": { version: "workspace" },
+        "std.data.digest": { version: "workspace" }
+    },
+    build: [
+        { target: "ovm" },
+        { target: "clr" },
+        { target: "jvm" },
+        { target: "wasm" }
+    ]
+}
