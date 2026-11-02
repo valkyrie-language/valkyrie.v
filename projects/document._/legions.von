@@ -1,7 +1,10 @@
 {
     version: "1",
-    name: "notedown-workspace",
+    name: "document-workspace",
     members: [
+        "projects/document",
+        "projects/document.layout",
+        "projects/document.render",
         "projects/notedown",
         "projects/panduck",
         "projects/pandark",

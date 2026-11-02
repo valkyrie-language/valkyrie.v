@@ -1,0 +1,12 @@
+{
+    name: "document.layout",
+    version: "workspace",
+    description: "document.* core layout: page spec, measure, line and page breaking (Valkyrie)",
+    type: "library",
+    dependencies: { "std": { version: "workspace" }, "document": { version: "workspace" } },
+    build: [
+        {
+            target: "ovm"
+        }
+    ]
+}

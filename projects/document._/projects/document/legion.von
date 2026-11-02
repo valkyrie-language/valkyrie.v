@@ -1,0 +1,12 @@
+{
+    name: "document",
+    version: "workspace",
+    description: "document.* core document tree, metadata, references, assets and failure model (Valkyrie)",
+    type: "library",
+    dependencies: { "std": { version: "workspace" } },
+    build: [
+        {
+            target: "ovm"
+        }
+    ]
+}

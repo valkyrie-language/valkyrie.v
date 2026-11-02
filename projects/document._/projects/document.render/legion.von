@@ -1,0 +1,12 @@
+{
+    name: "document.render",
+    version: "workspace",
+    description: "document.* core render pipeline with pluggable targets: HTML and plain text (Valkyrie)",
+    type: "library",
+    dependencies: { "std": { version: "workspace" }, "document": { version: "workspace" }, "document.layout": { version: "workspace" } },
+    build: [
+        {
+            target: "ovm"
+        }
+    ]
+}
