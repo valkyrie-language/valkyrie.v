@@ -110,32 +110,6 @@ micro f64_neg(a: f64): f64
 
 #endregion
 
-#region usize（CLR 指针宽度为 32 位）
-# 只绑定位宽相同且语义相同的加、减、乘、等值比较与无符号小于比较（`clt.un`）；
-# 逻辑右移、移位与位运算尚未在配方层冻结，这些能力保持未绑合并结构化失败。
-
-[host_provider(std::primitive::__usize_add)]
-[clr_operator("i32.add")]
-micro usize_add(a: usize, b: usize): usize
-
-[host_provider(std::primitive::__usize_sub)]
-[clr_operator("i32.sub")]
-micro usize_sub(a: usize, b: usize): usize
-
-[host_provider(std::primitive::__usize_mul)]
-[clr_operator("i32.mul")]
-micro usize_mul(a: usize, b: usize): usize
-
-[host_provider(std::primitive::__usize_eq)]
-[clr_operator("i32.eq")]
-micro usize_eq(a: usize, b: usize): bool
-
-[host_provider(std::primitive::__usize_lt)]
-[clr_operator("i32.lt.un")]
-micro usize_lt(a: usize, b: usize): bool
-
-#endregion
-
 #region 比较
 # 只绑定项目已声明的 `eq` / `lt` host 合同；返回类型必须与合同声明同源（`bool`），
 # MSIL 比较 opcode 压入的结果槽由冻结计划的 `result_type = I32` 承载。

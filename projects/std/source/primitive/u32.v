@@ -26,14 +26,6 @@ imply u32 {
         __u32_rem(self, rhs)
     }
 
-    infix `==`(self, rhs: Self): bool {
-        __u32_eq(self, rhs)
-    }
-
-    infix `!=`(self, rhs: Self): bool {
-        !(self == rhs)
-    }
-
     infix `<`(self, rhs: Self): bool {
         __u32_lt(self, rhs)
     }
@@ -126,3 +118,23 @@ private micro __u32_shl(lhs: u32, rhs: u32): u32
 
 [host_contract]
 private micro __u32_shr(lhs: u32, rhs: u32): u32
+
+imply u32: Equal {
+    infix `==`(self, rhs: Self): bool {
+        return __u32_eq(self, rhs)
+    }
+
+    infix `!=`(self, rhs: Self): bool {
+        return !(self == rhs)
+    }
+}
+
+imply u32: Identical {
+    infix `===`(self, rhs: Self): bool {
+        return self == rhs
+    }
+
+    infix `=!=`(self, rhs: Self): bool {
+        return self != rhs
+    }
+}

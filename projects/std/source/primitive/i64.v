@@ -136,3 +136,13 @@ private micro __i64_shl(lhs: i64, rhs: i64): i64
 [host_contract]
 private micro __i64_shr(lhs: i64, rhs: i64): i64
 
+
+imply i64: Identical {
+    infix `===`(self, rhs: Self): bool {
+        return self == rhs
+    }
+
+    infix `=!=`(self, rhs: Self): bool {
+        return self != rhs
+    }
+}

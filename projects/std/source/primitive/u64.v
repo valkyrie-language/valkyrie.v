@@ -126,3 +126,23 @@ private micro __u64_shl(lhs: u64, rhs: u64): u64
 
 [host_contract]
 private micro __u64_shr(lhs: u64, rhs: u64): u64
+
+imply u64: Equal {
+    infix `==`(self, rhs: Self): bool {
+        return __u64_eq(self, rhs)
+    }
+
+    infix `!=`(self, rhs: Self): bool {
+        return !(self == rhs)
+    }
+}
+
+imply u64: Identical {
+    infix `===`(self, rhs: Self): bool {
+        return self == rhs
+    }
+
+    infix `=!=`(self, rhs: Self): bool {
+        return self != rhs
+    }
+}

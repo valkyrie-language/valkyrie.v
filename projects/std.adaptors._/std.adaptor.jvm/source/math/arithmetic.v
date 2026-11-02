@@ -106,33 +106,6 @@ micro f64_div(a: f64, b: f64): f64
 
 #endregion
 
-#region usize（JVM 指针宽度为 32 位）
-# 只绑定位宽相同且语义相同的加、减、乘、等值比较与无符号小于比较；
-# JVM 没有指令级无符号除余，逻辑右移与位运算尚未在配方层冻结，
-# 这些能力保持未绑合并结构化失败，不得用有符号指令顶替。
-
-[host_provider(std::primitive::__usize_add)]
-[jvm_operator("integer.add")]
-micro usize_add(a: usize, b: usize): usize
-
-[host_provider(std::primitive::__usize_sub)]
-[jvm_operator("integer.subtract")]
-micro usize_sub(a: usize, b: usize): usize
-
-[host_provider(std::primitive::__usize_mul)]
-[jvm_operator("integer.multiply")]
-micro usize_mul(a: usize, b: usize): usize
-
-[host_provider(std::primitive::__usize_eq)]
-[jvm_operator("integer.compare_equal")]
-micro usize_eq(a: usize, b: usize): bool
-
-[host_provider(std::primitive::__usize_lt)]
-[jvm_operator("integer.compare_less_than_unsigned")]
-micro usize_lt(a: usize, b: usize): bool
-
-#endregion
-
 #region 比较
 # 只绑定项目已声明的 `eq` / `lt` host 合同；返回类型必须与合同声明同源（`bool`），
 # JVM 侧展开的分支序列压入 `int` 0/1，由冻结计划的 `result_type = I32` 承载。
