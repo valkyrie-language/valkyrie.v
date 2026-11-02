@@ -3,7 +3,7 @@
     version: "workspace",
     description: "std.data 公共抽象层 - 输入源、设置、缓存与 token/CST/AST 三段产物形态",
     type: "library",
-    dependencies: {},
+    dependencies: { "std": { version: "workspace" } },
     build: [
         { target: "ovm" },
         { target: "clr" },
