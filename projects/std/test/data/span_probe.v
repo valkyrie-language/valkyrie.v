@@ -2,7 +2,7 @@ namespace std.data;
 
 using std.diagnostic::{Span, new_span, span_is_well_formed, span_contains};
 
-# span 工具直接调用的探针：与 infix 候选缺口同批等待编译器修复。
+# span 工具直接调用的探针。
 
 [test]
 micro test_probe_well_formed_function_call() -> unit {

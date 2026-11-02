@@ -14,8 +14,7 @@ namespace std.operator;
 #   实现侧只保留一份索引访问逻辑，算子与命名方法互为委托，不许维护第二套。
 # - 本合同不管元素个数：计数语义（`length` / `count()` 等）由类型自行声明，
 #   不许把计数实现借道索引访问，也不许把索引读写借道计数方法。
-# - 当前测试框架无 expected-panic 能力（legion `run_builtin_ovm_test` 只按
-#   `vm.run` 的 Ok/Err 判通过/失败），越界 panic 语义由本注释固定，属已知测试缺口。
+# - 当前测试框架无 expected-panic 断言能力，越界 panic 语义由本注释固定。
 #
 # `Element` 是自由关联类型；索引参数固定 `usize`（0 基偏移）。
 trait Cardinal {
