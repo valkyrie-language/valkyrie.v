@@ -1,0 +1,15 @@
+{
+    version: "1",
+    name: "container-workspace",
+    members: [
+        "projects/container",
+        "projects/container.oci",
+        "projects/container.docker"
+    ],
+    dependencies: {},
+    workspace: {
+        author: "Valkyrie Team",
+        license: "MIT",
+        version: "0.1.0"
+    }
+}
