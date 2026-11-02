@@ -1,0 +1,17 @@
+{
+    name: "media",
+    version: "workspace",
+    description: "媒体生态核心库 - 图像模型、颜色转换、处理管线与 PPM/BMP/PNG 编解码适配器",
+    type: "library",
+    dependencies: {
+        "std": { version: "workspace" },
+        "std.data.binary.codec": { version: "workspace" },
+        "std.data.digest": { version: "workspace" }
+    },
+    build: [
+        { target: "ovm" },
+        { target: "clr" },
+        { target: "jvm" },
+        { target: "wasm" }
+    ]
+}

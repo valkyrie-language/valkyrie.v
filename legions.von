@@ -18,6 +18,7 @@
         "projects/document._",
         "projects/plotter._",
         "projects/template._",
+        "projects/media._",
         "projects/container._",
         "projects/hardware._",
         "projects/std",
