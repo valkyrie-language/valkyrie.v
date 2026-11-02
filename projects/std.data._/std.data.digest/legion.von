@@ -1,0 +1,14 @@
+{
+    name: "std.data.digest",
+    version: "workspace",
+    description: "std.data 摘要层 - hash/checksum/integrity 纯函数（crc32、adler32），无诊断、不走 DataOutcome",
+    type: "library",
+    dependencies: { "std": { version: "workspace" }
+    },
+    build: [
+        { target: "ovm" },
+        { target: "clr" },
+        { target: "jvm" },
+        { target: "wasm" }
+    ]
+}
