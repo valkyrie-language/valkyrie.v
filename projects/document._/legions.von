@@ -7,8 +7,6 @@
         "projects/document.render",
         "projects/document.vector",
         "projects/document.plotter",
-        "projects/document.mermaid",
-        "projects/document.markdown",
         "projects/notedown",
         "projects/panduck",
         "projects/pandark",

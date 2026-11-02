@@ -10,12 +10,12 @@ document          文档树、元数据、引用、资源、校验、失败类�
 document.layout   盒模型/测量/断行、页面/断页    ──依赖──▶ document
 document.render   渲染管线与输出目标            ──依赖──▶ document, document.layout, document.vector
 document.vector   矢量文本发射（SVG 原语）       ──依赖──▶ std
-document.plot     图场景（节点-边布局→矢量）     ──依赖──▶ document.layout, document.vector
-document.mermaid  mermaid 子集解析              ──依赖──▶ document.plot
+document.plotter  图场景（节点-边布局→矢量）     ──依赖──▶ document.layout, document.vector
 notedown / tex / …产品包                        ──依赖──▶ document（只产模型，不造树、不渲染）
 ```
 
 - 核心三包不得依赖任何产品包；产品包只把解析产物映射进核心模型。
+- **本工作区不含解析器**：markdown/mermaid/TeX 等源文本解析一律归 `std.data.text.*`（三段式，产物映射进本区模型）；`document.*` 只消费模型。
 - 判定规则：**知道"页面"存在的归 layout；知道"标签/输出语法"存在的归 render；两者都不知道的归 document。**
 - `DocumentError` 归 `document` 包：模型预检与渲染管线共用，`document.render` 仅引用。
 
