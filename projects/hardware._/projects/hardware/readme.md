@@ -45,7 +45,7 @@ source/
 后端接入纪律：provider 只经 `[host_contract]`/`[host_provider]` 唯一路径，不做编译器特判；
 能力查询与限制由各后端在枚举时填入 `DeviceCapabilities`，缺事实即结构化失败。
 
-## 当前已知缺口（工具链洪泛期实测）
+## 当前已知限制
 
 - 外部设备枚举：`[host_contract] hardware_host_enumerate_devices` 无 provider（所属面：
   `source/backend/host.v`）；`hardware_enumerate_devices` 当前只返回 CPU 参考设备。
