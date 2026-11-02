@@ -136,6 +136,10 @@ micro weave_emit_block(block: Block, index: DocumentIndex, diagnostics: [Diagnos
             let step: WeaveOut = weave_emit_inlines(payload.content, index, diagnostics)
             return weave_out(open + ">" + step.text + "</h" + level + ">", step.diagnostics)
         case Paragraph(payload):
+            if payload.content.length() == 1 && weave_is_math(payload.content⁅0⁆) && weave_classes_have(payload.content⁅0⁆, "math-display") {
+                # 展示级数学独占段落：直发 `<div class='math'>`，不套 `<p>`。
+                return weave_emit_inline(payload.content⁅0⁆, index, diagnostics)
+            }
             let step: WeaveOut = weave_emit_inlines(payload.content, index, diagnostics)
             return weave_out("<p>" + step.text + "</p>", step.diagnostics)
         case ListBlock(payload):
