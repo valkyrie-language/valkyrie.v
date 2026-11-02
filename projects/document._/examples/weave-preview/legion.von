@@ -1,0 +1,9 @@
+{
+    name: "weave_preview",
+    version: "0.1.0",
+    dependencies: {
+        "std": { version: "workspace" },
+        "std.data.text.markdown": { version: "workspace" }
+    },
+    build: [{ target: "wasm" }]
+}
