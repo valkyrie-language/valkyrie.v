@@ -1,4 +1,4 @@
-# notedown._
+# document._
 
 `document._` 是文档处理与渲染框架 `notedown` 的顶层 workspace。
 
@@ -6,7 +6,7 @@
 
 - 文档语义 IR：文档图、关系、资产与校验
 - 格式导入导出：Markdown / DOC / DOCX / EPUB / PDF / HTML
-- 与 Rust 侧 `notedown` 栈同构，共享 `notedown-ir/v1` 线格式合同
+- 文档语义 IR 与其线格式合同由本仓设计与维护
 
 ## 下游
 

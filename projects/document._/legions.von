@@ -1,7 +1,9 @@
 {
     version: "1",
     name: "notedown-workspace",
-    members: [],
+    members: [
+        "projects/notedown"
+    ],
     dependencies: {},
     workspace: {
         author: "Valkyrie Team",

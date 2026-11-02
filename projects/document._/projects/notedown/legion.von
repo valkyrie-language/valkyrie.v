@@ -1,0 +1,12 @@
+{
+    name: "notedown",
+    version: "workspace",
+    description: "Notedown document IR (Valkyrie)",
+    type: "library",
+    dependencies: { "std": { version: "workspace" } },
+    build: [
+        {
+            target: "ovm"
+        }
+    ]
+}
