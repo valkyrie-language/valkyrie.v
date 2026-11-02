@@ -1,0 +1,15 @@
+{
+    name: "std.data.binary.jar",
+    version: "workspace",
+    description: "JAR 归档编解码 — ClassFile 集合打包（同构 std-data::binary::jar）",
+    type: "library",
+    dependencies: { "std": { version: "workspace" }, "std.data.binary.class": { version: "workspace" }
+    },
+    build: [
+        { target: "ovm" },
+        { target: "clr" },
+        { target: "jvm" },
+        { target: "wasm" },
+        { target: "node" }
+    ]
+}

@@ -1,0 +1,14 @@
+{
+    name: "std.data.binary.class",
+    version: "workspace",
+    description: "JVM ClassFile 二进制编解码 — decode/encode .class（同构 std-data::binary::class）",
+    type: "library",
+    dependencies: { "std": { version: "workspace" } },
+    build: [
+        { target: "ovm" },
+        { target: "clr" },
+        { target: "jvm" },
+        { target: "wasm" },
+        { target: "node" }
+    ]
+}
