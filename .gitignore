@@ -18,6 +18,9 @@ tools/
 # Java
 *.class
 *.jar
+# std.data.binary.class / std.data.binary.jar 是包目录，不是 Java 产物，放行
+!projects/std.data._/std.data.binary.class/
+!projects/std.data._/std.data.binary.jar/
 
 # Rust
 target/
