@@ -26,10 +26,6 @@ imply i32 {
         __i32_rem(self, rhs)
     }
 
-    infix `^`(self, rhs: Self): Self {
-        __i32_pow(self, rhs)
-    }
-
     infix `<`(self, rhs: Self): bool {
         __i32_lt(self, rhs)
     }

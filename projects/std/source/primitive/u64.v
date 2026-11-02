@@ -26,14 +26,6 @@ imply u64 {
         __u64_rem(self, rhs)
     }
 
-    infix `==`(self, rhs: Self): bool {
-        __u64_eq(self, rhs)
-    }
-
-    infix `!=`(self, rhs: Self): bool {
-        !(self == rhs)
-    }
-
     infix `<`(self, rhs: Self): bool {
         __u64_lt(self, rhs)
     }
