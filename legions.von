@@ -18,6 +18,7 @@
         "projects/yydb._",
         "projects/notedown._",
         "projects/plotter._",
+        "projects/hardware._",
         "projects/std",
         "examples/test.module_system",
         "examples/leetcode_browser_wasm",
