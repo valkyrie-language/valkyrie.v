@@ -135,13 +135,13 @@ imply Utf16Text: std::operator::Ordinal {
     type Index = isize;
     type Element = char;
 
-    # 序数 1 基；越界读返回 `None`（位置缺失是可恢复常态）。
-    suffix `[ ]`(self, ordinal: isize): Option<char> {
+    # 序数 1 基，裸 `char` 读取；越界结构化失败。
+    suffix `[ ]`(self, ordinal: isize): char {
         if ordinal < 1 || ordinal > self.length() as isize {
-            return None
+            std::types::panic("Ordinal [ ] 越界：序数超出 [1, 元素个数]")
         }
 
-        return Some(self.get_cardinal((ordinal - 1) as usize))
+        return self.get_cardinal((ordinal - 1) as usize)
     }
 
     # 越界写结构化失败，不许静默丢弃写入。
@@ -154,13 +154,22 @@ imply Utf16Text: std::operator::Ordinal {
     }
 
     # 与 `[ ]` 同源：命名方法形态，互为委托。
-    micro get(self, ordinal: isize): Option<char> {
+    micro get(self, ordinal: isize): char {
         return self[ordinal]
     }
 
     # 与 `[ ]=` 同源：命名方法形态，互为委托。
     micro set(mut self, ordinal: isize, value: char): unit {
         self[ordinal] = value
+    }
+
+    # 可恢复形态：越界返回 `None`，不触发 panic。
+    micro try_get(self, ordinal: isize): Option<char> {
+        if ordinal < 1 || ordinal > self.length() as isize {
+            return None
+        }
+
+        return Some(self.get_cardinal((ordinal - 1) as usize))
     }
 }
 

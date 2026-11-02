@@ -31,7 +31,7 @@ imply BitSet {
         let word_idx: usize = index / 64
         let bit_idx: usize = index % 64
         self.ensure_capacity(word_idx + 1)
-        let word: u64 = self.words.get((word_idx + 1) as isize).unwrap()
+        let word: u64 = self.words.get((word_idx + 1) as isize)
         self.words.set((word_idx + 1) as isize, word | (1 << bit_idx))
     }
 
@@ -42,7 +42,7 @@ imply BitSet {
         if word_idx >= self.words.length() {
             return
         }
-        let word: u64 = self.words.get((word_idx + 1) as isize).unwrap()
+        let word: u64 = self.words.get((word_idx + 1) as isize)
         self.words.set((word_idx + 1) as isize, word ^ (word & (1 << bit_idx)))
     }
 
@@ -53,7 +53,7 @@ imply BitSet {
         if word_idx >= self.words.length() {
             return false
         }
-        let word: u64 = self.words.get((word_idx + 1) as isize).unwrap()
+        let word: u64 = self.words.get((word_idx + 1) as isize)
         return (word & (1 << bit_idx)) != 0
     }
 
@@ -72,8 +72,8 @@ imply BitSet {
         let minimum_length: usize = if self.words.length() < other.words.length() { self.words.length() } else { other.words.length() }
         let mut i: usize = 0
         while i < minimum_length {
-            let a: u64 = self.words.get((i + 1) as isize).unwrap()
-            let b: u64 = other.words.get((i + 1) as isize).unwrap()
+            let a: u64 = self.words.get((i + 1) as isize)
+            let b: u64 = other.words.get((i + 1) as isize)
             self.words.set((i + 1) as isize, a & b)
             i = i + 1
         }
@@ -88,8 +88,8 @@ imply BitSet {
         self.ensure_capacity(other.words.length())
         let mut i: usize = 0
         while i < other.words.length() {
-            let a: u64 = self.words.get((i + 1) as isize).unwrap()
-            let b: u64 = other.words.get((i + 1) as isize).unwrap()
+            let a: u64 = self.words.get((i + 1) as isize)
+            let b: u64 = other.words.get((i + 1) as isize)
             self.words.set((i + 1) as isize, a | b)
             i = i + 1
         }
@@ -100,8 +100,8 @@ imply BitSet {
         let minimum_length: usize = if self.words.length() < other.words.length() { self.words.length() } else { other.words.length() }
         let mut i: usize = 0
         while i < minimum_length {
-            let a: u64 = self.words.get((i + 1) as isize).unwrap()
-            let b: u64 = other.words.get((i + 1) as isize).unwrap()
+            let a: u64 = self.words.get((i + 1) as isize)
+            let b: u64 = other.words.get((i + 1) as isize)
             self.words.set((i + 1) as isize, a ^ (a & b))
             i = i + 1
         }
@@ -113,13 +113,13 @@ imply BitSet {
         let minimum_length: usize = if self.words.length() < other.words.length() { self.words.length() } else { other.words.length() }
         let mut i: usize = 0
         while i < minimum_length {
-            let a: u64 = self.words.get((i + 1) as isize).unwrap()
-            let b: u64 = other.words.get((i + 1) as isize).unwrap()
+            let a: u64 = self.words.get((i + 1) as isize)
+            let b: u64 = other.words.get((i + 1) as isize)
             self.words.set((i + 1) as isize, a ^ b)
             i = i + 1
         }
         while i < other.words.length() {
-            self.words.set((i + 1) as isize, other.words.get((i + 1) as isize).unwrap())
+            self.words.set((i + 1) as isize, other.words.get((i + 1) as isize))
             i = i + 1
         }
     }
@@ -128,7 +128,7 @@ imply BitSet {
     micro is_empty(self): bool {
         let mut i: usize = 0
         while i < self.words.length() {
-            if self.words.get((i + 1) as isize).unwrap() != 0 {
+            if self.words.get((i + 1) as isize) != 0 {
                 return false
             }
             i = i + 1

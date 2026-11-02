@@ -32,7 +32,7 @@ imply RingBuffer<T> {
         if self.count == 0 {
             return None
         }
-        let value: T = self.data.get(self.head as isize).unwrap()
+        let value: T = self.data.get(self.head as isize)
         self.head = (self.head + 1) % self.capacity
         self.count = self.count - 1
         return Some(value)
@@ -41,7 +41,7 @@ imply RingBuffer<T> {
         if self.count == 0 {
             return None
         }
-        return self.data.get(self.head as isize)
+        return Some(self.data.get(self.head as isize))
     }
     micro length(self): usize {
         return self.count

@@ -4,11 +4,13 @@ namespace std.operator;
 #
 # 语义基线（合同的一部分，实现必须遵守）：
 # - 序数 1 基：`get(1)` / `[1]` 是首元素；合法域 `1 <= ordinal <= 元素个数`。
-# - `ordinal <= 0`（含负数）或超出元素个数为越界：
-#   - 读路径（`get` / `[ ]`）返回 `None`：位置缺失是可恢复常态，由调用方处理；
-#   - 写路径（`set` / `[ ]=`）结构化失败（`std::types::panic` raise）：
-#     越界写入是契约违反，不许静默丢弃写入。
-#   当前测试框架无 expected-panic 断言能力，越界写 panic 语义由本注释固定。
+# - 主访问（`[ ]` / `get`）返回裸 `Element`：`ordinal <= 0`（含负数）或超出
+#   元素个数为越界，结构化失败（`std::types::panic` raise），不返回默认值、
+#   不做 `Option` 包装；写路径（`set` / `[ ]=`）同口径结构化失败。
+# - 可恢复形态是 `try_get`：越界返回 `None`，位置缺失由调用方显式处理；
+#   主访问不许用返回默认值掩盖越界。
+#   当前测试框架无 expected-panic 断言能力，越界 panic 语义由本注释固定，
+#   用例待能力到位后补。
 # - `get`/`set` 是 `[ ]`/`[ ]=` 的命名形态，与算子同源：实现必须在 impl 中提供，
 #   方法体直接委托算子，不许维护第二套存储访问路径。trait 只做抽象声明，不给默认体
 #   （默认体在当前前端无法解析 `self[ordinal]` 算子调用）。
@@ -25,13 +27,17 @@ trait Ordinal {
     type Index;
     type Element;
 
-    suffix `[ ]`(self, ordinal: Self::Index): Option<Element>
+    suffix `[ ]`(self, ordinal: Self::Index): Element
 
     suffix `[ ]=`(mut self, ordinal: Self::Index, value: Element)
 
     # 命名读路径与 `[ ]` 同源：实现体委托算子。
-    micro get(self, ordinal: Self::Index): Option<Element>
+    micro get(self, ordinal: Self::Index): Element
 
     # 命名写路径与 `[ ]=` 同源：实现体委托算子。
     micro set(mut self, ordinal: Self::Index, value: Element)
+
+    # 可恢复形态：越界返回 `None`，不触发 panic。与主访问共享同一存储路径，
+    # 只是位置缺失的判定外露给调用方。
+    micro try_get(self, ordinal: Self::Index): Option<Element>
 }

@@ -398,13 +398,23 @@ imply Utf8Text: std::operator::Cardinal {
 # 标量（码点）。定位第 index 个字符必须从头扫描，单次 O(n)——只用于偶发单点
 # 查询；顺序扫描一律用 `byte_indicates` / `Utf8Iterator`（均摊 O(1) 前进），
 # 把 `text[index]` 放进循环就是 O(n²)，热路径禁止。`Index` 取 `isize`（负数落入
-# 越界判定，读返回 `None`）；实际访问委托 `character_at`，本 impl 不内联解码。
+# 越界判定，主访问结构化失败、可恢复形态走 `try_get`）；实际访问委托
+# `character_at`，本 impl 不内联解码。
 imply Utf8Text: std::operator::Ordinal {
     type Index = isize;
     type Element = char;
 
-    # 序数 1 基；越界读返回 `None`（位置缺失是可恢复常态）。单次 O(n)。
-    suffix `[ ]`(self, ordinal: isize): Option<char> {
+    # 序数 1 基，裸 `char` 读取；越界结构化失败。单次 O(n)。
+    suffix `[ ]`(self, ordinal: isize): char {
+        if ordinal < 1 || ordinal > self.length() as isize {
+            std::types::panic("Ordinal [ ] 越界：序数超出 [1, 元素个数]")
+        }
+
+        return self.character_at((ordinal - 1) as usize)
+    }
+
+    # 可恢复形态：越界返回 `None`，不触发 panic。单次 O(n)。
+    micro try_get(self, ordinal: isize): Option<char> {
         if ordinal < 1 || ordinal > self.length() as isize {
             return None
         }
@@ -428,7 +438,7 @@ imply Utf8Text: std::operator::Ordinal {
     }
 
     # 与 `[ ]` 同源：命名方法形态，互为委托。单次 O(n)。
-    micro get(self, ordinal: isize): Option<char> {
+    micro get(self, ordinal: isize): char {
         return self[ordinal]
     }
 

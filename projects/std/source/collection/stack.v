@@ -30,7 +30,7 @@ imply Stack<T> {
     micro iter(self, f: micro(T) -> unit): unit {
         let mut i: i32 = self.data.length() as i32 - 1
         while i >= 0 {
-            f(self.data.get(i as isize).unwrap())
+            f(self.data.get(i as isize))
             i = i - 1
         }
     }

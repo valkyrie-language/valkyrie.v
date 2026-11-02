@@ -19,7 +19,7 @@ imply Array<T> {
     }
 
     micro first(self): Option<T> {
-        return self.get(1)
+        return self.try_get(1)
     }
 
     micro last(self): Option<T> {
@@ -28,7 +28,7 @@ imply Array<T> {
             return None
         }
 
-        return self.get(item_count as isize)
+        return self.try_get(item_count as isize)
     }
 
     micro contains(self, value: T): bool
@@ -36,7 +36,7 @@ imply Array<T> {
     {
         let mut i: usize = 1
         while i <= self.length() {
-            if self.get(i as isize).unwrap() == value {
+            if self.get(i as isize) == value {
                 return true
             }
 
@@ -89,19 +89,20 @@ imply Array<T>: std::operator::Cardinal {
 }
 
 # 1 基序数读写合同：算子 `[ ]` / `[ ]=` 与同源的命名 `get` / `set` 全部由本 impl 提供。
-# `Index` 取 `isize`：负数落入越界判定，读返回 `None`；写越界结构化失败。
-# 实际访问一律落到 `Cardinal`（0 基偏移 `ordinal - 1`），本 impl 不重复存储访问逻辑。
+# 主访问返回裸 `T`，越界结构化失败；可恢复形态走 `try_get`（越界返回 `None`）。
+# `Index` 取 `isize`：负数落入越界判定。实际访问一律落到 `Cardinal`
+# （0 基偏移 `ordinal - 1`），本 impl 不重复存储访问逻辑。
 imply Array<T>: std::operator::Ordinal {
     type Index = isize;
     type Element = T;
 
-    # 序数 1 基；越界读返回 `None`（位置缺失是可恢复常态）。
-    suffix `[ ]`(self, ordinal: isize): Option<T> {
+    # 序数 1 基，裸值读取；越界结构化失败。
+    suffix `[ ]`(self, ordinal: isize): T {
         if ordinal < 1 || ordinal > self.length() as isize {
-            return None
+            std::types::panic("Ordinal [ ] 越界：序数超出 [1, 元素个数]")
         }
 
-        return Some(self.get_cardinal((ordinal - 1) as usize))
+        return self.get_cardinal((ordinal - 1) as usize)
     }
 
     # 越界写结构化失败，不许静默丢弃写入。
@@ -114,13 +115,22 @@ imply Array<T>: std::operator::Ordinal {
     }
 
     # 与 `[ ]` 同源：命名方法形态，互为委托。
-    micro get(self, ordinal: isize): Option<T> {
+    micro get(self, ordinal: isize): T {
         return self[ordinal]
     }
 
     # 与 `[ ]=` 同源：命名方法形态，互为委托。
     micro set(mut self, ordinal: isize, value: T): unit {
         self[ordinal] = value
+    }
+
+    # 可恢复形态：越界返回 `None`，不触发 panic。
+    micro try_get(self, ordinal: isize): Option<T> {
+        if ordinal < 1 || ordinal > self.length() as isize {
+            return None
+        }
+
+        return Some(self.get_cardinal((ordinal - 1) as usize))
     }
 }
 
@@ -227,7 +237,7 @@ imply ArrayIterator<T>: std::iterator::Iterator {
             return None
         }
 
-        let value: T = self._array.get((self._index + 1) as isize).unwrap()
+        let value: T = self._array.get((self._index + 1) as isize)
         self._index = self._index + 1
         return Some(value)
     }
