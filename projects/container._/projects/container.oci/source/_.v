@@ -10,5 +10,5 @@ namespace container.oci;
 # 分层纪律：
 # - digest 文法/注册校验委托 `container` 核心（`oci_digest_*` 名保留作兼容面）。
 # - media type 分类委托核心注册表，不硬编码字符串分支。
-# - JSON 文本 → 模型归 `std.data.text.json`（当前未落地）；本包只消费已解析结构。
-# - blob 内容摘要比对可用 `container` 核心 + `std.data.digest`（已具备）。
+# - JSON 文本 → 模型归 `std.data.text.json`（未落地）；本包只消费已解析结构。
+# - blob 内容摘要比对可用 `container` 核心 + `std.data.digest`（sha256/sha512）。
