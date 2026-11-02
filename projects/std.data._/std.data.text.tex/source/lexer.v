@@ -1,5 +1,6 @@
 namespace std.data.text.tex;
 
+using std.collection::{HashMap};
 using std.data::{DataOutcome, DataSource, DataSettings, DataToken, data_outcome_failed, data_outcome_partial, new_data_token};
 using std.diagnostic::{Diagnostic, Error, Warning, new_diagnostic, new_span};
 using std.text::{Utf8ByteIndicator, byte_indicates};
@@ -15,6 +16,19 @@ using std.text::{Utf8ByteIndicator, byte_indicates};
 micro tex_is_letter(ch: char) -> bool {
     let code: u32 = ch as u32
     return (code >= 65 && code <= 90) || (code >= 97 && code <= 122)
+}
+
+# 结构命令名 → token 类：表驱动（数据而非控制流）；未收录者归 `Command`。
+micro tex_command_table() -> HashMap<utf8, TexTokenKind> {
+    let mut table: HashMap<utf8, TexTokenKind> = HashMap::new(8)
+    table.insert("frac", FracCommand)
+    table.insert("sqrt", SqrtCommand)
+    table.insert("begin", BeginCommand)
+    table.insert("end", EndCommand)
+    table.insert("sum", SumCommand)
+    table.insert("left", LeftCommand)
+    table.insert("right", RightCommand)
+    return table
 }
 
 micro tex_is_digit(ch: char) -> bool {
@@ -78,19 +92,23 @@ micro tex_scan(text: utf8) -> DataOutcome<[DataToken<TexTokenKind>]> {
                     index = index + 1
                     look = iter.next()
                 }
-                # 结构命令按名分流；其余归 `Command`（语义归 builder）。
+                # 结构命令按名分流（表驱动）；其余归 `Command`（语义归 builder）。
                 let name: utf8 = text.slice(start + 1, index - start - 1)
-                if name.equals("frac") {
-                    tokens = push(tokens, new_data_token(FracCommand, start, index))
-                } else if name.equals("sqrt") {
-                    tokens = push(tokens, new_data_token(SqrtCommand, start, index))
-                } else {
-                    tokens = push(tokens, new_data_token(Command, start, index))
-                }
+                let kind: TexTokenKind = tex_command_table().get(name).unwrap_or(Command)
+                tokens = push(tokens, new_data_token(kind, start, index))
             } else {
-                tokens = push(tokens, new_data_token(Symbol, start, index))
+                if look.is_some() && look.unwrap().1 == '\\' {
+                    index = index + 1
+                    tokens = push(tokens, new_data_token(DoubleBackslash, start, index))
+                    pending = iter.next()
+                } else {
+                    tokens = push(tokens, new_data_token(Symbol, start, index))
+                    pending = look
+                }
             }
-            pending = look
+        } else if ch == '&' {
+            tokens = push(tokens, new_data_token(Ampersand, start, index))
+            pending = iter.next()
         } else if tex_is_letter(ch) || tex_is_digit(ch) || tex_is_operator(ch) {
             tokens = push(tokens, new_data_token(Symbol, start, index))
             pending = iter.next()

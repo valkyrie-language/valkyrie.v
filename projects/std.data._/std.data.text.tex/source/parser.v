@@ -70,7 +70,7 @@ micro tex_kind_is_atom(kind: TexTokenKind) -> bool {
     }
 }
 
-# 单原子：编组 / 结构命令 / 普通原子；无法构成原子时产 `Missing`。
+# 单原子：编组 / 结构命令 / 环境 / 大算子 / 伸缩括号 / 普通原子；无法构成时产 `Missing`。
 micro tex_parse_atom(tokens: [DataToken<TexTokenKind>], state: TexParseState, depth: usize, settings: DataSettings) -> TexOut {
     let maybe: Option<DataToken<TexTokenKind>> = tex_peek(tokens, state)
     if maybe.is_none() {
@@ -88,6 +88,12 @@ micro tex_parse_atom(tokens: [DataToken<TexTokenKind>], state: TexParseState, de
             return tex_parse_frac(tokens, state, depth, settings)
         case SqrtCommand:
             return tex_parse_sqrt(tokens, state, depth, settings)
+        case SumCommand:
+            return tex_out(data_cst_node(NodeBigOp, token.span, [data_cst_token(token)]), tex_advance(state))
+        case LeftCommand:
+            return tex_parse_delimited(tokens, state, depth, settings)
+        case BeginCommand:
+            return tex_parse_environment(tokens, state, depth, settings)
         else:
             return tex_out(data_cst_missing(token.span, "atom expected"), tex_diagnose(state, "tex.parse.missing_atom", "script or command expects an atom", token.span))
     }

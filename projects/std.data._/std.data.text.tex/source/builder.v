@@ -1,8 +1,9 @@
 namespace std.data.text.tex;
 
-using std.data::{DataCstNode, DataOutcome, DataSettings, DataSource, DataToken, data_cst_missing, data_outcome_diagnostics, data_outcome_failed, data_outcome_partial, data_outcome_value_or, data_source_from_text, new_data_settings};
+using std.collection::{HashMap};
+using std.data::{DataCstNode, DataOutcome, DataSettings, DataSource, DataToken, data_cst_missing, data_cst_span, data_outcome_diagnostics, data_outcome_failed, data_outcome_partial, data_outcome_value_or, data_source_from_text, new_data_settings};
 using std.diagnostic::{Diagnostic, Error, Warning, Span, new_diagnostic, new_span};
-using vutex::{MathNode, math_frac, math_row, math_scripts, math_sqrt, math_symbol};
+using vutex::{MathNode, math_aligned, math_big_op, math_delimited, math_frac, math_matrix, math_row, math_scripts, math_sqrt, math_symbol};
 
 # 语义段：CST -> `vutex::MathNode`。词素按 span 从源切回。
 # 映射规则：`Space` trivia 丢弃（TeX 空白不表义）；`Illegal` 原样映射为
@@ -10,31 +11,37 @@ using vutex::{MathNode, math_frac, math_row, math_scripts, math_sqrt, math_symbo
 # 语法段登记）；未知命令映射为命令名符号并登记 `tex.build.unknown_command`
 # （Warning，内容可见可降级）。希腊字母命令映射为对应字形。
 
+# 希腊字母命令 → 字形：表驱动（数据而非控制流）。
+micro tex_greek_table() -> HashMap<utf8, utf8> {
+    let mut table: HashMap<utf8, utf8> = HashMap::new(32)
+    table.insert("alpha", "α")
+    table.insert("beta", "β")
+    table.insert("gamma", "γ")
+    table.insert("delta", "δ")
+    table.insert("epsilon", "ε")
+    table.insert("zeta", "ζ")
+    table.insert("eta", "η")
+    table.insert("theta", "θ")
+    table.insert("iota", "ι")
+    table.insert("kappa", "κ")
+    table.insert("lambda", "λ")
+    table.insert("mu", "μ")
+    table.insert("nu", "ν")
+    table.insert("xi", "ξ")
+    table.insert("pi", "π")
+    table.insert("rho", "ρ")
+    table.insert("sigma", "σ")
+    table.insert("tau", "τ")
+    table.insert("upsilon", "υ")
+    table.insert("phi", "φ")
+    table.insert("chi", "χ")
+    table.insert("psi", "ψ")
+    table.insert("omega", "ω")
+    return table
+}
+
 micro tex_greek_glyph(name: utf8) -> Option<utf8> {
-    if name.equals("alpha") { return Some("α") }
-    if name.equals("beta") { return Some("β") }
-    if name.equals("gamma") { return Some("γ") }
-    if name.equals("delta") { return Some("δ") }
-    if name.equals("epsilon") { return Some("ε") }
-    if name.equals("zeta") { return Some("ζ") }
-    if name.equals("eta") { return Some("η") }
-    if name.equals("theta") { return Some("θ") }
-    if name.equals("iota") { return Some("ι") }
-    if name.equals("kappa") { return Some("κ") }
-    if name.equals("lambda") { return Some("λ") }
-    if name.equals("mu") { return Some("μ") }
-    if name.equals("nu") { return Some("ν") }
-    if name.equals("xi") { return Some("ξ") }
-    if name.equals("pi") { return Some("π") }
-    if name.equals("rho") { return Some("ρ") }
-    if name.equals("sigma") { return Some("σ") }
-    if name.equals("tau") { return Some("τ") }
-    if name.equals("upsilon") { return Some("υ") }
-    if name.equals("phi") { return Some("φ") }
-    if name.equals("chi") { return Some("χ") }
-    if name.equals("psi") { return Some("ψ") }
-    if name.equals("omega") { return Some("ω") }
-    return None
+    return tex_greek_table().get(name)
 }
 
 structure TexBuildState {
@@ -120,6 +127,16 @@ micro tex_build_node(node: DataCstNode<TexTokenKind>, state: TexBuildState) -> T
                     return tex_build_sqrt(payload.children, state)
                 case NodeScripts:
                     return tex_build_scripts(payload.children, state)
+                case NodeBigOp:
+                    return tex_map_some(state, math_big_op("∑", [], []))
+                case NodeDelimited:
+                    return tex_build_delimited(payload.children, state)
+                case NodeEnvironment:
+                    return tex_build_environment(payload.children, state)
+                case NodeEnvRow:
+                    return tex_map_some(state, math_row(tex_build_children(payload.children, state)))
+                case NodeEnvCell:
+                    return tex_map_some(state, math_row(tex_build_children(payload.children, state)))
                 else:
                     return tex_map_none(state)
             }
@@ -216,7 +233,140 @@ micro tex_build_scripts(children: [DataCstNode<TexTokenKind>], state: TexBuildSt
     if superscript.length() == 0 && subscript.length() == 0 {
         return tex_map_some(current, base)
     }
+    # 大算子的上下限：基项是 `NodeBigOp` 时按上下限承载，不按肩标。
+    let mut base_is_big_op: bool = false
+    match children⁅0⁆ {
+        case Node(payload):
+            match payload.kind {
+                case NodeBigOp:
+                    base_is_big_op = true
+                else:
+                    base_is_big_op = false
+            }
+        else:
+            base_is_big_op = false
+    }
+    if base_is_big_op {
+        return tex_map_some(current, math_big_op("∑", subscript, superscript))
+    }
     return tex_map_some(current, math_scripts(base, superscript, subscript))
+}
+
+# 伸缩括号：children = [Token(LeftCommand), 左定界原子, NodeRow 内容, Token(RightCommand), 右定界原子]。
+micro tex_build_delimited(children: [DataCstNode<TexTokenKind>], state: TexBuildState) -> TexMapOut {
+    let mut left: utf8 = "("
+    let mut right: utf8 = ")"
+    let mut content: [MathNode] = []
+    let mut current: TexBuildState = state
+    let left_out: TexMapOut = tex_build_child_or_empty(children, 1, current)
+    current = left_out.state
+    match left_out.node.unwrap() {
+        case MathSymbol(payload):
+            left = payload.text
+        else:
+            left = "("
+    }
+    let mut content_index: usize = 2
+    if children.length() > 2 {
+        let content_out: TexMapOut = tex_build_node(children⁅2⁆, current)
+        current = content_out.state
+        if content_out.has_value {
+            content = [content_out.node.unwrap()]
+        }
+    }
+    if children.length() > 4 {
+        let right_out: TexMapOut = tex_build_child_or_empty(children, 4, current)
+        current = right_out.state
+        match right_out.node.unwrap() {
+            case MathSymbol(payload):
+                right = payload.text
+            else:
+                right = ")"
+        }
+    }
+    if content.length() == 0 {
+        return tex_map_some(current, math_delimited(left, right, []))
+    }
+    match content⁅0⁆ {
+        case MathRow(payload):
+            return tex_map_some(current, math_delimited(left, right, payload.children))
+        else:
+            return tex_map_some(current, math_delimited(left, right, content))
+    }
+}
+
+# 环境名：编组内符号词素的原样拼接。
+micro tex_group_name(node: DataCstNode<TexTokenKind>, state: TexBuildState) -> utf8 {
+    match node {
+        case Node(payload):
+            let mut out: utf8 = ""
+            let mut index: usize = 0
+            while index < payload.children.length() {
+                out = out + tex_group_name(payload.children⁅index⁆, state)
+                index = index + 1
+            }
+            return out
+        case Token(payload):
+            match payload.token.kind {
+                case Symbol:
+                    return tex_lexeme(state, payload.token.span)
+                else:
+                    return ""
+            }
+        else:
+            return ""
+    }
+}
+
+# 环境：`matrix`/`aligned` 映射为网格；未知名登记 `tex.build.unknown_environment`
+# （Warning）并按矩阵网格降级（内容可见）。
+micro tex_build_environment(children: [DataCstNode<TexTokenKind>], state: TexBuildState) -> TexMapOut {
+    let name: utf8 = if children.length() > 1 { tex_group_name(children⁅1⁆, state) } else { "" }
+    let mut current: TexBuildState = state
+    let mut rows: [[MathNode]] = []
+    let mut index: usize = 2
+    while index < children.length() {
+        match children⁅index⁆ {
+            case Node(payload):
+                match payload.kind {
+                    case NodeEnvRow:
+                        let mut cells: [MathNode] = []
+                        let mut cell_index: usize = 0
+                        while cell_index < payload.children.length() {
+                            match payload.children⁅cell_index⁆ {
+                                case Node(cell_node):
+                                    match cell_node.kind {
+                                        case NodeEnvCell:
+                                            let cell_out: TexMapOut = tex_build_node(payload.children⁅cell_index⁆, current)
+                                            current = cell_out.state
+                                            if cell_out.has_value {
+                                                cells = push(cells, cell_out.node.unwrap())
+                                            }
+                                        else:
+                                            current = current
+                                    }
+                                else:
+                                    current = current
+                            }
+                            cell_index = cell_index + 1
+                        }
+                        rows = push(rows, cells)
+                    else:
+                        current = current
+                }
+            else:
+                current = current
+        }
+        index = index + 1
+    }
+    if name.equals("matrix") {
+        return tex_map_some(current, math_matrix(rows))
+    }
+    if name.equals("aligned") {
+        return tex_map_some(current, math_aligned(rows))
+    }
+    let diagnosed: TexBuildState = tex_diagnose(current, "tex.build.unknown_environment", "environment outside the supported subset, kept as a matrix grid", data_cst_span(children⁅0⁆))
+    return tex_map_some(diagnosed, math_matrix(rows))
 }
 
 micro tex_build(node: DataCstNode<TexTokenKind>, source: DataSource, settings: DataSettings) -> DataOutcome<MathNode> {

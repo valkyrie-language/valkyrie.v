@@ -105,6 +105,88 @@ micro duplicate_script_slot_reports() -> unit {
 }
 
 [test]
+micro environment_matrix_snapshot() -> unit {
+    let expected: utf8 = svg_document(46.0, 32.0,
+        svg_text(4.0, 12.0, "a", "#000000", 10.0)
+        + svg_text(32.0, 12.0, "b", "#000000", 10.0)
+        + svg_text(4.0, 26.0, "cc", "#000000", 10.0)
+        + svg_text(32.0, 26.0, "d", "#000000", 10.0))
+    if !tex_svg_of("\\begin{matrix} a & b \\\\ cc & d \\end{matrix}").equals(expected) {
+        panic("matrix environment svg snapshot matches")
+    }
+}
+
+[test]
+micro big_op_limits_snapshot() -> unit {
+    let expected: utf8 = svg_document(22.0, 37.0,
+        svg_text(7.25, 10.0, "n", "#000000", 7.5)
+        + svg_text(4.0, 22.7, "∑", "#000000", 14.0)
+        + svg_text(7.25, 31.5, "i", "#000000", 7.5))
+    if !tex_svg_of("\\sum_{i}^{n}").equals(expected) {
+        panic("big op limits svg snapshot matches")
+    }
+}
+
+[test]
+micro delimited_snapshot() -> unit {
+    let expected: utf8 = svg_document(63.0, 30.5,
+        svg_text(4.0, 22.0, "(", "#000000", 22.5)
+        + svg_text(26.5, 12.0, "1", "#000000", 10.0)
+        + svg_rect(26.5, 14.0, 10.0, 0.5, "#000000")
+        + svg_text(26.5, 22.5, "x", "#000000", 10.0)
+        + svg_text(36.5, 22.0, ")", "#000000", 22.5))
+    if !tex_svg_of("\\left( \\frac{1}{x} \\right)").equals(expected) {
+        panic("delimited svg snapshot matches")
+    }
+}
+
+[test]
+micro aligned_snapshot() -> unit {
+    let expected: utf8 = svg_document(48.0, 32.0,
+        svg_text(4.0, 12.0, "aa", "#000000", 10.0)
+        + svg_text(24.0, 12.0, "=b", "#000000", 10.0)
+        + svg_text(14.0, 26.0, "c", "#000000", 10.0)
+        + svg_text(24.0, 26.0, "=dd", "#000000", 10.0))
+    if !tex_svg_of("\\begin{aligned} aa &= b \\\\ c &= dd \\end{aligned}").equals(expected) {
+        panic("aligned environment svg snapshot matches")
+    }
+}
+
+[test]
+micro unknown_environment_degrades_with_diagnostic() -> unit {
+    let outcome: DataOutcome<MathNode> = tex_parse_text("\\begin{wild} a \\end{wild}")
+    let diagnostics: [Diagnostic] = data_outcome_diagnostics(outcome)
+    let mut found: bool = false
+    let mut index: usize = 0
+    while index < diagnostics.length() {
+        if diagnostics⁅index⁆.code.equals("tex.build.unknown_environment") {
+            found = true
+        }
+        index = index + 1
+    }
+    if !found {
+        panic("unknown environment reports a build diagnostic")
+    }
+}
+
+[test]
+micro unclosed_delimiter_reports() -> unit {
+    let outcome: DataOutcome<MathNode> = tex_parse_text("\\left( x")
+    let diagnostics: [Diagnostic] = data_outcome_diagnostics(outcome)
+    let mut found: bool = false
+    let mut index: usize = 0
+    while index < diagnostics.length() {
+        if diagnostics⁅index⁆.code.equals("tex.parse.unclosed_delimiter") {
+            found = true
+        }
+        index = index + 1
+    }
+    if !found {
+        panic("unclosed delimiter reports a parse diagnostic")
+    }
+}
+
+[test]
 micro render_is_deterministic() -> unit {
     if !tex_svg_of("\\frac{a_{1}}{\\sqrt{b}}+c^{2}").equals(tex_svg_of("\\frac{a_{1}}{\\sqrt{b}}+c^{2}")) {
         panic("same source renders the same bytes")

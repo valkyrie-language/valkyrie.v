@@ -11,8 +11,17 @@ unite TexTokenKind {
     # 结构命令（词法段按命令名分流，parser 不看词素）。
     FracCommand
     SqrtCommand
+    # 环境与大算子/伸缩括号命令。
+    BeginCommand
+    EndCommand
+    SumCommand
+    LeftCommand
+    RightCommand
     # 其余 `\` + 连续 ASCII 字母（span 含 `\`；语义归 builder）。
     Command
+    # 对齐与换行分隔：`&` / `\\`。
+    Ampersand
+    DoubleBackslash
     OpenBrace
     CloseBrace
     Sup
@@ -30,4 +39,9 @@ unite TexTokenKind {
     NodeSqrt
     NodeScripts
     NodeAtom
+    NodeEnvironment
+    NodeEnvRow
+    NodeEnvCell
+    NodeBigOp
+    NodeDelimited
 }
