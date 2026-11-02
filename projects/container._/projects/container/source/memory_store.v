@@ -1,7 +1,7 @@
 namespace container;
 
-# 内存 ContentStore 实现：纯数组条目列表（避免 HashMap 在 ovm lane 的
-# `⁅ ⁆`/`infix ==` unresolved_call 泛洪；去重语义不变，寻址仍是 O(n) 线性查找）。
+# 内存 ContentStore 实现：纯数组条目列表。
+# 以线性查找实现去重（O(n)），不依赖下标与相等运算符。
 #
 # 条目：digest 字符串键 → 字节 + 首次记录的 media type。put 按内容重算 sha256
 # 寻址实现去重；get/exists 线性扫描。硬失败走 `ContainerFailure`。
