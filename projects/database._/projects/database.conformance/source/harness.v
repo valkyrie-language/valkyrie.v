@@ -46,6 +46,26 @@ micro main() -> i32 {
     if code != 0 {
         return (1000 + code) as i32
     }
+    code = conformance_c11_revision_monotonicity(database::database_memory_open)
+    if code != 0 {
+        return (1100 + code) as i32
+    }
+    code = conformance_c12_interleave_consistency(database::database_memory_open)
+    if code != 0 {
+        return (1200 + code) as i32
+    }
+    code = conformance_c13_value_ordering(database::database_memory_open)
+    if code != 0 {
+        return (1300 + code) as i32
+    }
+    code = conformance_c14_fault_model(database::database_memory_open)
+    if code != 0 {
+        return (1400 + code) as i32
+    }
+    code = conformance_c15_index_surface(database::database_memory_open)
+    if code != 0 {
+        return (1500 + code) as i32
+    }
     return 0
 }
 
@@ -97,4 +117,29 @@ micro conformance_memory_c09() -> i64 {
 [export]
 micro conformance_memory_c10() -> i64 {
     return conformance_c10_statistics(database::database_memory_open)
+}
+
+[export]
+micro conformance_memory_c11() -> i64 {
+    return conformance_c11_revision_monotonicity(database::database_memory_open)
+}
+
+[export]
+micro conformance_memory_c12() -> i64 {
+    return conformance_c12_interleave_consistency(database::database_memory_open)
+}
+
+[export]
+micro conformance_memory_c13() -> i64 {
+    return conformance_c13_value_ordering(database::database_memory_open)
+}
+
+[export]
+micro conformance_memory_c14() -> i64 {
+    return conformance_c14_fault_model(database::database_memory_open)
+}
+
+[export]
+micro conformance_memory_c15() -> i64 {
+    return conformance_c15_index_surface(database::database_memory_open)
 }
