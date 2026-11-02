@@ -1,7 +1,8 @@
 namespace template;
 
-using std.data::{DataDiagnostic, DataOutcome, Error, data_outcome_with, new_data_diagnostic, new_data_span};
-using std.data.text::{Binary, BreakNode, Call, ContinueNode, ExpressionMissing, ExpressionPoison, Identifier, IfNode, Index, InterpolationNode, LiteralFalse, LiteralNull, LiteralNumber, LiteralString, LiteralTrue, LoopNode, Member, MissingNode, ObjectLiteral, OpAdd, OpAnd, OpDivide, OpEqual, OpGreater, OpGreaterEqual, OpIdentity, OpIn, OpLess, OpLessEqual, OpMultiply, OpNegate, OpNot, OpNotEqual, OpOr, OpRemainder, OpSubtract, Pipe, PoisonNode, TemplateBinaryOperator, TemplateDocument, TemplateExpression, TemplateIfBranch, TemplateNode, TemplateObjectEntry, TemplateUnaryOperator, TextNode, Unary};
+using std.diagnostic::{Diagnostic, Error, new_diagnostic, new_span};
+using std.data::{DataOutcome, data_outcome_partial};
+using std.data.text::{Binary, BreakNode, Call, ContinueNode, ExpressionMissing, ExpressionPoison, Identifier, IfNode, Index, InterpolationNode, LiteralFalse, LiteralNull, LiteralNumber, LiteralString, LiteralTrue, LoopNode, Member, MissingNode, ObjectLiteral, OpAdd, OpAnd, OpDivide, OpEqual, OpGreater, OpGreaterEqual, OpIdentity, OpIn, OpLess, OpLessEqual, OpMultiply, OpNegate, OpNot, OpNotEqual, OpOr, OpRemainder, OpSubtract, Pipe, PoisonNode, TemplateBinaryOperator, TemplateDocument, TemplateExpression, TemplateIfBranch, TemplateImportName, TemplateNode, TemplateObjectEntry, TemplateParameter, TemplateUnaryOperator, TextNode, Unary};
 
 # 渲染段：AST + 上下文 -> 输出文本。纯内存求值，不读文件/网络/时钟。
 #
@@ -35,12 +36,12 @@ unite TemplateSignal {
 structure TemplateChunk {
     text: utf8
     signal: TemplateSignal
-    diagnostics: [DataDiagnostic]
+    diagnostics: [Diagnostic]
 }
 
 structure TemplateEvaluation {
     value: TemplateValue
-    diagnostics: [DataDiagnostic]
+    diagnostics: [Diagnostic]
 }
 
 structure TemplateFrame {
@@ -56,8 +57,8 @@ micro template_evaluation(value: TemplateValue) -> TemplateEvaluation {
 }
 
 micro template_evaluation_failed(code: utf8, message: utf8) -> TemplateEvaluation {
-    let mut diagnostics: [DataDiagnostic] = []
-    diagnostics = push(diagnostics, new_data_diagnostic(code, Error, message, new_data_span(0, 0)))
+    let mut diagnostics: [Diagnostic] = []
+    diagnostics = push(diagnostics, new_diagnostic(code, Error, message, new_span(0, 0)))
     return TemplateEvaluation { value: NullValue, diagnostics: diagnostics }
 }
 
@@ -80,8 +81,8 @@ micro template_lookup(name: utf8, frames: [TemplateFrame], context: TemplateValu
     return template_object_get(context, name)
 }
 
-micro template_merge_diagnostics(into: [DataDiagnostic], from: [DataDiagnostic]) -> [DataDiagnostic] {
-    let mut result: [DataDiagnostic] = into
+micro template_merge_diagnostics(into: [Diagnostic], from: [Diagnostic]) -> [Diagnostic] {
+    let mut result: [Diagnostic] = into
     let mut index: usize = 0
     while index < from.length() {
         result = push(result, from⁅index⁆.unwrap())
@@ -95,7 +96,7 @@ micro template_merge_diagnostics(into: [DataDiagnostic], from: [DataDiagnostic])
 micro template_render(document: TemplateDocument, context: TemplateValue, settings: TemplateRenderSettings) -> DataOutcome<utf8> {
     let frames: [TemplateFrame] = []
     let chunk: TemplateChunk = template_render_nodes(document.body, document.expressions, frames, context, settings, 1)
-    return data_outcome_with(chunk.text, chunk.diagnostics)
+    return data_outcome_partial(chunk.text, chunk.diagnostics)
 }
 
 # 注：source -> render 的端到端链由消费方按方言组装（解析归 std.data.text.<dialect>），
@@ -105,13 +106,13 @@ micro template_render(document: TemplateDocument, context: TemplateValue, settin
 
 micro template_render_nodes(nodes: [TemplateNode], expressions: [TemplateExpression], frames: [TemplateFrame], context: TemplateValue, settings: TemplateRenderSettings, depth: usize) -> TemplateChunk {
     if depth > settings.max_depth {
-        let mut diagnostics: [DataDiagnostic] = []
-        diagnostics = push(diagnostics, new_data_diagnostic("template.render.max_depth_exceeded", Error, "渲染嵌套深度超限", new_data_span(0, 0)))
+        let mut diagnostics: [Diagnostic] = []
+        diagnostics = push(diagnostics, new_diagnostic("template.render.max_depth_exceeded", Error, "渲染嵌套深度超限", new_span(0, 0)))
         return TemplateChunk { text: "", signal: SignalNone, diagnostics: diagnostics }
     }
     let mut text: utf8 = ""
     let mut signal: TemplateSignal = SignalNone
-    let mut diagnostics: [DataDiagnostic] = []
+    let mut diagnostics: [Diagnostic] = []
     let mut index: usize = 0
     while index < nodes.length() {
         let node: TemplateNode = nodes⁅index⁆.unwrap()
@@ -139,9 +140,9 @@ micro template_render_nodes(nodes: [TemplateNode], expressions: [TemplateExpress
                 signal = SignalContinue
                 index = nodes.length()
             case MissingNode(payload):
-                diagnostics = push(diagnostics, new_data_diagnostic("template.render.broken_node", Error, "渲染遇到缺席占位节点", new_data_span(0, 0)))
+                diagnostics = push(diagnostics, new_diagnostic("template.render.broken_node", Error, "渲染遇到缺席占位节点", new_span(0, 0)))
             case PoisonNode(payload):
-                diagnostics = push(diagnostics, new_data_diagnostic("template.render.broken_node", Error, "渲染遇到污染节点", new_data_span(0, 0)))
+                diagnostics = push(diagnostics, new_diagnostic("template.render.broken_node", Error, "渲染遇到污染节点", new_span(0, 0)))
             else: {
                 # CommentNode：注释不进入渲染输出。
             }
@@ -153,7 +154,7 @@ micro template_render_nodes(nodes: [TemplateNode], expressions: [TemplateExpress
 
 # if：依序求值分支条件，首个 truthy 分支渲染；都不中渲染 alternate。
 micro template_render_if(branches: [TemplateIfBranch], alternate: [TemplateNode], expressions: [TemplateExpression], frames: [TemplateFrame], context: TemplateValue, settings: TemplateRenderSettings, depth: usize) -> TemplateChunk {
-    let mut diagnostics: [DataDiagnostic] = []
+    let mut diagnostics: [Diagnostic] = []
     let mut index: usize = 0
     while index < branches.length() {
         let branch: TemplateIfBranch = branches⁅index⁆.unwrap()
@@ -173,7 +174,7 @@ micro template_render_if(branches: [TemplateIfBranch], alternate: [TemplateNode]
 # 每次迭代压入一帧：循环变量 + `forloop`（index/index0/first/last/length/depth）。
 # break 终止循环并继续后续内容；continue 跳过当前迭代剩余 body。
 micro template_render_loop(item: utf8, iterable: usize, body: [TemplateNode], expressions: [TemplateExpression], frames: [TemplateFrame], context: TemplateValue, settings: TemplateRenderSettings, depth: usize) -> TemplateChunk {
-    let mut diagnostics: [DataDiagnostic] = []
+    let mut diagnostics: [Diagnostic] = []
     let evaluated: TemplateEvaluation = template_evaluate(iterable, expressions, frames, context, settings, depth + 1)
     diagnostics = template_merge_diagnostics(diagnostics, evaluated.diagnostics)
     match evaluated.value {
@@ -212,7 +213,7 @@ micro template_render_loop(item: utf8, iterable: usize, body: [TemplateNode], ex
             }
             return TemplateChunk { text: text, signal: SignalNone, diagnostics: diagnostics }
         else:
-            diagnostics = push(diagnostics, new_data_diagnostic("template.render.invalid_iterable", Error, "loop 的 iterable 必须是数组", new_data_span(0, 0)))
+            diagnostics = push(diagnostics, new_diagnostic("template.render.invalid_iterable", Error, "loop 的 iterable 必须是数组", new_span(0, 0)))
             return TemplateChunk { text: "", signal: SignalNone, diagnostics: diagnostics }
     }
 }
@@ -252,8 +253,8 @@ micro template_interpolation_output(value: TemplateValue) -> TemplateChunk {
         case NumberValue(payload):
             let rendered: utf8? = template_number_to_text_option(payload.value)
             if rendered.is_none() {
-                let mut diagnostics: [DataDiagnostic] = []
-                diagnostics = push(diagnostics, new_data_diagnostic("template.render.number_fraction", Error, "非整数/非有限数字的字符串化当前未支持", new_data_span(0, 0)))
+                let mut diagnostics: [Diagnostic] = []
+                diagnostics = push(diagnostics, new_diagnostic("template.render.number_fraction", Error, "非整数/非有限数字的字符串化当前未支持", new_span(0, 0)))
                 return TemplateChunk { text: "", signal: SignalNone, diagnostics: diagnostics }
             }
             return template_chunk(template_escape_html(rendered.unwrap()))
@@ -294,7 +295,7 @@ micro template_evaluate(index: usize, expressions: [TemplateExpression], frames:
             return template_evaluation(found.unwrap())
         case ObjectLiteral(payload):
             let mut fields: [TemplateField] = []
-            let mut diagnostics: [DataDiagnostic] = []
+            let mut diagnostics: [Diagnostic] = []
             let mut entry_index: usize = 0
             while entry_index < payload.entries.length() {
                 let entry: TemplateObjectEntry = payload.entries⁅entry_index⁆.unwrap()
@@ -334,7 +335,7 @@ micro template_evaluate(index: usize, expressions: [TemplateExpression], frames:
 micro template_evaluate_index(object_index: usize, index_index: usize, expressions: [TemplateExpression], frames: [TemplateFrame], context: TemplateValue, settings: TemplateRenderSettings, depth: usize) -> TemplateEvaluation {
     let object: TemplateEvaluation = template_evaluate(object_index, expressions, frames, context, settings, depth + 1)
     let index_value: TemplateEvaluation = template_evaluate(index_index, expressions, frames, context, settings, depth + 1)
-    let mut diagnostics: [DataDiagnostic] = template_merge_diagnostics(object.diagnostics, index_value.diagnostics)
+    let mut diagnostics: [Diagnostic] = template_merge_diagnostics(object.diagnostics, index_value.diagnostics)
     match object.value {
         case ArrayValue(payload):
             match index_value.value {
@@ -371,7 +372,7 @@ micro template_evaluate_call(callee: usize, call_arguments: [usize], expressions
     match callee_expression {
         case Identifier(payload):
             let mut arguments: [TemplateValue] = []
-            let mut diagnostics: [DataDiagnostic] = []
+            let mut diagnostics: [Diagnostic] = []
             let mut index: usize = 0
             while index < call_arguments.length() {
                 let evaluated: TemplateEvaluation = template_evaluate(call_arguments⁅index⁆.unwrap(), expressions, frames, context, settings, depth + 1)
@@ -391,7 +392,7 @@ micro template_evaluate_call(callee: usize, call_arguments: [usize], expressions
 micro template_evaluate_binary(operator: TemplateBinaryOperator, left: usize, right: usize, expressions: [TemplateExpression], frames: [TemplateFrame], context: TemplateValue, settings: TemplateRenderSettings, depth: usize) -> TemplateEvaluation {
     let left_value: TemplateEvaluation = template_evaluate(left, expressions, frames, context, settings, depth + 1)
     let right_value: TemplateEvaluation = template_evaluate(right, expressions, frames, context, settings, depth + 1)
-    let diagnostics: [DataDiagnostic] = template_merge_diagnostics(left_value.diagnostics, right_value.diagnostics)
+    let diagnostics: [Diagnostic] = template_merge_diagnostics(left_value.diagnostics, right_value.diagnostics)
     let result: TemplateValue = template_binary_apply(operator, left_value.value, right_value.value)
     return TemplateEvaluation { value: result, diagnostics: diagnostics }
 }
@@ -578,7 +579,7 @@ micro template_evaluate_unary(operator: TemplateUnaryOperator, operand: usize, e
 # 管道：依次应用过滤器；参数在每个过滤器段求值。
 micro template_evaluate_pipe(pipe_expression: usize, filter: utf8, pipe_arguments: [usize], expressions: [TemplateExpression], frames: [TemplateFrame], context: TemplateValue, settings: TemplateRenderSettings, depth: usize) -> TemplateEvaluation {
     let source: TemplateEvaluation = template_evaluate(pipe_expression, expressions, frames, context, settings, depth + 1)
-    let mut diagnostics: [DataDiagnostic] = source.diagnostics
+    let mut diagnostics: [Diagnostic] = source.diagnostics
     let mut arguments: [TemplateValue] = []
     let mut index: usize = 0
     while index < pipe_arguments.length() {
@@ -595,7 +596,7 @@ micro template_evaluate_pipe(pipe_expression: usize, filter: utf8, pipe_argument
 # 测试：`is` / `is not` 谓词；`is not` 对最终布尔值取反。
 micro template_evaluate_test(test_expression: usize, name: utf8, test_arguments: [usize], negated: bool, expressions: [TemplateExpression], frames: [TemplateFrame], context: TemplateValue, settings: TemplateRenderSettings, depth: usize) -> TemplateEvaluation {
     let source: TemplateEvaluation = template_evaluate(test_expression, expressions, frames, context, settings, depth + 1)
-    let mut diagnostics: [DataDiagnostic] = source.diagnostics
+    let mut diagnostics: [Diagnostic] = source.diagnostics
     let mut arguments: [TemplateValue] = []
     let mut index: usize = 0
     while index < test_arguments.length() {

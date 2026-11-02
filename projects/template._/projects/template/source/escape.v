@@ -21,7 +21,7 @@ micro template_escape_html(text: utf8) -> utf8 {
         else if c == '"' {
             output = output + "&quot;"
         }
-        else if c == '\'' {
+        else if c == "'" {
             output = output + "&#x27;"
         }
         else {

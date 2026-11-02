@@ -1,7 +1,8 @@
 namespace template;
 
-using std.data::{DataDiagnostic, DataOutcome, data_diagnostic_code, data_outcome_diagnostics, data_outcome_value};
-using std.data.text::{Binary, BreakNode, Call, CommentNode, ContinueNode, Identifier, IfNode, InterpolationNode, LiteralNumber, LiteralString, LoopNode, Member, ObjectLiteral, OpEqual, Pipe, Test, TemplateDocument, TemplateExpression, TemplateIfBranch, TemplateNode, TemplateObjectEntry, TextNode};
+using std.diagnostic::{Diagnostic, diagnostic_code};
+using std.data::{DataOutcome, data_outcome_diagnostics, data_outcome_value_or};
+using std.data.text::{Binary, BreakNode, Call, CommentNode, ContinueNode, Identifier, IfNode, InterpolationNode, LiteralNumber, LiteralString, LoopNode, Member, ObjectLiteral, OpEqual, Pipe, Test, TemplateDocument, TemplateExpression, TemplateIfBranch, TemplateImportName, TemplateNode, TemplateObjectEntry, TemplateParameter, TextNode};
 
 # 渲染段测试：正例覆盖插值/转义/if/loop/forloop/break/continue/过滤器/函数/测试；
 # 反例覆盖未知过滤器、非法迭代、strict 未定义与非整数边界。
@@ -22,16 +23,16 @@ micro render_ok(body: [TemplateNode], expressions: [TemplateExpression], context
     if data_outcome_diagnostics(outcome).length() != 0 {
         panic("clean render must not register diagnostics")
     }
-    return data_outcome_value(outcome)
+    return data_outcome_value_or(outcome, "")
 }
 
 micro first_render_error(body: [TemplateNode], expressions: [TemplateExpression], context: TemplateValue) -> utf8 {
     let outcome: DataOutcome<utf8> = render_doc(body, expressions, context)
-    let diagnostics: [DataDiagnostic] = data_outcome_diagnostics(outcome)
+    let diagnostics: [Diagnostic] = data_outcome_diagnostics(outcome)
     if diagnostics.length() == 0 {
         return ""
     }
-    return data_diagnostic_code(diagnostics⁅0⁆.unwrap())
+    return diagnostic_code(diagnostics⁅0⁆.unwrap())
 }
 
 micro interpolation(expression: usize) -> TemplateNode {
@@ -375,11 +376,11 @@ micro test_render_invalid_iterable_rejected() -> unit {
 micro test_render_strict_undefined_rejected() -> unit {
     let expressions: [TemplateExpression] = [identifier("missing")]
     let outcome: DataOutcome<utf8> = render_doc_strict([interpolation(0)], expressions, template_object([]))
-    let diagnostics: [DataDiagnostic] = data_outcome_diagnostics(outcome)
+    let diagnostics: [Diagnostic] = data_outcome_diagnostics(outcome)
     if diagnostics.length() == 0 {
         panic("strict undefined must register a diagnostic")
     }
-    if data_diagnostic_code(diagnostics⁅0⁆.unwrap()) != "template.render.undefined_variable" {
+    if diagnostic_code(diagnostics⁅0⁆.unwrap()) != "template.render.undefined_variable" {
         panic("undefined_variable diagnostic expected")
     }
     # 非 strict 下缺失标识符渲染为空串，不报错。

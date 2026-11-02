@@ -1,6 +1,6 @@
 namespace template;
 
-using std.data::{DataDiagnostic, Error, new_data_diagnostic, new_data_span};
+using std.diagnostic::{Diagnostic, Error, new_diagnostic, new_span};
 
 # 内置过滤器 / 函数 / 测试注册表与实现（纯计算，不读上下文、不访问宿主）。
 #
@@ -19,12 +19,12 @@ using std.data::{DataDiagnostic, Error, new_data_diagnostic, new_data_span};
 
 structure TemplateFilterResult {
     value: TemplateValue
-    diagnostics: [DataDiagnostic]
+    diagnostics: [Diagnostic]
 }
 
 structure TemplateTestResult {
     passed: bool
-    diagnostics: [DataDiagnostic]
+    diagnostics: [Diagnostic]
 }
 
 micro template_filter_result(value: TemplateValue) -> TemplateFilterResult {
@@ -32,8 +32,8 @@ micro template_filter_result(value: TemplateValue) -> TemplateFilterResult {
 }
 
 micro template_filter_failure(code: utf8, message: utf8) -> TemplateFilterResult {
-    let mut diagnostics: [DataDiagnostic] = []
-    diagnostics = push(diagnostics, new_data_diagnostic(code, Error, message, new_data_span(0, 0)))
+    let mut diagnostics: [Diagnostic] = []
+    diagnostics = push(diagnostics, new_diagnostic(code, Error, message, new_span(0, 0)))
     return TemplateFilterResult { value: NullValue, diagnostics: diagnostics }
 }
 
@@ -332,13 +332,13 @@ micro template_is_known_test(name: utf8) -> bool {
 
 micro template_call_test(name: utf8, value: TemplateValue, arguments: [TemplateValue]) -> TemplateTestResult {
     if !template_is_known_test(name) {
-        let mut diagnostics: [DataDiagnostic] = []
-        diagnostics = push(diagnostics, new_data_diagnostic("template.render.unknown_test", Error, "未知测试", new_data_span(0, 0)))
+        let mut diagnostics: [Diagnostic] = []
+        diagnostics = push(diagnostics, new_diagnostic("template.render.unknown_test", Error, "未知测试", new_span(0, 0)))
         return TemplateTestResult { passed: false, diagnostics: diagnostics }
     }
     if arguments.length() != 0 {
-        let mut diagnostics: [DataDiagnostic] = []
-        diagnostics = push(diagnostics, new_data_diagnostic("template.render.test_arity", Error, "内置测试不接受参数", new_data_span(0, 0)))
+        let mut diagnostics: [Diagnostic] = []
+        diagnostics = push(diagnostics, new_diagnostic("template.render.test_arity", Error, "内置测试不接受参数", new_span(0, 0)))
         return TemplateTestResult { passed: false, diagnostics: diagnostics }
     }
     return TemplateTestResult { passed: template_run_test(name, value), diagnostics: [] }

@@ -5,7 +5,6 @@
     type: "library",
     dependencies: {
         "std": { version: "workspace" },
-        "std.data": { version: "workspace" },
         "std.data.text": { version: "workspace" }
     },
     build: [
