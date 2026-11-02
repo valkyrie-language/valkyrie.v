@@ -1,0 +1,17 @@
+{
+    name: "hardware-harness",
+    version: "0.1.0",
+    artifact: "library",
+    dependencies: {
+        std: {
+            version: "workspace"
+        },
+        hardware: {
+            version: "workspace"
+        }
+    },
+    build: [
+        { target: "wasm" },
+        { target: "ovm" }
+    ]
+}
