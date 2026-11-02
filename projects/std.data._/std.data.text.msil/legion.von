@@ -3,7 +3,7 @@
     version: "workspace",
     description: "MSIL/ILASM 文本解析库 - 词法分析",
     type: "library",
-    dependencies: {},
+    dependencies: { "std": { version: "workspace" } },
     build: [
         { target: "ovm" },
         { target: "clr" },

@@ -1,10 +1,9 @@
 namespace std.data.binary.wasm;
 
-structure WasmBinaryDiagnostic {
-    message: utf8
+using std.diagnostic::{Diagnostic, Error, new_diagnostic, new_span};
 
-    offset: usize
-}
+# 诊断类型收敛到 `std.diagnostic::Diagnostic`（统一合同，不再各自定义）。
+# 旧轨包：诊断码表随错误容许改造补齐，暂以单码占位。
 
 [tag(WasmBinaryResultKind)]
 unite WasmBinaryResult<T> {
@@ -13,14 +12,11 @@ unite WasmBinaryResult<T> {
     Fine { value: T }
     [tag(1)]
     [constructor]
-    Fail { error: WasmBinaryDiagnostic }
+    Fail { error: Diagnostic }
 }
 
-micro wasm_binary_diagnostic(message: utf8, offset: usize) -> WasmBinaryDiagnostic {
-    return WasmBinaryDiagnostic {
-        message: message,
-        offset: offset
-    }
+micro wasm_binary_diagnostic(message: utf8, offset: usize) -> Diagnostic {
+    return new_diagnostic("std.data.binary.wasm.defect", Error, message, new_span(offset, offset))
 }
 
 structure Leb128Decoded<T> {

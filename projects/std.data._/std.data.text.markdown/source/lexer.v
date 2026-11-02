@@ -1,6 +1,7 @@
 namespace std.data.text.markdown;
 
-using std.data::{DataDiagnostic, DataOutcome, DataSeverity, Warning};
+using std.data::{DataOutcome, data_outcome_partial};
+using std.diagnostic::{Diagnostic, Warning, new_diagnostic, new_span};
 
 # Markdown 词法分析：源文本 -> token 流（`MarkdownToken`）。
 # 只认词法：同类连续字符合并为一个 token，每个字符恰好属于一个 token（无损）。
@@ -108,7 +109,7 @@ micro code_point_at(source: utf8, index: usize) -> u32 {
 
 micro markdown_lex(source: utf8) -> DataOutcome<[MarkdownToken]> {
     let mut tokens: [MarkdownToken] = []
-    let mut diagnostics: [DataDiagnostic] = []
+    let mut diagnostics: [Diagnostic] = []
     let length: usize = source.length()
     let mut index: usize = 0
     while index < length {
@@ -153,7 +154,7 @@ micro markdown_lex(source: utf8) -> DataOutcome<[MarkdownToken]> {
         # 32=' '：小于空格码位的不可见控制字符归为非法。待字面量：`code_point < ' '`
         else if code_point < 32 {
             tokens = push(tokens, new_markdown_token(Illegal, index, index + 1))
-            diagnostics = push(diagnostics, new_data_diagnostic("markdown.lex.illegal_code_point", Warning, "不可见控制字符", new_data_span(index, index + 1)))
+            diagnostics = push(diagnostics, new_diagnostic("markdown.lex.illegal_code_point", Warning, "不可见控制字符", new_span(index, index + 1)))
             index = index + 1
         }
         else {
@@ -168,5 +169,5 @@ micro markdown_lex(source: utf8) -> DataOutcome<[MarkdownToken]> {
             index = stop
         }
     }
-    return data_outcome_with(tokens, diagnostics)
+    return data_outcome_partial(tokens, diagnostics)
 }

@@ -2,6 +2,7 @@ namespace nyar.package_registry;
 
 using std.io;
 using std.data.text.von;
+using std.diagnostic::{Diagnostic};
 
 # 注册表包元数据
 structure Package {

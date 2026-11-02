@@ -3,7 +3,7 @@
     version: "workspace",
     description: "CLR 程序集二进制解析库 - 解码 .NET PE 字节流为结构化数据",
     type: "library",
-    dependencies: {},
+    dependencies: { "std": { version: "workspace" } },
     build: [
         { target: "ovm" },
         { target: "clr" },

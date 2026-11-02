@@ -7,8 +7,8 @@ micro test_wasm_section_header_constructible() -> unit {
     let header: WasmSectionHeader = WasmSectionHeader {
         kind: Type,
         id: 1,
-        span: new_data_span(8, 20),
-        header_span: new_data_span(6, 8)
+        span: new_span(8, 20),
+        header_span: new_span(6, 8)
     }
     if header.id != 1 {
         panic("section id mismatch")

@@ -1,6 +1,6 @@
 namespace std.data.binary.wasm;
 
-using std.data::{DataSpan};
+using std.diagnostic::{Span};
 
 # WASM 模块结构骨架（只声明，不实现）。
 #
@@ -40,6 +40,6 @@ enums WasmSectionKind {
 structure WasmSectionHeader {
     kind: WasmSectionKind
     id: u8
-    span: DataSpan
-    header_span: DataSpan
+    span: Span
+    header_span: Span
 }

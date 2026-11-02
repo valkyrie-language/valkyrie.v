@@ -1,10 +1,9 @@
 namespace std.data.binary.clr;
 
-structure ClrBinaryDiagnostic {
-    message: utf8
+using std.diagnostic::{Diagnostic, Error, new_diagnostic, new_span};
 
-    offset: usize
-}
+# 诊断类型收敛到 `std.diagnostic::Diagnostic`（统一合同，不再各自定义）。
+# 旧轨包：诊断码表随错误容许改造补齐，暂以单码占位。
 
 [tag(ClrBinaryResultKind)]
 unite ClrBinaryResult<T> {
@@ -13,14 +12,11 @@ unite ClrBinaryResult<T> {
     Fine { value: T }
     [tag(1)]
     [constructor]
-    Fail { error: ClrBinaryDiagnostic }
+    Fail { error: Diagnostic }
 }
 
-micro clr_binary_diagnostic(message: utf8, offset: usize) -> ClrBinaryDiagnostic {
-    return ClrBinaryDiagnostic {
-        message: message,
-        offset: offset
-    }
+micro clr_binary_diagnostic(message: utf8, offset: usize) -> Diagnostic {
+    return new_diagnostic("std.data.binary.clr.defect", Error, message, new_span(offset, offset))
 }
 
 micro clr_read_u8(data: [i32], offset: usize) -> ClrBinaryResult<i32> {

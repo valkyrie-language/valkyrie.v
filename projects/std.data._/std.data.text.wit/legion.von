@@ -3,7 +3,7 @@
     version: "workspace",
     description: "WIT 文本解析库 - 词法分析、语法解析为 AST",
     type: "library",
-    dependencies: {},
+    dependencies: { "std": { version: "workspace" } },
     build: [
         { target: "ovm" },
         { target: "clr" },

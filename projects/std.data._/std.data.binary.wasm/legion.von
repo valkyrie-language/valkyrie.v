@@ -1,9 +1,9 @@
 {
     name: "std.data.binary.wasm",
     version: "workspace",
-    description: "WASM 二进制编解码 — decode/encode .wasm（同构 std-data::binary::wasm）",
+    description: "WASM 二进制编解码 — decode/encode .wasm",
     type: "library",
-    dependencies: { "std.data": { version: "workspace" }
+    dependencies: { "std": { version: "workspace" }
     },
     build: [
         { target: "ovm" },
