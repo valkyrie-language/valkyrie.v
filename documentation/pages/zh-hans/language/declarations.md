@@ -118,6 +118,8 @@ using std::collection::*
 | `using game::physics::Vector` | 单名称导入 |
 | `using std::collection::*` | 通配符导入 |
 
+跨包消费 `unite` 变体时，仅导入 unite 类型名不够：变体的负载类型也必须在消费包的 `using` 列表内，否则该负载类型名在构造或匹配处解析失败（`unknown type name`）。
+
 详见 [路径解析](path-resolution.md) 和 [方法分发](method-dispatch.md)。
 
 ## 结构体声明 — `structure`
