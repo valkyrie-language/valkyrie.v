@@ -1,0 +1,10 @@
+{
+    name: "std.data.text.tex",
+    version: "workspace",
+    description: "TeX 数学子集解析库 - 词法、无损 CST、构建数学 AST（Valkyrie）",
+    type: "library",
+    dependencies: { "std": { version: "workspace" }, "vutex": { version: "workspace" } },
+    build: [
+        { target: "ovm" }
+    ]
+}
