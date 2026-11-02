@@ -11,6 +11,7 @@
         "projects/std.data.text",
         "projects/std.data.text.dejavu",
         "std.data.text.markdown",
+        "std.data.text.mermaid",
         "std.data.text.tex",
         "std.data.text.msil",
         "std.data.text.valkyrie",

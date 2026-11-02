@@ -1,0 +1,10 @@
+{
+    name: "std.data.text.mermaid",
+    version: "workspace",
+    description: "mermaid 子集解析库 - 词法、无损 CST、构建图场景材料（Valkyrie）",
+    type: "library",
+    dependencies: { "std": { version: "workspace" }, "document.plot": { version: "workspace" } },
+    build: [
+        { target: "ovm" }
+    ]
+}
