@@ -1,32 +1,23 @@
-# yyds._
+# yyds
 
-`yyds._` 是数据库生态的顶层 workspace，不是单一产品。
+`yyds` 是分布式数据库产品线，隶属 `database._` workspace。
 
-## 组成
+## 定位
 
-- `yykv`：共享底层存储内核
-- `yydb`：单机数据库：嵌入式、本地优先、带 KV 高速缓存能力
-- `yyds`：分布式数据库
-
-## 原则
-
-- `yydb` 与 `yyds` 不是一个东西
-- `yydb` 可以作为 `yyds` 的 sidecar 高速缓存
-- `yydb` 和 `yyds` 可以升降级，但不能因此合并成一个包
+- 存储内核复用 `yykv` 的分片合同
+- 可消费作为 sidecar 高速缓存的 `yydb`，但二者物理拆包
 - **与 Atlas 无关**：yyds 是独立数据库产品线，不是 Atlas ORM / 数据绑定平面；勿与 Atlas 的 VOS（schema 真源 + 默认 query；SQL 亦可）→ RegenBindings / 一次性升级故事交叉绑定
 
 ## 计划中的子包
 
-- `projects/yykv`
-- `projects/yydb`
-- `projects/yyds`
-- `projects/yyds.protocol.mysql`
-- `projects/yyds.protocol.pgsql`
-- `projects/yyds.protocol.redis`
-- `projects/yyds.tools`
+- `yyds` 本体
+- `yyds.protocol.mysql`
+- `yyds.protocol.pgsql`
+- `yyds.protocol.redis`
+- `yyds.tools`
 
 ## 当前状态
 
-规划中，先完成 workspace 与文档骨架。
+规划中，待 `yykv` 内核稳定后开工。
 
 文档入口：[documentation/pages/zh-hans/index.md](documentation/pages/zh-hans/index.md)
