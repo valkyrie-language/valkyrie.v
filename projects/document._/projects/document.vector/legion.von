@@ -1,0 +1,12 @@
+{
+    name: "document.vector",
+    version: "workspace",
+    description: "document.* vector text emission: deterministic SVG primitives (Valkyrie)",
+    type: "library",
+    dependencies: { "std": { version: "workspace" } },
+    build: [
+        {
+            target: "ovm"
+        }
+    ]
+}

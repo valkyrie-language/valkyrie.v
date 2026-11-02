@@ -5,6 +5,7 @@
         "projects/document",
         "projects/document.layout",
         "projects/document.render",
+        "projects/document.vector",
         "projects/notedown",
         "projects/panduck",
         "projects/pandark",
