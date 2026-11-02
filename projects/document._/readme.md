@@ -15,17 +15,15 @@
 
 ## 当前状态
 
-- `document` / `document.layout` / `document.render`：`document.*` 核心（文档树、元数据、引用、资源、布局、渲染管线），骨架落位，按核心合同逐块开工
+- `document` / `document.layout` / `document.render`：`document.*` 核心（文档树、元数据、引用、资源、布局、渲染管线），骨架落位，逐步落地
 - `notedown`：文档语义 IR（Block / Inline / DocumentGraph / 校验）已入树，markdown → IR 链路待接 `std.data` 三段管线
 - `panduck` / `pandark` / `vutex`：骨架落位（`legion.von` + 边界文档）
 
-## 冻结声明（2026-11-02）
+## 边界约束
 
-`document.*` 核心未立住之前，产品级一律冻结新功能：
-
-- `notedown` 的 `source/ir/`（Block / Inline / DocumentGraph）与核心文档树语义重复，冻结新功能；
-  核心落地后改挂核心模型并退役重复面，产品侧只做"解析进模型"一端
-- `panduck` / `pandark` / `vutex`（tex 类产品位）全部冻结；tex 当前无代码，等核心稳定再迁
+- `notedown` 的 `source/ir/`（Block / Inline / DocumentGraph）与核心文档树语义重复；
+  核心模型落地后改挂核心并退役重复面，产品侧只做"解析进模型"一端
+- `panduck` / `pandark` / `vutex`（tex 类产品位）在核心模型稳定前不扩展新功能
 - 产品级解析器必须把结果映射进核心模型，不许各自造树、不许各自渲染
 
 文档入口：[documentation/pages/zh-hans/index.md](documentation/pages/zh-hans/index.md)；设计文档：[核心合同](documentation/pages/zh-hans/core-contract.md)、[conformance 用例表](documentation/pages/zh-hans/conformance-matrix.md)、[notedown 迁移映射](documentation/pages/zh-hans/notedown-migration.md)

@@ -1,6 +1,5 @@
 # notedown 迁移映射（`source/ir/` → `document` 核心）
 
-状态：设计定稿，实施待核心模型落地与 markdown 三段管线解锁。
 原则：notedown 只做"解析进模型"一端——`std.data.text.dejavu` 产出 notedown 方言的
 lexer/parser 产物，notedown 把 AST 映射为 `document` 树；不造树、不渲染。
 
