@@ -4,18 +4,18 @@ using std.data::{DataDiagnostic, Error, new_data_diagnostic, new_data_span};
 
 # 内置过滤器 / 函数 / 测试注册表与实现（纯计算，不读上下文、不访问宿主）。
 #
-# 首块内置表（名称 → 参数区间）：
+# 当前内置表（名称 → 参数区间）：
 #   filter: uppercase/upper, lowercase/lower, trim, escape/e, safe/raw  (0..0)
 #           default (1..1)，join (0..1)，replace (2..2)
 #   function: range (2..3)，min/max (2..2)
 #   test: null/none, truthy, empty, array, object, string, number, boolean, even, odd (0..0)
-# date（时间源是宿主能力）与 slug（NFKD 需 Unicode 数据表）为已登记缺口，不在表内。
+# date（时间源是宿主能力）与 slug（NFKD 需 Unicode 数据表）当前未提供，不在表内。
 #
 # 诊断码：template.render.unknown_filter / filter_arity / unknown_function /
 # function_arity / unknown_test / test_arity。未知条目不穿透渲染栈，值落 Null。
 #
 # span 无从获知调用点（过滤器只拿到值），诊断用零宽哨兵 0..0；
-# 调用点 span 由渲染段持有表达式节点位置后另行补充（后续块）。
+# 调用点 span 由渲染段持有表达式节点位置后另行补充（尚未补充）。
 
 structure TemplateFilterResult {
     value: TemplateValue
@@ -207,7 +207,7 @@ micro template_replace_all(text: utf8, from: utf8, to: utf8) -> utf8 {
 # ── 函数（裸标识符调用；纯函数，不读上下文）──
 
 micro template_function_min_arguments(name: utf8) -> usize {
-    # range / min / max 首块均为至少 2 参。
+    # range / min / max 当前均为至少 2 参。
     return 2
 }
 

@@ -1,4 +1,6 @@
-namespace template;
+namespace std.data.text.dejavu;
+
+using std.data.text::{ExpressionMissing, Identifier, IfNode, InterpolationNode, LiteralNumber, LiteralString, LoopNode, TemplateDocument, TemplateExpression, TemplateNode, TextNode};
 
 using std.data::{DataCstNode, DataDiagnostic, DataOutcome, DataSettings, DataSource, DataToken, data_diagnostic_code, data_outcome_diagnostics, data_outcome_value, data_source_from_bytes, data_source_from_text, new_data_settings};
 

@@ -1,7 +1,9 @@
-namespace template;
+namespace std.data.text;
 
-# 语义 AST：builder 段的产物，渲染段的输入。
+# 公共模板 AST 模型：各方言 builder 段的统一产物，渲染段的输入。
 #
+# 通用节点：文本、注释、插值、条件、循环、break/continue 与缺席/污染占位；
+# partial 槽由具体方言在公共模型上扩展（公共层不预设 partial 语义）。
 # 表达式树以平坦 arena 承载：`TemplateDocument.expressions` 为节点数组，
 # 节点内的子引用为数组下标（usize 句柄）。不经数组的直接递归 unite payload
 # 在 V 侧 CLR 自举不可用（`std.data.text.valkyrie` 的 flat term shell 注释），
@@ -73,13 +75,13 @@ structure TemplateObjectEntry {
 
 [tag(TemplateNodeTag)]
 unite TemplateNode {
-    # 模板文本（trim 已应用）；`<%!` 转义形式在本变体以字面 `<%` 进入。
+    # 模板文本（trim 已应用）。
     [constructor]
     TextNode { text: utf8 }
     # 注释体（含定界符的原文）；渲染忽略。
     [constructor]
     CommentNode { text: utf8 }
-    # 插值：渲染表达式为字符串，默认 HTML 转义。
+    # 插值：渲染表达式为字符串；转义策略由渲染配置决定。
     [constructor]
     InterpolationNode { expression: usize }
     [constructor]

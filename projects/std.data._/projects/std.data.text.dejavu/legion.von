@@ -1,0 +1,17 @@
+{
+    name: "std.data.text.dejavu",
+    version: "workspace",
+    description: "dejavu 模板方言 - 词法、无损 CST、构建公共模板 AST 的三段实现",
+    type: "library",
+    dependencies: {
+        "std": { version: "workspace" },
+        "std.data": { version: "workspace" },
+        "std.data.text": { version: "workspace" }
+    },
+    build: [
+        { target: "ovm" },
+        { target: "clr" },
+        { target: "jvm" },
+        { target: "wasm" }
+    ]
+}

@@ -1,4 +1,4 @@
-namespace template;
+namespace std.data.text.dejavu;
 
 using std.data::{DataCstNode, DataDiagnostic, DataOutcome, DataSettings, DataSpan, DataToken, Error, data_cst_missing, data_cst_node, data_cst_poison, data_cst_span, data_cst_token, data_outcome_with, new_data_diagnostic, new_data_span};
 
@@ -11,7 +11,7 @@ using std.data::{DataCstNode, DataDiagnostic, DataOutcome, DataSettings, DataSpa
 #
 # 恢复同步点：标签闭标 `%>` 与语句闭合头（else/end if/end loop 等）为安全边界。
 #
-# break/continue 绑定词法最近外层 loop（首块词法单元 = 模板顶层与 loop body；
+# break/continue 绑定词法最近外层 loop（当前词法单元 = 模板顶层与 loop body；
 # macro/call/partial/block 属未支持表面）。越界产 `template.parse.control_outside_loop`。
 # closer 标签（else/else if/end if/end loop）上的 trim marker 一律拒绝
 # （`template.parse.closer_trim_marker`）。
@@ -23,7 +23,7 @@ unite TemplateParseStop {
     StopElse
     StopEndIf
     StopEndLoop
-    # 其他闭合形（end block / end partial / end macro / end call 等）：首块一律
+    # 其他闭合形（end block / end partial / end macro / end call 等）：当前一律
     # 由顶层按 `template.parse.unmatched_closer` 恢复。
     StopOther
 }
@@ -533,7 +533,7 @@ imply TemplateParser {
         return data_cst_node(node_kind, span, children)
     }
 
-    # 首块不支持的语句表面：整个标签挂 NodeUnsupported 并诊断（标签 token 全保留）。
+    # 当前不支持的语句表面：整个标签挂 NodeUnsupported 并诊断（标签 token 全保留）。
     micro parse_unsupported(mut self, name: utf8) -> DataCstNode<TemplateTokenKind> {
         let start: usize = self.current_start()
         let leaves: [DataCstNode<TemplateTokenKind>] = self.consume_tag_tokens()

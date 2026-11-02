@@ -1,0 +1,14 @@
+{
+    name: "std.data.text",
+    version: "workspace",
+    description: "std.data 文本格式公共模型 - 模板 AST 等跨格式共享的文本语义结构",
+    type: "library",
+    dependencies: { "std": { version: "workspace" }
+    },
+    build: [
+        { target: "ovm" },
+        { target: "clr" },
+        { target: "jvm" },
+        { target: "wasm" }
+    ]
+}

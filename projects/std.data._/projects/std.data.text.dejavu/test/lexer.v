@@ -1,4 +1,4 @@
-namespace template;
+namespace std.data.text.dejavu;
 
 using std.data::{DataDiagnostic, DataOutcome, DataToken, data_diagnostic_code, data_outcome_diagnostics, data_outcome_has_errors, data_outcome_value, data_source_from_bytes, data_source_from_text, new_data_settings};
 

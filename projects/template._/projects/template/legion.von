@@ -1,11 +1,12 @@
 {
     name: "template",
     version: "workspace",
-    description: "Valkyrie 模板语言核心 — 词法、无损 CST、语义 AST 与内存渲染",
+    description: "Valkyrie 模板渲染核心 — 公共模板 AST 的内存求值（上下文、作用域、转义、注册表）",
     type: "library",
     dependencies: {
         "std": { version: "workspace" },
-        "std.data": { version: "workspace" }
+        "std.data": { version: "workspace" },
+        "std.data.text": { version: "workspace" }
     },
     build: [
         { target: "ovm" },

@@ -246,7 +246,7 @@ micro template_double_quote() -> utf8 {
 }
 
 # ── 数字文本化 ──
-# 整数路径精确（i64 数字发射）；非整数路径属已登记缺口，返回 `utf8?` 的 null，
+# 整数路径精确（i64 数字发射）；非整数路径当前未支持，返回 `utf8?` 的 null，
 # 由调用点产生 `template.render.number_fraction` 结构化诊断，不输出近似值。
 
 micro template_number_to_text_option(value: f64) -> utf8? {
@@ -271,7 +271,7 @@ micro template_number_to_text_option(value: f64) -> utf8? {
 micro template_number_to_text(value: f64) -> utf8 {
     let rendered: utf8? = template_number_to_text_option(value)
     if rendered.is_none() {
-        # 非整数/非有限值的字符串化是已登记缺口；此处返回空串只是占位形态，
+        # 非整数/非有限值的字符串化当前未支持；此处返回空串只是占位形态，
         # 语义上调用点必须先查 `template_number_to_text_option` 并产诊断。
         return ""
     }
@@ -345,15 +345,15 @@ micro template_parse_number(text: utf8) -> f64 {
     let mut value: f64 = 0.0
     let mut index: usize = 0
     let mut dot: usize = length
-    # 整数部分：逐位十倍累加，遇小数点停止。48='0'，57='9'，46='.'。待字面量。
+    # 整数部分：逐位十倍累加，遇小数点停止。
     while index < length {
-        let code_point: u32 = text⁅index⁆ as u32
-        if code_point == 46 {
+        let c: char = text⁅index⁆
+        if c == '.' {
             dot = index
             break
         }
-        if code_point >= 48 && code_point <= 57 {
-            value = value * 10.0 + (code_point - 48) as f64
+        if c >= '0' && c <= '9' {
+            value = value * 10.0 + ((c as u32) - 48) as f64
         }
         index = index + 1
     }
@@ -362,9 +362,9 @@ micro template_parse_number(text: utf8) -> f64 {
     let mut weight: f64 = 0.1
     index = dot + 1
     while index < length {
-        let code_point: u32 = text⁅index⁆ as u32
-        if code_point >= 48 && code_point <= 57 {
-            fraction = fraction + (code_point - 48) as f64 * weight
+        let c: char = text⁅index⁆
+        if c >= '0' && c <= '9' {
+            fraction = fraction + ((c as u32) - 48) as f64 * weight
             weight = weight / 10.0
         }
         index = index + 1

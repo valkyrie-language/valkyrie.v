@@ -1,4 +1,6 @@
-namespace template;
+namespace std.data.text.dejavu;
+
+using std.data.text::{Binary, BreakNode, Call, CommentNode, ContinueNode, ExpressionMissing, ExpressionPoison, Identifier, IfNode, Index, InterpolationNode, LiteralFalse, LiteralNull, LiteralNumber, LiteralString, LiteralTrue, LoopNode, Member, MissingNode, ObjectLiteral, OpAdd, OpAnd, OpDivide, OpEqual, OpGreater, OpGreaterEqual, OpIdentity, OpIn, OpLess, OpLessEqual, OpMultiply, OpNegate, OpNot, OpNotEqual, OpOr, OpRemainder, OpSubtract, Pipe, PoisonNode, Test, TemplateBinaryOperator, TemplateDocument, TemplateExpression, TemplateIfBranch, TemplateNode, TemplateObjectEntry, TemplateUnaryOperator, TextNode, Unary};
 
 using std.data::{DataCstNode, DataDiagnostic, DataOutcome, DataSettings, DataSource, DataSpan, Error, data_cst_span, data_outcome_with, new_data_diagnostic, new_data_span};
 
@@ -6,7 +8,7 @@ using std.data::{DataCstNode, DataDiagnostic, DataOutcome, DataSettings, DataSou
 #
 # 词素按 token span 从源文本切回（无损），故本段显式持有源：
 # `template_build(cst, source, settings)`。三段 trait 的 `build` 签名不带 source，
-# 属 std.data 合同缺口，本包签名扩展已在 readme 登记。
+# 本包签名扩展见 readme。
 #
 # 恢复语义：CST 的 `Missing`/`Poison` 子树如实映射为 AST 的 `MissingNode`/`PoisonNode`
 # （表达式侧为 `ExpressionMissing`/`ExpressionPoison`），不擅自修补语义；
@@ -390,10 +392,9 @@ imply TemplateBuilder {
             }
             return text
         }
-        let first: u32 = text⁅0⁆ as u32
-        let last: u32 = text⁅length - 1⁆ as u32
-        # 34='"'，39='\''。待字面量。
-        if (first == 34 || first == 39) && last == first {
+        let first: char = text⁅0⁆
+        let last: char = text⁅length - 1⁆
+        if (first == '"' || first == '\'') && last == first {
             return text.slice(1, length - 2)
         }
         return text.slice(1, length - 1)
@@ -844,7 +845,7 @@ micro template_binary_operator_of(kind: TemplateTokenKind) -> TemplateBinaryOper
     return null
 }
 
-# 三段合同入口：语义段（签名扩展：显式携带源文本，见包 readme 缺口登记）。
+# 三段合同入口：语义段（签名扩展：显式携带源文本）。
 micro template_build(node: DataCstNode<TemplateTokenKind>, source: DataSource, settings: DataSettings) -> DataOutcome<TemplateDocument> {
     match source {
         case Text(payload):

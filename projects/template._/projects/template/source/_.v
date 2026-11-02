@@ -2,18 +2,14 @@ namespace template;
 
 using std.types::{Option};
 
-# template — Valkyrie 模板语言核心包。
+# template — Valkyrie 模板渲染核心包（只做渲染，不含解析）。
 #
-# 模板是文本格式：定界符外为文本，`<% %>` 内为代码（插值与语句共用），
-# `<# #>` 为注释。解析严格走 std.data 三段合同：
+# 输入是 `std.data.text` 的公共模板 AST（由 `std.data.text.<dialect>` 方言包的
+# 三段管线产出），输出为纯内存求值文本：
 #
-#   template_lex(source, settings)          -> DataOutcome<[DataToken<TemplateTokenKind>]>
-#   template_parse(tokens, settings)        -> DataOutcome<DataCstNode<TemplateTokenKind>>
-#   template_build(cst, source, settings)   -> DataOutcome<TemplateDocument>
+#   template_render(document, context, settings) -> DataOutcome<utf8>
 #
-# 渲染为纯内存求值：template_render(document, context, settings) -> DataOutcome<utf8>。
-# 词素不复制进 token，按 span 从源切回（无损）；三段各自错误容许，
-# 产出永远携带部分结果与诊断集合（DataOutcome 无 Fail 形态）。
-#
-# 边界：本包不读文件、不访问网络、不取当前时间；loader、自定义定界符开放、
-# date/slug 过滤器、继承与宏表面属后续块，见包 readme 的缺口登记。
+# 渲染侧配置（本包职责）：上下文帧栈与作用域查找顺序、表达式求值、过滤器/函数/测试
+# 注册表与内建集合、HTML 转义与安全文本、真值判定、undefined 严格模式、
+# 循环元数据（`forloop`）绑定。本包不读文件、不访问网络、不取当前时间；
+# partial 装配与 loader 尚未接入。

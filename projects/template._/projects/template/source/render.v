@@ -1,6 +1,7 @@
 namespace template;
 
-using std.data::{DataCstNode, DataDiagnostic, DataOutcome, DataSettings, DataToken, Error, data_outcome_diagnostics, data_outcome_value, data_outcome_with, data_source_from_text, DataSource, new_data_diagnostic, new_data_span};
+using std.data::{DataDiagnostic, DataOutcome, Error, data_outcome_with, new_data_diagnostic, new_data_span};
+using std.data.text::{Binary, BreakNode, Call, ContinueNode, ExpressionMissing, ExpressionPoison, Identifier, IfNode, Index, InterpolationNode, LiteralFalse, LiteralNull, LiteralNumber, LiteralString, LiteralTrue, LoopNode, Member, MissingNode, ObjectLiteral, OpAdd, OpAnd, OpDivide, OpEqual, OpGreater, OpGreaterEqual, OpIdentity, OpIn, OpLess, OpLessEqual, OpMultiply, OpNegate, OpNot, OpNotEqual, OpOr, OpRemainder, OpSubtract, Pipe, PoisonNode, TemplateBinaryOperator, TemplateDocument, TemplateExpression, TemplateIfBranch, TemplateNode, TemplateObjectEntry, TemplateUnaryOperator, TextNode, Unary};
 
 # 渲染段：AST + 上下文 -> 输出文本。纯内存求值，不读文件/网络/时钟。
 #
@@ -97,20 +98,8 @@ micro template_render(document: TemplateDocument, context: TemplateValue, settin
     return data_outcome_with(chunk.text, chunk.diagnostics)
 }
 
-# 端到端便利入口：source -> lex -> parse -> build -> render，诊断全程聚合。
-micro template_render_text(source: utf8, context: TemplateValue, settings: DataSettings, render_settings: TemplateRenderSettings) -> DataOutcome<utf8> {
-    let data_source: DataSource = data_source_from_text(source)
-    let lexed: DataOutcome<[DataToken<TemplateTokenKind>]> = template_lex(data_source, settings)
-    let mut diagnostics: [DataDiagnostic] = []
-    diagnostics = template_merge_diagnostics(diagnostics, data_outcome_diagnostics(lexed))
-    let parsed: DataOutcome<DataCstNode<TemplateTokenKind>> = template_parse(data_outcome_value(lexed), settings)
-    diagnostics = template_merge_diagnostics(diagnostics, data_outcome_diagnostics(parsed))
-    let built: DataOutcome<TemplateDocument> = template_build(data_outcome_value(parsed), data_source, settings)
-    diagnostics = template_merge_diagnostics(diagnostics, data_outcome_diagnostics(built))
-    let rendered: DataOutcome<utf8> = template_render(data_outcome_value(built), context, render_settings)
-    diagnostics = template_merge_diagnostics(diagnostics, data_outcome_diagnostics(rendered))
-    return data_outcome_with(data_outcome_value(rendered), diagnostics)
-}
+# 注：source -> render 的端到端链由消费方按方言组装（解析归 std.data.text.<dialect>），
+# 本包只提供 `template_render`：公共模板 AST + 上下文 -> 输出。
 
 # ── 语句渲染 ──
 
@@ -255,7 +244,7 @@ micro template_forloop_depth(frames: [TemplateFrame], context: TemplateValue) ->
 }
 
 # 插值出口：SafeTextValue 原文输出；其余字符串化后 HTML 转义。
-# 非整数数字的字符串化是已登记缺口：产 `template.render.number_fraction`（Error）。
+# 非整数数字的字符串化当前未支持：产 `template.render.number_fraction`（Error）。
 micro template_interpolation_output(value: TemplateValue) -> TemplateChunk {
     match value {
         case SafeTextValue(payload):
@@ -264,7 +253,7 @@ micro template_interpolation_output(value: TemplateValue) -> TemplateChunk {
             let rendered: utf8? = template_number_to_text_option(payload.value)
             if rendered.is_none() {
                 let mut diagnostics: [DataDiagnostic] = []
-                diagnostics = push(diagnostics, new_data_diagnostic("template.render.number_fraction", Error, "非整数/非有限数字的字符串化首块未支持", new_data_span(0, 0)))
+                diagnostics = push(diagnostics, new_data_diagnostic("template.render.number_fraction", Error, "非整数/非有限数字的字符串化当前未支持", new_data_span(0, 0)))
                 return TemplateChunk { text: "", signal: SignalNone, diagnostics: diagnostics }
             }
             return template_chunk(template_escape_html(rendered.unwrap()))

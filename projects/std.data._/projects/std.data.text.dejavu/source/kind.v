@@ -1,4 +1,4 @@
-namespace template;
+namespace std.data.text.dejavu;
 
 # 空白控制级别（单侧可剥离宽度阶梯）。
 # marker 拼写：`none` 无 marker，`ws` ↔ `_`，`nl` ↔ `-`，`ws_nl` ↔ `~`，`all` ↔ `=`。
@@ -110,7 +110,7 @@ unite TemplateTokenKind {
     NodeLoop
     NodeBreak
     NodeContinue
-    # 已识别但首块不支持的语句表面（extends/include/partial/macro/call/block/super/from），
+    # 已识别但当前不支持的语句表面（extends/include/partial/macro/call/block/super/from），
     # 标签 token 全部挂入该容器，诊断在 parser 产生。
     NodeUnsupported
     NodeExpressionBinary
