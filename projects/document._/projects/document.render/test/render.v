@@ -39,7 +39,7 @@ micro html_snapshot_full_document() -> unit {
                 + "<hr/>"
                 + "<table><thead><tr><th><p>H</p></th></tr></thead><tbody><tr><td><p>b</p></td></tr></tbody></table>"
                 + "<img src='a.png' alt='alt'/>"
-                + "<section class='footnotes'><ol><li id='fn-1'><p>note</p></li></ol></section>"
+                + "<section class='footnotes'><ol><li id='fn-1'><p>note</p> <a href='#fnref-1' class='footnote-backref'>↩</a></li></ol></section>"
                 + "<section class='bibliography'><ol><li id='bib-1'>title: Ref</li></ol></section>"
             if !payload.value.equals(expected) {
                 panic("html snapshot matches")
@@ -128,6 +128,85 @@ micro nested_heading_gets_no_anchor() -> unit {
             }
         case Fail(payload):
             panic("valid document renders html")
+    }
+}
+
+[test]
+micro nested_list_renders_across_targets() -> unit {
+    let document: Document = new_document(empty_document_metadata(), [
+        block_list(1, false, 1, [
+            list_item([block_paragraph(2, [inline_text(3, "outer")]), block_list(4, true, 1, [list_item([block_paragraph(5, [inline_text(6, "inner")])])])])
+        ])
+    ], [], [])
+    match render_html(document) {
+        case Fine(payload):
+            let expected: utf8 = "<ul><li><p>outer</p><ol><li><p>inner</p></li></ol></li></ul>"
+            if !payload.value.equals(expected) {
+                panic("nested list renders nested tags")
+            }
+        case Fail(payload):
+            panic("nested list renders html")
+    }
+    match render_text(document) {
+        case Fine(payload):
+            let expected: utf8 = "- outer\n  1. inner"
+            if !payload.value.equals(expected) {
+                panic("nested list indents two spaces per level")
+            }
+        case Fail(payload):
+            panic("nested list renders text")
+    }
+    match render_markdown(document) {
+        case Fine(payload):
+            let expected: utf8 = "- outer\n  1. inner"
+            if !payload.value.equals(expected) {
+                panic("nested list keeps marker indentation in markdown")
+            }
+        case Fail(payload):
+            panic("nested list renders markdown")
+    }
+}
+
+[test]
+micro markdown_table_pads_columns() -> unit {
+    let document: Document = new_document(empty_document_metadata(), [
+        block_table(1, None, [table_row([table_cell([block_paragraph(2, [inline_text(3, "Name")])], 1, 1), table_cell([block_paragraph(4, [inline_text(5, "V")])], 1, 1)], true)], [table_row([table_cell([block_paragraph(6, [inline_text(7, "a")])], 1, 1), table_cell([block_paragraph(8, [inline_text(9, "10")])], 1, 1)], false)])
+    ], [], [])
+    match render_markdown(document) {
+        case Fine(payload):
+            let expected: utf8 = "| Name | V  |\n| ---- | -- |\n| a    | 10 |"
+            if !payload.value.equals(expected) {
+                panic("markdown table pads cells to column width")
+            }
+        case Fail(payload):
+            panic("table renders markdown")
+    }
+    match render_text(document) {
+        case Fine(payload):
+            let expected: utf8 = "| Name | V  |\n| a    | 10 |"
+            if !payload.value.equals(expected) {
+                panic("text table shares the same column widths")
+            }
+        case Fail(payload):
+            panic("table renders text")
+    }
+}
+
+[test]
+micro heading_levels_carry_ordered_anchors() -> unit {
+    let document: Document = new_document(empty_document_metadata(), [
+        block_heading(1, 1, [inline_text(2, "One")]),
+        block_heading(3, 2, [inline_text(4, "Two")]),
+        block_heading(5, 1, [inline_text(6, "Three")])
+    ], [], [])
+    match render_html(document) {
+        case Fine(payload):
+            let expected: utf8 = "<h1 id='1'>One</h1><h2 id='1.1'>Two</h2><h1 id='2'>Three</h1>"
+            if !payload.value.equals(expected) {
+                panic("heading levels carry ordered anchors")
+            }
+        case Fail(payload):
+            panic("headings render html")
     }
 }
 

@@ -24,7 +24,8 @@ micro html_emit_document(document: Document, index: DocumentIndex) -> utf8 {
         while position < document.footnotes.length() {
             let definition: FootnoteDefinition = document.footnotes⁅position⁆
             let number: utf8 = render_number(position + 1)
-            out = out + "<li id='fn-" + number + "'>" + html_emit_blocks(definition.content, index) + "</li>"
+            out = out + "<li id='fn-" + number + "'>" + html_emit_blocks(definition.content, index)
+                + " <a href='#fnref-" + number + "' class='footnote-backref'>↩</a></li>"
             position = position + 1
         }
         out = out + "</ol></section>"

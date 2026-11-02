@@ -121,14 +121,48 @@ micro markdown_emit_image(source: utf8, alt: utf8, title: Option<utf8>) -> utf8 
     return out + ")"
 }
 
-micro markdown_table_row(cells: [utf8], column_count: usize) -> utf8 {
+# 表格列宽：表头与表体所有单元的最大码点数（与文本目标同语义的对齐）。
+micro markdown_table_widths(header: [TableRow], rows: [TableRow], column_count: usize, index: DocumentIndex) -> [usize] {
+    let mut widths: [usize] = []
+    let mut column: usize = 0
+    while column < column_count {
+        widths = push(widths, 0)
+        column = column + 1
+    }
+    let mut all_rows: [TableRow] = []
+    let mut position: usize = 0
+    while position < header.length() {
+        all_rows = push(all_rows, header⁅position⁆)
+        position = position + 1
+    }
+    position = 0
+    while position < rows.length() {
+        all_rows = push(all_rows, rows⁅position⁆)
+        position = position + 1
+    }
+    position = 0
+    while position < all_rows.length() {
+        let cells: [utf8] = markdown_table_cells(all_rows⁅position⁆, index)
+        let mut cell_index: usize = 0
+        while cell_index < cells.length() {
+            if cells⁅cell_index⁆.length() > widths⁅cell_index⁆ {
+                widths⁅cell_index⁆ = cells⁅cell_index⁆.length()
+            }
+            cell_index = cell_index + 1
+        }
+        position = position + 1
+    }
+    return widths
+}
+
+micro markdown_table_row(cells: [utf8], column_count: usize, widths: [usize]) -> utf8 {
     let mut out: utf8 = "|"
     let mut position: usize = 0
     while position < column_count {
         if position < cells.length() {
-            out = out + " " + cells⁅position⁆ + " |"
+            out = out + " " + text_pad_right(cells⁅position⁆, widths⁅position⁆) + " |"
         } else {
-            out = out + "  |"
+            out = out + " " + text_pad_right("", widths⁅position⁆) + " |"
         }
         position = position + 1
     }
@@ -152,6 +186,8 @@ micro markdown_emit_table(header: [TableRow], rows: [TableRow], index: DocumentI
         position = position + 1
     }
 
+    let widths: [usize] = markdown_table_widths(header, rows, column_count, index)
+
     let mut out: utf8 = ""
     let mut head_position: usize = 0
     while head_position < header.length() {
@@ -159,14 +195,14 @@ micro markdown_emit_table(header: [TableRow], rows: [TableRow], index: DocumentI
             out = out + "\n"
         }
         let cells: [utf8] = markdown_table_cells(header⁅head_position⁆, index)
-        out = out + markdown_table_row(cells, column_count)
+        out = out + markdown_table_row(cells, column_count, widths)
         head_position = head_position + 1
     }
     if header.length() > 0 {
         let mut separator: utf8 = "|"
         let mut column: usize = 0
         while column < column_count {
-            separator = separator + " --- |"
+            separator = separator + " " + markdown_repeat("-", if widths⁅column⁆ > 3 { widths⁅column⁆ } else { 3 }) + " |"
             column = column + 1
         }
         out = out + "\n" + separator
@@ -174,7 +210,7 @@ micro markdown_emit_table(header: [TableRow], rows: [TableRow], index: DocumentI
     let mut row_position: usize = 0
     while row_position < rows.length() {
         let cells: [utf8] = markdown_table_cells(rows⁅row_position⁆, index)
-        out = out + "\n" + markdown_table_row(cells, column_count)
+        out = out + "\n" + markdown_table_row(cells, column_count, widths)
         row_position = row_position + 1
     }
     return out
