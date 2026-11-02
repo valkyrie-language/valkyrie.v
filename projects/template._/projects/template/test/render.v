@@ -612,3 +612,83 @@ micro test_render_unassembled_surfaces_fail_closed() -> unit {
         panic("template_not_found diagnostic expected")
     }
 }
+
+[test]
+micro test_render_nested_macro_calls() -> unit {
+    # outer() = "o(" + inner() + ")"；inner 在同文档宏表中后定义。
+    let body: [TemplateNode] = [
+        MacroNode { name: "outer", parameters: [], body: [literal_text_node("o("), interpolation(0), literal_text_node(")")] },
+        MacroNode { name: "inner", parameters: [], body: [literal_text_node("i")] },
+        interpolation(1)
+    ]
+    let expressions: [TemplateExpression] = [
+        Call { callee: 2, arguments: [] },
+        Call { callee: 3, arguments: [] },
+        identifier("inner"),
+        identifier("outer")
+    ]
+    if render_ok(body, expressions, template_object([])) != "o(i)" {
+        panic("nested macro output mismatch")
+    }
+}
+
+[test]
+micro test_render_macro_recursion_fails_closed() -> unit {
+    # macro m() 体为自身调用插值：递归必须被 max_depth 截停而非失控。
+    let body: [TemplateNode] = [
+        MacroNode { name: "m", parameters: [], body: [interpolation(0)] },
+        interpolation(0)
+    ]
+    let expressions: [TemplateExpression] = [
+        Call { callee: 1, arguments: [] },
+        identifier("m")
+    ]
+    let document: TemplateDocument = TemplateDocument { body: body, expressions: expressions }
+    let outcome: DataOutcome<utf8> = template_render(document, template_object([]), TemplateRenderSettings { strict_undefined: false, max_depth: 8 })
+    let diagnostics: [Diagnostic] = data_outcome_diagnostics(outcome)
+    if diagnostics.length() == 0 {
+        panic("macro recursion must register diagnostics")
+    }
+    if diagnostic_code(diagnostics⁅0⁆.unwrap()) != "template.render.max_depth_exceeded" {
+        panic("max_depth_exceeded diagnostic expected")
+    }
+}
+
+[test]
+micro test_render_super_chain_three_levels() -> unit {
+    # grand "g" <- base "b(super)" <- child "c(super)" -> "c(b(g))"
+    let grand: TemplateCatalogEntry = catalog_entry("grand", [
+        BlockNode { name: "b", body: [literal_text_node("g")] }
+    ], [])
+    let base: TemplateCatalogEntry = catalog_entry("base", [
+        ExtendsNode { parent: 0 },
+        BlockNode { name: "b", body: [literal_text_node("b("), SuperNode, literal_text_node(")")] }
+    ], [literal_string("grand")])
+    let child: TemplateCatalogEntry = catalog_entry("child", [
+        ExtendsNode { parent: 0 },
+        BlockNode { name: "b", body: [literal_text_node("c("), SuperNode, literal_text_node(")")] }
+    ], [literal_string("base")])
+    if render_catalog_ok("child", catalog_of([grand, base, child]), template_object([])) != "c(b(g))" {
+        panic("three-level super chain output mismatch")
+    }
+}
+
+[test]
+micro test_render_include_with_merge_matrix() -> unit {
+    # frag 渲染 x 与 a：合并模式父键保留、with 覆盖同名；only 模式只有 with 键。
+    let frag: TemplateCatalogEntry = catalog_entry("frag", [interpolation(0), interpolation(1)], [identifier("x"), identifier("a")])
+    let context: TemplateValue = template_object([template_field("x", template_text("P")), template_field("a", template_text("A"))])
+    let merged: TemplateCatalogEntry = catalog_entry("merged", [IncludeNode { path: 0, with_expression: 1, only: false }], [literal_string("frag"), ObjectLiteral { entries: [TemplateObjectEntry { key: "x", value: 2 }] }, literal_string("W")])
+    if render_catalog_ok("merged", catalog_of([frag, merged]), context) != "WA" {
+        panic("include merge mode output mismatch")
+    }
+    let exclusive: TemplateCatalogEntry = catalog_entry("exclusive", [IncludeNode { path: 0, with_expression: 1, only: true }], [literal_string("frag"), ObjectLiteral { entries: [TemplateObjectEntry { key: "x", value: 2 }] }, literal_string("W")])
+    if render_catalog_ok("exclusive", catalog_of([frag, exclusive]), context) != "W" {
+        panic("include only mode output mismatch")
+    }
+    # with 非对象 -> context_not_object
+    let bad: TemplateCatalogEntry = catalog_entry("bad", [IncludeNode { path: 0, with_expression: 1, only: false }], [literal_string("frag"), literal_number(1.0)])
+    if first_catalog_error("bad", catalog_of([frag, bad])) != "template.render.context_not_object" {
+        panic("context_not_object diagnostic expected")
+    }
+}
