@@ -71,6 +71,17 @@ micro svg_rect(x: f64, y: f64, width: f64, height: f64, fill: utf8) -> utf8 {
         + "'/>"
 }
 
+micro svg_rect_round(x: f64, y: f64, width: f64, height: f64, fill: utf8, stroke: utf8, radius: f64) -> utf8 {
+    return "<rect x='" + svg_number(x)
+        + "' y='" + svg_number(y)
+        + "' width='" + svg_number(width)
+        + "' height='" + svg_number(height)
+        + "' rx='" + svg_number(radius)
+        + "' fill='" + svg_escape_attribute(fill)
+        + "' stroke='" + svg_escape_attribute(stroke)
+        + "'/>"
+}
+
 micro svg_line(x1: f64, y1: f64, x2: f64, y2: f64, stroke: utf8, stroke_width: f64) -> utf8 {
     return "<line x1='" + svg_number(x1)
         + "' y1='" + svg_number(y1)
@@ -87,6 +98,16 @@ micro svg_path(data: utf8, stroke: utf8, stroke_width: f64, fill: utf8) -> utf8 
         + "' stroke='" + svg_escape_attribute(stroke)
         + "' stroke-width='" + svg_number(stroke_width)
         + "' fill='" + svg_escape_attribute(fill)
+        + "'/>"
+}
+
+# 虚线描边路径：`dash` 是 stroke-dasharray 原样值（如 `4 3`）。
+micro svg_path_dashed(data: utf8, stroke: utf8, stroke_width: f64, fill: utf8, dash: utf8) -> utf8 {
+    return "<path d='" + svg_escape_attribute(data)
+        + "' stroke='" + svg_escape_attribute(stroke)
+        + "' stroke-width='" + svg_number(stroke_width)
+        + "' fill='" + svg_escape_attribute(fill)
+        + "' stroke-dasharray='" + svg_escape_attribute(dash)
         + "'/>"
 }
 
@@ -109,6 +130,10 @@ micro svg_path_move_to(x: f64, y: f64) -> utf8 {
 
 micro svg_path_line_to(data: utf8, x: f64, y: f64) -> utf8 {
     return data + " L " + svg_number(x) + " " + svg_number(y)
+}
+
+micro svg_path_curve_to(data: utf8, cx1: f64, cy1: f64, cx2: f64, cy2: f64, x: f64, y: f64) -> utf8 {
+    return data + " C " + svg_number(cx1) + " " + svg_number(cy1) + " " + svg_number(cx2) + " " + svg_number(cy2) + " " + svg_number(x) + " " + svg_number(y)
 }
 
 micro svg_document(width: f64, height: f64, body: utf8) -> utf8 {
