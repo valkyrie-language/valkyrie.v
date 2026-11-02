@@ -60,10 +60,6 @@ micro host_equals(value: std.text.utf16, other: std.text.utf16): bool {
     return __utf16_clr_equals(value, other)
 }
 
-[host_provider(std::text::Utf16Text::char_at)]
-micro host_char_at(value: std.text.utf16, index: isize): u16 {
-    return __utf16_clr_char_at(value, index) as u16
-}
 
 [clr("System.Runtime", "System.String", "get_Length"), pure]
 private micro __utf16_clr_length(value: std.text.utf16): isize { }
@@ -100,6 +96,3 @@ private micro __utf16_clr_replace(value: std.text.utf16, old_value: std.text.utf
 
 [clr("System.Runtime", "System.String", "Equals"), pure]
 private micro __utf16_clr_equals(value: std.text.utf16, other: std.text.utf16): bool { }
-
-[clr("System.Runtime", "System.String", "get_Chars"), pure]
-private micro __utf16_clr_char_at(value: std.text.utf16, index: isize): char { }

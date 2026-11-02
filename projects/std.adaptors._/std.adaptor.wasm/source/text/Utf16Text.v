@@ -63,10 +63,6 @@ micro host_equals(value: std.text.utf16, other: std.text.utf16): bool {
     return __js_utf16_equals(value, other)
 }
 
-[host_provider(std::text::Utf16Text::char_at)]
-micro host_char_at(value: std.text.utf16, index: isize): u16 {
-    return __js_utf16_char_at(value, index)
-}
 
 [wasm("env", "utf16_length")]
 private micro __js_utf16_length(s: utf16): isize
@@ -103,6 +99,3 @@ private micro __js_utf16_replace(s: utf16, old_value: utf16, new_value: utf16): 
 
 [wasm("env", "utf16_equals")]
 private micro __js_utf16_equals(a: utf16, b: utf16): bool
-
-[wasm("env", "utf16_char_at")]
-private micro __js_utf16_char_at(s: utf16, index: isize): u16

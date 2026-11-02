@@ -24,6 +24,21 @@ imply Utf8Text {
         return self._repr.length()
     }
 
+    # 字节视图：显式按字节读取内部 UTF-8 存储，与码点索引空间（`Cardinal`/`Ordinal`）分离。
+    # 码元、字素、字形各有自己的显式视图/API（本类型暂无），不把多种索引口径塞进同一个 `Index`。
+    micro bytes(self): [u8] {
+        return self._repr
+    }
+
+    # 按字节偏移读取单个字节；越界返回 `None`。
+    micro byte_at(self, index: usize): Option<u8> {
+        if index >= self._repr.length() {
+            return std::types::option_none::<u8>()
+        }
+
+        return Some(self._repr⁅index⁆)
+    }
+
     # Unicode scalar count (std). CLR host_provider must not flatten to String.get_Length.
     [host_contract]
     micro length(self) -> usize {
@@ -254,41 +269,6 @@ imply Utf8Text {
         return std::types::option_none::<usize>()
     }
 
-    micro char_at(self, index: usize) -> Option<char> {
-        if index >= self.length() {
-            return std::types::option_none::<char>()
-        }
-        let start: usize = self.byte_offset(index)
-        if start >= self._repr.length() {
-            return std::types::option_none::<char>()
-        }
-        let first: u8 = self._repr⁅start⁆
-        let width: usize = self.char_width(start)
-        let mut code_point: u32 = 0
-        if width == 1 {
-            code_point = first as u32
-        }
-        else if width == 2 && start + 1 < self._repr.length() {
-            code_point = ((first as u32) & 0x1F) << 6
-            code_point = code_point | ((self._repr⁅start + 1⁆ as u32) & 0x3F)
-        }
-        else if width == 3 && start + 2 < self._repr.length() {
-            code_point = ((first as u32) & 0x0F) << 12
-            code_point = code_point | (((self._repr⁅start + 1⁆ as u32) & 0x3F) << 6)
-            code_point = code_point | ((self._repr⁅start + 2⁆ as u32) & 0x3F)
-        }
-        else if width == 4 && start + 3 < self._repr.length() {
-            code_point = ((first as u32) & 0x07) << 18
-            code_point = code_point | (((self._repr⁅start + 1⁆ as u32) & 0x3F) << 12)
-            code_point = code_point | (((self._repr⁅start + 2⁆ as u32) & 0x3F) << 6)
-            code_point = code_point | ((self._repr⁅start + 3⁆ as u32) & 0x3F)
-        }
-        else {
-            code_point = first as u32
-        }
-        return Some(code_point as u16 as char)
-    }
-
     micro chars(self) -> Utf8Iterator {
         return Utf8Iterator::new(self)
     }
@@ -336,20 +316,47 @@ imply Utf8Text {
     }
 }
 
-# 0 基标量索引读写合同：`⁅ ⁆` / `⁅ ⁆=` 与同源的 `get_cardinal` / `set_cardinal`。
-# 索引按 Unicode 标量计数（与 `length` 的计数单位一致）；`char` 是 u16 code unit，
-# astral 标量无法表示（类型系统层缺口，已记录）。元素个数由 `length` 承担，与本合同无关。
+# 0 基码点索引读写合同：`⁅ ⁆` / `⁅ ⁆=` 与同源的 `get_cardinal` / `set_cardinal`。
+# 索引空间是 Unicode 标量（码点），与 `length` 的计数单位一致；字节访问走显式
+# `bytes` / `byte_at` 视图，不混入本合同。`char` 是 u16 code unit，astral 标量
+# 无法表示（类型系统层缺口，已记录）。元素个数由 `length` 承担，与本合同无关。
 imply Utf8Text: std::operator::Cardinal {
     type Element = char;
 
-    # 0 基标量索引自动取值（UTF-8 解码为 `char`）；越界结构化失败（合同语义见 `std::operator::Cardinal`）。
+    # 0 基码点索引自动取值（UTF-8 解码为 `char`）；越界结构化失败（合同语义见 `std::operator::Cardinal`）。
+    # 解码逻辑只此一份：命名方法、序数合同与迭代器全部经由本算子或显式字节视图，无第二套访问路径。
     suffix `⁅ ⁆`(self, offset: usize): char {
-        let found: Option<char> = self.char_at(offset)
-        if found.is_none() {
+        if offset >= self.length() {
             std::types::panic("Utf8Text ⁅ ⁆ 越界：offset 超出元素个数")
         }
 
-        return found.unwrap()
+        let start: usize = self.byte_offset(offset)
+        let first: u8 = self._repr⁅start⁆
+        let width: usize = self.char_width(start)
+        let mut code_point: u32 = 0
+        if width == 1 {
+            code_point = first as u32
+        }
+        else if width == 2 && start + 1 < self._repr.length() {
+            code_point = ((first as u32) & 0x1F) << 6
+            code_point = code_point | ((self._repr⁅start + 1⁆ as u32) & 0x3F)
+        }
+        else if width == 3 && start + 2 < self._repr.length() {
+            code_point = ((first as u32) & 0x0F) << 12
+            code_point = code_point | (((self._repr⁅start + 1⁆ as u32) & 0x3F) << 6)
+            code_point = code_point | ((self._repr⁅start + 2⁆ as u32) & 0x3F)
+        }
+        else if width == 4 && start + 3 < self._repr.length() {
+            code_point = ((first as u32) & 0x07) << 18
+            code_point = code_point | (((self._repr⁅start + 1⁆ as u32) & 0x3F) << 12)
+            code_point = code_point | (((self._repr⁅start + 2⁆ as u32) & 0x3F) << 6)
+            code_point = code_point | ((self._repr⁅start + 3⁆ as u32) & 0x3F)
+        }
+        else {
+            code_point = first as u32
+        }
+
+        return code_point as u16 as char
     }
 
     # 按标量写入 `char`：新旧字符的 UTF-8 宽度可以不同，经 slice/concat 重建内部存储；
@@ -377,9 +384,9 @@ imply Utf8Text: std::operator::Cardinal {
     }
 }
 
-# 1 基序数读写合同：`[ ]` / `[ ]=` 与同源的 `get` / `set`。
+# 1 基序数读写合同：`[ ]` / `[ ]=` 与同源的 `get` / `set`，索引空间同为码点。
 # `Index` 取 `isize`（负数落入越界判定，读返回 `None`）；实际访问委托 `Cardinal`
-# 的 0 基标量偏移，本 impl 不重复存储访问逻辑。
+# 的 0 基码点偏移，本 impl 不重复存储访问逻辑。
 imply Utf8Text: std::operator::Ordinal {
     type Index = isize;
     type Element = char;

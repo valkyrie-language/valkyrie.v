@@ -59,8 +59,3 @@ micro host_replace(value: std.text.utf16, old_value: std.text.utf16, new_value: 
 micro host_equals(value: std.text.utf16, other: std.text.utf16): bool {
     return false
 }
-
-[host_provider(std::text::Utf16Text::char_at)]
-micro host_char_at(value: std.text.utf16, index: isize): u16 {
-    return value._repr[index as usize]
-}

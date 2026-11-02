@@ -76,11 +76,6 @@ imply Utf16Text {
         return false
     }
 
-    [host_contract]
-    private micro char_at(self, offset: usize) -> u16 {
-        return self._repr::[offset]
-    }
-
     micro chars(self) -> Utf16Iterator {
         return Utf16Iterator::new(self)
     }
@@ -95,20 +90,22 @@ imply Utf16Text: std::iterator::IntoIterator {
     }
 }
 
-# 0 基 code unit 索引读写合同：`⁅ ⁆` / `⁅ ⁆=` 与同源的 `get_cardinal` / `set_cardinal`。
-# 索引按 UTF-16 code unit 计数（与 `length` 的计数单位一致，`char` 即 u16 code unit）；
-# 对含 astral 字符（代理对）的文本，本索引口径与 `Utf8Text` 的标量口径不等——
-# 这是各自 repr 的忠实口径，显式记录。元素个数由 `length` 承担，与本合同无关。
+# 0 基码元索引读写合同：`⁅ ⁆` / `⁅ ⁆=` 与同源的 `get_cardinal` / `set_cardinal`。
+# 索引空间选定为 UTF-16 码元（code unit，与 `length` 的计数单位一致，`char` 即 u16 码元）：
+# astral 码点占两个码元（代理对），本索引口径与 `Utf8Text` 的码点口径不等——
+# 这是各自 repr 的忠实口径，显式记录；码点/字素口径未来以显式视图 API 单独开，
+# 不混入本合同。元素个数由 `length` 承担，与本合同无关。
 imply Utf16Text: std::operator::Cardinal {
     type Element = char;
 
-    # 0 基 code unit 索引自动取值；越界结构化失败（合同语义见 `std::operator::Cardinal`）。
+    # 0 基码元索引自动取值；越界结构化失败（合同语义见 `std::operator::Cardinal`）。
+    # 读取只此一份：直接落在 `_repr` 的 0 基数组合同，与 `⁅ ⁆=` 的 `array::set` 对称。
     suffix `⁅ ⁆`(self, offset: usize): char {
         if offset >= self.length() {
             std::types::panic("Utf16Text ⁅ ⁆ 越界：offset 超出元素个数")
         }
 
-        return self.char_at(offset) as char
+        return std::collection::array::get(self._repr, offset) as char
     }
 
     # 0 基 code unit 索引写入，只改元素不改元素个数；越界结构化失败，不许静默丢弃写入。
@@ -131,9 +128,9 @@ imply Utf16Text: std::operator::Cardinal {
     }
 }
 
-# 1 基序数读写合同：`[ ]` / `[ ]=` 与同源的 `get` / `set`。
+# 1 基序数读写合同：`[ ]` / `[ ]=` 与同源的 `get` / `set`，索引空间同为码元。
 # `Index` 取 `isize`（负数落入越界判定，读返回 `None`）；实际访问委托 `Cardinal`
-# 的 0 基 code unit 偏移，本 impl 不重复存储访问逻辑。
+# 的 0 基码元偏移，本 impl 不重复存储访问逻辑。
 imply Utf16Text: std::operator::Ordinal {
     type Index = isize;
     type Element = char;

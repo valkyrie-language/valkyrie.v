@@ -16,10 +16,11 @@ imply Utf8Builder {
 
     ⍝ 从已存在文本创建一个构造器, 该文本会被消耗
     micro new(text: Utf8Text) -> Self {
-        let mut bytes: ArrayList<u8> = ArrayList::new(text._repr.length())
+        let mut bytes: ArrayList<u8> = ArrayList::new(text.byte_length())
+        let repr: [u8] = text.bytes()
         let mut index: usize = 0
-        while index < text._repr.length() {
-            bytes.push(text._repr⁅index⁆)
+        while index < repr.length() {
+            bytes.push(repr⁅index⁆)
             index = index + 1
         }
 
@@ -59,9 +60,10 @@ imply Utf8Builder {
     }
 
     micro append(mut self, text: &Utf8Text): unit {
+        let repr: [u8] = text.bytes()
         let mut index: usize = 0
-        while index < text._repr.length() {
-            self.bytes.push(text._repr⁅index⁆)
+        while index < repr.length() {
+            self.bytes.push(repr⁅index⁆)
             index = index + 1
         }
     }

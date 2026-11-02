@@ -7,7 +7,7 @@ structure char {
 }
 
 imply char {
-    # 码位 → char 具名构造（与 `Utf8Text.char_at` 的 `code_point as u16 as char` 同规则）。
+    # 码位 → char 具名构造（与 `Utf8Text` 码点索引 `⁅ ⁆` 的 `code_point as u16 as char` 同规则）。
     micro from(code: u32) -> char {
         return code as u16 as char
     }
