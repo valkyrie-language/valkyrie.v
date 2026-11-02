@@ -1,4 +1,4 @@
-namespace yykv;
+namespace yyds.kv;
 
 # 分片内一条带版本的 KV 记录：revision 在分片内单调递增，
 # 每次成功写入消耗一个新 revision。

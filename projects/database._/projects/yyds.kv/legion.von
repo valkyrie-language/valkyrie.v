@@ -1,7 +1,7 @@
 {
-    name: "yykv",
+    name: "yyds.kv",
     version: "workspace",
-    description: "yykv 共享 KV 存储内核 — 分片合同与内存实现",
+    description: "yyds.kv — yyds 的 KV 存储内核：分片合同与内存实现",
     type: "library",
     dependencies: { "std": { version: "workspace" } },
     build: [

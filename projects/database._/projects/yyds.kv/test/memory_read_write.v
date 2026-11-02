@@ -1,4 +1,4 @@
-namespace yykv;
+namespace yyds.kv;
 
 [test]
 micro put_then_get_returns_latest_record() -> unit {

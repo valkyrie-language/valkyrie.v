@@ -1,4 +1,4 @@
-namespace yykv;
+namespace yyds.kv;
 
 [test]
 micro memory_shard_has_no_durable_atomic_commit() -> unit {

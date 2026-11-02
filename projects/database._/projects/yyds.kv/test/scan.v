@@ -1,4 +1,4 @@
-namespace yykv;
+namespace yyds.kv;
 
 private micro scan_fixture() -> KvMemoryShard {
     let empty: KvMemoryShard = kv_memory_new()

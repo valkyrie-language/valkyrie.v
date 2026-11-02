@@ -1,12 +1,17 @@
 # YY 数据库生态
 
-`yyds._` 是数据库生态总 workspace，内部至少拆成 `yykv`、`yydb`、`yyds` 三条主线。
+`database._` 是数据库生态总 workspace，内部至少拆成 `database`（抽象层）、`yyds.kv`、`yydb`、`yyds` 几条主线。
 
 ## 核心分层
 
-### `yykv`
+### `database`
 
-- 共享底层存储内核
+- 所有实现共用的引擎抽象层：Engine/Catalog/键编码/Cursor/WriteBatch/Transaction/日志语义/失败模型/观测
+- 内置纯 V 内存参考引擎，供 conformance 与早期集成使用
+
+### `yyds.kv`
+
+- `yyds` 的 KV 存储内核
 - 为 `yydb` 与 `yyds` 提供公共存储能力
 
 ### `yydb`
@@ -30,13 +35,15 @@
 
 ## 与 Atlas 的边界
 
-**yyds 与 Atlas 无关。** 本生态是独立数据库产品线（`yykv` / `yydb` / `yyds`），不是 Atlas 的默认数据平面，也不承担 Atlas 的 VOS（schema 真源 + 默认 query；SQL 亦可）/ `RegenBindings` / 一次性升级约定。Atlas 数据访问见其自身文档；此处不交叉绑定。
+**yyds 与 Atlas 无关。** 本生态是独立数据库产品线（`yyds.kv` / `yydb` / `yyds`），不是 Atlas 的默认数据平面，也不承担 Atlas 的 VOS（schema 真源 + 默认 query；SQL 亦可）/ `RegenBindings` / 一次性升级约定。Atlas 数据访问见其自身文档；此处不交叉绑定。
 
 > 注意：上文「`yydb` / `yyds` 升降级」指产品形态与部署角色的升降，与 Atlas 无关。
 
 ## 计划中的子包
 
-- `projects/yykv`
+- `projects/database`
+- `projects/database.conformance`
+- `projects/yyds.kv`
 - `projects/yydb`
 - `projects/yyds`
 - `projects/yyds.protocol.mysql`

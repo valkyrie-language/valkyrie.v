@@ -1,12 +1,13 @@
-# yykv
+# yyds.kv
 
-`yykv` 是 `yydb` / `yyds` 共享的底层存储内核，定义分片（shard）级 KV 合同。
+`yyds.kv` 是 `yyds` 的 KV 存储内核，定义分片（shard）级 KV 合同；`yydb` 作为 sidecar 高速缓存时同样消费本内核。
 
 ## 定位
 
 - 内核只拥有：键、记录值、记录、扫描、提交边界与比较语义
-- 查询、schema、事务编排、协议与网络归 `yydb` / `yyds` 上层产品，不进内核
+- 查询、schema、事务编排、协议与网络归 `yyds` / `yydb` 上层产品，不进内核
 - 纯计算、无 host 依赖：文件、网络、并发不属于本包
+- 引擎层抽象（Engine/Cursor/WriteBatch/Transaction 等）归 `database` 包，本包是分片级语义载体，后续迁移到该合同之上
 
 ## 当前能力
 

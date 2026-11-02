@@ -1,6 +1,6 @@
-namespace yykv;
+namespace yyds.kv;
 
-# yykv — 共享 KV 存储内核（Valkyrie 实现）
+# yyds.kv — yyds 的 KV 存储内核（Valkyrie 实现）
 #
 # 内核只拥有分片（shard）级合同：键、记录值、记录、扫描与提交边界。
 # 查询、schema、事务编排与协议归 yydb / yyds 上层产品，不进内核。

@@ -4,7 +4,8 @@
 
 ## 组成
 
-- `yykv`：共享底层存储内核（KV 分片合同与实现）
+- `database`：所有实现共用的引擎抽象层（合同与内存参考引擎）
+- `yyds.kv`：`yyds` 的 KV 存储内核（分片合同与内存实现）
 - `yydb`：单机数据库：嵌入式、本地优先、带 KV 高速缓存能力
 - `yyds`：分布式数据库
 
@@ -17,7 +18,9 @@
 
 ## 计划中的子包
 
-- `projects/yykv`
+- `projects/database`
+- `projects/database.conformance`
+- `projects/yyds.kv`
 - `projects/yydb`
 - `projects/yyds`
 - `projects/yyds.protocol.mysql`
@@ -27,7 +30,8 @@
 
 ## 当前状态
 
-- `yykv`：第一块已落地（KV 分片合同 + 纯内存实现）
+- `yyds.kv`：分片合同 + 纯内存实现已落地（原 `yykv`，已正名为 `yyds.kv`）
+- `database`：引擎抽象层，合同与内存参考引擎落地中
 - `yydb` / `yyds`：规划中，仅有定位文档
 
 文档入口：[documentation/pages/zh-hans/index.md](documentation/pages/zh-hans/index.md)

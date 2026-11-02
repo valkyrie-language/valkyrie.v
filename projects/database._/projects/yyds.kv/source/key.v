@@ -1,4 +1,4 @@
-namespace yykv;
+namespace yyds.kv;
 
 # 分片内逻辑键：命名空间 + 命名空间内不透明字节序列。
 # 命名空间隔离租户数据，不要求 SQL schema。
