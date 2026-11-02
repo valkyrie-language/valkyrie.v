@@ -18,6 +18,12 @@ unite MermaidTokenKind {
     LBracket
     RBracket
     Colon
+    # 形状与双向边：圆角 `(...)`、菱形 `{...}`、运动 `<-->`。
+    LParen
+    RParen
+    LBrace
+    RBrace
+    BiArrow
     # `%`（注释引导，`%%` 由 parser 判定）。
     Percent
     # 孤立 `-`/`>` 等未成形结构字符。

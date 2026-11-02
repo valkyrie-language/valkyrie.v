@@ -25,7 +25,7 @@ micro mermaid_is_text_char(ch: char) -> bool {
     if ch == ' ' || ch == '\t' || ch == '\n' || ch as u32 == 13 {
         return false
     }
-    if ch == '-' || ch == '>' || ch == '|' || ch == '[' || ch == ']' || ch == ':' || ch == '%' {
+    if ch == '-' || ch == '>' || ch == '<' || ch == '|' || ch == '[' || ch == ']' || ch == ':' || ch == '%' || ch == '(' || ch == ')' || ch == '{' || ch == '}' {
         return false
     }
     return true
@@ -58,6 +58,41 @@ micro mermaid_scan(text: utf8) -> DataOutcome<[DataToken<MermaidTokenKind>]> {
             }
             pending = look
             tokens = push(tokens, new_data_token(Space, start, index))
+        } else if ch == '<' {
+            let first: Option<(usize, char)> = iter.next()
+            if first.is_some() && first.unwrap().1 == '-' {
+                index = index + 1
+                let second: Option<(usize, char)> = iter.next()
+                if second.is_some() && second.unwrap().1 == '-' {
+                    index = index + 1
+                    let third: Option<(usize, char)> = iter.next()
+                    if third.is_some() && third.unwrap().1 == '-' {
+                        index = index + 1
+                        let fourth: Option<(usize, char)> = iter.next()
+                        if fourth.is_some() && fourth.unwrap().1 == '>' {
+                            index = index + 1
+                            tokens = push(tokens, new_data_token(BiArrow, start, index))
+                            pending = iter.next()
+                        } else {
+                            tokens = push(tokens, new_data_token(Illegal, start, index))
+                            diagnostics = push(diagnostics, new_diagnostic("mermaid.lex.malformed_arrow", Warning, "bidirectional arrow misses its head", new_span(start, index)))
+                            pending = fourth
+                        }
+                    } else {
+                        tokens = push(tokens, new_data_token(Illegal, start, index))
+                        diagnostics = push(diagnostics, new_diagnostic("mermaid.lex.malformed_arrow", Warning, "bidirectional arrow misses its head", new_span(start, index)))
+                        pending = third
+                    }
+                } else {
+                    tokens = push(tokens, new_data_token(Illegal, start, index))
+                    diagnostics = push(diagnostics, new_diagnostic("mermaid.lex.malformed_arrow", Warning, "bidirectional arrow misses its body", new_span(start, index)))
+                    pending = second
+                }
+            } else {
+                tokens = push(tokens, new_data_token(Illegal, start, index))
+                diagnostics = push(diagnostics, new_diagnostic("mermaid.lex.malformed_arrow", Warning, "lone angle bracket", new_span(start, index)))
+                pending = first
+            }
         } else if ch == '-' {
             let first: Option<(usize, char)> = iter.next()
             if first.is_some() && first.unwrap().1 == '-' {
@@ -101,6 +136,18 @@ micro mermaid_scan(text: utf8) -> DataOutcome<[DataToken<MermaidTokenKind>]> {
             pending = iter.next()
         } else if ch == ']' {
             tokens = push(tokens, new_data_token(RBracket, start, index))
+            pending = iter.next()
+        } else if ch == '(' {
+            tokens = push(tokens, new_data_token(LParen, start, index))
+            pending = iter.next()
+        } else if ch == ')' {
+            tokens = push(tokens, new_data_token(RParen, start, index))
+            pending = iter.next()
+        } else if ch == '{' {
+            tokens = push(tokens, new_data_token(LBrace, start, index))
+            pending = iter.next()
+        } else if ch == '}' {
+            tokens = push(tokens, new_data_token(RBrace, start, index))
             pending = iter.next()
         } else if ch == ':' {
             tokens = push(tokens, new_data_token(Colon, start, index))

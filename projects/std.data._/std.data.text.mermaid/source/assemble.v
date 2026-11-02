@@ -56,7 +56,7 @@ micro mermaid_read_word(tokens: [DataToken<MermaidTokenKind>], cursor: MermaidCu
     }
 }
 
-# 节点规格：`id` 或 `id[label]`；游标推进到规格之后。
+# 节点规格：`id`、`id[label]`、`id(label)`、`id{label}`（形状 0/2/1）；游标推进到规格之后。
 micro mermaid_parse_node_spec(tokens: [DataToken<MermaidTokenKind>], cursor: MermaidCursor, state: MermaidBuildState) -> MermaidSpecOut {
     let word: Option<utf8> = mermaid_read_word(tokens, cursor, state)
     if word.is_none() {
@@ -70,18 +70,29 @@ micro mermaid_parse_node_spec(tokens: [DataToken<MermaidTokenKind>], cursor: Mer
         position: current.position + 1
     }
     let mut label: Option<utf8> = None
+    let mut shape: i32 = 0
     let bracket_probe: MermaidCursor = mermaid_skip_spaces(tokens, current)
     let maybe_bracket: Option<DataToken<MermaidTokenKind>> = mermaid_cur_peek(tokens, bracket_probe)
-    let mut has_bracket: bool = false
+    let mut open_kind: i32 = 0
     if maybe_bracket.is_some() {
         match maybe_bracket.unwrap().kind {
             case LBracket:
-                has_bracket = true
+                open_kind = 1
+            case LParen:
+                open_kind = 2
+            case LBrace:
+                open_kind = 3
             else:
-                has_bracket = false
+                open_kind = 0
         }
     }
-    if has_bracket {
+    if open_kind > 0 {
+        if open_kind == 2 {
+            shape = 2
+        }
+        if open_kind == 3 {
+            shape = 1
+        }
         current = MermaidCursor {
             position: bracket_probe.position + 1
         }
@@ -93,15 +104,25 @@ micro mermaid_parse_node_spec(tokens: [DataToken<MermaidTokenKind>], cursor: Mer
             if maybe.is_none() {
                 running = false
             } else {
+                let mut is_close: bool = false
                 match maybe.unwrap().kind {
                     case RBracket:
-                        closed = true
-                        running = false
+                        is_close = open_kind == 1
+                    case RParen:
+                        is_close = open_kind == 2
+                    case RBrace:
+                        is_close = open_kind == 3
                     else:
-                        parts = push(parts, maybe.unwrap())
-                        current = MermaidCursor {
-                            position: current.position + 1
-                        }
+                        is_close = false
+                }
+                if is_close {
+                    closed = true
+                    running = false
+                } else {
+                    parts = push(parts, maybe.unwrap())
+                    current = MermaidCursor {
+                        position: current.position + 1
+                    }
                 }
             }
         }
@@ -120,7 +141,8 @@ micro mermaid_parse_node_spec(tokens: [DataToken<MermaidTokenKind>], cursor: Mer
         cursor: current,
         spec: Some(MermaidNodeSpec {
             id: word.unwrap(),
-            label: label
+            label: label,
+            shape: shape
         })
     }
 }
@@ -130,7 +152,7 @@ structure MermaidSpecOut {
     spec: Option<MermaidNodeSpec>
 }
 
-# flowchart 语句：裸节点或 `A --> B`（可带 `|label|`）。
+# flowchart 语句：裸节点或 `A --> B` / `A <--> B`（可带 `|label|`）。
 micro mermaid_interpret_flow_statement(tokens: [DataToken<MermaidTokenKind>], state: MermaidBuildState) -> Option<MermaidEdgeSpec> {
     let source_out: MermaidSpecOut = mermaid_parse_node_spec(tokens, MermaidCursor { position: 0 }, state)
     if source_out.spec.is_none() {
@@ -143,17 +165,23 @@ micro mermaid_interpret_flow_statement(tokens: [DataToken<MermaidTokenKind>], st
             source: source,
             target: MermaidNodeSpec {
                 id: "",
-                label: None
+                label: None,
+                shape: 0
             },
-            label: ""
+            label: "",
+            bidirectional: false
         })
     }
     let maybe_arrow: Option<DataToken<MermaidTokenKind>> = mermaid_cur_peek(tokens, after_source)
     let mut is_arrow: bool = false
+    let mut bidirectional: bool = false
     if maybe_arrow.is_some() {
         match maybe_arrow.unwrap().kind {
             case Arrow:
                 is_arrow = true
+            case BiArrow:
+                is_arrow = true
+                bidirectional = true
             else:
                 is_arrow = false
         }
@@ -214,17 +242,23 @@ micro mermaid_interpret_flow_statement(tokens: [DataToken<MermaidTokenKind>], st
     return Some(MermaidEdgeSpec {
         source: source,
         target: target_out.spec.unwrap(),
-        label: label
+        label: label,
+        bidirectional: bidirectional
     })
 }
 
-micro mermaid_register(decls: [PlotDecl], spec: MermaidNodeSpec) -> [PlotDecl] {
+# 节点登记：首次出现定身份；带标签规格后写覆盖标签与非默认形状；
+# `cluster` 非空时写入聚类归属（外部 subgraph 上下文传入）。
+micro mermaid_register(decls: [PlotDecl], spec: MermaidNodeSpec, cluster: utf8) -> [PlotDecl] {
     let mut index: usize = 0
     while index < decls.length() {
         if decls⁅index⁆.id.equals(spec.id) {
-            if spec.label.is_some() {
+            if spec.label.is_some() || spec.shape != 0 {
                 let mut updated: [PlotDecl] = decls
-                updated⁅index⁆ = plot_decl(spec.id, spec.label.unwrap())
+                let label: utf8 = if spec.label.is_some() { spec.label.unwrap() } else { decls⁅index⁆.label }
+                let shape: i32 = if spec.shape != 0 { spec.shape } else { decls⁅index⁆.shape }
+                let keep_cluster: utf8 = if decls⁅index⁆.cluster.length() > 0 { decls⁅index⁆.cluster } else { cluster }
+                updated⁅index⁆ = plot_decl_clustered(spec.id, label, shape, keep_cluster)
                 return updated
             }
             return decls
@@ -232,7 +266,7 @@ micro mermaid_register(decls: [PlotDecl], spec: MermaidNodeSpec) -> [PlotDecl] {
         index = index + 1
     }
     if spec.label.is_some() {
-        return push(decls, plot_decl(spec.id, spec.label.unwrap()))
+        return push(decls, plot_decl_clustered(spec.id, spec.label.unwrap(), spec.shape, cluster))
     }
-    return push(decls, plot_decl(spec.id, spec.id))
+    return push(decls, plot_decl_clustered(spec.id, spec.id, spec.shape, cluster))
 }

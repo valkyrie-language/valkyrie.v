@@ -2,7 +2,7 @@ namespace std.data.text.mermaid;
 
 using std.data::{DataCstNode, DataOutcome, DataSource, DataToken, data_cst_missing, data_outcome_diagnostics, data_outcome_value_or, data_source_from_text, new_data_settings};
 using std.diagnostic::{Diagnostic, new_span};
-using document.plot::{plot_emit_svg, plot_flowchart, plot_sequence};
+using document.plot::{plot_emit_svg, plot_flowchart, plot_sequence_full, plot_sequence_spec};
 
 # 便捷管线：源文本 -> SVG（解析三段 + 布局 + 发射；诊断跨段聚合）。
 
@@ -32,7 +32,7 @@ micro mermaid_emit(diagram: MermaidDiagram) -> utf8 {
         case MermaidFlowchart(payload):
             return plot_emit_svg(plot_flowchart(payload.nodes, payload.edges))
         case MermaidSequence(payload):
-            return plot_emit_svg(plot_sequence(payload.participants, payload.messages))
+            return plot_emit_svg(plot_sequence_full(plot_sequence_spec(payload.participants, payload.events)))
     }
 }
 

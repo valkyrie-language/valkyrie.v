@@ -3,7 +3,7 @@ namespace std.data.text.mermaid;
 using std.data::{DataOutcome, data_outcome_diagnostics, data_outcome_value_or};
 using std.diagnostic::{Diagnostic};
 using document.plot::{PlotScene, plot_arrow_head, plot_decl, plot_edge, plot_flowchart, plot_rect_outline, plot_sequence};
-using document.vector::{svg_document, svg_line, svg_path, svg_path_line_to, svg_path_move_to, svg_rect, svg_text};
+using document.vector::{svg_document, svg_line, svg_path, svg_path_dashed, svg_path_line_to, svg_path_move_to, svg_rect, svg_text};
 
 [test]
 micro flowchart_svg_snapshot() -> unit {
@@ -50,8 +50,8 @@ micro sequence_svg_snapshot() -> unit {
     let svg: utf8 = data_outcome_value_or(outcome, "")
     let scene: PlotScene = plot_sequence([plot_decl("A", "Alice"), plot_decl("B", "B")], [plot_edge("A", "B", "hi")])
     let expected: utf8 = svg_document(244.0, 138.0,
-        svg_path(svg_path_line_to(svg_path_move_to(53.0, 38.0), 53.0, 138.0), "#666666", 1.0, "none")
-        + svg_path(svg_path_line_to(svg_path_move_to(159.0, 38.0), 159.0, 138.0), "#666666", 1.0, "none")
+        svg_path_dashed(svg_path_line_to(svg_path_move_to(53.0, 38.0), 53.0, 138.0), "#999999", 1.0, "none", "4 3")
+        + svg_path_dashed(svg_path_line_to(svg_path_move_to(159.0, 38.0), 159.0, 138.0), "#999999", 1.0, "none", "4 3")
         + svg_line(53.0, 78.0, 159.0, 78.0, "#000000", 1.0)
         + plot_arrow_head(53.0, 78.0, 159.0, 78.0, 6.0)
         + svg_text(106.0, 74.0, "hi", "#000000", 10.0)
@@ -104,6 +104,48 @@ micro malformed_statement_reports_and_keeps_going() -> unit {
             panic("one bad statement must not fail the diagram")
         else:
             found = found
+    }
+}
+
+[test]
+micro flowchart_shapes_and_bidirectional_parse() -> unit {
+    let outcome: DataOutcome<utf8> = mermaid_render_svg("graph TD\nA{Sharp} <--> B(Round)\n")
+    match outcome {
+        case Failed(payload):
+            panic("shapes and bidirectional render")
+        else:
+            let svg: utf8 = data_outcome_value_or(outcome, "")
+            if svg.length() == 0 {
+                panic("svg emitted")
+            }
+    }
+}
+
+[test]
+micro flowchart_subgraph_registers_cluster() -> unit {
+    let outcome: DataOutcome<utf8> = mermaid_render_svg("graph TD\nsubgraph g1\nA --> B\nend\n")
+    match outcome {
+        case Failed(payload):
+            panic("subgraph renders")
+        else:
+            let svg: utf8 = data_outcome_value_or(outcome, "")
+            if svg.length() == 0 {
+                panic("svg emitted")
+            }
+    }
+}
+
+[test]
+micro sequence_decorations_parse() -> unit {
+    let outcome: DataOutcome<utf8> = mermaid_render_svg("sequenceDiagram\nparticipant A\nparticipant B\nA->>B: hi\nactivate B\nB->>A: ack\ndeactivate B\nnote right of A: ok\nalt try\nA->>B: one\nelse\nA->>B: two\nend\n")
+    match outcome {
+        case Failed(payload):
+            panic("sequence decorations render")
+        else:
+            let svg: utf8 = data_outcome_value_or(outcome, "")
+            if svg.length() == 0 {
+                panic("svg emitted")
+            }
     }
 }
 
