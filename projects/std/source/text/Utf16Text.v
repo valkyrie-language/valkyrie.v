@@ -99,10 +99,10 @@ imply Utf16Text: std::iterator::IntoIterator {
 # 索引按 UTF-16 code unit 计数（与 `length` 的计数单位一致，`char` 即 u16 code unit）；
 # 对含 astral 字符（代理对）的文本，本索引口径与 `Utf8Text` 的标量口径不等——
 # 这是各自 repr 的忠实口径，显式记录。元素个数由 `length` 承担，与本合同无关。
-imply Utf16Text: std::primitive::Cardinal {
+imply Utf16Text: std::operator::Cardinal {
     type Element = char;
 
-    # 0 基 code unit 索引自动取值；越界结构化失败（合同语义见 `std::primitive::Cardinal`）。
+    # 0 基 code unit 索引自动取值；越界结构化失败（合同语义见 `std::operator::Cardinal`）。
     suffix `⁅ ⁆`(self, offset: usize): char {
         if offset >= self.length() {
             std::types::panic("Utf16Text ⁅ ⁆ 越界：offset 超出元素个数")

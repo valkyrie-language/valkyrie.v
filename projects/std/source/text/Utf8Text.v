@@ -339,10 +339,10 @@ imply Utf8Text {
 # 0 基标量索引读写合同：`⁅ ⁆` / `⁅ ⁆=` 与同源的 `get_cardinal` / `set_cardinal`。
 # 索引按 Unicode 标量计数（与 `length` 的计数单位一致）；`char` 是 u16 code unit，
 # astral 标量无法表示（类型系统层缺口，已记录）。元素个数由 `length` 承担，与本合同无关。
-imply Utf8Text: std::primitive::Cardinal {
+imply Utf8Text: std::operator::Cardinal {
     type Element = char;
 
-    # 0 基标量索引自动取值（UTF-8 解码为 `char`）；越界结构化失败（合同语义见 `std::primitive::Cardinal`）。
+    # 0 基标量索引自动取值（UTF-8 解码为 `char`）；越界结构化失败（合同语义见 `std::operator::Cardinal`）。
     suffix `⁅ ⁆`(self, offset: usize): char {
         let found: Option<char> = self.char_at(offset)
         if found.is_none() {
@@ -393,7 +393,7 @@ micro encode_char_as_utf8(code: char): utf8 {
     return Utf8Text::from_bytes([(0xE0 + (value >> 12)) as u8, (0x80 + ((value >> 6) & 0x3F)) as u8, (0x80 + (value & 0x3F)) as u8])
 }
 
-imply Utf8Text: std::primitive::Equal {
+imply Utf8Text: std::operator::Equal {
     infix `==`(self, other: utf8): bool {
         return self.equals_repr(other._repr)
     }
@@ -403,7 +403,7 @@ imply Utf8Text: std::primitive::Equal {
     }
 }
 
-imply Utf8Text: std::primitive::Identical {
+imply Utf8Text: std::operator::Identical {
     infix `===`(self, other: utf8): bool {
         return self == other
     }

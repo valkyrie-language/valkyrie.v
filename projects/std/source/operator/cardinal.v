@@ -1,4 +1,4 @@
-namespace std.primitive;
+namespace std.operator;
 
 # Cardinal: 0 基索引读写合同 —— `⁅ ⁆` / `⁅ ⁆=` 算子与同源的命名方法
 # `get_cardinal` / `set_cardinal`。

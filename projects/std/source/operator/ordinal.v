@@ -1,4 +1,4 @@
-namespace std.primitive;
+namespace std.operator;
 
 # Ordinal: 序数合同 —— "第几个位置" 的读写，即 `a[ordinal]` 与 `a[ordinal] = value`。
 #

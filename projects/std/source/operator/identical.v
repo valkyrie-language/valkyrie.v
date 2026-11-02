@@ -1,4 +1,4 @@
-namespace std.primitive;
+namespace std.operator;
 
 trait Identical {
     infix `===`(self, other: Self): bool

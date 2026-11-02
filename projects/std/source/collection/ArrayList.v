@@ -145,7 +145,7 @@ imply ArrayList<T> {
     }
 
     # Names must match HIR sugar (`suffix [ ]`).
-    # 序数算子 `[ ]` / `[ ]=` 是 `std::primitive::Ordinal` 的过渡形态，随 Ordinal 接入迁移。
+    # 序数算子 `[ ]` / `[ ]=` 是 `std::operator::Ordinal` 的过渡形态，随 Ordinal 接入迁移。
     suffix `[ ]`(self, ordinal: usize): Option<T> {
         return self.get(ordinal)
     }
@@ -170,10 +170,10 @@ imply ArrayList<T> {
 
 # 0 基索引读写合同：`⁅ ⁆` / `⁅ ⁆=` 与同源的 `get_cardinal` / `set_cardinal`；
 # 序数语义（1 基）由 `Ordinal` 委托本合同实现。元素个数由 `length` 承担，与本合同无关。
-imply ArrayList<T>: std::primitive::Cardinal {
+imply ArrayList<T>: std::operator::Cardinal {
     type Element = T;
 
-    # 0 基索引自动取值；越界结构化失败（合同语义见 `std::primitive::Cardinal`）。
+    # 0 基索引自动取值；越界结构化失败（合同语义见 `std::operator::Cardinal`）。
     suffix `⁅ ⁆`(self, offset: usize): T {
         if offset >= self.length() {
             std::types::panic("Cardinal ⁅ ⁆ 越界：offset 超出元素个数")
