@@ -31,24 +31,29 @@ micro i32_neg(a: i32): i32
 #endregion
 
 #region i32 位运算
+# 与/或/异或/左移/算术右移是 VM 冻结的 `I32And`/`I32Or`/`I32Xor`/`I32Shl`/`I32ShrS` 头码，
+# 与 i32 算术同轨经 `[ovm_operator]` 冻结助记符内联，零函数调用开销。
+# VM 没有按位取反指令，std 侧也不存在 `__i32_not` 合同，保持无声明而不是用多指令配方伪造。
 
-[ovm("i32_and")]
+[host_provider(std::primitive::__i32_and)]
+[ovm_operator("i32.and")]
 micro i32_and(a: i32, b: i32): i32
 
-[ovm("i32_or")]
+[host_provider(std::primitive::__i32_or)]
+[ovm_operator("i32.or")]
 micro i32_or(a: i32, b: i32): i32
 
-[ovm("i32_xor")]
+[host_provider(std::primitive::__i32_xor)]
+[ovm_operator("i32.xor")]
 micro i32_xor(a: i32, b: i32): i32
 
-[ovm("i32_shl")]
+[host_provider(std::primitive::__i32_shl)]
+[ovm_operator("i32.shl")]
 micro i32_shl(a: i32, b: i32): i32
 
-[ovm("i32_shr")]
+[host_provider(std::primitive::__i32_shr)]
+[ovm_operator("i32.shr_s")]
 micro i32_shr(a: i32, b: i32): i32
-
-[ovm("i32_not")]
-micro i32_not(a: i32): i32
 
 #endregion
 
