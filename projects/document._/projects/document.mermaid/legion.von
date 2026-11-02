@@ -1,0 +1,12 @@
+{
+    name: "document.mermaid",
+    version: "workspace",
+    description: "document.* mermaid subset parsing to diagram scenes (Valkyrie)",
+    type: "library",
+    dependencies: { "std": { version: "workspace" }, "document.plot": { version: "workspace" }, "document.vector": { version: "workspace" } },
+    build: [
+        {
+            target: "ovm"
+        }
+    ]
+}
