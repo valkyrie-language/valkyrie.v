@@ -1,6 +1,6 @@
 # template
 
-Valkyrie 模板渲染核心包。**只做渲染，不含解析**：输入是 `std.data.text` 的公共模板 AST
+Valkyrie 模板渲染核心包。**只做渲染与装配，不含解析**：输入是 `std.data.text` 的公共模板 AST
 （由 `std.data.text.dejavu` 等方言包的三段管线产出），输出为纯内存求值文本。
 
 ## 渲染侧职责
@@ -16,6 +16,17 @@ Valkyrie 模板渲染核心包。**只做渲染，不含解析**：输入是 `st
 - 注册表：内置 filter（uppercase/upper/lowercase/lower/trim/default/length/join/replace/
   escape/e/safe/raw）、function（range/min/max）、test（null/none/truthy/empty/array/object/
   string/number/boolean/even/odd）；错误不穿透渲染栈（诊断 + 值落 null，继续渲染）
+- 继承与包含：`extends`/`block`/`super` 装配展开；`include` 三态上下文（继承 /
+  `with` 合并 / `only` 独占）；`partial` 参数化绑定；`macro`/`call`/`from` 宏与 caller 块
+
+## 装配侧职责
+
+- loader：内存目录（`TemplateCatalog`）+ path-v1 引用解析（scheme / 相对 / 裸路径，
+  规范 id `root:path`，扩展探测序 原文 → `.html` → `.dejavu`，裸路径按 root
+  `priority` 降序）；非内存 root 一律 fail-closed（`template.loader.host_capability`）
+- assemble：全目录合并表达式 arena（跨模板句柄统一有效）、继承链展开
+  （block 逐版本覆盖、`super` 拼接、循环 fail-closed）、宏表登记
+  （链上顶层 `macro` + `from`/`import` 目标宏）
 
 ## 分层
 
@@ -24,13 +35,16 @@ Valkyrie 模板渲染核心包。**只做渲染，不含解析**：输入是 `st
 | `source/value.v` | 值模型（JSON 同构 + `SafeTextValue`）、truthiness、结构相等、字符串化、数字解析/格式化 |
 | `source/escape.v` | HTML 转义 |
 | `source/filter.v` | 内置过滤器/函数/测试注册表与实现 |
-| `source/render.v` | 渲染管线：帧栈、控制信号、插值出口、`template_render` 入口 |
+| `source/loader.v` | 内存目录与 path-v1 引用解析 |
+| `source/assemble.v` | 合并 arena、继承链展开、宏表登记 |
+| `source/render.v` | 渲染管线：帧栈、控制信号、插值出口、include/partial/宏渲染、`template_render` / `template_render_catalog` 入口 |
 
 ## 边界
 
 - 解析（lexer/parser/builder）归 `std.data.text.<dialect>`，本包及本包测试一律不经手源码文本
-- loader / partial 装配（文件目录、canonical id）是宿主能力，尚未接入
+- 文件/网络等宿主模板源不接入：目录由宿主预装配为内存形态，其他 root 形态 fail-closed
 - `date` 过滤器（时间源）与 `slug` 过滤器（Unicode NFKD 数据表）：当前未提供
 - 非整数数字字符串化：JS 风格最短往返格式化未实现，插值命中非整数产
   `template.render.number_fraction`（Error），不输出近似值
-- 渲染诊断码 `template.render.*`，随 `render.v`/`filter.v` 注释登记
+- 渲染诊断码 `template.render.*` 随 `render.v`/`filter.v` 注释登记；
+  加载/装配诊断码 `template.loader.*` / `template.assemble.*` 随 `loader.v`/`assemble.v` 注释登记

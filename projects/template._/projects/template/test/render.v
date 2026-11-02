@@ -2,7 +2,7 @@ namespace template;
 
 using std.diagnostic::{Diagnostic, diagnostic_code};
 using std.data::{DataOutcome, data_outcome_diagnostics, data_outcome_value_or};
-using std.data.text::{Binary, BreakNode, Call, CommentNode, ContinueNode, Identifier, IfNode, InterpolationNode, LiteralNumber, LiteralString, LoopNode, Member, ObjectLiteral, OpEqual, Pipe, Test, TemplateDocument, TemplateExpression, TemplateIfBranch, TemplateImportName, TemplateNode, TemplateObjectEntry, TemplateParameter, TextNode};
+using std.data.text::{Binary, BlockNode, BreakNode, Call, CallNode, CommentNode, ContinueNode, ExtendsNode, Identifier, IfNode, ImportNode, IncludeNode, InterpolationNode, LiteralNumber, LiteralString, LoopNode, MacroNode, Member, ObjectLiteral, OpEqual, PartialNode, Pipe, SuperNode, Test, TemplateDocument, TemplateExpression, TemplateIfBranch, TemplateImportName, TemplateNode, TemplateObjectEntry, TemplateParameter, TextNode};
 
 # 渲染段测试：正例覆盖插值/转义/if/loop/forloop/break/continue/过滤器/函数/测试；
 # 反例覆盖未知过滤器、非法迭代、strict 未定义与非整数边界。
@@ -399,5 +399,216 @@ micro test_render_number_fraction_gap_fails_closed() -> unit {
     let integral: [TemplateExpression] = [literal_number(42.0)]
     if render_ok([interpolation(0)], integral, template_object([])) != "42" {
         panic("integral number must render exactly")
+    }
+}
+
+# ── 继承 / include / partial / 宏 ──
+
+micro catalog_of(entries: [TemplateCatalogEntry]) -> TemplateCatalog {
+    return TemplateCatalog { roots: [TemplateRoot { name: "app", kind: "memory", priority: 0 }], entries: entries }
+}
+
+micro catalog_entry(path: utf8, body: [TemplateNode], expressions: [TemplateExpression]) -> TemplateCatalogEntry {
+    return TemplateCatalogEntry { root: "app", path: path, document: TemplateDocument { body: body, expressions: expressions } }
+}
+
+micro render_catalog_ok(path: utf8, catalog: TemplateCatalog, context: TemplateValue) -> utf8 {
+    let outcome: DataOutcome<utf8> = template_render_catalog("app", path, catalog, context, template_default_render_settings())
+    if data_outcome_diagnostics(outcome).length() != 0 {
+        panic("clean render must not register diagnostics")
+    }
+    return data_outcome_value_or(outcome, "")
+}
+
+micro first_catalog_error(path: utf8, catalog: TemplateCatalog) -> utf8 {
+    let outcome: DataOutcome<utf8> = template_render_catalog("app", path, catalog, template_object([]), template_default_render_settings())
+    let diagnostics: [Diagnostic] = data_outcome_diagnostics(outcome)
+    if diagnostics.length() == 0 {
+        return ""
+    }
+    return diagnostic_code(diagnostics⁅0⁆.unwrap())
+}
+
+[test]
+micro test_render_macro_call_statement() -> unit {
+    # macro greet(who) -> "hi <who>"；call greet("world")
+    let body: [TemplateNode] = [
+        MacroNode { name: "greet", parameters: [TemplateParameter { name: "who", default: null }], body: [literal_text_node("hi "), interpolation(0)] },
+        CallNode { callee: 2, caller_parameters: [], body: [] }
+    ]
+    let expressions: [TemplateExpression] = [
+        identifier("who"),
+        literal_string("world"),
+        Call { callee: 3, arguments: [1] },
+        identifier("greet")
+    ]
+    if render_ok(body, expressions, template_object([])) != "hi world" {
+        panic("macro call output mismatch")
+    }
+}
+
+[test]
+micro test_render_macro_interpolation_output_is_safe() -> unit {
+    # macro tag() -> "<b>"；插值调用不再二次转义
+    let body: [TemplateNode] = [
+        MacroNode { name: "tag", parameters: [], body: [literal_text_node("<b>")] },
+        interpolation(0)
+    ]
+    let expressions: [TemplateExpression] = [
+        Call { callee: 1, arguments: [] },
+        identifier("tag")
+    ]
+    if render_ok(body, expressions, template_object([])) != "<b>" {
+        panic("macro interpolation must be safe text")
+    }
+}
+
+[test]
+micro test_render_caller_block() -> unit {
+    # macro m() -> "[" + caller("x") + "]"；call (v) m() body "value=<v>"
+    let body: [TemplateNode] = [
+        MacroNode { name: "m", parameters: [], body: [literal_text_node("["), interpolation(0), literal_text_node("]")] },
+        CallNode { callee: 1, caller_parameters: ["v"], body: [literal_text_node("value="), interpolation(2)] }
+    ]
+    let expressions: [TemplateExpression] = [
+        Call { callee: 4, arguments: [3] },
+        Call { callee: 5, arguments: [] },
+        identifier("v"),
+        literal_string("x"),
+        identifier("caller"),
+        identifier("m")
+    ]
+    if render_ok(body, expressions, template_object([])) != "[value=x]" {
+        panic("caller block output mismatch")
+    }
+}
+
+[test]
+micro test_render_caller_unavailable_in_expression_call() -> unit {
+    # macro m() 内用 caller()，经表达式调用 -> caller_unavailable
+    let body: [TemplateNode] = [
+        MacroNode { name: "m", parameters: [], body: [interpolation(0)] },
+        interpolation(1)
+    ]
+    let expressions: [TemplateExpression] = [
+        Call { callee: 2, arguments: [] },
+        Call { callee: 3, arguments: [] },
+        identifier("caller"),
+        identifier("m")
+    ]
+    if first_render_error(body, expressions, template_object([])) != "template.render.caller_unavailable" {
+        panic("caller_unavailable diagnostic expected")
+    }
+}
+
+[test]
+micro test_render_extends_block_super() -> unit {
+    let base: TemplateCatalogEntry = catalog_entry("base", [
+        literal_text_node("<html>"),
+        BlockNode { name: "content", body: [literal_text_node("base")] },
+        literal_text_node("</html>")
+    ], [])
+    let page: TemplateCatalogEntry = catalog_entry("page", [
+        ExtendsNode { parent: 0 },
+        BlockNode { name: "content", body: [literal_text_node("child "), SuperNode] }
+    ], [literal_string("base")])
+    if render_catalog_ok("page", catalog_of([base, page]), template_object([])) != "<html>child base</html>" {
+        panic("extends with super output mismatch")
+    }
+}
+
+[test]
+micro test_render_include_context_modes() -> unit {
+    let fragment: TemplateCatalogEntry = catalog_entry("frag", [interpolation(0)], [identifier("x")])
+    # 继承：父上下文 x 可见
+    let inherit: TemplateCatalogEntry = catalog_entry("inherit", [IncludeNode { path: 0, with_expression: null, only: false }], [literal_string("frag")])
+    let context: TemplateValue = template_object([template_field("x", template_text("inherited"))])
+    if render_catalog_ok("inherit", catalog_of([fragment, inherit]), context) != "inherited" {
+        panic("include inherit context mismatch")
+    }
+    # only：父上下文 x 不可见 -> 空输出；with 提供 x
+    let only_entry: TemplateCatalogEntry = catalog_entry("only", [IncludeNode { path: 0, with_expression: 1, only: true }], [literal_string("frag"), ObjectLiteral { entries: [TemplateObjectEntry { key: "x", value: 2 }] }, literal_string("via with")])
+    if render_catalog_ok("only", catalog_of([fragment, only_entry]), context) != "via with" {
+        panic("include only context mismatch")
+    }
+    let bare_only: TemplateCatalogEntry = catalog_entry("bare_only", [IncludeNode { path: 0, with_expression: null, only: true }], [literal_string("frag")])
+    if render_catalog_ok("bare_only", catalog_of([fragment, bare_only]), context) != "" {
+        panic("include without context must render empty")
+    }
+}
+
+[test]
+micro test_render_include_partial_binding() -> unit {
+    # card：partial title, level = 2 -> "<title>"
+    let card: TemplateCatalogEntry = catalog_entry("card", [
+        PartialNode {
+            parameters: [TemplateParameter { name: "title", default: null }, TemplateParameter { name: "level", default: 1 }],
+            body: [interpolation(0)]
+        }
+    ], [identifier("title"), literal_number(2.0)])
+    let main: TemplateCatalogEntry = catalog_entry("main", [
+        IncludeNode { path: 0, with_expression: 1, only: false }
+    ], [literal_string("card"), ObjectLiteral { entries: [TemplateObjectEntry { key: "title", value: 2 }] }, literal_string("T")])
+    if render_catalog_ok("main", catalog_of([card, main]), template_object([])) != "T" {
+        panic("partial binding output mismatch")
+    }
+    # 缺少无默认值参数 -> missing_parameter
+    let short: TemplateCatalogEntry = catalog_entry("short", [
+        IncludeNode { path: 0, with_expression: null, only: false }
+    ], [literal_string("card")])
+    if first_catalog_error("short", catalog_of([card, short])) != "template.render.missing_parameter" {
+        panic("missing_parameter diagnostic expected")
+    }
+}
+
+[test]
+micro test_render_import_macros() -> unit {
+    let forms: TemplateCatalogEntry = catalog_entry("forms", [
+        MacroNode { name: "input", parameters: [], body: [literal_text_node("<input>")] }
+    ], [])
+    let main: TemplateCatalogEntry = catalog_entry("main", [
+        ImportNode { path: 0, names: [TemplateImportName { name: "input", alias: null }] },
+        interpolation(1)
+    ], [literal_string("forms"), Call { callee: 2, arguments: [] }, identifier("input")])
+    if render_catalog_ok("main", catalog_of([forms, main]), template_object([])) != "<input>" {
+        panic("imported macro output mismatch")
+    }
+}
+
+[test]
+micro test_render_include_cycle_fails_closed() -> unit {
+    let self_include: TemplateCatalogEntry = catalog_entry("loop", [IncludeNode { path: 0, with_expression: null, only: false }], [literal_string("loop")])
+    if first_catalog_error("loop", catalog_of([self_include])) != "template.render.include_cycle" {
+        panic("include_cycle diagnostic expected")
+    }
+}
+
+[test]
+micro test_render_unknown_macro_fails_closed() -> unit {
+    let body: [TemplateNode] = [
+        CallNode { callee: 0, caller_parameters: [], body: [] }
+    ]
+    let expressions: [TemplateExpression] = [
+        Call { callee: 1, arguments: [] },
+        identifier("nope")
+    ]
+    if first_render_error(body, expressions, template_object([])) != "template.render.unknown_macro" {
+        panic("unknown_macro diagnostic expected")
+    }
+}
+
+[test]
+micro test_render_unassembled_surfaces_fail_closed() -> unit {
+    # 单文档：extends 无目录可装配 -> unassembled_extends
+    let extends_body: [TemplateNode] = [ExtendsNode { parent: 0 }]
+    let extends_expressions: [TemplateExpression] = [literal_string("base")]
+    if first_render_error(extends_body, extends_expressions, template_object([])) != "template.render.unassembled_extends" {
+        panic("unassembled_extends diagnostic expected")
+    }
+    # 单文档：include 无目录 -> loader template_not_found
+    let include_body: [TemplateNode] = [IncludeNode { path: 0, with_expression: null, only: false }]
+    let include_expressions: [TemplateExpression] = [literal_string("anywhere")]
+    if first_render_error(include_body, include_expressions, template_object([])) != "template.loader.template_not_found" {
+        panic("template_not_found diagnostic expected")
     }
 }
