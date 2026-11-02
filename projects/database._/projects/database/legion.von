@@ -1,0 +1,13 @@
+{
+    name: "database",
+    version: "workspace",
+    description: "database 引擎抽象层 — 所有数据库实现共用的合同与内存参考引擎",
+    type: "library",
+    dependencies: { "std": { version: "workspace" } },
+    build: [
+        { target: "ovm" },
+        { target: "clr" },
+        { target: "jvm" },
+        { target: "wasm" }
+    ]
+}

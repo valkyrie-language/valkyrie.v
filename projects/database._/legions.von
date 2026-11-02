@@ -2,6 +2,7 @@
     version: "1",
     name: "database-workspace",
     members: [
+        "projects/database",
         "projects/yyds.kv"
     ],
     dependencies: {},
