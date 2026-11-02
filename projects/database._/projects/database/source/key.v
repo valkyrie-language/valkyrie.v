@@ -41,6 +41,13 @@ micro database_encode_bool(value: bool) -> [u8] {
     return [database_kind_bool() as u8, 0]
 }
 
+# f64 保序编码合同：需要 f64 → 64 位整数的位重解释宿主能力（符号翻转/全取反变换
+# 都建立在原始位之上）。位访问原语就位前一律 `capability_missing`（fail-closed），
+# 不以截断、文本化或近似伪造顺序。
+micro database_encode_f64(value: f64) -> Result<[u8], DatabaseFault> {
+    return Fail(DatabaseFault { code: database_fault_capability_missing() })
+}
+
 # 无符号字节字典序比较：a 小返回负值，相等返回 0，a 大返回正值（i64 口径）。
 micro database_compare_bytes(a: [u8], b: [u8]) -> i64 {
     let mut index: i64 = 0

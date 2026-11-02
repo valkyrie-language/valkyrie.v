@@ -40,6 +40,11 @@ micro database_value_encode_bool(value: bool) -> [u8] {
     return database_encode_bool(value)
 }
 
+# f64 值编码合同：与键编码同缺口——位重解释宿主能力就位前 fail-closed。
+micro database_value_encode_f64(value: f64) -> Result<[u8], DatabaseFault> {
+    return database_encode_f64(value)
+}
+
 # 读取 bool 值（类型码不符即 `corrupt_encoding`）。
 micro database_value_decode_bool(encoded: [u8]) -> Result<bool, DatabaseFault> {
     let size: i64 = encoded.length() as i64

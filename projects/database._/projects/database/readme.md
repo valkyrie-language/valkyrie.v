@@ -20,6 +20,7 @@ source/
 ├── snapshot.v    Snapshot：只读冻结视图
 ├── journal.v     WAL 语义：flush/checkpoint/simulate_crash/recover
 ├── index.v       索引 trait 面（有序/哈希）与内存有序索引见证
+├── persistence.v 持久化后端 provider 合同面（仅声明，fail-closed）
 └── stats.v       尺寸估算与统计
 ```
 
@@ -92,7 +93,12 @@ source/
 
 ## 当前已知限制
 
-- **f64 保序编码**：需要位级访问（符号/尾数变换）；类型码已预留（4），编码器未落地。
+- **f64 保序编码**：需要位级访问（符号/尾数变换）——`f64` 原始位重解释原语当前不可用；
+  `database_encode_f64` / `database_value_encode_f64` 合同已就位，一律 `capability_missing`
+  fail-closed，不以截断/文本化伪造顺序。
+- **持久化后端**：`persistence.v` 已声明文件后端所需的最小宿主能力面（打开/读/写/刷盘/
+  原子替换/长度/关闭/目录同步），无任何 provider；文件引擎在 provider 就位前不参与
+  `database_open`，非 memory 后端一律 `backend_unavailable`（fail-closed）。
 - **外部后端**：sqlite/mysql/redis 适配器尚无 `[host_contract]` 面；`database_open` 对非 memory 后端一律 `backend_unavailable`（fail-closed），适配器落地时各带 provider。
 - **OVM 函数值调度**：conformance 套件的工厂函数值参数化在 OVM 暂不可编译；wasm lane 为执行证据。
 - **`[test]` 入口**：test 语义组下部分 host contract 实例缺 provider，执行证据走 `database.conformance` 的 `[export]` harness。
