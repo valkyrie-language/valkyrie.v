@@ -505,3 +505,50 @@ micro test_build_parameter_name_rules() -> unit {
         panic("diagnostic code mismatch")
     }
 }
+
+# ── 空白控制（trim marker 经词法 Trimmed token 落 AST）──
+
+micro text_of(node: TemplateNode) -> utf8 {
+    match node {
+        case TextNode(payload): {
+            return payload.text
+        }
+        else: {
+            panic("text node expected")
+        }
+    }
+}
+
+micro expect_trimmed_shape(source: utf8) -> unit {
+    let outcome: DataOutcome<TemplateDocument> = build_source(source)
+    if data_outcome_diagnostics(outcome).length() != 0 {
+        panic("clean trim template must build without diagnostics")
+    }
+    let document: TemplateDocument = data_outcome_value_or(outcome, TemplateDocument { body: [], expressions: [] })
+    if document.body.length() != 3 {
+        panic("trimmed template must hold text, interpolation, text")
+    }
+    if text_of(document.body⁅0⁆.unwrap()) != "a" {
+        panic("leading text must be right-trimmed")
+    }
+    if text_of(document.body⁅2⁆.unwrap()) != "b" {
+        panic("trailing text must be left-trimmed")
+    }
+}
+
+[test]
+micro test_build_trim_markers_strip_whitespace() -> unit {
+    # `_` ↔ ws：两侧水平空白剥离。
+    expect_trimmed_shape("a  <%_ x _%>  b")
+    # `~` ↔ ws_nl：水平空白同样在剥离集内。
+    expect_trimmed_shape("a  <%~ x ~%>  b")
+    # 无标记：空白原样保留。
+    let keep: DataOutcome<TemplateDocument> = build_source("a  <% x %>  b")
+    let keep_document: TemplateDocument = data_outcome_value_or(keep, TemplateDocument { body: [], expressions: [] })
+    if text_of(keep_document.body⁅0⁆.unwrap()) != "a  " {
+        panic("unmarked text must keep trailing whitespace")
+    }
+    if text_of(keep_document.body⁅2⁆.unwrap()) != "  b" {
+        panic("unmarked text must keep leading whitespace")
+    }
+}
