@@ -2,13 +2,10 @@ namespace vutex;
 
 # vutex — 文档排版与数学排版内核（Valkyrie 实现）。
 #
-# 当前落地：TeX 数学子集（`\frac`、`\sqrt`、上下标、希腊字母、运算符）的
-# 解析、盒排版与矢量文本输出。排版内核（盒模型、度量、断行）归
-# `document.layout`；矢量文本发射归 `document.vector`；本包只做
-# TeX 语法 → 数学 AST → 盒树 的映射与输出编排。
+# 职责：数学 AST（`MathNode`）→ `document.layout` 盒树 → `document.vector`
+# SVG 矢量文本。TeX 源文本解析归 `std.data.text.tex`，本包不含解析器。
 #
 # v0 边界（如实记录）：
-# - 不做全 TeX：仅上述数学子集；其余命令按未支持处理（解析返回 `None`）。
 # - 度量是字符单元（等宽假设），真实字体度量经 provider 接入后替换。
 # - 联合上下标（同基点 `^{}_{}`/`_{}^{}`）的列基线取下标行，上标随列上移，
 #   与全功能排版的精对位有偏差；单独上标/下标是精确的。
