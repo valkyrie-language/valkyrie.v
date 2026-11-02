@@ -73,6 +73,23 @@ structure TemplateObjectEntry {
     value: usize
 }
 
+structure TemplateIfBranch {
+    test: usize
+    body: [TemplateNode]
+}
+
+# 参数（partial 参数与 macro 参数同形）：`default` 为字面量表达式句柄，缺席为 null。
+structure TemplateParameter {
+    name: utf8
+    default: usize?
+}
+
+# `from path import a, b as c` 的导入名：`alias` 缺席为 null（按原名绑定）。
+structure TemplateImportName {
+    name: utf8
+    alias: utf8?
+}
+
 [tag(TemplateNodeTag)]
 unite TemplateNode {
     # 模板文本（trim 已应用）。
@@ -90,16 +107,30 @@ unite TemplateNode {
     LoopNode { item: utf8, iterable: usize, body: [TemplateNode] }
     BreakNode
     ContinueNode
+    # 继承与包含：`parent`/`path`/`with_expression` 为表达式句柄；
+    # include 的 `only` 标记 `with` 条目独占上下文（`without context` 同空 with）。
+    [constructor]
+    ExtendsNode { parent: usize }
+    [constructor]
+    BlockNode { name: utf8, body: [TemplateNode] }
+    SuperNode
+    [constructor]
+    IncludeNode { path: usize, with_expression: usize?, only: bool }
+    # 参数化 partial：一个模板至多一个并包住整个模板；不继承调用方上下文。
+    [constructor]
+    PartialNode { parameters: [TemplateParameter], body: [TemplateNode] }
+    # 宏与 caller 块：`callee` 必须是 `name(args)` 形的 Call 表达式句柄。
+    [constructor]
+    MacroNode { name: utf8, parameters: [TemplateParameter], body: [TemplateNode] }
+    [constructor]
+    CallNode { callee: usize, caller_parameters: [utf8], body: [TemplateNode] }
+    [constructor]
+    ImportNode { path: usize, names: [TemplateImportName] }
     # builder 对 CST `Missing`/`Poison` 的如实映射。
     [constructor]
     MissingNode { reason: utf8 }
     [constructor]
     PoisonNode { reason: utf8 }
-}
-
-structure TemplateIfBranch {
-    test: usize
-    body: [TemplateNode]
 }
 
 structure TemplateDocument {

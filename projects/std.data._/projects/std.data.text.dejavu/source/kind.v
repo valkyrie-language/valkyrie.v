@@ -110,8 +110,15 @@ unite TemplateTokenKind {
     NodeLoop
     NodeBreak
     NodeContinue
-    # 已识别但当前不支持的语句表面（extends/include/partial/macro/call/block/super/from），
-    # 标签 token 全部挂入该容器，诊断在 parser 产生。
+    NodeExtends
+    NodeBlock
+    NodeSuper
+    NodeInclude
+    NodePartial
+    NodeMacro
+    NodeCall
+    NodeImport
+    # 保留的恢复容器：分类失败或不属于任何语句形的标签内容。
     NodeUnsupported
     NodeExpressionBinary
     NodeExpressionUnary
