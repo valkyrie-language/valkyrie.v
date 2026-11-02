@@ -52,16 +52,17 @@ structure TemplateMacroCollection {
     diagnostics: [Diagnostic]
 }
 
-# ── 目录装配 ──
+# ── 源装配 ──
 
 micro template_assemble(root: utf8, path: utf8, catalog: TemplateCatalog) -> DataOutcome<TemplateAssembly> {
     let mut diagnostics: [Diagnostic] = []
-    # 1. 目录镜像：全条目并入单一 arena（逐条目偏移重映射）。
+    # 1. 源镜像：全条目并入单一 arena（逐条目偏移重映射；条目枚举经 source.v 窄接口）。
+    let source_entries: [TemplateCatalogEntry] = template_source_entries(catalog)
     let mut arena: [TemplateExpression] = []
     let mut documents: [TemplateRuntimeDocument] = []
     let mut index: usize = 0
-    while index < catalog.entries.length() {
-        let entry: TemplateCatalogEntry = catalog.entries⁅index⁆.unwrap()
+    while index < source_entries.length() {
+        let entry: TemplateCatalogEntry = source_entries⁅index⁆.unwrap()
         let remapped: TemplateDocument = template_remap_document(entry.document, arena.length())
         let mut merge: usize = 0
         while merge < remapped.expressions.length() {

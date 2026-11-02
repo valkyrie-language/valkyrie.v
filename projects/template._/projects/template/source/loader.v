@@ -2,12 +2,11 @@ namespace template;
 
 using std.diagnostic::{Diagnostic, Error, diagnostic_code, new_diagnostic, new_span};
 using std.data::{DataOutcome, data_outcome_diagnostics, data_outcome_failed, data_outcome_has_errors, data_outcome_of, data_outcome_partial, data_outcome_value_or};
-using std.data.text::{TemplateDocument};
 
-# 加载段：模板引用 -> 内存目录条目。纯内存合同：目录由宿主预先装配
-# （解析归方言包），本段只做引用分类、路径规格化与目录查找。
+# 加载段（纯策略）：模板引用 -> 源条目命中。模板源访问一律经 source.v 的
+# 窄接口（待 std.vfs 落地后替换其实现）；本文件不含目录实现假设。
 #
-# path-v1：
+# path-v1（策略合同）：
 # - 引用三态：scheme（`<root>:<path>`）、相对（`./`/`../` 前缀）、裸路径。
 # - 反斜杠规格化为 `/`；空段与 `.` 段折叠；`..` 弹一段，越过根即越界。
 # - 规范 id：`root:path`（path 不带前导 `/`）。
@@ -17,24 +16,7 @@ using std.data.text::{TemplateDocument};
 # root 目前只支持 `memory` 形态；其他形态（文件/网络等宿主能力源）
 # 一律 fail-closed 产 `template.loader.host_capability`，不尝试任何 IO。
 
-structure TemplateRoot {
-    name: utf8
-    kind: utf8
-    priority: i64
-}
-
-structure TemplateCatalogEntry {
-    root: utf8
-    path: utf8
-    document: TemplateDocument
-}
-
-structure TemplateCatalog {
-    roots: [TemplateRoot]
-    entries: [TemplateCatalogEntry]
-}
-
-# 解析命中的目录位：规范 id + 目录条目下标。
+# 解析命中的源位：规范 id + 源条目下标。
 structure TemplateResolution {
     canonical: utf8
     entry: usize
@@ -120,7 +102,7 @@ micro template_resolve(reference: utf8, from_canonical: utf8, catalog: TemplateC
 }
 
 micro template_resolve_scheme(reference_form: TemplateRef, catalog: TemplateCatalog) -> DataOutcome<TemplateResolution> {
-    let root: TemplateRoot? = template_find_root(catalog, reference_form.scheme)
+    let root: TemplateRoot? = template_source_root(catalog, reference_form.scheme)
     if root.is_none() {
         return template_loader_failure("template.loader.unknown_scheme", "未知模板根: " + reference_form.scheme)
     }
@@ -141,7 +123,7 @@ micro template_resolve_relative(reference_form: TemplateRef, from_canonical: utf
     }
     let root_name: utf8 = from_canonical.slice(0, colon)
     let from_path: utf8 = from_canonical.slice(colon + 1, from_canonical.length() - colon - 1)
-    let root: TemplateRoot? = template_find_root(catalog, root_name)
+    let root: TemplateRoot? = template_source_root(catalog, root_name)
     if root.is_none() {
         return template_loader_failure("template.loader.unknown_scheme", "未知模板根: " + root_name)
     }
@@ -182,7 +164,7 @@ micro template_probe_root(root: TemplateRoot, path: utf8, catalog: TemplateCatal
     let mut index: usize = 0
     while index < probes.length() {
         let candidate: utf8 = path + probes⁅index⁆.unwrap()
-        let entry: usize? = template_find_entry(catalog, root.name, candidate)
+        let entry: usize? = template_source_probe(catalog, root.name, candidate)
         if entry.is_some() {
             let resolution: TemplateResolution = TemplateResolution { canonical: root.name + ":" + candidate, entry: entry.unwrap() }
             return data_outcome_of(resolution)
@@ -205,38 +187,15 @@ micro template_resolution_is_not_found(outcome: DataOutcome<TemplateResolution>)
     return diagnostics.length() > 0
 }
 
-# ── 目录查询 ──
-
-micro template_find_root(catalog: TemplateCatalog, name: utf8) -> TemplateRoot? {
-    let mut index: usize = 0
-    while index < catalog.roots.length() {
-        let root: TemplateRoot = catalog.roots⁅index⁆.unwrap()
-        if root.name == name {
-            return root
-        }
-        index = index + 1
-    }
-    return null
-}
-
-micro template_find_entry(catalog: TemplateCatalog, root: utf8, path: utf8) -> usize? {
-    let mut index: usize = 0
-    while index < catalog.entries.length() {
-        let entry: TemplateCatalogEntry = catalog.entries⁅index⁆.unwrap()
-        if entry.root == root && entry.path == path {
-            return index
-        }
-        index = index + 1
-    }
-    return null
-}
+# ── 策略侧源访问（经 source.v 窄接口）──
 
 # priority 降序（插入排序，root 数小）。
 micro template_roots_by_priority(catalog: TemplateCatalog) -> [TemplateRoot] {
+    let roots: [TemplateRoot] = template_source_roots(catalog)
     let mut ordered: [TemplateRoot] = []
     let mut index: usize = 0
-    while index < catalog.roots.length() {
-        let root: TemplateRoot = catalog.roots⁅index⁆.unwrap()
+    while index < roots.length() {
+        let root: TemplateRoot = roots⁅index⁆.unwrap()
         let mut position: usize = ordered.length()
         let mut cursor: usize = 0
         while cursor < ordered.length() {
