@@ -89,7 +89,7 @@ imply Array<T>: std::operator::Cardinal {
 }
 
 # 1 基序数读写合同：算子 `[ ]` / `[ ]=` 与同源的命名 `get` / `set` 全部由本 impl 提供。
-# 主访问返回裸 `T`，越界结构化失败；可恢复形态走 `try_get`（越界返回 `None`）。
+# 主访问返回裸 `T`，越界结构化失败；可恢复形态走 `get`（越界返回 `None`）。
 # `Index` 取 `isize`：负数落入越界判定。实际访问一律落到 `Cardinal`
 # （0 基偏移 `ordinal - 1`），本 impl 不重复存储访问逻辑。
 imply Array<T>: std::operator::Ordinal {
