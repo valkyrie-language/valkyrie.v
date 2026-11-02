@@ -2,7 +2,7 @@ namespace legion;
 
 using std.data.text.von;
 using std.io;
-using std.math.graph_theory;
+using std.collection;
 
 structure BuildRequest {
     project: utf8

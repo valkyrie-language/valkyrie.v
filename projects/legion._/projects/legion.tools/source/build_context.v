@@ -1,7 +1,7 @@
 namespace legion;
 
 using nyar;
-using std.math.graph_theory;
+using std.collection;
 
 structure LegionBuildContext {
     project_dir: utf8
@@ -163,26 +163,26 @@ micro legion_target_backend_family(arch_tag: utf8) -> utf8 {
 # manifest 未声明 requested target 时不得伪造一个成功用的 LegionBuildTarget。
 # 调用方 `legion_build_contexts` 在扫描后按声明与否结构化失败。
 
-# 构建依赖图：使用图论模块的有向图存储依赖关系
+# 构建依赖图：使用 std.collection 的泛型有向图存储依赖关系
 # 边方向为 A → B 表示 A 依赖 B
-micro legion_build_dependency_graph(manifest: LegionProjectManifest, project_name: utf8) -> DirectedGraph {
-    let mut graph: DirectedGraph = directed_graph_new()
+micro legion_build_dependency_graph(manifest: LegionProjectManifest, project_name: utf8) -> DirectedGraph<utf8> {
+    let mut graph: DirectedGraph<utf8> = DirectedGraph::new()
 
     # 添加项目自身节点
-    directed_graph_add_node(graph, project_name)
+    graph.add_node(project_name)
 
     # 根据 auto_link 添加隐式 core/std 依赖
     if manifest.auto_link_core {
-        directed_graph_add_edge(graph, project_name, "core")
+        graph.add_edge(project_name, "core")
     }
     if manifest.auto_link_std {
-        directed_graph_add_edge(graph, project_name, "std")
+        graph.add_edge(project_name, "std")
     }
 
     # 添加显式声明的依赖
     let mut di: usize = 0
     while di < manifest.dependencies.length() {
-        directed_graph_add_edge(graph, project_name, manifest.dependencies⁅di⁆.name)
+        graph.add_edge(project_name, manifest.dependencies⁅di⁆.name)
         di = di + 1
     }
 
@@ -225,16 +225,18 @@ micro legion_build_contexts(
     let project_name: utf8 = legion_project_name(project_dir, manifest)
 
     # 构建依赖图
-    let dep_graph: DirectedGraph = legion_build_dependency_graph(manifest, project_name)
+    let dep_graph: DirectedGraph<utf8> = legion_build_dependency_graph(manifest, project_name)
 
     # 循环依赖检测
-    if has_cycle(dep_graph) {
-        let cycle_path: [utf8] = find_cycle(dep_graph)
+    if dep_graph.has_cycle() {
         return Fail(new_von_diagnostic("检测到循环依赖", 0, 0))
     }
 
-    # 拓扑排序确定编译顺序
-    let build_order: [utf8] = topological_sort(dep_graph)
+    # 拓扑排序确定编译顺序（`dependency_order` 字段口径为数组，在此转换）
+    let mut build_order: [utf8] = []
+    loop node in dep_graph.topological_sort() {
+        build_order = push(build_order, node)
+    }
     let dep_names: [utf8] = legion_dependency_names(manifest, project_name)
 
     let mut i: usize = 0
