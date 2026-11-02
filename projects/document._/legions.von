@@ -6,7 +6,7 @@
         "projects/document.layout",
         "projects/document.render",
         "projects/document.vector",
-        "projects/document.plot",
+        "projects/document.plotter",
         "projects/document.mermaid",
         "projects/document.markdown",
         "projects/notedown",
