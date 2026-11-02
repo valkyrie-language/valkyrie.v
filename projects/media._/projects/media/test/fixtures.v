@@ -1,10 +1,10 @@
 namespace media;
 
-using std.data::{DataDiagnostic, data_diagnostic_code};
+using std.diagnostic::{Diagnostic, diagnostic_code};
 
 # fixtures.v — 内嵌字节 fixture（最小已知答案样本）。
 #
-# 为什么不落盘：wasm lane 无 `read_file_bytes` host contract（当前已知缺口，见 readme 缺口清单），
+# 为什么不落盘：wasm lane 无 `read_file_bytes` host contract（当前未提供，见 readme），
 # 测试与驱动器只能消费内存字节；每段字节的推导配方逐行注释，可用十六进制编辑器复核。
 
 # P6 PPM，2×2：`P6\n2 2\n255\n` + 栅格（行主序：红、绿、蓝、白）。
@@ -81,10 +81,10 @@ micro media_fixture_bytes_equal(left: [u8], right: [u8]) -> bool {
 }
 
 # 诊断集合中是否存在指定码（断言辅助）。
-micro media_fixture_has_code(diagnostics: [DataDiagnostic], code: utf8) -> bool {
+micro media_fixture_has_code(diagnostics: [Diagnostic], code: utf8) -> bool {
     let mut index: usize = 0
     while index < std::collection::array::length(diagnostics) {
-        if data_diagnostic_code(std::collection::array::get(diagnostics, index)) == code {
+        if diagnostic_code(std::collection::array::get(diagnostics, index)) == code {
             return true
         }
         index = index + 1

@@ -1,32 +1,32 @@
 namespace media;
 
-using std.data::{data_outcome_has_errors, data_outcome_diagnostics, data_outcome_value};
+using std.data::{data_outcome_diagnostics, data_outcome_value_or};
 
 # codec_bmp.v — BMP 读写正反测试。
 #
 # 阻塞说明：断言经 `std::types::panic`，而 raise 终止子在各后端尚无目标合同
-#（编译期 SMIR001 结构化失败）。运行时证据由 `examples/media-drive` 的值返回探针产出。
+#（当前编译期结构化失败）。运行时验证由 `examples/media-drive` 的值返回探针执行。
 #
 # 反例构造：基于 `media_fixture_bmp_2x2()` 就地位改（字节偏移见 fixtures.v 注释）。
 
 [test]
 micro test_bmp_read_fixture() -> unit {
-    let raster: MediaRaster = data_outcome_value(media_bmp_read(media_fixture_bmp_2x2()))
+    let raster: MediaRaster = data_outcome_value_or(media_bmp_read(media_fixture_bmp_2x2()), media_raster_empty_sentinel(Rgb8))
     if raster.width != 2 || raster.height != 2 {
         std::types::panic("bmp dims must be 2x2")
     }
     # 自底向上解序：图像行 0 为红、绿
-    if (data_outcome_value(media_raster_read_channel(raster, 0, 0, 0)) as u64) != 255 {
+    if (data_outcome_value_or(media_raster_read_channel(raster, 0, 0, 0), 0 as u8) as u64) != 255 {
         std::types::panic("bmp pixel (0,0) must be red")
     }
-    if (data_outcome_value(media_raster_read_channel(raster, 1, 0, 1)) as u64) != 255 {
+    if (data_outcome_value_or(media_raster_read_channel(raster, 1, 0, 1), 0 as u8) as u64) != 255 {
         std::types::panic("bmp pixel (1,0) must be green")
     }
     # 图像行 1 为蓝、白（BGR → RGB 换序证据）
-    if (data_outcome_value(media_raster_read_channel(raster, 0, 1, 2)) as u64) != 255 {
+    if (data_outcome_value_or(media_raster_read_channel(raster, 0, 1, 2), 0 as u8) as u64) != 255 {
         std::types::panic("bmp pixel (0,1) must be blue")
     }
-    if (data_outcome_value(media_raster_read_channel(raster, 1, 1, 0)) as u64) != 255 {
+    if (data_outcome_value_or(media_raster_read_channel(raster, 1, 1, 0), 0 as u8) as u64) != 255 {
         std::types::panic("bmp pixel (1,1) must be white")
     }
 }
@@ -34,8 +34,8 @@ micro test_bmp_read_fixture() -> unit {
 [test]
 micro test_bmp_write_round_trip() -> unit {
     let fixture: [u8] = media_fixture_bmp_2x2()
-    let raster: MediaRaster = data_outcome_value(media_bmp_read(fixture))
-    let written: [u8] = data_outcome_value(media_bmp_write(raster))
+    let raster: MediaRaster = data_outcome_value_or(media_bmp_read(fixture), media_raster_empty_sentinel(Rgb8))
+    let written: [u8] = data_outcome_value_or(media_bmp_write(raster), [])
     if !media_fixture_bytes_equal(written, fixture) {
         std::types::panic("bmp round trip must reproduce fixture bytes")
     }

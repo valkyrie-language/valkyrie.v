@@ -1,16 +1,16 @@
 namespace media;
 
-using std.data::{data_outcome_has_errors, data_outcome_value};
+using std.data::{data_outcome_has_errors, data_outcome_value_or};
 
 # color_convert.v — 颜色格式转换正反测试。
 #
 # 阻塞说明：断言经 `std::types::panic`，而 raise 终止子在各后端尚无目标合同
-#（编译期 SMIR001 结构化失败）。运行时证据由 `examples/media-drive` 的值返回探针产出。
+#（当前编译期结构化失败）。运行时验证由 `examples/media-drive` 的值返回探针执行。
 
 [test]
 micro test_gray_to_rgb_replicates() -> unit {
-    let gray: MediaRaster = data_outcome_value(media_raster_of_pixels(1, 1, Gray8, [7 as u8]))
-    let rgb: MediaRaster = data_outcome_value(media_color_convert(gray, Rgb8))
+    let gray: MediaRaster = data_outcome_value_or(media_raster_of_pixels(1, 1, Gray8, [7 as u8]), media_raster_empty_sentinel(Gray8))
+    let rgb: MediaRaster = data_outcome_value_or(media_color_convert(gray, Rgb8), media_raster_empty_sentinel(Rgb8))
     if (std::collection::array::get(rgb.pixels, 0) as u64) != 7 {
         std::types::panic("red channel must replicate gray")
     }
@@ -24,8 +24,8 @@ micro test_gray_to_rgb_replicates() -> unit {
 
 [test]
 micro test_rgb_to_gray_luma() -> unit {
-    let rgb: MediaRaster = data_outcome_value(media_raster_of_pixels(1, 1, Rgb8, [255 as u8, 0 as u8, 0 as u8]))
-    let gray: MediaRaster = data_outcome_value(media_color_convert(rgb, Gray8))
+    let rgb: MediaRaster = data_outcome_value_or(media_raster_of_pixels(1, 1, Rgb8, [255 as u8, 0 as u8, 0 as u8]), media_raster_empty_sentinel(Rgb8))
+    let gray: MediaRaster = data_outcome_value_or(media_color_convert(rgb, Gray8), media_raster_empty_sentinel(Gray8))
     # (255 * 77) >> 8 = 76
     if (std::collection::array::get(gray.pixels, 0) as u64) != 76 {
         std::types::panic("luma of pure red must be 76")
@@ -34,8 +34,8 @@ micro test_rgb_to_gray_luma() -> unit {
 
 [test]
 micro test_rgb_to_rgba_adds_opaque_alpha() -> unit {
-    let rgb: MediaRaster = data_outcome_value(media_raster_of_pixels(1, 1, Rgb8, [1 as u8, 2 as u8, 3 as u8]))
-    let rgba: MediaRaster = data_outcome_value(media_color_convert(rgb, Rgba8))
+    let rgb: MediaRaster = data_outcome_value_or(media_raster_of_pixels(1, 1, Rgb8, [1 as u8, 2 as u8, 3 as u8]), media_raster_empty_sentinel(Rgb8))
+    let rgba: MediaRaster = data_outcome_value_or(media_color_convert(rgb, Rgba8), media_raster_empty_sentinel(Rgba8))
     if (std::collection::array::get(rgba.pixels, 3) as u64) != 255 {
         std::types::panic("alpha must be opaque 255")
     }
@@ -46,8 +46,8 @@ micro test_rgb_to_rgba_adds_opaque_alpha() -> unit {
 
 [test]
 micro test_rgba_to_rgb_drops_alpha() -> unit {
-    let rgba: MediaRaster = data_outcome_value(media_raster_of_pixels(1, 1, Rgba8, [1 as u8, 2 as u8, 3 as u8, 4 as u8]))
-    let rgb: MediaRaster = data_outcome_value(media_color_convert(rgba, Rgb8))
+    let rgba: MediaRaster = data_outcome_value_or(media_raster_of_pixels(1, 1, Rgba8, [1 as u8, 2 as u8, 3 as u8, 4 as u8]), media_raster_empty_sentinel(Rgba8))
+    let rgb: MediaRaster = data_outcome_value_or(media_color_convert(rgba, Rgb8), media_raster_empty_sentinel(Rgb8))
     if std::collection::array::length(rgb.pixels) != 3 {
         std::types::panic("rgb buffer must be 3 bytes")
     }

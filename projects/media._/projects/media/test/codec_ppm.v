@@ -1,25 +1,25 @@
 namespace media;
 
-using std.data::{data_outcome_has_errors, data_outcome_diagnostics, data_outcome_value};
+using std.data::{data_outcome_has_errors, data_outcome_diagnostics, data_outcome_value_or};
 
 # codec_ppm.v — PPM 读写正反测试。
 #
 # 阻塞说明：断言经 `std::types::panic`，而 raise 终止子在各后端尚无目标合同
-#（编译期 SMIR001 结构化失败）。运行时证据由 `examples/media-drive` 的值返回探针产出。
+#（当前编译期结构化失败）。运行时验证由 `examples/media-drive` 的值返回探针执行。
 
 [test]
 micro test_ppm_read_fixture() -> unit {
-    let raster: MediaRaster = data_outcome_value(media_ppm_read(media_fixture_ppm_2x2()))
+    let raster: MediaRaster = data_outcome_value_or(media_ppm_read(media_fixture_ppm_2x2()), media_raster_empty_sentinel(Rgb8))
     if raster.width != 2 || raster.height != 2 {
         std::types::panic("ppm dims must be 2x2")
     }
-    if (data_outcome_value(media_raster_read_channel(raster, 0, 0, 0)) as u64) != 255 {
+    if (data_outcome_value_or(media_raster_read_channel(raster, 0, 0, 0), 0 as u8) as u64) != 255 {
         std::types::panic("first pixel must be red")
     }
-    if (data_outcome_value(media_raster_read_channel(raster, 1, 0, 1)) as u64) != 255 {
+    if (data_outcome_value_or(media_raster_read_channel(raster, 1, 0, 1), 0 as u8) as u64) != 255 {
         std::types::panic("second pixel must be green")
     }
-    if (data_outcome_value(media_raster_read_channel(raster, 0, 1, 2)) as u64) != 255 {
+    if (data_outcome_value_or(media_raster_read_channel(raster, 0, 1, 2), 0 as u8) as u64) != 255 {
         std::types::panic("third pixel must be blue")
     }
 }
@@ -27,8 +27,8 @@ micro test_ppm_read_fixture() -> unit {
 [test]
 micro test_ppm_write_round_trip() -> unit {
     let fixture: [u8] = media_fixture_ppm_2x2()
-    let raster: MediaRaster = data_outcome_value(media_ppm_read(fixture))
-    let written: [u8] = data_outcome_value(media_ppm_write(raster))
+    let raster: MediaRaster = data_outcome_value_or(media_ppm_read(fixture), media_raster_empty_sentinel(Rgb8))
+    let written: [u8] = data_outcome_value_or(media_ppm_write(raster), [])
     if !media_fixture_bytes_equal(written, fixture) {
         std::types::panic("ppm round trip must reproduce fixture bytes")
     }
@@ -81,8 +81,8 @@ micro test_ppm_truncated_raster_keeps_prefix() -> unit {
     if !media_fixture_has_code(data_outcome_diagnostics(outcome), "media.ppm.truncated_raster") {
         std::types::panic("truncated raster must be diagnosed")
     }
-    let raster: MediaRaster = data_outcome_value(outcome)
-    if (data_outcome_value(media_raster_read_channel(raster, 0, 0, 0)) as u64) != 255 {
+    let raster: MediaRaster = data_outcome_value_or(outcome, media_raster_empty_sentinel(Rgb8))
+    if (data_outcome_value_or(media_raster_read_channel(raster, 0, 0, 0), 0 as u8) as u64) != 255 {
         std::types::panic("truncated read must keep decoded prefix")
     }
 }
