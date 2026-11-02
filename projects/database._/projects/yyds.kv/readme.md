@@ -14,8 +14,21 @@
 - `KvKey` / `KvStoredValue` / `KvRecord`：分片数据模型
 - `KvMemoryShard`：纯内存分片，记录按键序保存在有序数组中
 - `get` / `put` / `delete` / `scan`：单分片读写与前缀扫描
-- `commit_changes` / `durable_atomic_commit`：提交边界合同——内存分片按合同明确拒绝持久化原子提交，执行器不得对其开启事务
+- `KvShardCursor`：命名空间/前缀/范围游标（有序迭代、定位、反向），创建即冻结快照
+- `KvShardSnapshot`：只读冻结视图（快照读）
+- `KvWriteBatch`：批量暂存与结构性原子提交（折叠完成才发布）
+- `commit_changes` / `durable_atomic_commit`：持久提交边界合同——内存分片按合同明确拒绝
 - `compare_and_put`：基于记录 revision 的比较并写入（CAS）
+
+## Fault 码注册表
+
+拒绝路径一律 `Result<T, KvFault>` 结构化失败，不产出部分结果：
+
+| 码 | 常量函数 | 含义 |
+|---|---|---|
+| 3001 | `kv_fault_batch_sealed` | 批量已封口仍使用 |
+| 3002 | `kv_fault_cursor_invalid` | 游标无效位置被取用 |
+| 3003 | `kv_fault_non_atomic_boundary` | 请求内存分片不提供的持久原子提交边界 |
 
 ## 语义约定
 
