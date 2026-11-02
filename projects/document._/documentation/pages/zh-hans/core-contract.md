@@ -7,13 +7,17 @@
 
 ```text
 document          文档树、元数据、引用、资源、校验、失败类型（无 IO、无渲染、无布局）
-document.layout   页面/测量/断行断页            ──依赖──▶ document
-document.render   渲染管线与输出目标            ──依赖──▶ document, document.layout
+document.layout   盒模型/测量/断行、页面/断页    ──依赖──▶ document
+document.render   渲染管线与输出目标            ──依赖──▶ document, document.layout, document.vector
+document.vector   矢量文本发射（SVG 原语）       ──依赖──▶ std
+document.plot     图场景（节点-边布局→矢量）     ──依赖──▶ document.layout, document.vector
+document.mermaid  mermaid 子集解析              ──依赖──▶ document.plot
 notedown / tex / …产品包                        ──依赖──▶ document（只产模型，不造树、不渲染）
 ```
 
 - 核心三包不得依赖任何产品包；产品包只把解析产物映射进核心模型。
 - 判定规则：**知道"页面"存在的归 layout；知道"标签/输出语法"存在的归 render；两者都不知道的归 document。**
+- `DocumentError` 归 `document` 包：模型预检与渲染管线共用，`document.render` 仅引用。
 
 ## 2. 文档模型（document 包）
 
@@ -181,6 +185,37 @@ micro asset_register(table: AssetTable, kind: AssetKind, source: utf8, base: utf
 
 ### 5.1 归 `document.layout`
 
+盒模型层（不知道"页面"存在，也不知道输出语法；消费方是 vutex、document.plot 与渲染测量）：
+
+```v
+structure BoxFont { em: f64, ascent: f64, descent: f64 }
+structure BoxMetrics { width: f64, height: f64, depth: f64 }
+
+unite BoxNode {
+    [constructor] BoxAtom { text: utf8, metrics: BoxMetrics, font_size: f64 }
+    [constructor] BoxRule { metrics: BoxMetrics }
+    [constructor] BoxGlue { natural: f64 }
+    [constructor] BoxHBox { children: [BoxNode], metrics: BoxMetrics }
+    [constructor] BoxVBox { children: [BoxNode], metrics: BoxMetrics }
+    [constructor] BoxShift { content: [BoxNode], offset: f64, metrics: BoxMetrics }
+}
+
+structure PlacedBox { text: utf8, x: f64, baseline: f64, metrics: BoxMetrics, font_size: f64, is_rule: bool }
+
+micro box_hbox(children: [BoxNode]) -> BoxNode
+micro box_vbox(children: [BoxNode]) -> BoxNode
+micro box_shift(child: BoxNode, offset: f64) -> BoxNode
+micro box_scale(node: BoxNode, factor: f64) -> BoxNode
+micro box_hbox_break(material: [BoxNode], width: f64) -> [[BoxNode]]
+micro box_place(node: BoxNode, x: f64, baseline: f64) -> [PlacedBox]
+```
+
+- 坐标约定：y 轴向下；`height` 基线上方、`depth` 基线下方。hbox 子盒共享基线；vbox 自上而下堆叠、基线取末子基线。
+- 断行只在 `BoxGlue` 处，断点 glue 被消费；行内无 glue 时保留超宽行（如实）。
+- `BoxShift.content` 约定恰好一个子盒（单值递归的数组形态约定）。
+
+页面层（知道"页面"存在）：
+
 ```v
 structure PageSpec {
     width: usize
@@ -196,11 +231,12 @@ structure PageSpec {
 structure PageBox { index: usize, lines: [utf8] }
 
 micro paginate(lines: [utf8], spec: PageSpec) -> [PageBox]
+micro paginate_marked(lines: [utf8], marks: [bool], spec: PageSpec) -> [PageBox]
 ```
 
 - 测量 v0：字符单元（1 码点 = 1 宽，等宽假设）。真实字体测量是经 provider 接入的后续能力，本包不硬编码字体知识。
 - 断行：按可用宽度（`width − margin_left − margin_right`）折叠；v0 只对**已发射的文本行**分页，不理解块语义。
-- 断页规则：keep-with-next（页尾孤 heading 行推入下页，R13）；表格行不拆（表格字符网格按整行单位，R14）；孤行/寡行规则 v0 不实现（R15，记录边界）。
+- 断页规则：keep-with-next（页尾孤 heading 行推入下页，R13）由 `paginate_marked` 的 `marks` 驱动——标题行归属是渲染侧知识，裸 `paginate` 不猜测；整页皆标记时无法让位，如实断页。表格行不拆（R14）；孤行/寡行规则 v0 不实现（R15，记录边界）。`header`/`footer` 是渲染侧插桩面，`paginate` 不注入行内容。
 - 列表/表格测量：列表缩进宽度、表格列宽分配（按内容最大宽，封顶可用宽度）——属 layout，文本渲染器消费。
 
 ### 5.2 归 `document.render`
@@ -211,22 +247,20 @@ unite RenderResult<T> {
     [constructor] Fail { error: DocumentError }
 }
 
-structure DocumentError { code: utf8, message: utf8, node_id: u64 }
+# `DocumentError` 归 `document` 包（§1），此处仅引用。
 
-trait DocumentRenderer {
-    type Output;
-    micro render(self, document: Document, index: DocumentIndex) -> RenderResult<Output>
-}
-
-structure HtmlRenderer {}
-structure TextRenderer {}
+micro render_html(document: Document) -> RenderResult<utf8>
+micro render_text(document: Document) -> RenderResult<utf8>
+micro render_markdown(document: Document) -> RenderResult<utf8>
 ```
 
 - 管线：`document_validate` 预检 → `document_index` 编号 → 目标发射。任一硬失败即 `Fail`，不产半成品（R16）。
+- 渲染器面 v0 是具体函数（HTML / 纯文本 / Markdown）；`DocumentRenderer` trait 抽象在消费方出现后落地，不立空trait。
 - HTML 目标：连续流，不分页（页面概念不进 HTML，R17）；文本目标：可选消费 `paginate` 产分页文本。
-- HTML 转义：`Text`、属性值中的 `&` `<` `>` `"` 必转义（R18）；URI 属性原样引用（v0 不做 URL 编码魔法，R19）。
-- 标签映射：`Heading→h1..h6`、`Paragraph→p`、`ListBlock→ol/ul+li`、`Table→table/thead/tbody/tr/th/td`、`CodeBlock→pre>code`（language 落 `class="language-x"`）、`QuoteBlock→blockquote`、`ThematicBreak→hr`、`ImageBlock→img`、脚注区段 = `<section class="footnotes">` + 有序列表，引用处上标链（R20）。
-- 纯文本约定：列表标记 `-` / `1.`、缩进 2 空格/级；表格为字符网格（`|` 分隔）；代码块原样 fenced；hard break = 换行，soft break = 空格；脚注/参考文献各自成区，编号与正文引用一致（R21）。
+- HTML 属性一律单引号拼写（与 `document.vector` 矢量输出同政策）。转义按定界符政策（R18）：文本内容转义 `&` `<` `>`；单引号属性值内额外转义 `'`，双引号在单引号属性值内可原样。URI 属性原样引用（v0 不做 URL 编码魔法，R19）。
+- 标签映射：`Heading→h1..h6`、`Paragraph→p`、`ListBlock→ol/ul+li`、`Table→table/thead/tbody/tr/th/td`、`CodeBlock→pre>code`（language 落 `class='language-x'`）、`QuoteBlock→blockquote`、`ThematicBreak→hr`、`ImageBlock→img`、脚注区段 = `<section class='footnotes'>` + 有序列表，引用处上标链（R20）。
+- 纯文本约定：列表标记 `-` / `1.`、缩进 2 空格/级；表格为字符网格（`|` 分隔）；代码块原样 fenced；hard break = 换行，soft break = 空格；脚注/参考文献各自成区，编号与正文引用一致（R21）。行内图片 v0 形态 `[image: alt]`；表格不渲染表头分隔行。
+- Markdown 约定：标题 `#`×level；样式 `**`/`*`/\`/`~~`；表格 pipe 形态带 `---` 分隔行；脚注 `[^key]` 定义与引用；参考文献按 `[N]` 成区；`Text` 原样输出（Markdown 特殊字符转义是后续能力）。
 
 ## 6. 失败模型
 
