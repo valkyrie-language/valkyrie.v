@@ -1,0 +1,16 @@
+{
+    name: "template",
+    version: "workspace",
+    description: "Valkyrie 模板语言核心 — 词法、无损 CST、语义 AST 与内存渲染",
+    type: "library",
+    dependencies: {
+        "std": { version: "workspace" },
+        "std.data": { version: "workspace" }
+    },
+    build: [
+        { target: "ovm" },
+        { target: "clr" },
+        { target: "jvm" },
+        { target: "wasm" }
+    ]
+}
