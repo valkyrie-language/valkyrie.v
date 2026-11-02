@@ -1,6 +1,6 @@
 namespace media;
 
-# video/ — 视频层锚点（roadmap，见本包 readme.md，第一批不落地实现）。
+# video/ — 视频层锚点（尚未落地，规划见本包 readme.md「规划方向」）。
 #
 # 规划职责：
 # - MP4/MKV 容器与解复用：box/EBML 结构解析走 `std.data.binary.codec` 字节层；

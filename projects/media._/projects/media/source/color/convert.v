@@ -1,6 +1,7 @@
 namespace media;
 
-using std.data::{DataOutcome, Error, data_outcome_of, data_outcome_with, data_outcome_value, new_data_diagnostic, new_data_span};
+using std.data::{DataOutcome, data_outcome_of, data_outcome_failed, data_outcome_value_or};
+using std.diagnostic::{Error, new_diagnostic, new_span};
 
 # 颜色格式转换：Gray8 / Rgb8 / Rgba8 之间的像素级映射。
 #
@@ -24,12 +25,11 @@ micro media_color_alpha_opaque() -> u8 {
 }
 
 # 格式转换入口。同格式直通（不复制）；跨格式分配新栅格逐像素映射。
-# 源不一致（几何与缓冲长度不符）时不产生部分结果，返回占位 + 诊断。
+# 源不一致（几何与缓冲长度不符）时 `Failed`，不产生部分结果。
 micro media_color_convert(source: MediaRaster, target: MediaPixelFormat) -> DataOutcome<MediaRaster> {
     if !media_raster_is_consistent(source) {
-        return data_outcome_with(
-            media_raster_placeholder(target),
-            [new_data_diagnostic("media.image.buffer_length_mismatch", Error, "源栅格几何与像素缓冲长度不符", new_data_span(0, 0))]
+        return data_outcome_failed(
+            [new_diagnostic("media.image.buffer_length_mismatch", Error, "源栅格几何与像素缓冲长度不符", new_span(0, 0))]
         )
     }
     match source.format {
@@ -63,9 +63,17 @@ micro media_color_convert(source: MediaRaster, target: MediaPixelFormat) -> Data
     }
 }
 
+# 分配目标栅格：尺寸来自已过一致性门禁的源，`media_raster` 不会失败。
+micro media_internal_alloc_like(source: MediaRaster, target: MediaPixelFormat) -> MediaRaster {
+    return data_outcome_value_or(
+        media_raster(source.width, source.height, target),
+        media_raster_empty_sentinel(target)
+    )
+}
+
 # 灰度 → RGB：三通道复制同一灰度值。
 micro media_internal_gray_to_rgb(source: MediaRaster) -> DataOutcome<MediaRaster> {
-    let target: MediaRaster = data_outcome_value(media_raster(source.width, source.height, Rgb8))
+    let target: MediaRaster = media_internal_alloc_like(source, Rgb8)
     let total: usize = std::collection::array::length(source.pixels)
     let mut source_offset: usize = 0
     let mut target_offset: usize = 0
@@ -82,7 +90,7 @@ micro media_internal_gray_to_rgb(source: MediaRaster) -> DataOutcome<MediaRaster
 
 # 灰度 → RGBA：三通道复制 + 不透明 alpha。
 micro media_internal_gray_to_rgba(source: MediaRaster) -> DataOutcome<MediaRaster> {
-    let target: MediaRaster = data_outcome_value(media_raster(source.width, source.height, Rgba8))
+    let target: MediaRaster = media_internal_alloc_like(source, Rgba8)
     let total: usize = std::collection::array::length(source.pixels)
     let mut source_offset: usize = 0
     let mut target_offset: usize = 0
@@ -100,7 +108,7 @@ micro media_internal_gray_to_rgba(source: MediaRaster) -> DataOutcome<MediaRaste
 
 # RGB → RGBA：补不透明 alpha。
 micro media_internal_rgb_to_rgba(source: MediaRaster) -> DataOutcome<MediaRaster> {
-    let target: MediaRaster = data_outcome_value(media_raster(source.width, source.height, Rgba8))
+    let target: MediaRaster = media_internal_alloc_like(source, Rgba8)
     let total: usize = std::collection::array::length(source.pixels)
     let mut source_offset: usize = 0
     let mut target_offset: usize = 0
@@ -117,7 +125,7 @@ micro media_internal_rgb_to_rgba(source: MediaRaster) -> DataOutcome<MediaRaster
 
 # RGBA → RGB：丢弃 alpha。
 micro media_internal_rgba_to_rgb(source: MediaRaster) -> DataOutcome<MediaRaster> {
-    let target: MediaRaster = data_outcome_value(media_raster(source.width, source.height, Rgb8))
+    let target: MediaRaster = media_internal_alloc_like(source, Rgb8)
     let total: usize = std::collection::array::length(source.pixels)
     let mut source_offset: usize = 0
     let mut target_offset: usize = 0
@@ -133,7 +141,7 @@ micro media_internal_rgba_to_rgb(source: MediaRaster) -> DataOutcome<MediaRaster
 
 # RGB → 灰度：BT.601 整数 luma。
 micro media_internal_rgb_to_gray(source: MediaRaster) -> DataOutcome<MediaRaster> {
-    let target: MediaRaster = data_outcome_value(media_raster(source.width, source.height, Gray8))
+    let target: MediaRaster = media_internal_alloc_like(source, Gray8)
     let total: usize = std::collection::array::length(source.pixels)
     let mut source_offset: usize = 0
     let mut target_index: usize = 0
@@ -151,7 +159,7 @@ micro media_internal_rgb_to_gray(source: MediaRaster) -> DataOutcome<MediaRaster
 
 # RGBA → 灰度：BT.601 整数 luma（忽略 alpha）。
 micro media_internal_rgba_to_gray(source: MediaRaster) -> DataOutcome<MediaRaster> {
-    let target: MediaRaster = data_outcome_value(media_raster(source.width, source.height, Gray8))
+    let target: MediaRaster = media_internal_alloc_like(source, Gray8)
     let total: usize = std::collection::array::length(source.pixels)
     let mut source_offset: usize = 0
     let mut target_index: usize = 0
