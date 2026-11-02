@@ -38,7 +38,7 @@ const cases = [
     ["drive_bmp_pixel_order", 255255n],             // (0,0)红 + (0,1)蓝
     ["drive_bmp_top_down_rejected", 1n],
     // PNG
-    ["drive_png_container_stops_at_inflate", 10111n], // 缺口诊断1*10000 + 无crc误报1*100 + 宽1*10 + 高1
+    ["drive_png_container_stops_at_inflate", 10111n], // inflate 未落地诊断1*10000 + 无crc误报1*100 + 宽1*10 + 高1
     ["drive_png_crc_mismatch", 1n],
     ["drive_png_bad_signature", 1n],
     ["drive_png_unfilter_sub", 1535n],              // 15*100 + 35

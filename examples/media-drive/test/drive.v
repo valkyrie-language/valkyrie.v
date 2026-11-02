@@ -1,9 +1,10 @@
 namespace media_drive;
 
-using std.data::{DataDiagnostic, data_diagnostic_code, data_outcome_has_errors, data_outcome_diagnostics, data_outcome_value};
+using std.data::{data_outcome_has_errors, data_outcome_diagnostics, data_outcome_value_or};
+using std.diagnostic::{Diagnostic, diagnostic_code};
 using media::{
     MediaRaster, Rgb8, Gray8, media_raster, media_raster_of_pixels, media_raster_offset_of, media_raster_read_channel,
-    media_color_convert, media_pipeline_crop, media_pipeline_resize_nearest,
+    media_raster_empty_sentinel, media_color_convert, media_pipeline_crop, media_pipeline_resize_nearest,
     media_ppm_read, media_ppm_write, media_bmp_read, media_bmp_write, media_png_read, media_png_unfilter
 };
 
@@ -31,10 +32,10 @@ micro drive_bytes_equal(left: [u8], right: [u8]) -> bool {
     return true
 }
 
-micro drive_has_code(diagnostics: [DataDiagnostic], code: utf8) -> bool {
+micro drive_has_code(diagnostics: [Diagnostic], code: utf8) -> bool {
     let mut index: usize = 0
     while index < std::collection::array::length(diagnostics) {
-        if data_diagnostic_code(std::collection::array::get(diagnostics, index)) == code {
+        if diagnostic_code(std::collection::array::get(diagnostics, index)) == code {
             return true
         }
         index = index + 1
@@ -44,15 +45,18 @@ micro drive_has_code(diagnostics: [DataDiagnostic], code: utf8) -> bool {
 
 # 2×2 RGB 参考图：行主序 红、绿、蓝、白。
 micro drive_raster_2x2() -> MediaRaster {
-    return data_outcome_value(media_raster_of_pixels(
-        2, 2, Rgb8,
-        [
-            255 as u8, 0 as u8, 0 as u8,
-            0 as u8, 255 as u8, 0 as u8,
-            0 as u8, 0 as u8, 255 as u8,
-            255 as u8, 255 as u8, 255 as u8
-        ]
-    ))
+    return data_outcome_value_or(
+        media_raster_of_pixels(
+            2, 2, Rgb8,
+            [
+                255 as u8, 0 as u8, 0 as u8,
+                0 as u8, 255 as u8, 0 as u8,
+                0 as u8, 0 as u8, 255 as u8,
+                255 as u8, 255 as u8, 255 as u8
+            ]
+        ),
+        media_raster_empty_sentinel(Rgb8)
+    )
 }
 
 # PNG 1×1 容器 fixture（真实 CRC-32；canonical 副本在 media 包 test/fixtures.v）。
@@ -72,14 +76,14 @@ micro drive_png_1x1() -> [u8] {
 
 [test]
 micro drive_raster_geometry() -> u64 {
-    let raster: MediaRaster = data_outcome_value(media_raster(2, 2, Rgb8))
+    let raster: MediaRaster = data_outcome_value_or(media_raster(2, 2, Rgb8), media_raster_empty_sentinel(Rgb8))
     return (raster.width as u64) * 10000 + (raster.height as u64) * 100 + (std::collection::array::length(raster.pixels) as u64)
 }
 
 [test]
 micro drive_raster_offset_and_bounds() -> u64 {
-    let raster: MediaRaster = data_outcome_value(media_raster(2, 2, Rgb8))
-    let inside: u64 = data_outcome_value(media_raster_offset_of(raster, 1, 1)) as u64
+    let raster: MediaRaster = data_outcome_value_or(media_raster(2, 2, Rgb8), media_raster_empty_sentinel(Rgb8))
+    let inside: u64 = data_outcome_value_or(media_raster_offset_of(raster, 1, 1), 0) as u64
     let outside: u64 = bit_of(data_outcome_has_errors(media_raster_offset_of(raster, 2, 0)))
     return inside * 100 + outside
 }
@@ -88,15 +92,15 @@ micro drive_raster_offset_and_bounds() -> u64 {
 
 [test]
 micro drive_color_gray_to_rgb() -> u64 {
-    let gray: MediaRaster = data_outcome_value(media_raster_of_pixels(1, 1, Gray8, [7 as u8]))
-    let rgb: MediaRaster = data_outcome_value(media_color_convert(gray, Rgb8))
+    let gray: MediaRaster = data_outcome_value_or(media_raster_of_pixels(1, 1, Gray8, [7 as u8]), media_raster_empty_sentinel(Gray8))
+    let rgb: MediaRaster = data_outcome_value_or(media_color_convert(gray, Rgb8), media_raster_empty_sentinel(Rgb8))
     return (std::collection::array::get(rgb.pixels, 0) as u64) * 100 + (std::collection::array::get(rgb.pixels, 1) as u64) * 10 + (std::collection::array::get(rgb.pixels, 2) as u64)
 }
 
 [test]
 micro drive_color_rgb_to_gray() -> u64 {
-    let rgb: MediaRaster = data_outcome_value(media_raster_of_pixels(1, 1, Rgb8, [255 as u8, 0 as u8, 0 as u8]))
-    let gray: MediaRaster = data_outcome_value(media_color_convert(rgb, Gray8))
+    let rgb: MediaRaster = data_outcome_value_or(media_raster_of_pixels(1, 1, Rgb8, [255 as u8, 0 as u8, 0 as u8]), media_raster_empty_sentinel(Rgb8))
+    let gray: MediaRaster = data_outcome_value_or(media_color_convert(rgb, Gray8), media_raster_empty_sentinel(Gray8))
     return std::collection::array::get(gray.pixels, 0) as u64
 }
 
@@ -104,9 +108,9 @@ micro drive_color_rgb_to_gray() -> u64 {
 
 [test]
 micro drive_crop_right_column() -> u64 {
-    let cropped: MediaRaster = data_outcome_value(media_pipeline_crop(drive_raster_2x2(), 1, 0, 1, 2))
-    let green_channel: u64 = data_outcome_value(media_raster_read_channel(cropped, 0, 0, 1)) as u64
-    let white_red: u64 = data_outcome_value(media_raster_read_channel(cropped, 0, 1, 0)) as u64
+    let cropped: MediaRaster = data_outcome_value_or(media_pipeline_crop(drive_raster_2x2(), 1, 0, 1, 2), media_raster_empty_sentinel(Rgb8))
+    let green_channel: u64 = data_outcome_value_or(media_raster_read_channel(cropped, 0, 0, 1), 0 as u8) as u64
+    let white_red: u64 = data_outcome_value_or(media_raster_read_channel(cropped, 0, 1, 0), 0 as u8) as u64
     return green_channel * 1000 + white_red
 }
 
@@ -117,9 +121,9 @@ micro drive_crop_out_of_bounds() -> u64 {
 
 [test]
 micro drive_resize_nearest() -> u64 {
-    let resized: MediaRaster = data_outcome_value(media_pipeline_resize_nearest(drive_raster_2x2(), 4, 4))
-    let corner: u64 = data_outcome_value(media_raster_read_channel(resized, 3, 3, 0)) as u64
-    let edge: u64 = data_outcome_value(media_raster_read_channel(resized, 2, 0, 1)) as u64
+    let resized: MediaRaster = data_outcome_value_or(media_pipeline_resize_nearest(drive_raster_2x2(), 4, 4), media_raster_empty_sentinel(Rgb8))
+    let corner: u64 = data_outcome_value_or(media_raster_read_channel(resized, 3, 3, 0), 0 as u8) as u64
+    let edge: u64 = data_outcome_value_or(media_raster_read_channel(resized, 2, 0, 1), 0 as u8) as u64
     return corner * 1000 + edge
 }
 
@@ -127,9 +131,9 @@ micro drive_resize_nearest() -> u64 {
 
 [test]
 micro drive_ppm_round_trip() -> u64 {
-    let once: [u8] = data_outcome_value(media_ppm_write(drive_raster_2x2()))
-    let raster: MediaRaster = data_outcome_value(media_ppm_read(once))
-    let twice: [u8] = data_outcome_value(media_ppm_write(raster))
+    let once: [u8] = data_outcome_value_or(media_ppm_write(drive_raster_2x2()), [])
+    let raster: MediaRaster = data_outcome_value_or(media_ppm_read(once), media_raster_empty_sentinel(Rgb8))
+    let twice: [u8] = data_outcome_value_or(media_ppm_write(raster), [])
     return bit_of(drive_bytes_equal(once, twice)) * 1000 + (std::collection::array::length(once) as u64)
 }
 
@@ -153,7 +157,7 @@ micro drive_ppm_truncated_keeps_prefix() -> u64 {
     ]
     let outcome = media_ppm_read(truncated)
     let flagged: u64 = bit_of(drive_has_code(data_outcome_diagnostics(outcome), "media.ppm.truncated_raster"))
-    let red: u64 = data_outcome_value(media_raster_read_channel(data_outcome_value(outcome), 0, 0, 0)) as u64
+    let red: u64 = data_outcome_value_or(media_raster_read_channel(data_outcome_value_or(outcome, media_raster_empty_sentinel(Rgb8)), 0, 0, 0), 0 as u8) as u64
     return flagged * 1000 + red
 }
 
@@ -161,24 +165,27 @@ micro drive_ppm_truncated_keeps_prefix() -> u64 {
 
 [test]
 micro drive_bmp_round_trip() -> u64 {
-    let once: [u8] = data_outcome_value(media_bmp_write(drive_raster_2x2()))
-    let raster: MediaRaster = data_outcome_value(media_bmp_read(once))
-    let twice: [u8] = data_outcome_value(media_bmp_write(raster))
+    let once: [u8] = data_outcome_value_or(media_bmp_write(drive_raster_2x2()), [])
+    let raster: MediaRaster = data_outcome_value_or(media_bmp_read(once), media_raster_empty_sentinel(Rgb8))
+    let twice: [u8] = data_outcome_value_or(media_bmp_write(raster), [])
     return bit_of(drive_bytes_equal(once, twice)) * 1000 + (std::collection::array::length(once) as u64)
 }
 
 [test]
 micro drive_bmp_pixel_order() -> u64 {
     # 写出→读回：BGR/自底向上换序的正确性证据
-    let raster: MediaRaster = data_outcome_value(media_bmp_read(data_outcome_value(media_bmp_write(drive_raster_2x2()))))
-    let red: u64 = data_outcome_value(media_raster_read_channel(raster, 0, 0, 0)) as u64
-    let blue: u64 = data_outcome_value(media_raster_read_channel(raster, 0, 1, 2)) as u64
+    let raster: MediaRaster = data_outcome_value_or(
+        media_bmp_read(data_outcome_value_or(media_bmp_write(drive_raster_2x2()), [])),
+        media_raster_empty_sentinel(Rgb8)
+    )
+    let red: u64 = data_outcome_value_or(media_raster_read_channel(raster, 0, 0, 0), 0 as u8) as u64
+    let blue: u64 = data_outcome_value_or(media_raster_read_channel(raster, 0, 1, 2), 0 as u8) as u64
     return red * 1000 + blue
 }
 
 [test]
 micro drive_bmp_top_down_rejected() -> u64 {
-    let bytes: [u8] = data_outcome_value(media_bmp_write(drive_raster_2x2()))
+    let bytes: [u8] = data_outcome_value_or(media_bmp_write(drive_raster_2x2()), [])
     std::collection::array::set(bytes, 22, 254 as u8)
     std::collection::array::set(bytes, 23, 255 as u8)
     std::collection::array::set(bytes, 24, 255 as u8)
@@ -193,7 +200,7 @@ micro drive_png_container_stops_at_inflate() -> u64 {
     let outcome = media_png_read(drive_png_1x1())
     let flagged: u64 = bit_of(drive_has_code(data_outcome_diagnostics(outcome), "media.png.inflate_unavailable"))
     let no_crc_error: u64 = bit_of(!drive_has_code(data_outcome_diagnostics(outcome), "media.png.crc_mismatch"))
-    let raster: MediaRaster = data_outcome_value(outcome)
+    let raster: MediaRaster = data_outcome_value_or(outcome, media_raster_empty_sentinel(Rgb8))
     return flagged * 10000 + no_crc_error * 100 + (raster.width as u64) * 10 + (raster.height as u64)
 }
 
@@ -214,21 +221,21 @@ micro drive_png_bad_signature() -> u64 {
 [test]
 micro drive_png_unfilter_sub() -> u64 {
     let raw: [u8] = [1 as u8, 10 as u8, 20 as u8, 30 as u8, 5 as u8, 5 as u8, 5 as u8]
-    let out: [u8] = data_outcome_value(media_png_unfilter(raw, 2, 1, 3))
+    let out: [u8] = data_outcome_value_or(media_png_unfilter(raw, 2, 1, 3), [])
     return (std::collection::array::get(out, 3) as u64) * 100 + (std::collection::array::get(out, 5) as u64)
 }
 
 [test]
 micro drive_png_unfilter_average() -> u64 {
     let raw: [u8] = [0 as u8, 10 as u8, 20 as u8, 30 as u8, 3 as u8, 6 as u8, 6 as u8, 6 as u8]
-    let out: [u8] = data_outcome_value(media_png_unfilter(raw, 1, 2, 3))
+    let out: [u8] = data_outcome_value_or(media_png_unfilter(raw, 1, 2, 3), [])
     return (std::collection::array::get(out, 3) as u64) * 10000 + (std::collection::array::get(out, 4) as u64) * 100 + (std::collection::array::get(out, 5) as u64)
 }
 
 [test]
 micro drive_png_unfilter_paeth() -> u64 {
     let raw: [u8] = [0 as u8, 10 as u8, 20 as u8, 30 as u8, 4 as u8, 5 as u8, 5 as u8, 5 as u8]
-    let out: [u8] = data_outcome_value(media_png_unfilter(raw, 1, 2, 3))
+    let out: [u8] = data_outcome_value_or(media_png_unfilter(raw, 1, 2, 3), [])
     return (std::collection::array::get(out, 3) as u64) * 100 + (std::collection::array::get(out, 5) as u64)
 }
 

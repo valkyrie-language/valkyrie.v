@@ -3,7 +3,6 @@
     version: "0.1.0",
     dependencies: {
         "std": { version: "workspace" },
-        "std.data": { version: "workspace" },
         "std.data.binary.codec": { version: "workspace" },
         "std.data.digest": { version: "workspace" },
         "media": { version: "workspace" }
