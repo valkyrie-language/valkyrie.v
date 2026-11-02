@@ -63,20 +63,15 @@ micro container_digest_lookup_registration(registrations: [DigestAlgorithmRegist
     return None
 }
 
-# 58 = ':'（ASCII；待字符字面量落地后改回）。
-micro container_digest_separator_code() -> u32 {
-    return 58
-}
-
 # 算法字符集：[a-z0-9] 与内部分隔符 [+._-]。
 micro container_digest_is_algorithm_char(code_point: u32) -> bool {
-    if code_point >= 97 && code_point <= 122 {
+    if code_point >= 'a' && code_point <= 'z' {
         return true
     }
-    if code_point >= 48 && code_point <= 57 {
+    if code_point >= '0' && code_point <= '9' {
         return true
     }
-    if code_point == 43 || code_point == 46 || code_point == 95 || code_point == 45 {
+    if code_point == '+' || code_point == '.' || code_point == '_' || code_point == '-' {
         return true
     }
     return false
@@ -84,16 +79,16 @@ micro container_digest_is_algorithm_char(code_point: u32) -> bool {
 
 # 通用编码字符集（base64url-ish + hex）：[0-9a-zA-Z=_-]。
 micro container_digest_is_generic_encoded_char(code_point: u32) -> bool {
-    if code_point >= 97 && code_point <= 122 {
+    if code_point >= 'a' && code_point <= 'z' {
         return true
     }
-    if code_point >= 65 && code_point <= 90 {
+    if code_point >= 'A' && code_point <= 'Z' {
         return true
     }
-    if code_point >= 48 && code_point <= 57 {
+    if code_point >= '0' && code_point <= '9' {
         return true
     }
-    if code_point == 61 || code_point == 95 || code_point == 45 {
+    if code_point == '=' || code_point == '_' || code_point == '-' {
         return true
     }
     return false
@@ -101,10 +96,10 @@ micro container_digest_is_generic_encoded_char(code_point: u32) -> bool {
 
 # 小写 hex：[0-9a-f]。
 micro container_digest_is_lower_hex(code_point: u32) -> bool {
-    if code_point >= 48 && code_point <= 57 {
+    if code_point >= '0' && code_point <= '9' {
         return true
     }
-    if code_point >= 97 && code_point <= 102 {
+    if code_point >= 'a' && code_point <= 'f' {
         return true
     }
     return false
@@ -125,7 +120,7 @@ micro container_digest_parse(text: utf8) -> DataOutcome<Digest> {
     let mut found: bool = false
     let mut index: usize = 0
     while index < length {
-        if (text⁅index⁆ as u32) == container_digest_separator_code() {
+        if text⁅index⁆ == ':' {
             separator = index
             found = true
             break
@@ -194,7 +189,7 @@ micro container_digest_validate_with_registrations(registrations: [DigestAlgorit
                 let mut index: usize = 0
                 while index < encoded_length {
                     let code_point: u32 = encoded⁅index⁆ as u32
-                    if code_point >= 65 && code_point <= 90 {
+                    if code_point >= 'A' && code_point <= 'Z' {
                         diagnostics = push(diagnostics, new_data_diagnostic("container.digest.bad_encoded_case", Error, "digest 编码段必须为小写", new_data_span(index, index + 1)))
                     } else if !container_digest_is_lower_hex(code_point) {
                         diagnostics = push(diagnostics, new_data_diagnostic("container.digest.bad_encoded_character", Error, "digest 编码段含非法字符", new_data_span(index, index + 1)))

@@ -28,9 +28,8 @@ micro container_reference_is_valid_name(name: utf8) -> bool {
     }
     let mut index: usize = 0
     while index < name.length() {
-        let code_point: u32 = name⁅index⁆ as u32
-        # 64 = '@'，58 = ':'，均不允许出现在 name 中。
-        if code_point == 64 || code_point == 58 {
+        # name 不允许含 '@' 与 ':'。
+        if name⁅index⁆ == '@' || name⁅index⁆ == ':' {
             return false
         }
         index = index + 1
