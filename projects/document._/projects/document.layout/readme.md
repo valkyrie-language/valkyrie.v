@@ -17,4 +17,5 @@
 
 盒模型内核已落地：原子/规则/间隙/水平/垂直盒与基线位移（`box_shift`）、
 缩放（`box_scale`）、贪心断行（glue 断点）、拍平（`box_place` 绝对定位）。
-正反测试齐备。
+页面层已落地：`PageSpec`/`paginate`（可用宽度硬折叠、可用高度分页）与
+`paginate_marked`（keep-with-next 标注驱动）。正反测试齐备。
