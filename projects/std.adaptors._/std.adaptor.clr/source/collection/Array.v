@@ -31,7 +31,7 @@ private micro __array_clr_get<T>(array: [T], index: usize): T { }
 [clr("System.Runtime", "System.Array", "SetValue")]
 private micro __array_clr_set<T>(array: [T], index: usize, value: T): unit { }
 
-# `Array.CreateInstance(Type, Int32)`：元素类型参数由后端按 `T` 合成（编码能力待后端复核，
-# 不通过则按 clr 目标私有合同失败，不得回退旧实现通道）。
+# `Array.CreateInstance(Type, Int32)`：元素类型参数由后端按 `T` 合成（该能力当前
+# 不可用，该目标暂不提供此能力，调用侧按结构化失败处理）。
 [clr("System.Runtime", "System.Array", "CreateInstance"), pure]
 private micro __array_clr_new<T>(length: usize): [T] { }

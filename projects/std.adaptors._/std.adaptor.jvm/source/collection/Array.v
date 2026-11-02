@@ -31,7 +31,7 @@ private micro __array_jvm_get<T>(array: [T], index: usize): T { }
 [jvm("java.lang.reflect.Array", "set")]
 private micro __array_jvm_set<T>(array: [T], index: usize, value: T): unit { }
 
-# `newInstance(Class, int)`：组件类型参数由后端按 `T` 合成（编码能力待后端复核，
-# 不通过则按 jvm 目标私有合同失败，不得回退旧实现通道）。
+# `newInstance(Class, int)`：组件类型参数由后端按 `T` 合成（该能力当前
+# 不可用，该目标暂不提供此能力，调用侧按结构化失败处理）。
 [jvm("java.lang.reflect.Array", "newInstance"), pure]
 private micro __array_jvm_new<T>(length: usize): [T] { }
