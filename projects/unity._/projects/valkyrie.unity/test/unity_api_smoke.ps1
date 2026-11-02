@@ -1,9 +1,12 @@
 # Validates Valkyrie Unity CLR binding targets against Unity 6 managed assemblies.
 param(
-    [string]$UnityEditorRoot = "E:\UnityEditor\6000.2.6f2"
+    [string]$UnityEditorRoot = $env:VALKYRIE_UNITY_EDITOR_ROOT
 )
 
 $ErrorActionPreference = "Stop"
+if ([string]::IsNullOrWhiteSpace($UnityEditorRoot)) {
+    Write-Error "Unity editor root is not configured. Pass -UnityEditorRoot or set the VALKYRIE_UNITY_EDITOR_ROOT environment variable."
+}
 $engineDir = Join-Path $UnityEditorRoot "Editor\Data\Managed\UnityEngine"
 $editorDir = Join-Path $UnityEditorRoot "Editor\Data\Managed\UnityEditor"
 

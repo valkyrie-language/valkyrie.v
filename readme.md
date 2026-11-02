@@ -264,7 +264,7 @@ cd valkyrie.v/projects/legion._ && legion build    # 仅 legion.tools / report
 
 本仓继续提供语言源码、标准库、adaptor 与工具工程的 source closure。正式编译必须走 manifests/source → Compiler → 真实产物；不得恢复宿主代编译、旧 artifact、smoke 旁路，也不得重建已删除的 `ExecutableModule` / `body_source` 第二套发射链。
 
-V-produced Legion、两代收敛、`0.1.0`、CLR/JVM/WASI/浏览器联合门与全栈自举属于远期升级合同，不是当前矩阵绿色条件。术语定义见工作区内部决策；执行顺序只认当前卡点文档。
+V-produced Legion、两代收敛、`0.1.0`、CLR/JVM/WASI/浏览器联合门与全栈自举属于远期升级合同，不是当前矩阵绿色条件。术语与执行顺序以本仓文档与设计合同为准。
 
 本地验证本仓包合同时，仍可在对应子 workspace 运行 `legion build` / `legion test`；这不替代 LeetCode 双 target 矩阵。
 

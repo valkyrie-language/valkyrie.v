@@ -13,7 +13,7 @@ using std.io::{directory_exists, file_exists, read_file_text};
 #
 # 内容解析（oci-layout 版本字段、index.json 结构）依赖 std.data.text.json（尚未落地）；
 # 本模块只做结构存在性与 oci-layout 版本字符串包含检查，不解析 JSON。
-# blob 内容与摘要的一致性校验可经 container 核心 + std.data.digest（sha256/sha512），
+# blob 内容与摘要的一致性校验可经 container 核心 + std.data.digest（能力已具备），
 # 本模块只查存在性。
 
 micro oci_layout_marker_file_name() -> utf8 {
