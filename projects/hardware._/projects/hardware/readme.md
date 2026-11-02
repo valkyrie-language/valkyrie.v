@@ -1,75 +1,67 @@
 # hardware
 
-异构设备抽象核心包：`Device` / `Buffer` / `Queue` / `Kernel` 合同与 CPU 参考后端。
+异构设备抽象核心包（GPU 计算基石）：承接游戏、渲染与深度学习。
+本文是**七层合同的冻结声明**：类型、词汇、不变量、执行模型、IR 指令表、故障注册表与验收口径。合同变更必须先改本文。
 
-## 分层
+## 全层公理
 
-```text
-source/
-├── device/    设备描述、能力（DeviceCapabilities）、枚举与设备身份比较
-├── buffer/    泛型缓冲 Buffer<T>：host↔device 写读、device↔device 传输
-├── queue/     命令队列 Queue：提交计数、同步等待、map kernel 调度
-├── kernel/    Kernel trait 合同（apply: T -> U）
-└── backend/   后端实现与接入面：cpu.v 为纯 V 参考后端，host.v 登记 host capability 缺口
-```
+- 设备语义不进 nyar 编译器；外部后端（Vulkan/DX12/WebGPU/CUDA）只经 `[host_contract]`/`[host_provider]` 唯一路径接入，provider 缺位即结构化失败，不做编译器特判。
+- 词汇常量一律数值（kind/heap class/queue family/opcode/fault code），文本形态暂不进聚合与返回值。
+- 能力集合 = i64 位掩码；限制结构 = 扁平标量；跨资源引用走工厂参数与调用点参数（聚合嵌套聚合当前不可物化）。
+- 一切分配/校验失败走 `Result<T, HardwareFault>`，配无 panic 检查器；资源构造归后端工厂。
 
-## 模型约定
+## L1 适配器/设备
 
-- **设备身份是数值**：`backend_token` + `ordinal`（均为 `i64`）参与相等比较；人类可读名称
-  投影待 utf8 返回身份修复后提供，不进聚合字段。
-- **能力随设备携带**：`Device.capabilities` 在枚举时构造，能力查询是纯字段读取，不回调宿主。
-- **错误走 `Result<T, HardwareFault>`**：`HardwareFault.code` 为稳定数值码（注册表见下文），
-  配套 `hardware_outcome_is_fine` / `hardware_outcome_fault_code` / `hardware_outcome_value_or`
-  无 panic 检查器。
-- **传输语义**：CPU 后端为值语义快照拷贝；未知/外部后端 `Fail(hardware_fault_backend_unavailable())`。
-- **调度语义**：`hardware_dispatch_map` 校验队列与输入缓冲同设备、设备声明 `map_kernel`
-  能力，CPU 后端同步逐元素执行并累加提交计数。
+- 类型：`Adapter`、`Device`（不透明 class 句柄）；`DeviceKind`（cpu=1/discrete_gpu=2/integrated_gpu=3/virtual_gpu=4/accelerator=5）；`Features{bits}` + 位常量（compute/transfer/graphics/timeline_semaphore/multi_queue/shader_f64/texture/device_lost_recovery）+ `hardware_features_has`；`DeviceLimits`（max_buffer_elements、max_workgroup_size_x/y/z、max_workgroup_count_x/y/z、max_shared_memory_bytes_per_workgroup、max_bind_groups、max_storage_buffers_per_stage、min_storage_buffer_offset_alignment）。
+- API：`hardware_enumerate_adapters`、`adapter_kind/features/limits`、`adapter_request_device(adapter, required) -> Result<Device, HardwareFault>`、`device_features/limits/is_lost`。
+- 不变量：required ⊆ supported，否则 `feature_missing`；limits/features 创建时冻结只读；`is_lost` 单调。
 
-## Fault 码注册表
+## L2 内存模型
 
-| 码   | 常量函数 | 含义 |
-|---|---|---|
-| 1001 | `hardware_fault_device_mismatch` | 缓冲/队列/目标设备身份不一致 |
-| 1002 | `hardware_fault_capability_missing` | 设备未声明所需能力（如 `map_kernel`） |
-| 1003 | `hardware_fault_backend_unavailable` | 目标后端无已注册 provider |
+- 类型：`HeapClass`（device_local=1/host_visible=2/unified=3）；`BufferUsage` 位掩码（storage_read/storage_read_write/uniform/staging_upload/staging_readback/indirect/map_read/map_write）；`Heap`（容量/已分配记账）；`Buffer<T>`（堆身份 + offset + length + usage + map 状态 + 内容）。
+- API：`device_create_heap`、`heap_allocate<T>(heap, length, usage, alignment)`、`buffer_map_read/map_write`、`buffer_unmap`、`buffer_copy_to`。
+- 不变量：仅 host_visible/unified 可 map，device_local 必走 staging；**map 会话 = epoch 令牌**：map 发放递增 epoch，unmap 作废，旧令牌操作一律 `map_conflict`；unmap 是写可见性边界；OOM 永远结构化（容量记账）；alignment 为 2 幂档、offset 对齐。
 
-## 后端 roadmap
+## L3 队列与提交
 
-| 后端 | 形态 | 状态 |
-|---|---|---|
-| CPU | 纯 V 参考后端（`backend/cpu.v`） | 第一批落地 |
-| Vulkan | `hardware.adaptor.vulkan`：`[host_provider]` 绑定枚举/缓冲/kernel 模块加载，feature gate 按目标条件 | 后续块 |
-| WebGPU | `hardware.adaptor.webgpu`：wasm/browser 目标的 host capability | 后续块 |
-| CUDA | `hardware.adaptor.cuda`：native 目标的 host capability | 后续块 |
+- 类型：`QueueFamily`（compute=1/transfer=2/graphics=3）；`Queue`；`CommandBuffer`（状态机标量 + 记账）；`Fence`（时间线值）。
+- API：`device_request_queue`、`command_begin/record_copy_buffer/record_dispatch/record_barrier/command_end`、`queue_submit(queue, cmd, wait) -> Result<Fence, HardwareFault>`、`fence_wait`、`fences_wait_all/any`。
+- 不变量：状态机 recording→ended→submitted，仅 ended 可提交；同队列 FIFO；fence 值单调。
+- **执行模型两分（合同条款）**：CPU 参考后端 = 立即执行（record 即生效，submit 签发 fence）；GPU 后端 = 延迟执行。conformance 只断言「提交后 fence 可达且结果可见」，不断言「录制后修改的可见性」。
 
-后端接入纪律：provider 只经 `[host_contract]`/`[host_provider]` 唯一路径，不做编译器特判；
-能力查询与限制由各后端在枚举时填入 `DeviceCapabilities`，缺事实即结构化失败。
+## L4 计算管线
+
+- 类型：`ShaderModule`（element_kind（i64=1；f32/f64 扩展位）+ workgroup_size_x/y/z + register_count + **扁平 `[i64]` 定长 4 字字节码**（opcode,a0,a1,a2），寄存器机、线性流、v1 无控制流）；`ComputePipeline`（冻结模块快照 + 并行标量数组绑定布局）；`BindSlotKind`（storage_read=1/storage_read_write=2/uniform=3）；`BindGroup`（布局关校验凭证；实体资源由 dispatch 调用点 `[Buffer<T>]` 参数携带）。
+- 指令表 v1：`const=1`、`workitem_id=2`、`workgroup_id=3`、`load_storage=4`、`store_storage=5`、`add/sub/mul/div/rem=10..14`、`neg=15`、`barrier=20`、`return=255`。
+- API：`shader_module_create`（opcode/寄存器/槽引用校验）、`pipeline_create(device, module, layout_slots, layout_kinds)`、`bind_group_validate<T>(pipeline, slots, buffers)`、`queue_dispatch<T>(queue, pipeline, group, buffers, x, y, z)`。
+- 不变量：pipeline 创建即冻结 module 拷贝；store 槽必须 read_write；绑定槽集合恰好等于布局；元素类型全管一致；dispatch 各维 ≥1 且 ≤ limits；CPU 遍历顺序冻结（group 字典序 z→y→x、lane 字典序 x→y→z），作确定性数值基准。
+
+## L5 渲染资源（合同 only）
+
+- 类型：`TextureFormat`（rgba8unorm/bgra8unorm/rgba16float/rgba32float/depth24plus）；`TextureUsage` 位掩码（sampled/storage/render_attachment/copy_src/copy_dst）；`Tiling`（linear/optimal）；`Texture`、`Sampler`（filter/address/lod）。
+- 当前只立合同与校验不变量（尺寸为正、mip ≤ log2(max 维)、format 受 feature 支持）；实现与用例未落地，不伪造。
+
+## L6 故障与恢复
+
+- `HardwareFault{code}`（code 为唯一权威字段）；`FaultCategory`（validation=1/out_of_memory=2/device_lost=3/feature_missing=4/unsupported=5/internal=6）；category/recoverable 经 `hardware_fault_category_of`/`hardware_fault_recoverable_of` 由注册表派生，三元组语义不变。
+- 注册表：1001 device_mismatch(validation)、1002 capability_missing(validation)、1003 backend_unavailable(unsupported)、1004 out_of_memory(oom，**可恢复**)、1005 device_lost(device_lost，**不可恢复**)、1006 feature_missing(feature_missing，**可恢复**)、1007 usage_not_supported(unsupported)、1008 alignment_invalid(validation)、1009 dispatch_exceeds_limits(validation)、1010 command_state_invalid(validation)、1011 bind_layout_mismatch(validation)、1012 map_conflict(validation)、1013 shader_invalid(validation)。
+- 恢复合同：lost 设备上一切操作 → `device_lost`；恢复 = 重新枚举 + request，无隐式恢复；recoverable=false 后同句柄不可复用。
+
+## L7 后端
+
+- **CPU 参考后端**：全合同纯 V 实现，确定性数值基准（correctness oracle），字节码解释器 + 立即执行队列 + 堆记账。
+- **外部后端**：`hardware.adaptor.vulkan/dx12/webgpu/cuda` 为规划中的 adaptor 包；字节码 → SPIR-V/WGSL/PTX 翻译器属各 adaptor 实现，不进编译器。
+
+## 验收口径
+
+- 同一套 `hardware.conformance` 套件按合同项逐条跑，**每个注册后端必须全过**；CPU 全绿（wasm 真实执行）后才允许进入真后端块。
+- `[test]` 套件为长期交付物；当前执行载体走消费方 `[export]` harness。
+- blocked/pending 不计通过；不用旧「单后端 9/9」口径冒充验收。
 
 ## 当前已知限制
 
-- 外部设备枚举：`[host_contract] hardware_host_enumerate_devices` 无 provider（所属面：
-  `source/backend/host.v`）；`hardware_enumerate_devices` 当前只返回 CPU 参考设备。
-- kernel 的 trait-bound 泛型调度：`where K: Kernel<T, U>` 由 `K` 反推 `T`/`U` 的调用点
-  在当前编译器不可解析（`unresolved call`），方法级泛型 `imply` 内 `<T, U>` 与函数值实参
-  的组合同样不可解析；本批口径：`Kernel` trait 直接 `.apply` 消费，泛型 map 调度为自由函数
-  `hardware_dispatch_map(queue, input, mapper: micro(T) -> U)`。
-- utf8 物化链断裂（双段）：含 `utf8` 字段的聚合构造器不可解析（`unresolved constructor`）；
-  `-> utf8` 函数返回字面量与声明类型身份不一致被拒。设备名/后端名/诊断文案投影
-  整体待编译器类型身份链修复后落地，当前 API 面保持数值/布尔/聚合。
-- 函数值聚合字段：函数类型作为聚合字段时构造器不可解析；kernel 行为以 trait/参数传递，
-  不存入聚合（std 的 `MapIterator` 同形字段亦按目标 gate）。
-- `[test]` 入口双重断链：test 语义组注入 prelude 后 `std.primitive` 算子候选不可见
-  （裸 `infix +`/`!=` 即 unresolved）；经 std 泛型（`push` → `array::new::<T>`）的开放实例
-  在 test 根下报「调用实例没有定义或显式导入合同」。两条在 `[export]` 路径均不存在；
-  `test/` 套件暂不能作为执行证据，以消费方 `[export]` harness 实测替代。归属编译器侧。
-- OVM 运行时 host import 缺口：`nyar.host::i64_lt_u` 在 OVM 加载期不识别。std `push`
-  的 V 默认体含 `usize` 比较，凡经 `push` 重建数组的模块在 OVM 加载期被拒；本包循环一律
-  i64 计数 + `as usize`（所属面：`source/backend/cpu.v`），buffer/queue 层 OVM 执行因此暂停点。
-- OVM 函数值调度缺口：函数值间接调用在 OVM 后端构建期 panic（未绑定调用实例）。
-  `hardware_dispatch_map` 的 mapper 与 `Kernel.apply` 因此在 OVM 暂不可编译，
-  wasm lane 已实测通过；JVM/CLR 未在本批验收范围。
-- `let` 绑定 match 联合类型：`let x: T = match ...` 与控制流 join 上裸整数字面量
-  （i32 原始身份 vs 名义身份）分裂被拒；本包代码一律 `return match` 且分支齐型。
-- OVM 枚举返回边界：`hardware_enumerate_devices` 在 OVM 真实执行返回
-  「expected i64, got null」——聚合数组字面量 `[device]` 的物化/返回边界缺口；
-  设备构造与 `hardware_device_equals` 在 OVM 已实测通过。
+- 外部设备枚举的 `[host_contract]` 尚无 provider，相关调用返回结构化失败。
+- 泛型 bound（`where K: Trait<T, U>`）反推与函数值实参调度在当前工具链不可解析，调度/工厂为自由函数形态。
+- utf8 聚合字段与 `-> utf8` 字面量返回当前不可用，名称与诊断文案暂不提供。
+- 聚合嵌套聚合当前不可物化：`Device` 不内嵌 `Limits`、模块持扁平字节码、`BindGroup` 作校验凭证、map 会话以 epoch 令牌为凭（形态稳定，非临时绕过）。
+- 多字段结构暂不能作为 unite variant payload：`HardwareFault` 只携 code，category/recoverable 由注册表函数派生。
