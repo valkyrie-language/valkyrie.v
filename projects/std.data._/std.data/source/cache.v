@@ -2,6 +2,7 @@ namespace std.data;
 
 # 缓存槽位：产物在或不在的可区分联合（实质需求，非规避）。
 unite DataCacheSlot<T> {
+    [constructor]
     Filled {
         value: T
     }

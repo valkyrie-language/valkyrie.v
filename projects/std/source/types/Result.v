@@ -8,12 +8,14 @@ namespace std.types;
 unite Result<T, E> {
     ⍝ 成功变体，携带结果值
     [tag(0)]
+    [constructor]
     Fine {
         ⍝ 操作成功的结果值
         value: T,
     },
     ⍝ 失败变体，携带错误信息
     [tag(1)]
+    [constructor]
     Fail {
         ⍝ 操作失败的错误信息
         error: E,

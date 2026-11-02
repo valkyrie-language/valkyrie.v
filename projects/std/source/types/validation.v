@@ -3,7 +3,9 @@ namespace std.types;
 # std.types: Validation<T, E>
 
 unite Validation<T, E> {
+    [constructor]
     Success { value: T, errors: Vector<E> }
+    [constructor]
     Failure { fatal: E, errors: Vector<E> }
 }
 

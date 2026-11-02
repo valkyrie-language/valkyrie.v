@@ -12,18 +12,22 @@ namespace std.data;
 # span 为绝对偏移（`stop` 开区间），并刻意重复存储：
 # 不可变树上相对长度需要遍历还原，反而更糟，不做那种"优化"。
 unite DataCstNode<K> {
+    [constructor]
     Node {
         kind: K
         span: DataSpan
         children: [DataCstNode<K>]
     }
+    [constructor]
     Token {
         token: DataToken<K>
     }
+    [constructor]
     Missing {
         span: DataSpan
         reason: utf8
     }
+    [constructor]
     Poison {
         span: DataSpan
         children: [DataCstNode<K>]

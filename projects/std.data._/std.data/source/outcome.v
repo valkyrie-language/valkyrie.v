@@ -67,10 +67,12 @@ micro data_severity_is_error(severity: DataSeverity) -> bool {
 # 双态让消费方不遍历诊断即可区分置信度；两者都携带值，
 # 没有"无值失败"形态，也没有 panic 取用。
 unite DataOutcome<T> {
+    [constructor]
     Fine {
         value: T
         diagnostics: [DataDiagnostic]
     }
+    [constructor]
     Partial {
         value: T
         diagnostics: [DataDiagnostic]

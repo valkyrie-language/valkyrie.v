@@ -85,9 +85,13 @@ structure WatElemSegment {
 
 [tag(WatImportDescriptorKind)]
 unite WatImportDescriptor {
+    [constructor]
     Func { value: WatFuncImportDescriptor }
+    [constructor]
     Memory { value: WatMemoryImportDescriptor }
+    [constructor]
     Table { value: WatTableImportDescriptor }
+    [constructor]
     Global { value: WatGlobalImportDescriptor }
 }
 
@@ -119,15 +123,25 @@ structure WatGlobalImportDescriptor {
 
 [tag(WatInstructionKind)]
 unite WatInstruction {
+    [constructor]
     Const { value: WatConstInstruction }
+    [constructor]
     Variable { value: WatVariableInstruction }
+    [constructor]
     Call { value: WatCallInstruction }
+    [constructor]
     Control { value: WatControlInstruction }
+    [constructor]
     Memory { value: WatMemoryInstruction }
+    [constructor]
     Simple { value: WatSimpleInstruction }
+    [constructor]
     Binary { value: WatBinaryInstruction }
+    [constructor]
     Unary { value: WatUnaryInstruction }
+    [constructor]
     Compare { value: WatCompareInstruction }
+    [constructor]
     Generic { value: WatGenericInstruction }
 }
 

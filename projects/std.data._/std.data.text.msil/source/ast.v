@@ -140,7 +140,9 @@ structure MsilLocalDecl {
 
 [tag(MsilInstructionKind)]
 unite MsilInstruction {
+    [constructor]
     Instr { value: MsilInstr }
+    [constructor]
     Label { value: MsilLabel }
     ScopeStart
     ScopeEnd

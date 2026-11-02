@@ -8,6 +8,7 @@ namespace std.types;
 unite Option<T> {
     ⍝ 包含一个有效值的变体
     [tag(0)]
+    [constructor]
     Some {
         ⍝ 被包裹的实际值
         value: T,

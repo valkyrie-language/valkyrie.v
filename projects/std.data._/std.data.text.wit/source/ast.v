@@ -7,10 +7,15 @@ structure WitDocument {
 
 [tag(WitDefinitionKind)]
 unite WitDefinition {
+    [constructor]
     Interface { value: WitInterfaceDef }
+    [constructor]
     World { value: WitWorldDef }
+    [constructor]
     TypeDef { value: WitTypeDef }
+    [constructor]
     Use { value: WitUseDef }
+    [constructor]
     Include { value: WitIncludeDef }
 }
 
@@ -34,11 +39,17 @@ structure WitWorldItem {
 
 [tag(WitTypeDefKind)]
 unite WitTypeDef {
+    [constructor]
     Record { name: utf8, fields: [WitField] }
+    [constructor]
     Variant { name: utf8, cases: [WitCase] }
+    [constructor]
     Enum { name: utf8, values: [utf8] }
+    [constructor]
     Flags { name: utf8, values: [utf8] }
+    [constructor]
     TypeAlias { name: utf8, target: utf8 }
+    [constructor]
     Resource { name: utf8 }
 }
 

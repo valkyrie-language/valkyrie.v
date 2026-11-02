@@ -30,11 +30,17 @@ unite WatTokenKind {
     MutKeyword
 
     # 带数据变体 —— 值嵌入 kind 内部，无需外部 text 字段
+    [constructor]
     Opcode { value: utf8 }
+    [constructor]
     Identifier { value: utf8 }
+    [constructor]
     Number { value: utf8 }
+    [constructor]
     String { value: utf8 }
+    [constructor]
     Comment { value: utf8 }
+    [constructor]
     Punctuation { value: utf8 }
 }
 

@@ -9,8 +9,10 @@ structure WasmBinaryDiagnostic {
 [tag(WasmBinaryResultKind)]
 unite WasmBinaryResult<T> {
     [tag(0)]
+    [constructor]
     Fine { value: T }
     [tag(1)]
+    [constructor]
     Fail { error: WasmBinaryDiagnostic }
 }
 

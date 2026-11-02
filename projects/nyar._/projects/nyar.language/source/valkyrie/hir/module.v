@@ -27,15 +27,24 @@ structure HirParam {
 
 unite HirExprKind {
     Unit
+    [constructor]
     IntegerLiteral { text: utf8 }
+    [constructor]
     FloatLiteral { text: utf8 }
+    [constructor]
     StringLiteral { text: utf8 }
+    [constructor]
     BoolLiteral { value: bool }
     NullLiteral
+    [constructor]
     Name { path: utf8 }
+    [constructor]
     Call { callee: utf8, arguments: [utf8] }
+    [constructor]
     Field { object: utf8, field: utf8 }
+    [constructor]
     Binary { op: utf8, left: utf8, right: utf8 }
+    [constructor]
     Unary { op: utf8, operand: utf8 }
 }
 
@@ -44,6 +53,7 @@ structure HirExpr {
 }
 
 unite HirStatementKind {
+    [constructor]
     Let {
         is_mutable: bool
         name: utf8
@@ -51,8 +61,11 @@ unite HirStatementKind {
         has_init: bool
         init: HirExpr
     }
+    [constructor]
     Expr { expr: HirExpr }
+    [constructor]
     Return { has_value: bool, value: HirExpr }
+    [constructor]
     If {
         condition: HirExpr
         then_body: HirBlock

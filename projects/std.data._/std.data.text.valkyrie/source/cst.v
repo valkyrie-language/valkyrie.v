@@ -10,16 +10,19 @@ enums ValSyntaxKind {
 }
 
 unite ValCstElement {
+    [constructor]
     Trivia {
         text: utf8
         span: TextSpan
     }
+    [constructor]
     Statement {
         leading: utf8
         # Index into accompanying AST statement list (full RootStatement attach later).
         statement_index: i32
         trailing: utf8
     }
+    [constructor]
     Error {
         message: utf8
         text: utf8

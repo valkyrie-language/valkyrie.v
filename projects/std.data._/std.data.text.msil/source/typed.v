@@ -8,17 +8,24 @@ unite MsilType {
     Void
     Bool
     Char
+    [constructor]
     Int8 { signed: bool }
+    [constructor]
     Int16 { signed: bool }
+    [constructor]
     Int32 { signed: bool }
+    [constructor]
     Int64 { signed: bool }
     Float32
     Float64
     String
     Object
+    [constructor]
     IntPtr { signed: bool }
     # Array / named — keep flat (no recursive unite) for CLR bootstrap.
+    [constructor]
     SzArrayNamed { element_name: utf8 }
+    [constructor]
     Named { name: utf8 }
 }
 
@@ -111,16 +118,26 @@ enums MsilOpcode {
 
 unite MsilInstructionOperand {
     None
+    [constructor]
     Integer { value: i64 }
+    [constructor]
     FloatText { value: utf8 }
     # Language UTF-8 source text; CLR ldstr render transcodes to UTF-16.
+    [constructor]
     StringLiteral { utf8_source: utf8 }
+    [constructor]
     Symbol { value: utf8 }
+    [constructor]
     Method { value: MsilMethodRef }
+    [constructor]
     TypeName { value: utf8 }
+    [constructor]
     Field { owner: utf8, name: utf8 }
+    [constructor]
     Token { value: u32 }
+    [constructor]
     BranchTarget { label: utf8 }
+    [constructor]
     Raw { value: utf8 }
 }
 

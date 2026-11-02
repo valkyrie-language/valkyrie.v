@@ -80,17 +80,29 @@ structure TestsDeclaration {
 }
 
 unite RootStatement {
+    [constructor]
     Namespace { decl: NamespaceDeclaration }
+    [constructor]
     Using { stmt: UsingStatement }
+    [constructor]
     Function { decl: FunctionDeclaration }
+    [constructor]
     Class { decl: ClassDeclaration }
+    [constructor]
     Trait { decl: TraitDeclaration }
+    [constructor]
     Imply { decl: ImplyDeclaration }
+    [constructor]
     Unite { decl: UniteDeclaration }
+    [constructor]
     Attribute { decl: AttributeDeclaration }
+    [constructor]
     TypeAlias { decl: TypeAliasDeclaration }
+    [constructor]
     Flags { decl: FlagsDeclaration }
+    [constructor]
     MacroAssign { decl: MacroAssignDeclaration }
+    [constructor]
     Tests { decl: TestsDeclaration }
 }
 

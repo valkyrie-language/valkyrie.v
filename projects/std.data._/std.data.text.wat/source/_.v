@@ -14,8 +14,10 @@ structure WatDiagnostic {
 [tag(WatParseResultKind)]
 unite WatParseResult<T> {
     [tag(0)]
+    [constructor]
     Fine { value: T }
     [tag(1)]
+    [constructor]
     Fail { error: WatDiagnostic }
 }
 

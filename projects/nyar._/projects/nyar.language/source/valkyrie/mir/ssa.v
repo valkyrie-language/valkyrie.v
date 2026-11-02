@@ -27,27 +27,44 @@ structure MirStruct {
 
 unite MirTerminator {
     ReturnVoid
+    [constructor]
     Return { value: utf8 }
+    [constructor]
     Jump { target: MirBlockRef }
+    [constructor]
     CondBranch { cond: utf8, then_target: MirBlockRef, else_target: MirBlockRef }
     Unreachable
 }
 
 # Core instruction kinds aligned with Rust MirInstructionKind (flat operands this round).
 unite MirInstructionKind {
+    [constructor]
     LoadConstant { constant: utf8, ty: utf8 }
+    [constructor]
     LoadSymbol { path: utf8 }
+    [constructor]
     Copy { source: utf8 }
+    [constructor]
     StoreVar { name: utf8, value: utf8, ty: utf8 }
+    [constructor]
     Call { callee: utf8, arguments: [utf8] }
+    [constructor]
     StructNew { type_name: utf8, field_names: [utf8], field_values: [utf8] }
+    [constructor]
     TupleNew { field_values: [utf8] }
+    [constructor]
     FieldGet { object: utf8, field: utf8 }
+    [constructor]
     FieldSet { object: utf8, field: utf8, value: utf8 }
+    [constructor]
     ArrayNew { element_ty: utf8, length: utf8 }
+    [constructor]
     ArrayLiteral { element_ty: utf8, items: [utf8] }
+    [constructor]
     PatternMatch { value: utf8, pattern: utf8 }
+    [constructor]
     Binary { op: utf8, left: utf8, right: utf8 }
+    [constructor]
     Unary { op: utf8, operand: utf8 }
     Nop
 }

@@ -14,8 +14,10 @@ structure VonDiagnostic {
 [tag(VonParseResultKind)]
 unite VonParseResult<T> {
     [tag(0)]
+    [constructor]
     Fine { value: T }
     [tag(1)]
+    [constructor]
     Fail { error: VonDiagnostic }
 }
 

@@ -4,11 +4,17 @@ namespace std.data.text.valkyrie;
 # Format-specific token unites (VON/MSIL/WAT/WIT) live in their own packages.
 
 unite TokenKind {
+    [constructor]
     Identifier { value: utf8 }
+    [constructor]
     Number { value: utf8 }
+    [constructor]
     Text { value: utf8 }
+    [constructor]
     Punctuation { value: utf8 }
+    [constructor]
     Comment { value: utf8 }
+    [constructor]
     Whitespace { value: utf8 }
     EndOfFile
 }

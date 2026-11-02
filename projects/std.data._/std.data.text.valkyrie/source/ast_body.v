@@ -4,9 +4,13 @@ namespace std.data.text.valkyrie;
 # and a flat `TermExpression` (full term tree lands incrementally).
 
 unite LiteralExpression {
+    [constructor]
     Integer { text: utf8 }
+    [constructor]
     Float { text: utf8 }
+    [constructor]
     String { text: utf8 }
+    [constructor]
     Bool { value: bool }
     Unit
     Null
@@ -35,11 +39,17 @@ enums BinaryOperator {
 
 # Flat term shell (no recursive Box) for CLR bootstrap.
 unite TermExpression {
+    [constructor]
     Literal { lit: LiteralExpression }
+    [constructor]
     Name { path: utf8 }
+    [constructor]
     Call { callee: utf8, arguments: [utf8] }
+    [constructor]
     Field { object: utf8, field: utf8 }
+    [constructor]
     Binary { op: BinaryOperator, left: utf8, right: utf8 }
+    [constructor]
     Unary { op: UnaryOperator, operand: utf8 }
     Unit
 }
@@ -63,11 +73,17 @@ structure IfStatement {
 }
 
 unite FunctionStatement {
+    [constructor]
     Let { stmt: LetStatement }
+    [constructor]
     Term { expression: TermExpression, span: TextSpan }
+    [constructor]
     Return { has_value: bool, value: TermExpression, span: TextSpan }
+    [constructor]
     If { stmt: IfStatement }
+    [constructor]
     Break { span: TextSpan }
+    [constructor]
     Continue { span: TextSpan }
 }
 

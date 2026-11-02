@@ -6,6 +6,7 @@ namespace std.effect;
 # YieldBreak 终止生成
 # Resume = ()：每次 yield 后恢复为 unit
 unite Yielder<T> {
+    [constructor]
     Yield { value: T }
     YieldBreak
 }

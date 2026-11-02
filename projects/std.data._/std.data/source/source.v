@@ -10,10 +10,12 @@ structure DataSourceIdentity {
 # 统一输入源：文本（字符流）与字节（二进制流）同构承载。
 # 位置映射的单位由变体决定：Text 为字符偏移，Bytes 为字节偏移。
 unite DataSource {
+    [constructor]
     Text {
         text: utf8
         digest: usize
     }
+    [constructor]
     Bytes {
         bytes: [u8]
         digest: usize

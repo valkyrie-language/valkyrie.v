@@ -2,11 +2,17 @@ namespace std.data.text.von;
 
 [tag(VonValueKind)]
 unite VonValue {
+    [constructor]
     Text { value: utf8 }
+    [constructor]
     Flag { value: bool }
+    [constructor]
     Number { value: utf8 }
+    [constructor]
     Name { value: utf8 }
+    [constructor]
     Array { items: [VonValue] }
+    [constructor]
     Object { fields: [VonField] }
     Empty
 }

@@ -63,8 +63,10 @@ structure PackageManager {
 [tag(PmResultKind)]
 unite PmResult<T> {
     [tag(0)]
+    [constructor]
     Fine { value: T }
     [tag(1)]
+    [constructor]
     Fail { error: utf8 }
 }
 

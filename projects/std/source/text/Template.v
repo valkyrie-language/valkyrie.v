@@ -11,6 +11,8 @@ trait Display {
 }
 
 unite TemplateError {
+    [constructor]
     InvalidSyntax { offset: usize },
+    [constructor]
     ArgumentMismatch { expected: usize, actual: usize },
 }
