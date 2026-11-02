@@ -1,0 +1,14 @@
+{
+    name: "database.conformance",
+    version: "workspace",
+    description: "database 引擎合同验收套件 — 同一套合同项对全部后端逐条验收",
+    type: "library",
+    dependencies: {
+        "std": { version: "workspace" },
+        "database": { version: "workspace" }
+    },
+    build: [
+        { target: "wasm" },
+        { target: "ovm" }
+    ]
+}

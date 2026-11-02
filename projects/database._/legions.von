@@ -3,6 +3,7 @@
     name: "database-workspace",
     members: [
         "projects/database",
+        "projects/database.conformance",
         "projects/yyds.kv"
     ],
     dependencies: {},
