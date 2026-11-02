@@ -25,6 +25,14 @@ enums DataEndian {
     Big
 }
 
+# 位序：位流读取/写入时先消费字节的哪一端（DEFLATE 为 LSB 先读）。
+# 纯标记（二选一、无 payload）用 `enums`；`unite` 是带 payload 的可区分
+# 联合（引用语义），不作标记形态。
+enums DataBitOrder {
+    LeastSignificantBitFirst
+    MostSignificantBitFirst
+}
+
 # 位级位置：字节偏移 + 位偏移（0..7）。
 # 位序（MSB 先读还是 LSB 先读）由读取方按格式规定传入，本结构不预设。
 structure DataBitPosition {
