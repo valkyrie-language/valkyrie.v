@@ -36,6 +36,80 @@ micro database_value_encode_text(data: [u8]) -> [u8] {
     return out
 }
 
+micro database_value_encode_bool(value: bool) -> [u8] {
+    return database_encode_bool(value)
+}
+
+# 读取 bool 值（类型码不符即 `corrupt_encoding`）。
+micro database_value_decode_bool(encoded: [u8]) -> Result<bool, DatabaseFault> {
+    let size: i64 = encoded.length() as i64
+    if size != 2 {
+        return Fail(DatabaseFault { code: database_fault_corrupt_encoding() })
+    }
+    let tag: i64 = std::collection::array::get(encoded, 0) as i64
+    if tag != database_kind_bool() {
+        return Fail(DatabaseFault { code: database_fault_corrupt_encoding() })
+    }
+    let flag: i64 = std::collection::array::get(encoded, 1) as i64
+    if flag == 0 {
+        return Fine(false)
+    }
+    if flag == 1 {
+        return Fine(true)
+    }
+    return Fail(DatabaseFault { code: database_fault_corrupt_encoding() })
+}
+
+# 值全序：先类型码、后同类型内载荷序（i64 载荷为 memcomparable 字节，
+# 字典序即数值序；bytes/text 载荷字典序；bool 0<1；null 无载荷相等）。
+# 未登记类型码或形态不符即 `corrupt_encoding`，不猜测顺序。
+micro database_compare_values(a: [u8], b: [u8]) -> Result<i64, DatabaseFault> {
+    let kind_a: Result<i64, DatabaseFault> = database_value_kind(a)
+    let kind_b: Result<i64, DatabaseFault> = database_value_kind(b)
+    if !database_outcome_is_fine(kind_a) || !database_outcome_is_fine(kind_b) {
+        return Fail(DatabaseFault { code: database_fault_corrupt_encoding() })
+    }
+    let tag_a: i64 = database_outcome_value_or(kind_a, -1)
+    let tag_b: i64 = database_outcome_value_or(kind_b, -1)
+    if tag_a < tag_b {
+        return Fine(-1)
+    }
+    if tag_a > tag_b {
+        return Fine(1)
+    }
+    if tag_a == database_kind_null() {
+        return Fine(0)
+    }
+    if !database_value_well_formed(a, tag_a) || !database_value_well_formed(b, tag_b) {
+        return Fail(DatabaseFault { code: database_fault_corrupt_encoding() })
+    }
+    let payload_a: [u8] = database_outcome_must(database_value_payload(a))
+    let payload_b: [u8] = database_outcome_must(database_value_payload(b))
+    return Fine(database_compare_bytes(payload_a, payload_b))
+}
+
+# 各类型码的载荷形态校验（f64 预留未落地，任何 f64 载荷均不可构造即不合形态）。
+micro database_value_well_formed(encoded: [u8], kind: i64) -> bool {
+    let size: i64 = encoded.length() as i64
+    if kind == database_kind_null() {
+        return size == 1
+    }
+    if kind == database_kind_bool() {
+        if size != 2 {
+            return false
+        }
+        let flag: i64 = std::collection::array::get(encoded, 1) as i64
+        return flag == 0 || flag == 1
+    }
+    if kind == database_kind_i64() {
+        return size == 9
+    }
+    if kind == database_kind_bytes() || kind == database_kind_text() {
+        return size >= 1
+    }
+    return false
+}
+
 # 读取值的类型码；空输入返回 `corrupt_encoding`。
 micro database_value_kind(encoded: [u8]) -> Result<i64, DatabaseFault> {
     let size: i64 = encoded.length() as i64
@@ -53,6 +127,9 @@ micro database_value_kind(encoded: [u8]) -> Result<i64, DatabaseFault> {
         return Fine(tag)
     }
     if tag == database_kind_text() {
+        return Fine(tag)
+    }
+    if tag == database_kind_bool() {
         return Fine(tag)
     }
     return Fail(DatabaseFault { code: database_fault_corrupt_encoding() })

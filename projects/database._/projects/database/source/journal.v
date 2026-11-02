@@ -95,6 +95,8 @@ imply DatabaseEngine {
             _cap_batch_atomic: self._cap_batch_atomic,
             _cap_wal: self._cap_wal,
             _cap_durable: self._cap_durable,
+            _cap_ordered_index: self._cap_ordered_index,
+            _cap_hash_index: self._cap_hash_index,
             _tables: self._checkpoint_tables,
             _catalog_revision: self._checkpoint_catalog_revision,
             _rows: self._checkpoint_rows,

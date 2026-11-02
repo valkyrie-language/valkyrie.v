@@ -86,6 +86,16 @@ imply Transaction {
         return self._isolation
     }
 
+    # 事务的基线 revision（begin 时刻引擎值）。
+    micro base_revision(self) -> i64 {
+        return self._base_revision
+    }
+
+    # 暂存写操作数。
+    micro write_count(self) -> i64 {
+        return self._write_ops.length() as i64
+    }
+
     # 读：写集最新值优先，其次基线快照；表未注册（基线口径）即 `table_missing`。
     micro get(self, table: [u8], key: [u8]) -> Result<Option<[u8]>, DatabaseFault> {
         if self._closed {

@@ -29,6 +29,18 @@ micro database_kind_f64() -> i64 {
     return 4
 }
 
+# bool 键编码：`[tag, 0|1]`，天然保序（false < true）。
+micro database_kind_bool() -> i64 {
+    return 5
+}
+
+micro database_encode_bool(value: bool) -> [u8] {
+    if value {
+        return [database_kind_bool() as u8, 1]
+    }
+    return [database_kind_bool() as u8, 0]
+}
+
 # 无符号字节字典序比较：a 小返回负值，相等返回 0，a 大返回正值（i64 口径）。
 micro database_compare_bytes(a: [u8], b: [u8]) -> i64 {
     let mut index: i64 = 0

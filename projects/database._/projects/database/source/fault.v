@@ -79,6 +79,24 @@ micro database_fault_invalid_argument() -> i64 {
     return 2014
 }
 
+# 可恢复失败带（2100 起）：操作未生效，但调用方可原样重试。
+# 硬失败带（2001–2014）：操作未生效，调用方须修正请求或放弃，重试无意义。
+
+# 引擎暂时繁忙（未来并发/文件引擎的背压信号；内存引擎不产生）。
+micro database_fault_engine_busy() -> i64 {
+    return 2101
+}
+
+# 快照已过期（未来带回收的引擎；内存引擎的快照不失效）。
+micro database_fault_snapshot_expired() -> i64 {
+    return 2102
+}
+
+# 失败分级：可恢复即操作未生效但可原样重试；其余均为硬失败。
+micro database_fault_is_recoverable(code: i64) -> bool {
+    return code == database_fault_engine_busy() || code == database_fault_snapshot_expired()
+}
+
 # 无 panic 检查器：成功通道判定。
 micro database_outcome_is_fine<T>(outcome: Result<T, DatabaseFault>) -> bool {
     return match outcome {

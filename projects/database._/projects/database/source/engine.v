@@ -42,6 +42,8 @@ class DatabaseEngine {
     _cap_batch_atomic: bool
     _cap_wal: bool
     _cap_durable: bool
+    _cap_ordered_index: bool
+    _cap_hash_index: bool
     _tables: [[u8]]
     _catalog_revision: i64
     _rows: [DatabaseRecord]
@@ -75,6 +77,8 @@ imply DatabaseEngine {
             _cap_batch_atomic: true,
             _cap_wal: true,
             _cap_durable: false,
+            _cap_ordered_index: true,
+            _cap_hash_index: false,
             _tables: [],
             _catalog_revision: 0,
             _rows: [],
@@ -128,6 +132,14 @@ imply DatabaseEngine {
 
     micro cap_durable(self) -> bool {
         return self._cap_durable
+    }
+
+    micro cap_ordered_index(self) -> bool {
+        return self._cap_ordered_index
+    }
+
+    micro cap_hash_index(self) -> bool {
+        return self._cap_hash_index
     }
 
     micro revision(self) -> i64 {
