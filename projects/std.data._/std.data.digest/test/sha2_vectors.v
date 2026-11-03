@@ -51,7 +51,7 @@ micro digest_bytes_equal(actual: [u8], expected: [u8]) -> bool {
 [test]
 micro test_sha256_abc_vector() -> unit {
     if !digest_bytes_equal(digest_sha256(abc_bytes()), sha256_abc_vector()) {
-        std::types::panic("sha256(\"abc\") must match the FIPS 180-4 vector")
+        std::types::panic("""sha256("abc") must match the FIPS 180-4 vector""")
     }
 }
 
@@ -59,7 +59,7 @@ micro test_sha256_abc_vector() -> unit {
 micro test_sha256_empty_vector() -> unit {
     let empty: [u8] = []
     if !digest_bytes_equal(digest_sha256(empty), sha256_empty_vector()) {
-        std::types::panic("sha256(\"\") must match the FIPS 180-4 vector")
+        std::types::panic("""sha256("") must match the FIPS 180-4 vector""")
     }
 }
 
@@ -131,7 +131,7 @@ micro test_sha256_hex_output() -> unit {
 [test]
 micro test_sha512_abc_vector() -> unit {
     if !digest_bytes_equal(digest_sha512(abc_bytes()), sha512_abc_vector()) {
-        std::types::panic("sha512(\"abc\") must match the FIPS 180-4 vector")
+        std::types::panic("""sha512("abc") must match the FIPS 180-4 vector""")
     }
 }
 
@@ -139,6 +139,6 @@ micro test_sha512_abc_vector() -> unit {
 micro test_sha512_empty_vector() -> unit {
     let empty: [u8] = []
     if !digest_bytes_equal(digest_sha512(empty), sha512_empty_vector()) {
-        std::types::panic("sha512(\"\") must match the FIPS 180-4 vector")
+        std::types::panic("""sha512("") must match the FIPS 180-4 vector""")
     }
 }

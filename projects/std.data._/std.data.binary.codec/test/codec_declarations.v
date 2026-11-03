@@ -1,6 +1,7 @@
 namespace std.data.binary.codec;
 
-using std.data::{DataOutcome, data_outcome_value_or, data_outcome_has_errors, data_outcome_diagnostics};`nusing std.diagnostic::{Diagnostic, diagnostic_code, diagnostic_span};
+using std.data::{DataOutcome, data_outcome_value_or, data_outcome_has_errors, data_outcome_diagnostics};
+using std.diagnostic::{Diagnostic, diagnostic_code, diagnostic_span};
 
 # codec 核心行为测试：字节游标、位游标、位写出器，正反成对。
 #
