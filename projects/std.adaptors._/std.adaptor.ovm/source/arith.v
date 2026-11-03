@@ -172,3 +172,17 @@ micro f64_div(a: f64, b: f64): f64
 micro f64_neg(a: f64): f64
 
 #endregion
+
+#region f64 比较
+# `std/source/primitive/f64.v` 只声明了 `__f64_eq` 与 `__f64_lt`，其余比较由语言层派生。
+# NaN 语义由 host 侧 IEEE 比较直接给出，不在适配层改写。
+
+[host_provider(std::primitive::__f64_eq)]
+[ovm("f64_eq")]
+micro f64_eq(a: f64, b: f64): bool
+
+[host_provider(std::primitive::__f64_lt)]
+[ovm("f64_lt")]
+micro f64_lt(a: f64, b: f64): bool
+
+#endregion
