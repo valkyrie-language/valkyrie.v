@@ -13,7 +13,6 @@ class ArrayList<T> {
 
 imply ArrayList<T> {
     [host_contract]
-    [library_glue(construct)]
     micro new(capacity: usize): Self {
         return ArrayList { _items: std::collection::array::new::<T>(capacity), _length: 0 }
     }
@@ -26,7 +25,6 @@ imply ArrayList<T> {
 
     # 原地追加：容量内直写，满时倍增扩容。O(1) 摊还。
     [host_contract]
-    [library_glue(push)]
     micro push(mut self, value: T): unit {
         if self._length >= self._items.length {
             self.reserve_grow()
@@ -107,7 +105,6 @@ imply ArrayList<T> {
     }
 
     [host_contract]
-    [library_glue(length)]
     micro length(self): usize {
         return self._length
     }
@@ -129,11 +126,10 @@ imply ArrayList<T> {
         return self.get(size as isize)
     }
 
-    # glue 需要裸元素；下标 `[ ]` 即裸值，与 glue 同口径。
+    # 下标 `[ ]` 即裸值读取，1 基序数，越界结构化失败。
     [host_contract]
-    [library_glue(at)]
     micro at(self, ordinal: usize): T {
-        # 与 `get` 同口径：1 基序数，越界结构化失败（位置缺失在 glue 路径上不可恢复）。
+        # 与 `get` 同口径：1 基序数，越界结构化失败（位置缺失在调用点不可恢复）。
         return self[ordinal as isize]
     }
 
