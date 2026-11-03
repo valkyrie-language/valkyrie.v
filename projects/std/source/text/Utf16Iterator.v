@@ -25,7 +25,7 @@ imply Utf16Iterator: std::iterator::Iterator {
 
     micro next(mut self) -> Option<char> {
         if !self.has_next() {
-            return std::types::option_none::<char>()
+            return None
         }
 
         let first: u16 = self.code_unit_at(self._offset)

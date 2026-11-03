@@ -16,7 +16,7 @@ micro delete(url: utf8): utf8
 micro get_json(url: utf8): Option<Value> {
     let text: utf8 = get(url)
     if text == "" {
-        return option_none::<Value>()
+        return None
     }
     let val: Value = parse(text)
     return Some(val)

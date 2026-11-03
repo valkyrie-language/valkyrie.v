@@ -146,7 +146,7 @@ imply SwissSet<T> {
     {
         let slot_count: usize = self._states.length()
         if slot_count == 0 {
-            return option_none::<usize>()
+            return None
         }
 
         let value_hash: usize = value.hash()
@@ -155,7 +155,7 @@ imply SwissSet<T> {
         while probe < slot_count {
             let state: i32 = self._states.get((index + 1) as isize).unwrap()
             if state == 0 {
-                return option_none::<usize>()
+                return None
             }
 
             if state == 1 && self._values.get((index + 1) as isize).unwrap().unwrap() == value {
@@ -166,7 +166,7 @@ imply SwissSet<T> {
             probe = probe + 1
         }
 
-                return option_none::<usize>()
+                return None
     }
 
     micro find_insert_slot(self, value: T, value_hash: usize): Option<usize>

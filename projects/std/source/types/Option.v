@@ -24,12 +24,6 @@ micro Some<T>(value: T) -> Option<T> {
     return wrapped
 }
 
-⍝ 构造一个缺失的 `None`
-micro option_none<T>() -> Option<T> {
-    let empty: Option<T> = None
-    return empty
-}
-
 imply Option<T> {
     ⍝ 当且仅当为 `Some` 时返回 `true`
     micro is_some(self): bool {
@@ -87,7 +81,7 @@ imply Option<T> {
             case Some(value):
                 Some(f(value))
             case None:
-                option_none::<U>()
+                None
         }
     }
 
@@ -107,7 +101,7 @@ imply Option<T> {
             case Some(value):
                 f(value)
             case None:
-                option_none::<U>()
+                None
         }
     }
 

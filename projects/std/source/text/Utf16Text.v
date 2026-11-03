@@ -46,7 +46,7 @@ imply Utf16Text {
 
     [host_contract]
     micro index_of(self, value: utf16) -> Option<usize> {
-        return std::types::option_none::<usize>()
+        return None
     }
 
     [host_contract]

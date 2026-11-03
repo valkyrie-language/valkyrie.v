@@ -25,7 +25,7 @@ imply Utf8Iterator: std::iterator::Iterator {
 
     micro next(mut self) -> Option<char> {
         if !self.has_next() {
-            return std::types::option_none::<char>()
+            return None
         }
 
         # 迭代器内部按字节偏移推进（实现细节），解码委托 `Utf8Text` 的

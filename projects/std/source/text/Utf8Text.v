@@ -281,7 +281,7 @@ imply Utf8Text {
         }
 
         if value._repr.length() > self._repr.length() {
-            return std::types::option_none::<usize>()
+            return None
         }
 
         let mut offset: usize = 0
@@ -301,17 +301,17 @@ imply Utf8Text {
                 let mut char_index: usize = 0
                 let mut byte_index: usize = 0
                 while byte_index < offset {
-                    byte_index = byte_index + self.char_width(byte_index)
+                    byte_index = byte_index + self.char_width_at(byte_index)
                     char_index = char_index + 1
                 }
 
                 return Some(char_index)
             }
 
-            offset = offset + self.char_width(offset)
+            offset = offset + self.char_width_at(offset)
         }
 
-        return std::types::option_none::<usize>()
+        return None
     }
 
     micro chars(self) -> Utf8Iterator {

@@ -19,12 +19,12 @@ imply OrderedMap<K, V>: Map<K, V> {
     {
         let slot_option: Option<usize> = self.find_slot(key)
         if slot_option.is_none() {
-            return option_none::<V>()
+            return None
         }
 
         let entry: OrderedMapEntry<K, V> = self._entries.get(slot_option.unwrap() as isize).unwrap()
         if !entry.active {
-            return option_none::<V>()
+            return None
         }
 
         return Some(entry.value)
@@ -54,7 +54,7 @@ imply OrderedMap<K, V>: Map<K, V> {
         })
         self._indices.insert(key, slot)
         self._count = self._count + 1
-        return option_none::<V>()
+        return None
     }
 
     [host_contract]
@@ -63,13 +63,13 @@ imply OrderedMap<K, V>: Map<K, V> {
     {
         let slot_option: Option<usize> = self.find_slot(key)
         if slot_option.is_none() {
-            return option_none::<V>()
+            return None
         }
 
         let slot: usize = slot_option.unwrap()
         let entry: OrderedMapEntry<K, V> = self._entries.get(slot as isize).unwrap()
         if !entry.active {
-            return option_none::<V>()
+            return None
         }
 
         self._entries.set(slot as isize, OrderedMapEntry {
@@ -166,6 +166,6 @@ imply OrderedMap<K, V> {
             cursor = cursor + 1
         }
 
-        return option_none::<usize>()
+        return None
     }
 }

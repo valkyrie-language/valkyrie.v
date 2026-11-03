@@ -26,7 +26,7 @@ imply FilterMapIterator<T, U, I>: Iterator {
             }
         }
 
-        return option_none::<U>()
+        return None
     }
 }
 

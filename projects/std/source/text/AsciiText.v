@@ -14,15 +14,15 @@ class AsciiIterator {
 imply AsciiText: Text {
     ⍝ 获取 ascii 文本的字节数长度
     micro byte_length(self) -> usize {
-        return _bytes.length()
+        return self._bytes.length()
     }
 
     micro char_length(self) -> usize {
-        return _bytes.length()
+        return self._bytes.length()
     }
 
     micro is_empty(self) -> bool {
-        return _bytes.is_empty()
+        return self._bytes.is_empty()
     }
 
     micro to_utf8(self) -> utf8 {
@@ -31,7 +31,7 @@ imply AsciiText: Text {
     }
 
     micro to_utf16(self) -> utf16 {
-        return _bytes.chars().collect()
+        return self._bytes.chars().collect()
     }
 
     micro to_c_str(self) -> c_str {
@@ -68,7 +68,7 @@ imply AsciiIterator: std::iterator::Iterator {
 
     micro next(mut self): Option<char> {
         if !self.has_next() {
-            return std::types::option_none::<char>()
+            return None
         }
 
         let value: char = self._text._bytes⁅self._offset⁆ as char
