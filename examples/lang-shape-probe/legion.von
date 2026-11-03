@@ -4,5 +4,5 @@
     dependencies: {
         "std": { version: "workspace" }
     },
-    build: [{ target: "wasm" }]
+    build: [{ target: "wasm" }, { target: "ovm" }]
 }
