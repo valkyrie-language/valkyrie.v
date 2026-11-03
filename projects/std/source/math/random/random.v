@@ -1,7 +1,5 @@
 namespace std.math.random;
 
-[clr("System.Runtime", "System.Random")]
-[jvm("java.util.Random")]
 class Random {
     _state: i32
 }

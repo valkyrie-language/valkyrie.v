@@ -6,7 +6,6 @@ structure OrderedMapEntry<K, V> {
     active: bool
 }
 
-[jvm("java.util.LinkedHashMap")]
 class OrderedMap<K, V> {
     _indices: HashMap<K, usize>
     _entries: ArrayList<OrderedMapEntry<K, V>>

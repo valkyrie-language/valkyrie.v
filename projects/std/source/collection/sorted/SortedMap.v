@@ -1,7 +1,5 @@
 namespace std.collection;
 
-[clr("System.Collections", "System.Collections.Generic.SortedDictionary`2")]
-[jvm("java.util.TreeMap")]
 class SortedMap<K, V> {
     _impl: BTreeMap<K, V>
 }

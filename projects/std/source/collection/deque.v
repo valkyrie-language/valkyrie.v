@@ -2,8 +2,6 @@ namespace std.collection;
 
 # std.collection: Deque - 双端队列
 
-[clr("System.Collections", "System.Collections.Generic.LinkedList`1")]
-[jvm("java.util.ArrayDeque")]
 class Deque<T> {
     data: ArrayList<T>
 }

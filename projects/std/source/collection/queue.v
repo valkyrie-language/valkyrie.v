@@ -2,8 +2,6 @@ namespace std.collection;
 
 # std.collection: Queue - FIFO 队列
 
-[clr("System.Collections", "System.Collections.Generic.Queue`1")]
-[jvm("java.util.ArrayDeque")]
 class Queue<T> {
     data: Deque<T>
 }

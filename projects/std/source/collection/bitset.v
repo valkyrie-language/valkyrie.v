@@ -2,8 +2,6 @@ namespace std.collection;
 
 # std.collection: BitSet - 位图
 
-[clr("System.Collections", "System.Collections.BitArray")]
-[jvm("java.util.BitSet")]
 class BitSet {
     words: ArrayList<u64>
 }

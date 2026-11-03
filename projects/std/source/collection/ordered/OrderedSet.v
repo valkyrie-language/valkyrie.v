@@ -1,6 +1,5 @@
 namespace std.collection;
 
-[jvm("java.util.LinkedHashSet")]
 class OrderedSet<T> {
     map: OrderedMap<T, bool>
 }

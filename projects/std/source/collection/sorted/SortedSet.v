@@ -1,7 +1,5 @@
 namespace std.collection;
 
-[clr("System.Collections", "System.Collections.Generic.SortedSet`1")]
-[jvm("java.util.TreeSet")]
 class SortedSet<T> {
     _impl: BTreeSet<T>
 }

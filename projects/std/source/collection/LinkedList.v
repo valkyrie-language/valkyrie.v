@@ -6,8 +6,6 @@ class LinkedListNode<T> {
     prev: Option<LinkedListNode<T>>
 }
 
-[clr("System.Collections", "System.Collections.Generic.LinkedList`1")]
-[jvm("java.util.LinkedList")]
 class LinkedList<T> {
     _head: Option<LinkedListNode<T>>
     _tail: Option<LinkedListNode<T>>

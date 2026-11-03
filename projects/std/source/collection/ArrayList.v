@@ -6,8 +6,6 @@ namespace std.collection;
 # 逻辑部分永远是载体的前缀。`push` 为 `mut self` 原地追加：容量未满时直接写槽
 # （O(1)），满时按倍增扩容（摊还 O(1)）。`clear` 只重置逻辑长度、保留载体。
 # 只有 `ArrayList` 承载可变序列语义；定长 `[T]` 不提供 push/pop/reserve/clear。
-[clr("System.Collections", "System.Collections.Generic.List`1")]
-[jvm("java.util.ArrayList")]
 class ArrayList<T> {
     _items: [T]
     _length: usize

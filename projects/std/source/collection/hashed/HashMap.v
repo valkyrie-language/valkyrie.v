@@ -1,7 +1,5 @@
 namespace std.collection;
 
-[clr("System.Collections", "System.Collections.Generic.Dictionary`2")]
-[jvm("java.util.HashMap")]
 class HashMap<K, V> {
     _impl: SwissTable<K, V>
 }

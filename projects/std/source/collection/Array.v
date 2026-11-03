@@ -1,7 +1,5 @@
 namespace std.collection;
 
-[clr("System.Runtime", "System.Array")]
-[jvm("java.lang.Object[]")]
 class Array<T> {
     _address: usize,
     _length: usize,

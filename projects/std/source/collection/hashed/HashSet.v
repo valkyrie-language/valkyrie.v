@@ -2,8 +2,6 @@
 
 namespace std.collection;
 
-[clr("System.Collections", "System.Collections.Generic.HashSet`1")]
-[jvm("java.util.HashSet")]
 class HashSet<T> {
     _impl: SwissSet<T>
 }

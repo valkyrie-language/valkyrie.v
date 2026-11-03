@@ -1,8 +1,6 @@
 namespace std.collection;
 
 # std.collection: PriorityQueue (min-heap)
-[clr("System.Collections", "System.Collections.Generic.PriorityQueue`2")]
-[jvm("java.util.PriorityQueue")]
 class PriorityQueue<T> {
     _impl: BinaryHeap<T>
 }
