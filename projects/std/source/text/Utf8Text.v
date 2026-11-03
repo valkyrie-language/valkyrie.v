@@ -232,31 +232,62 @@ imply Utf8Text {
         }
     }
 
-    # Scalar slice(start, count) (std). CLR host_provider must not flatten to String.Substring without conversion.
+    # 严格宿主切片：越界区间由宿主结构化失败，不做任何截断。
+    # 各 lane 用自身宿主实现覆盖；默认实现按标量边界逐字节拷贝，越界显式失败。
     [host_contract]
-    micro slice(self, start: usize, count: usize) -> utf8 {
+    micro host_slice(self, start: i32, count: i32) -> utf8 {
         let scalar_length: usize = self.length()
-        if start > scalar_length {
-            return Utf8Text { _repr: [] }
+        let begin: usize = start as usize
+        let take: usize = count as usize
+        if begin > scalar_length || take > scalar_length - begin {
+            std::types::panic("Utf8Text host_slice 越界：start/count 超出标量范围")
         }
 
-        let start_index: usize = start
-        let count_value: usize = count
-        let start_byte: usize = self.byte_offset(start_index)
-        let end_byte: usize = self.byte_offset(start_index + count_value)
-
-        if start_byte >= self._repr.length() || start_byte >= end_byte {
-            return Utf8Text { _repr: [] }
-        }
-
+        let start_byte: usize = self.byte_offset(begin)
+        let end_byte: usize = self.byte_offset(begin + take)
         let mut bytes: ArrayList<u8> = ArrayList::new(0)
         let mut index: usize = start_byte
-        while index < end_byte && index < self._repr.length() {
+        while index < end_byte {
             bytes.push(self._repr⁅index⁆)
             index = index + 1
         }
 
         return Utf8Text { _repr: bytes.to_array() }
+    }
+
+    # 总函数（total）：`start` / `count` 越界时静默截断，绝不向调用方暴露失败。
+    # 这里显式 clamp 成有效标量区间后再调严格宿主切片——
+    # 宿主对越界区间结构化失败，兜底责任在本函数，不在宿主。
+    [host_contract]
+    micro slice(self, start: usize, count: usize) -> utf8 {
+        let scalar_length: usize = self.length()
+        let mut begin: usize = start
+        if begin > scalar_length {
+            begin = scalar_length
+        }
+
+        let remaining: usize = scalar_length - begin
+        let mut take: usize = count
+        if take > remaining {
+            take = remaining
+        }
+
+        return self.host_slice(begin as i32, take as i32)
+    }
+
+    # 严格路径：`start` 超过长度或 `count` 超过剩余标量数时返回 `None`，不做截断。
+    # `count` 只用比较、不与 `start` 相加，因此不存在整数溢出路径。
+    micro try_slice(self, start: usize, count: usize) -> Option<utf8> {
+        let scalar_length: usize = self.length()
+        if start > scalar_length {
+            return None
+        }
+
+        if count > scalar_length - start {
+            return None
+        }
+
+        return Some(self.host_slice(start as i32, count as i32))
     }
 
     private micro byte_offset(self, char_index: usize) -> usize {
