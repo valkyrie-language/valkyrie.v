@@ -52,12 +52,13 @@ micro u32_shl(a: u32, b: u32): u32
 [ovm_operator("i32.shr_u")]
 micro u32_shr(a: u32, b: u32): u32
 
+# 无符号除余是宿主符号 `i32_div_u` / `i32_rem_u`，不是可内联的冻结头码。
 [host_provider(std::primitive::__u32_div)]
-[ovm_operator("i32.div_u")]
+[ovm("i32_div_u")]
 micro u32_div(a: u32, b: u32): u32
 
 [host_provider(std::primitive::__u32_rem)]
-[ovm_operator("i32.rem_u")]
+[ovm("i32_rem_u")]
 micro u32_rem(a: u32, b: u32): u32
 
 #endregion
