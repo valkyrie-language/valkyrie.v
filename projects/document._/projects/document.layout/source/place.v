@@ -26,6 +26,10 @@ micro box_place(node: BoxNode, x: f64, baseline: f64) -> [PlacedBox] {
                 is_rule: false
             }]
         case BoxRule(payload):
+            # 零面积规则是占位支撑（行距等），不是可画材料，拍平时丢弃。
+            if payload.metrics.width <= 0.0 || payload.metrics.height + payload.metrics.depth <= 0.0 {
+                return []
+            }
             return [PlacedBox {
                 text: "",
                 x: x,

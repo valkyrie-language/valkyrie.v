@@ -95,6 +95,23 @@ micro place_flattens_hbox_positions() -> unit {
 }
 
 [test]
+micro place_drops_zero_area_rules() -> unit {
+    let font: BoxFont = box_char_cell_font(10.0)
+    let strut: BoxNode = box_vbox([box_atom("a", font), box_rule(0.0, 4.0, 0.0), box_atom("b", font)])
+    let placed: [PlacedBox] = box_place(strut, 0.0, 24.0)
+    if placed.length() != 2 {
+        panic("zero width strut places no drawable material")
+    }
+    if placed⁅0⁆.baseline != 10.0 || placed⁅1⁆.baseline != 24.0 {
+        panic("the strut still advances the vertical cursor")
+    }
+    let visible: [PlacedBox] = box_place(box_rule(10.0, 0.5, 0.0), 4.0, 14.5)
+    if visible.length() != 1 {
+        panic("a solid rule with drawable area stays placed")
+    }
+}
+
+[test]
 micro place_stacks_vbox_and_applies_shift() -> unit {
     let font: BoxFont = box_char_cell_font(10.0)
     let stacked: BoxNode = box_vbox([box_atom("a", font), box_atom("b", font)])
