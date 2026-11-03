@@ -16,7 +16,14 @@ micro command_app_new(name: utf8, description: utf8) -> CommandApp {
 
 micro command_app_register(app: CommandApp, cmd: CommandModel) -> CommandApp {
     let mut result: CommandApp = app
-    push(result.commands, cmd)
+    let mut commands: ArrayList<CommandModel> = ArrayList::new(0)
+    let mut index: usize = 0
+    while index < result.commands.length() {
+        commands.push(result.commands⁅index⁆)
+        index = index + 1
+    }
+    commands.push(cmd)
+    result.commands = commands.to_array()
     return result
 }
 

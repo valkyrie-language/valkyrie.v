@@ -81,15 +81,7 @@ imply Utf8Builder {
 
     ⍝ 消耗构造器，生成不可变文本
     micro build(self) -> Utf8Text {
-        let mut bytes: [u8] = []
-        let mut index: usize = 0
-        while index < self.bytes.length() {
-            ⍝ `push` 是函数式追加（返回新数组），必须写回，否则 `bytes` 恒为空。
-            bytes = std::collection::push(bytes, self.bytes.get((index + 1) as isize).unwrap())
-            index = index + 1
-        }
-
-        return Utf8Text::from_bytes_unchecked(bytes)
+        return Utf8Text::from_bytes_unchecked(self.bytes.to_array())
     }
 
     infix `+=`(mut self, c: char): unit {

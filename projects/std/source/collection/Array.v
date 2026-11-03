@@ -45,13 +45,6 @@ imply Array<T> {
 
         return false
     }
-
-    # 函数式追加的方法形态：与同命名自由函数同源委托，返回新数组，调用方必须
-    # 写回返回值。语义与 `ArrayList.push` 一致（追加一个元素），只是不可变数组
-    # 的结果是值而不是就地修改。
-    micro push(self, value: T): Array<T> {
-        return push(self, value)
-    }
 }
 
 # 0 基索引读写合同：`⁅ ⁆` / `⁅ ⁆=` 与同源的 `get_cardinal` / `set_cardinal`；
@@ -129,64 +122,6 @@ imply Array<T>: std::operator::Ordinal {
     }
 }
 
-# 函数式追加：`result = push(result, item)`，必须写回返回值。push 按声明签名走普通调用链
-# （Invoke），默认体是真实实现：经 `std.collection.array` 合同分配新数组并逐项拷贝。
-# 分配、元素初始化、长度溢出（`old_len + 1` 达 usize 上限）、泛型元素表示与 GC、
-# 失败与资源责任全部由 `std::collection::array::new` 的目标 provider 承担；
-# 缺 provider 时结构化失败闭合，不得空体成功或链接豁免。
-[host_contract]
-micro push<T>(array: Array<T>, value: T): Array<T> {
-    let old_len: usize = std::collection::array::length(array)
-    let new_array: [T] = std::collection::array::new::<T>(old_len + 1)
-    let mut i: usize = 0
-    while i < old_len {
-        # 合同 `get`/`set` 均为 0 基下标，拷贝循环同口径。
-        std::collection::array::set(new_array, i, std::collection::array::get(array, i))
-        i = i + 1
-    }
-
-    std::collection::array::set(new_array, old_len, value)
-    return new_array
-}
-
-# 函数式插入：在 1 基序数 `ordinal` 前插入 `value` 并返回新数组，调用方必须写回返回值。
-# 越界（`ordinal == 0` 或 `ordinal > length + 1`）返回原数组，即 `ArrayList.insert`
-# no-op 分支的函数式等价。
-micro insert<T>(array: Array<T>, ordinal: usize, value: T): Array<T> {
-    let size: usize = std::collection::array::length(array)
-    if ordinal == 0 || ordinal > size + 1 {
-        return array
-    }
-
-    # 纯 V 构造路径：函数式 `push` 重建（与 `ArrayList.insert` 同形）。序数 1 基、`⁅ ⁆` 0 基。
-    let mut items: [T] = []
-    let mut index: usize = 0
-    while index < ordinal - 1 {
-        items = push(items, std::collection::array::get(array, index))
-        index = index + 1
-    }
-
-    items = push(items, value)
-    while index < size {
-        items = push(items, std::collection::array::get(array, index))
-        index = index + 1
-    }
-
-    return items
-}
-
-# 越界（`ordinal == 0` 或 `ordinal > length`）返回 `None`；否则返回 1 基序数 `ordinal`
-# 处的元素。合同局限：返回类型 `Option<T>` 无法同时写回收缩后的数组，本函数不移除元素、
-# 不改变数组长度；需要真正收缩的调用方必须使用 `ArrayList.remove`。
-micro remove<T>(array: Array<T>, ordinal: usize): Option<T> {
-    let size: usize = std::collection::array::length(array)
-    if ordinal == 0 || ordinal > size {
-        return None
-    }
-
-    return Some(std::collection::array::get(array, ordinal - 1))
-}
-
 structure ArrayIterator<T> {
     _array: Array<T>
     _index: usize
@@ -210,13 +145,13 @@ imply Array<T>: std::iterator::FromIterator {
     micro from_iterator<I>(iter: I) -> Self
         where I: std::iterator::Iterator<Item = T>
     {
-        let mut result: [T] = []
+        # 定长数组只能整体落成：先经 `ArrayList` 原地追加累积，再一次性冻结拷贝。
+        let mut buffer: ArrayList<T> = ArrayList::new(0)
         loop item in iter {
-            # `push` 是函数式追加（返回新数组）；丢弃返回值会让 `result` 始终为空，必须写回。
-            result = push(result, item)
+            buffer.push(item)
         }
 
-        return result
+        return buffer.to_array()
     }
 }
 

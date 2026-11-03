@@ -56,15 +56,15 @@ imply Utf8View: TextView {
 
     ⍝ 转为不可变文本（有开销，不消耗视图）
     micro to_text(self) -> Utf8Text {
-        let mut bytes: [u8] = []
+        let mut bytes: ArrayList<u8> = ArrayList::new(self.span.length)
         let end: usize = self.end_offset()
         let mut index: usize = self.span.offset
         while index < end {
-            push(bytes, self.text._repr⁅index⁆)
+            bytes.push(self.text._repr⁅index⁆)
             index = index + 1
         }
 
-        return Utf8Text::from_bytes(bytes)
+        return Utf8Text::from_bytes(bytes.to_array())
     }
 }
 

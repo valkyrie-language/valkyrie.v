@@ -201,30 +201,30 @@ imply Utf8Text {
     }
 
     micro split(self, separator: utf8) -> [utf8] {
-        let mut result: [utf8] = []
+        let mut result: ArrayList<utf8> = ArrayList::new(0)
         let separator_length: usize = separator.length()
 
         if separator_length == 0 {
-            result = std::collection::push(result, self)
-            return result
+            result.push(self)
+            return result.to_array()
         }
 
         let mut remaining: utf8 = self
         while true {
             let index_option: Option<usize> = remaining.index_of(separator)
             if index_option.is_none() {
-                result = std::collection::push(result, remaining)
-                return result
+                result.push(remaining)
+                return result.to_array()
             }
 
             let index: usize = index_option.unwrap()
-            result = std::collection::push(result, remaining.slice(0, index))
+            result.push(remaining.slice(0, index))
 
             let remaining_length: usize = remaining.length()
             let next_start: usize = index + separator_length
             if next_start >= remaining_length {
-                result = std::collection::push(result, "")
-                return result
+                result.push("")
+                return result.to_array()
             }
 
             let next_length: usize = remaining_length - next_start
@@ -249,14 +249,14 @@ imply Utf8Text {
             return Utf8Text { _repr: [] }
         }
 
-        let mut bytes: [u8] = []
+        let mut bytes: ArrayList<u8> = ArrayList::new(0)
         let mut index: usize = start_byte
         while index < end_byte && index < self._repr.length() {
-            bytes = std::collection::push(bytes, self._repr⁅index⁆)
+            bytes.push(self._repr⁅index⁆)
             index = index + 1
         }
 
-        return Utf8Text { _repr: bytes }
+        return Utf8Text { _repr: bytes.to_array() }
     }
 
     private micro byte_offset(self, char_index: usize) -> usize {
@@ -344,20 +344,20 @@ imply Utf8Text {
     }
 
     private micro concat_repr(self, other: utf8) -> utf8 {
-        let mut bytes: [u8] = []
+        let mut bytes: ArrayList<u8> = ArrayList::new(self._repr.length() + other._repr.length())
         let mut index: usize = 0
         while index < self._repr.length() {
-            bytes = std::collection::push(bytes, self._repr⁅index⁆)
+            bytes.push(self._repr⁅index⁆)
             index = index + 1
         }
 
         index = 0
         while index < other._repr.length() {
-            bytes = std::collection::push(bytes, other._repr⁅index⁆)
+            bytes.push(other._repr⁅index⁆)
             index = index + 1
         }
 
-        return Utf8Text { _repr: bytes }
+        return Utf8Text { _repr: bytes.to_array() }
     }
 }
 

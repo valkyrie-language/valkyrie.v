@@ -9,13 +9,14 @@ micro collect<I, T, C>(self: I) -> C
 micro collect_array<I, T>(self: I) -> [T]
     where I: Iterator<Item = T>
 {
-    let mut result: [T] = []
+    # 定长数组只能整体落成：先经 `ArrayList` 原地追加累积，再一次性冻结拷贝。
+    let mut buffer: std.collection.ArrayList<T> = std.collection.ArrayList::new(0)
     let mut iter: I = self
     while iter.has_next() {
-        result = push(result, iter.next().unwrap())
+        buffer.push(iter.next().unwrap())
     }
 
-    return result
+    return buffer.to_array()
 }
 
 micro collect_array_list<I, T>(self: I) -> std.collection.ArrayList<T>

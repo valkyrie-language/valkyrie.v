@@ -113,32 +113,32 @@ micro data_cst_validate_spans<K>(node: DataCstNode<K>) -> [Diagnostic] {
 }
 
 micro validate_token_span(span: Span) -> [Diagnostic] {
-    let mut diagnostics: [Diagnostic] = []
+    let mut diagnostics: ArrayList<Diagnostic> = ArrayList::new(0)
     if !span_is_well_formed(span) {
-        diagnostics = diagnostics.push(new_diagnostic("std.data.cst.malformed_span", Error, "span 形态非法：end 早于 start", span))
+        diagnostics.push(new_diagnostic("std.data.cst.malformed_span", Error, "span 形态非法：end 早于 start", span))
     }
-    return diagnostics
+    return diagnostics.to_array()
 }
 
 micro validate_node_spans<K>(span: Span, children: [DataCstNode<K>]) -> [Diagnostic] {
-    let mut diagnostics: [Diagnostic] = []
+    let mut diagnostics: ArrayList<Diagnostic> = ArrayList::new(0)
     if !span_is_well_formed(span) {
-        diagnostics = diagnostics.push(new_diagnostic("std.data.cst.malformed_span", Error, "节点 span 形态非法：end 早于 start", span))
+        diagnostics.push(new_diagnostic("std.data.cst.malformed_span", Error, "节点 span 形态非法：end 早于 start", span))
     }
     let mut index: usize = 0
     while index < children.length() {
         let child: DataCstNode<K> = children⁅index⁆
         let child_span: Span = data_cst_span(child)
         if !span_contains(span, child_span) {
-            diagnostics = diagnostics.push(diagnostic_with_related("std.data.cst.span_escape", Error, "子节点 span 越出父节点 span", child_span, span))
+            diagnostics.push(diagnostic_with_related("std.data.cst.span_escape", Error, "子节点 span 越出父节点 span", child_span, span))
         }
         let child_diagnostics: [Diagnostic] = data_cst_validate_spans(child)
         let mut inner: usize = 0
         while inner < child_diagnostics.length() {
-            diagnostics = diagnostics.push(child_diagnostics⁅inner⁆)
+            diagnostics.push(child_diagnostics⁅inner⁆)
             inner = inner + 1
         }
         index = index + 1
     }
-    return diagnostics
+    return diagnostics.to_array()
 }
