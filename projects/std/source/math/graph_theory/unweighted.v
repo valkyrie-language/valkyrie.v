@@ -14,7 +14,7 @@ imply ShortestPaths<N> {
     micro distance_to(self, target: N): Option<usize>
         where N: Equal & Hash
     {
-        return self.distances[target]
+        return self.distances.get(target)
     }
 
     # 从起点到 `target` 的路径（含两端）；不可达或不在图中返回空表。
@@ -22,14 +22,14 @@ imply ShortestPaths<N> {
         where N: Equal & Hash
     {
         let mut path: ArrayList<N> = ArrayList::new(0)
-        if self.distances[target].is_none() {
+        if self.distances.get(target).is_none() {
             return path
         }
 
         let mut cursor: N = target
         path.push(cursor)
         while self.previous.contains_key(cursor) {
-            cursor = self.previous[cursor].unwrap()
+            cursor = self.previous.get(cursor).unwrap()
             path.push(cursor)
         }
 
@@ -174,13 +174,13 @@ micro unweighted_shortest_paths<N>(graph: std.collection.DirectedGraph<N>, start
     while head < queue.length() {
         let current: N = queue⁅head⁆
         head = head + 1
-        let base: usize = distances[current].unwrap()
+        let base: usize = distances.get(current).unwrap()
 
         let successors: ArrayList<N> = graph.successors(current)
         let mut s: usize = 0
         while s < successors.length() {
             let next: N = successors⁅s⁆
-            if distances[next].is_none() {
+            if distances.get(next).is_none() {
                 distances[next] = base + 1
                 previous[next] = current
                 queue.push(next)

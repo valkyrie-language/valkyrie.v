@@ -22,7 +22,7 @@ imply OrderedMap<K, V>: Map<K, V> {
             return option_none::<V>()
         }
 
-        let entry: OrderedMapEntry<K, V> = self._entries.get(slot_option.unwrap()).unwrap()
+        let entry: OrderedMapEntry<K, V> = self._entries.get(slot_option.unwrap() as isize).unwrap()
         if !entry.active {
             return option_none::<V>()
         }
@@ -37,8 +37,8 @@ imply OrderedMap<K, V>: Map<K, V> {
         let slot_option: Option<usize> = self.find_slot(key)
         if slot_option.is_some() {
             let slot: usize = slot_option.unwrap()
-            let entry: OrderedMapEntry<K, V> = self._entries.get(slot).unwrap()
-            self._entries.set(slot, OrderedMapEntry {
+            let entry: OrderedMapEntry<K, V> = self._entries.get(slot as isize).unwrap()
+            self._entries.set(slot as isize, OrderedMapEntry {
                 key: key,
                 value: value,
                 active: true,
@@ -67,12 +67,12 @@ imply OrderedMap<K, V>: Map<K, V> {
         }
 
         let slot: usize = slot_option.unwrap()
-        let entry: OrderedMapEntry<K, V> = self._entries.get(slot).unwrap()
+        let entry: OrderedMapEntry<K, V> = self._entries.get(slot as isize).unwrap()
         if !entry.active {
             return option_none::<V>()
         }
 
-        self._entries.set(slot, OrderedMapEntry {
+        self._entries.set(slot as isize, OrderedMapEntry {
             key: entry.key,
             value: entry.value,
             active: false,
@@ -136,7 +136,7 @@ imply OrderedMap<K, V>: Map<K, V> {
         let keys: ArrayList<K> = self.keys()
         let mut i: usize = 0
         while i < keys.length() {
-            let key: K = keys.get(i + 1).unwrap()
+            let key: K = keys.get((i + 1) as isize).unwrap()
             f(key, self.get(key).unwrap())
             i = i + 1
         }
@@ -158,7 +158,7 @@ imply OrderedMap<K, V> {
     {
         let mut cursor: usize = 0
         while cursor < self._entries.length() {
-            let entry: OrderedMapEntry<K, V> = self._entries.get(cursor + 1).unwrap()
+            let entry: OrderedMapEntry<K, V> = self._entries.get((cursor + 1) as isize).unwrap()
             if entry.active && entry.key == key {
                 return Some(cursor + 1)
             }

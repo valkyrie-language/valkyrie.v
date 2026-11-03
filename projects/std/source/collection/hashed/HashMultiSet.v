@@ -101,7 +101,7 @@ imply HashMultiSet<T> {
         let mut result: ArrayList<T> = ArrayList::new(self._length)
         let mut i: usize = 0
         while i < keys.length() {
-            let value: T = keys.get(i + 1).unwrap()
+            let value: T = keys.get((i + 1) as isize).unwrap()
             let mut copies: usize = self.count(value)
             while copies > 0 {
                 result.push(value)
@@ -120,7 +120,7 @@ imply HashMultiSet<T> {
         let keys: ArrayList<T> = self._counts.keys()
         let mut i: usize = 0
         while i < keys.length() {
-            let value: T = keys.get(i + 1).unwrap()
+            let value: T = keys.get((i + 1) as isize).unwrap()
             let mut copies: usize = self.count(value)
             while copies > 0 {
                 f(value)
@@ -137,7 +137,7 @@ imply HashMultiSet<T> {
         let keys: ArrayList<T> = self._counts.keys()
         let mut i: usize = 0
         while i < keys.length() {
-            let value: T = keys.get(i + 1).unwrap()
+            let value: T = keys.get((i + 1) as isize).unwrap()
             f(value, self.count(value))
             i = i + 1
         }

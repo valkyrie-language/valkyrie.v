@@ -38,7 +38,7 @@ imply DirectedGraph<N> {
             let mut s: usize = 0
             while s < successors.length() {
                 let next: N = successors⁅s⁆
-                let degree: usize = in_degree[next].unwrap() - 1
+                let degree: usize = in_degree.get(next).unwrap() - 1
                 in_degree[next] = degree
                 if degree == 0 {
                     queue.push(next)

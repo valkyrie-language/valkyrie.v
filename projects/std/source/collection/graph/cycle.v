@@ -26,7 +26,7 @@ imply DirectedGraph<N> {
         i = 0
         while i < self._nodes.length() {
             let node: N = self._nodes⁅i⁆
-            if color[node].unwrap() == 0 {
+            if color.get(node).unwrap() == 0 {
                 let cycle: ArrayList<N> = self.find_cycle_dfs(color, parent, node)
                 if cycle.length() > 0 {
                     return cycle
@@ -48,7 +48,7 @@ imply DirectedGraph<N> {
         let mut s: usize = 0
         while s < successors.length() {
             let next: N = successors⁅s⁆
-            let next_color: i32 = color[next].unwrap()
+            let next_color: i32 = color.get(next).unwrap()
             if next_color == 1 {
                 # `next` 在当前 DFS 栈上：从 `node` 沿父链回溯到 `next` 构成环。
                 let mut cycle: ArrayList<N> = ArrayList::new(2)
@@ -56,7 +56,7 @@ imply DirectedGraph<N> {
                 let mut current: N = node
                 while current != next {
                     cycle.push(current)
-                    let parent_edge: Option<N> = parent[current]
+                    let parent_edge: Option<N> = parent.get(current)
                     if parent_edge.is_none() {
                         break
                     }

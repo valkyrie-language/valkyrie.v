@@ -139,7 +139,7 @@ imply WeightedPaths<N, W> {
     micro distance_to(self, target: N): Option<W>
         where N: Equal & Hash
     {
-        return self.distances[target]
+        return self.distances.get(target)
     }
 
     # 从起点到 `target` 的路径（含两端）；不可达或不在图中返回空表。
@@ -147,14 +147,14 @@ imply WeightedPaths<N, W> {
         where N: Equal & Hash
     {
         let mut path: ArrayList<N> = ArrayList::new(0)
-        if self.distances[target].is_none() {
+        if self.distances.get(target).is_none() {
             return path
         }
 
         let mut cursor: N = target
         path.push(cursor)
         while self.previous.contains_key(cursor) {
-            cursor = self.previous[cursor].unwrap()
+            cursor = self.previous.get(cursor).unwrap()
             path.push(cursor)
         }
 
@@ -199,7 +199,7 @@ micro dijkstra<N, W>(graph: WeightedGraph<N, W>, start: N, zero: W) -> WeightedP
         while i < nodes.length() {
             let node: N = nodes⁅i⁆
             if !visited.contains(node) {
-                let distance: Option<W> = distances[node]
+                let distance: Option<W> = distances.get(node)
                 if distance.is_some() {
                     if best_distance.is_none() || distance.unwrap().less(best_distance.unwrap()) {
                         best = Some(node)
@@ -223,8 +223,8 @@ micro dijkstra<N, W>(graph: WeightedGraph<N, W>, start: N, zero: W) -> WeightedP
         while e < edges.length() {
             let edge: WeightedEdge<N, W> = edges⁅e⁆
             if edge.from == current {
-                let candidate: W = distances[current].unwrap().add(edge.weight)
-                let existing: Option<W> = distances[edge.to]
+                let candidate: W = distances.get(current).unwrap().add(edge.weight)
+                let existing: Option<W> = distances.get(edge.to)
                 if existing.is_none() || candidate.less(existing.unwrap()) {
                     distances[edge.to] = candidate
                     previous[edge.to] = current
@@ -260,10 +260,10 @@ micro bellman_ford<N, W>(graph: WeightedGraph<N, W>, start: N, zero: W) -> Optio
         let mut e: usize = 0
         while e < edges.length() {
             let edge: WeightedEdge<N, W> = edges⁅e⁆
-            let base: Option<W> = distances[edge.from]
+            let base: Option<W> = distances.get(edge.from)
             if base.is_some() {
                 let candidate: W = base.unwrap().add(edge.weight)
-                let existing: Option<W> = distances[edge.to]
+                let existing: Option<W> = distances.get(edge.to)
                 if existing.is_none() || candidate.less(existing.unwrap()) {
                     distances[edge.to] = candidate
                     previous[edge.to] = edge.from
@@ -285,10 +285,10 @@ micro bellman_ford<N, W>(graph: WeightedGraph<N, W>, start: N, zero: W) -> Optio
     let mut e: usize = 0
     while e < edges.length() {
         let edge: WeightedEdge<N, W> = edges⁅e⁆
-        let base: Option<W> = distances[edge.from]
+        let base: Option<W> = distances.get(edge.from)
         if base.is_some() {
             let candidate: W = base.unwrap().add(edge.weight)
-            let existing: Option<W> = distances[edge.to]
+            let existing: Option<W> = distances.get(edge.to)
             if existing.is_none() || candidate.less(existing.unwrap()) {
                 return None
             }

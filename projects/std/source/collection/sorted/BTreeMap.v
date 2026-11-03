@@ -100,7 +100,7 @@ imply BTreeMap<K, V> {
 
         let mut cursor: usize = 0
         while cursor < entries.length() {
-            let entry: BTreeMapEntry<K, V> = entries.get(cursor + 1).unwrap()
+            let entry: BTreeMapEntry<K, V> = entries.get((cursor + 1) as isize).unwrap()
             self.insert(entry.key, entry.value)
             cursor = cursor + 1
         }
@@ -153,7 +153,7 @@ imply BTreeMap<K, V> {
             let leaf: BTreeNode<K, V> = current.unwrap()
             let mut cursor: usize = 0
             while cursor < leaf.keys.length() {
-                f(leaf.keys.get(cursor + 1).unwrap(), leaf.values.get(cursor + 1).unwrap())
+                f(leaf.keys.get((cursor + 1) as isize).unwrap(), leaf.values.get((cursor + 1) as isize).unwrap())
                 cursor = cursor + 1
             }
 
@@ -167,8 +167,8 @@ imply BTreeMap<K, V> {
         if node.leaf {
             let mut cursor: usize = 0
             while cursor < node.keys.length() {
-                if node.keys.get(cursor + 1).unwrap() == key {
-                    return Some(node.values.get(cursor + 1).unwrap())
+                if node.keys.get((cursor + 1) as isize).unwrap() == key {
+                    return Some(node.values.get((cursor + 1) as isize).unwrap())
                 }
 
                 cursor = cursor + 1
@@ -177,7 +177,7 @@ imply BTreeMap<K, V> {
             return option_none::<V>()
         }
 
-        return self.search_node(node.children.get(self.find_child_index(node, key) + 1).unwrap(), key)
+        return self.search_node(node.children.get((self.find_child_index(node, key) + 1) as isize).unwrap(), key)
     }
 
     micro set_existing(self, node: BTreeNode<K, V>, key: K, value: V): Option<V>
@@ -186,9 +186,9 @@ imply BTreeMap<K, V> {
         if node.leaf {
             let mut cursor: usize = 0
             while cursor < node.keys.length() {
-                if node.keys.get(cursor + 1).unwrap() == key {
-                    let old: V = node.values.get(cursor + 1).unwrap()
-                    node.values.set(cursor + 1, value)
+                if node.keys.get((cursor + 1) as isize).unwrap() == key {
+                    let old: V = node.values.get((cursor + 1) as isize).unwrap()
+                    node.values.set((cursor + 1) as isize, value)
                     return Some(old)
                 }
 
@@ -198,14 +198,14 @@ imply BTreeMap<K, V> {
             return option_none::<V>()
         }
 
-        return self.set_existing(node.children.get(self.find_child_index(node, key) + 1).unwrap(), key, value)
+        return self.set_existing(node.children.get((self.find_child_index(node, key) + 1) as isize).unwrap(), key, value)
     }
 
     micro insert_non_full(mut self, node: BTreeNode<K, V>, key: K, value: V): unit {
         if node.leaf {
             let mut insert_at: usize = 0
             while insert_at < node.keys.length() {
-                if key < node.keys.get(insert_at + 1).unwrap() {
+                if key < node.keys.get((insert_at + 1) as isize).unwrap() {
                     break
                 }
 
@@ -218,19 +218,19 @@ imply BTreeMap<K, V> {
         }
 
         let mut child_index: usize = self.find_child_index(node, key)
-        let child: BTreeNode<K, V> = node.children.get(child_index + 1).unwrap()
+        let child: BTreeNode<K, V> = node.children.get((child_index + 1) as isize).unwrap()
         if self.is_full(child) {
             self.split_child(node, child_index)
-            if key >= node.keys.get(child_index + 1).unwrap() {
+            if key >= node.keys.get((child_index + 1) as isize).unwrap() {
                 child_index = child_index + 1
             }
         }
 
-        self.insert_non_full(node.children.get(child_index + 1).unwrap(), key, value)
+        self.insert_non_full(node.children.get((child_index + 1) as isize).unwrap(), key, value)
     }
 
     micro split_child(self, parent: BTreeNode<K, V>, child_index: usize): unit {
-        let child: BTreeNode<K, V> = parent.children.get(child_index + 1).unwrap()
+        let child: BTreeNode<K, V> = parent.children.get((child_index + 1) as isize).unwrap()
         let right: BTreeNode<K, V> = BTreeNode {
             leaf: child.leaf,
             keys: ArrayList::new(4),
@@ -249,11 +249,11 @@ imply BTreeMap<K, V> {
             child.next = Some(right)
 
             parent.children.insert(child_index + 2, right)
-            parent.keys.insert(child_index + 1, parent.children.get(child_index + 2).unwrap().keys.get(1).unwrap())
+            parent.keys.insert(child_index + 1, parent.children.get((child_index + 2) as isize).unwrap().keys.get(1 as isize).unwrap())
             return
         }
 
-        let separator: K = child.keys.get(2).unwrap()
+        let separator: K = child.keys.get(2 as isize).unwrap()
         right.keys.push(child.keys.remove(3).unwrap())
         child.keys.remove(2)
 
@@ -268,7 +268,7 @@ imply BTreeMap<K, V> {
     micro leftmost_leaf(self, node: BTreeNode<K, V>): BTreeNode<K, V> {
         let mut current: BTreeNode<K, V> = node
         while !current.leaf {
-            current = current.children.get(1).unwrap()
+            current = current.children.get(1 as isize).unwrap()
         }
 
         return current
@@ -277,7 +277,7 @@ imply BTreeMap<K, V> {
     micro find_child_index(self, node: BTreeNode<K, V>, key: K): usize {
         let mut cursor: usize = 0
         while cursor < node.keys.length() {
-            if key < node.keys.get(cursor + 1).unwrap() {
+            if key < node.keys.get((cursor + 1) as isize).unwrap() {
                 return cursor
             }
 
