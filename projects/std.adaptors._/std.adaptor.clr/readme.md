@@ -45,7 +45,7 @@ std.adaptor.clr/
     ├── net/http.v          # HTTP（对齐 std.net）
     ├── network/_.v         # socket（对齐 std.network）
     ├── math/basic.v        # 数学（对齐 std.math）
-    ├── math/random/Random.v
+    ├── random/Random.v
     ├── text/Utf16Text.v    # UTF-16 code-unit 文本（System.String 直连）
     ├── text/Utf8Text.v     # UTF-8/标量 length·slice（禁止直连 get_Length）
     ├── collection/…        # 集合 provider（对齐 std.collection）
@@ -77,7 +77,7 @@ micro math_abs(value: f64): f64
 | `io/fs.v`              | `[clr]`  | ✅ 有    | 文件/目录操作  |
 | `net/http.v`           | `[clr]`  | ✅ 有    | HTTP 请求      |
 | `math/basic.v`         | `[clr]`  | ❌ 纯函数 | 数学函数       |
-| `math/random/Random.v` | `[clr]`  | ✅ 有    | 随机数         |
+| `random/Random.v`        | `[clr]`  | ✅ 有    | 随机数         |
 | `text/Utf16Text.v`     | `[clr]`  | ❌ 纯函数 | UTF-16 code unit |
 | `text/Utf8Text.v`      | `[clr]`  | ❌ 纯函数 | UTF-8 标量 length/slice |
 | `threading.v`          | `[clr]`  | ✅ 有    | 异步/线程      |

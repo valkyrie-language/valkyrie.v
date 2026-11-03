@@ -1,4 +1,4 @@
-namespace std.math.random;
+namespace std.random;
 
 [test]
 micro `test random next_i32 stays in bounds`() {

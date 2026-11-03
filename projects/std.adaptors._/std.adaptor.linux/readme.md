@@ -40,7 +40,7 @@ std.adaptor.linux/
     ├── console/_.v             # 对齐 std.console
     ├── io/time.v               # 对齐 std.io
     ├── network/_.v             # 对齐 std.network
-    ├── math/random/Random.v    # 对齐 std.math.random
+    ├── random/Random.v             # 对齐 std.random
     └── text/Utf16Text.v        # 对齐 std.text
 ```
 

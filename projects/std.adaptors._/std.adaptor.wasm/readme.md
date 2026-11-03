@@ -34,9 +34,9 @@ std.adaptor.wasm/
     ├── fetch.wechat.v        # wechat `std::net::get`（`wx.request`）
     ├── json.v                # JSON API（平台专有）
     ├── math/basic.v          # Math API（对齐 std.math.basic）
-    ├── math/random/Random.v          # 共享 namespace
-    ├── math/random/Random.browser.v  # browser random provider
-    ├── math/random/Random.wechat.v   # wechat random provider
+    ├── random/Random.v          # 共享 namespace
+    ├── random/Random.browser.v  # browser random provider
+    ├── random/Random.wechat.v   # wechat random provider
     ├── io/{fs,print,time}.v  # IO provider（对齐 std.io）
     ├── text/Utf{8,16}Text.v  # 文本 provider（对齐 std.text）
     ├── performance.v         # Performance API（平台专有）

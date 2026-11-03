@@ -155,11 +155,6 @@ micro math_atan(x: f64): f64
 [js_builtin("Math.atan2"), pure]
 micro math_atan2(y: f64, x: f64): f64
 
-# 随机
-
-[js_builtin("Math.random")]
-micro math_random(): f64
-
 # 位操作
 
 [js_builtin("Math.clz32"), pure]

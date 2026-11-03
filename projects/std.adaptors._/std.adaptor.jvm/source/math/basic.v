@@ -93,6 +93,3 @@ micro jvm_math_log(value: f64): f64
 
 [jvm("java.lang.Math", "log10"), pure]
 micro jvm_math_log10(value: f64): f64
-
-[jvm("java.lang.Math", "random"), pure]
-micro jvm_math_random(): f64

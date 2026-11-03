@@ -1,4 +1,4 @@
-namespace std.math.random;
+namespace std.random;
 
 # 示例：题解只依赖 std 语义 + 自动注入的 std.adaptor.wasm（browser 下 `js.random` capability）。
 [export]

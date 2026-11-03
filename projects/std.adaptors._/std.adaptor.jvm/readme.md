@@ -43,7 +43,7 @@ std.adaptor.jvm/
     ├── io/{fs,time}.v      # 文件系统/时间（对齐 std.io）
     ├── net/http.v          # HTTP（对齐 std.net）
     ├── math/basic.v        # 数学（对齐 std.math）
-    ├── math/random/Random.v
+    ├── random/Random.v
     ├── text/Utf{8,16}Text.v
     ├── collection/…
     ├── system.v
@@ -74,7 +74,7 @@ micro jvm_file_exists(path: string): bool
 | `io/fs.v`              | `[jvm]`  | ✅ 有    | 文件/目录操作  |
 | `net/http.v`           | `[jvm]`  | ✅ 有    | HTTP 请求      |
 | `math/basic.v`         | `[jvm]`  | ❌ 纯函数 | 数学函数       |
-| `math/random/Random.v` | `[jvm]`  | ✅ 有    | 随机数         |
+| `random/Random.v`        | `[jvm]`  | ✅ 有    | 随机数         |
 | `text/Utf16Text.v`     | `[jvm]`  | ❌ 纯函数 | UTF-16 code unit |
 | `text/Utf8Text.v`      | `[jvm]`  | ❌ 纯函数 | UTF-8 标量（codePointCount） |
 | `thread.v`             | `[jvm]`  | ✅ 有    | 线程操作       |

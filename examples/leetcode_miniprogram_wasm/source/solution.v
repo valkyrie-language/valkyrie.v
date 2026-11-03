@@ -1,4 +1,4 @@
-namespace std.math.random;
+namespace std.random;
 
 [export]
 micro solve(seed: i32, max_exclusive: i32) -> i32 {

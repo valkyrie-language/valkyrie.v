@@ -1,4 +1,4 @@
-namespace std.math.random;
+namespace std.random;
 
 class Random {
     _state: i32
