@@ -3,8 +3,9 @@
 # （`i32.lt_u`/`i32.le_u`/`i32.gt_u`/`i32.ge_u` 是 VM 冻结的无符号比较头码），
 # 以及位运算（32 位道经 `[ovm_operator]` 冻结头码 `i32.and`/`i32.or`/`i32.xor`/`i32.shl`/
 # `i32.shr_u` 内联，u64 道经 `nyar.host` 宿主导入，与 i64 位运算同轨）。
-# 无符号除余在 VM 中没有对应指令（`i32.div`/`i32.rem` 是有符号语义，不能顶替），
-# 宿主符号表只有算术右移 `i64_shr`、没有逻辑右移 `i64_shr_u`，两者都必须保持未绑合并结构化失败；
+# 无符号除余与逻辑右移都有专用宿主符号：32 位道是 `i32.div_u`/`i32.rem_u` 冻结头码，
+# 64 位道是 `i64_div_u`/`i64_rem_u`/`i64_shr_u` 宿主导入。有符号 `i32.div`/`i32.rem`、
+# 算术 `i64_shr` 语义不同，不能顶替。
 # u8/u16 需要截断，VM 没有掩码指令，因此不提供 provider。
 # `usize` / `isize` 是 `std.primitive` 按目标指针宽度展开的别名，不再是 host 合同；
 # 其运算经由别名目标（u32/u64、i32/i64）的既有 provider 解析，本文件不再登记 `__usize_*` / `__isize_*`。
@@ -51,6 +52,14 @@ micro u32_shl(a: u32, b: u32): u32
 [ovm_operator("i32.shr_u")]
 micro u32_shr(a: u32, b: u32): u32
 
+[host_provider(std::primitive::__u32_div)]
+[ovm_operator("i32.div_u")]
+micro u32_div(a: u32, b: u32): u32
+
+[host_provider(std::primitive::__u32_rem)]
+[ovm_operator("i32.rem_u")]
+micro u32_rem(a: u32, b: u32): u32
+
 #endregion
 
 #region u64
@@ -94,8 +103,18 @@ micro u64_xor(a: u64, b: u64): u64
 [ovm("i64_shl")]
 micro u64_shl(a: u64, b: u64): u64
 
-# `__u64_shr` 保持未绑定：宿主符号表没有逻辑右移 `i64_shr_u`，
-# 用算术右移 `i64_shr` 顶替会在最高位为 1 时给出错误结果。
-# `__u64_div` / `__u64_rem` 同样保持未绑定：宿主只有有符号 `i64_div` / `i64_rem`，
-# 最高位为 1 时余数/商与无符号语义不同，不能顶替。
+# 无符号除余与逻辑右移走专用宿主符号；算术右移 `i64_shr` 与有符号除余在最高位为 1 时
+# 结论不同，不能顶替。
+[host_provider(std::primitive::__u64_div)]
+[ovm("i64_div_u")]
+micro u64_div(a: u64, b: u64): u64
+
+[host_provider(std::primitive::__u64_rem)]
+[ovm("i64_rem_u")]
+micro u64_rem(a: u64, b: u64): u64
+
+[host_provider(std::primitive::__u64_shr)]
+[ovm("i64_shr_u")]
+micro u64_shr(a: u64, b: u64): u64
+
 #endregion
