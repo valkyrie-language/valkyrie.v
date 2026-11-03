@@ -145,7 +145,8 @@ imply Array<T>: std::iterator::FromIterator {
     {
         # 定长数组只能整体落成：先经 `ArrayList` 原地追加累积，再一次性冻结拷贝。
         let mut buffer: ArrayList<T> = ArrayList::new(0)
-        loop item in iter {
+        while iter.has_next() {
+            let item: T = iter.next().unwrap()
             buffer.push(item)
         }
 

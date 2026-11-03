@@ -306,7 +306,8 @@ imply ArrayList<T>: std::iterator::FromIterator {
         where I: std::iterator::Iterator<Item = T>
     {
         let mut result: Self = Self::new(0)
-        loop item in iter {
+        while iter.has_next() {
+            let item: T = iter.next().unwrap()
             result.push(item)
         }
 
