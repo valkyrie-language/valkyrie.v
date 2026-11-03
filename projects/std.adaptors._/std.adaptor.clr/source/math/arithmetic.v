@@ -177,7 +177,20 @@ micro u32_lt(a: u32, b: u32): bool
 
 #region u64（CLR 以 `int64` 承载）
 # 等值按位级等价绑定；无符号小于用原生 `clt.un`，MSIL `clt.un` 对 `int64` 载体同形。
+# 加/减/乘按二进制补码与有符号同位型，直接复用 `i64` 配方（非截断、非近似）。
 # 无符号除余需要的 `div.un`/`rem.un` 尚未进入冻结 opcode 集，不声明，保持结构化失败。
+
+[host_provider(std::primitive::__u64_add)]
+[clr_operator("i64.add")]
+micro u64_add(a: u64, b: u64): u64
+
+[host_provider(std::primitive::__u64_sub)]
+[clr_operator("i64.sub")]
+micro u64_sub(a: u64, b: u64): u64
+
+[host_provider(std::primitive::__u64_mul)]
+[clr_operator("i64.mul")]
+micro u64_mul(a: u64, b: u64): u64
 
 [host_provider(std::primitive::__u64_eq)]
 [clr_operator("i64.eq")]
