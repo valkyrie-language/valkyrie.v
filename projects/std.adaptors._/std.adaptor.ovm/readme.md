@@ -14,11 +14,11 @@ std.adaptor.ovm/
     ├── arith.v         # 算术运算 [ovm] 宿主绑定
     ├── builtin.v       # VM 内置函数 [ovm] 宿主绑定
     ├── cmp.v           # 比较运算 [ovm] 宿主绑定
-    ├── control.v       # 控制流 [ovm] 宿主绑定
     ├── conv.v          # 类型转换 [ovm] 宿主绑定
-    ├── memory.v        # 内存操作 [ovm] 宿主绑定
-    ├── object.v        # 对象操作 [ovm] 宿主绑定
-    └── utf8.v        # 字符串操作 [ovm] 宿主绑定
+    ├── unsigned.v      # 无符号整数 [ovm] 宿主绑定
+    ├── collection/     # 数组与 ArrayList provider
+    ├── random/         # 熵源 provider
+    └── text/           # utf8 / utf16 宿主绑定与 provider
 ```
 
 ## 绑定概念
@@ -28,11 +28,9 @@ std.adaptor.ovm/
 | `arith.v`   | `[ovm("i32_add/...")]`         | i32/i64/f64 算术与位运算宿主绑定 |
 | `builtin.v` | `[ovm("println/...")]`         | OVM 内置函数绑定                  |
 | `cmp.v`     | `[ovm("i32_eq/...")]`          | i32 比较宿主绑定                 |
-| `control.v` | `[ovm("nop")]`                 | 控制流宿主绑定                   |
 | `conv.v`    | `[ovm("i32_to_...")]`          | 类型转换宿主绑定                 |
-| `memory.v`  | `[ovm("alloc/...")]`           | 内存管理宿主绑定                 |
-| `object.v`  | `[ovm("obj_.../closure_...")]` | 对象与闭包宿主绑定               |
-| `utf8.v`  | `[ovm("str_...")]`             | 字符串操作宿主绑定               |
+| `unsigned.v`| `[ovm("i64_div_u/...")]`       | 无符号整数宿主绑定               |
+| `text/`     | `[ovm("utf8.slice/...")]`      | utf8 / utf16 字符串宿主绑定      |
 
 ## 与其他适配器的关系
 
@@ -58,4 +56,8 @@ vcc run --target ovm
 ```
 
 ## 状态
-✅ OVM 宿主绑定已覆盖 8 个模块，包含 50+ `[ovm]` 绑定。
+✅ OVM 宿主绑定覆盖算术、比较、转换、无符号整数、字符串、内置系统与熵源。
+
+已退役的 `alloc`/`free`/`*_load`/`*_store`/`mem_copy`/`mem_set`、`obj_*`、`closure_get|set_upvalue`、`nop`、`exit`
+来自 wasm lane 的线性内存/对象形状，OVM 没有线性内存、`Value` 无地址载体、`ObjectId` 随 GC 搬迁且没有手工释放 API、
+闭包无对象形状、也没有终止通道，故不在 OVM adaptor 登记。
