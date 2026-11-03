@@ -34,15 +34,17 @@ micro error_line(message: utf8): unit {
 #endregion
 
 #region 系统
-
-[ovm("exit")]
-micro exit(code: i32): i32
+# 墙上时钟与单调时钟是两个不同宿主通道：`get_time` 取 Unix 纪元毫秒，
+# `monotonic_ms` 取进程内单调毫秒。二者不可互相顶替。
 
 [ovm("sleep_ms")]
 micro sleep_ms(ms: i32): i32
 
 [ovm("get_time")]
 private micro __get_time(): i64
+
+[ovm("monotonic_ms")]
+private micro __monotonic_ms(): i64
 
 [host_provider(std::io::now)]
 micro get_time(): i64 {
@@ -51,13 +53,21 @@ micro get_time(): i64 {
 
 [host_provider(std::io::monotonic)]
 micro monotonic_time(): i64 {
-    return __get_time()
+    return __monotonic_ms()
 }
 
 [host_provider(std::io::sleep)]
 micro sleep(ms: i32): unit {
     sleep_ms(ms)
 }
+
+#endregion
+
+#region 熵
+
+# 全宽 64 位原始随机字：OVM 不做范围整形，均匀分布由 std 的 `Generator` 合同派生。
+[ovm("random_u64")]
+micro random_u64(): u64
 
 #endregion
 
@@ -71,8 +81,5 @@ micro math_cos(x: f64): f64
 
 [ovm("math_sqrt")]
 micro math_sqrt(x: f64): f64
-
-[ovm("math_rand")]
-micro math_rand(): i32
 
 #endregion
