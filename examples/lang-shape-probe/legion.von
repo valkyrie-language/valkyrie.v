@@ -1,0 +1,8 @@
+{
+    name: "lang_shape_probe",
+    version: "0.1.0",
+    dependencies: {
+        "std": { version: "workspace" }
+    },
+    build: [{ target: "wasm" }]
+}
