@@ -1,0 +1,8 @@
+{
+    name: "option_none_probe",
+    version: "0.1.0",
+    dependencies: {
+        "std": { version: "workspace" }
+    },
+    build: [{ target: "ovm" }]
+}
