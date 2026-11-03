@@ -3,14 +3,17 @@
 
 using asgard_todo.data
 
-[js]
-micro asgard_register_route(path: utf8, page_name: utf8): i32
+[host_contract]
+micro asgard_register_route(path: utf8, page_name: utf8): i32 {
+}
 
-[js]
-micro asgard_mount(selector: utf8): i32
+[host_contract]
+micro asgard_mount(selector: utf8): i32 {
+}
 
-[js]
-micro asgard_log(msg: utf8): void
+[host_contract]
+micro asgard_log(msg: utf8): void {
+}
 
 # 注册路由
 micro register_routes(): void {

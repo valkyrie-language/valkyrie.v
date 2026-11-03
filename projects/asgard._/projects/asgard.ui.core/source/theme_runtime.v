@@ -24,5 +24,6 @@ micro resolve_theme_mode(site_mode: string): string {
 }
 
 # ===== 浏览器后端实现（WASM/JS） =====
-[js]
-micro resolve_system_mode(): string
+[host_contract]
+micro resolve_system_mode(): string {
+}

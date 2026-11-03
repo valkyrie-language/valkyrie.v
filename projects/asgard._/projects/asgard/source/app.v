@@ -135,5 +135,6 @@ micro run_middlewares(middlewares: list, request: AsgardRequest): AsgardResponse
     }
 }
 
-[js]
-micro current_time_ms(): i64
+[host_contract]
+micro current_time_ms(): i64 {
+}

@@ -179,17 +179,22 @@ micro match_segments(pattern: list, actual: list): MatchResult {
     }
 }
 
-[js]
-micro starts_with(s: string, prefix: string): bool
+[host_contract]
+micro starts_with(s: string, prefix: string): bool {
+}
 
-[js]
-micro substring(s: string, start: i32): string
+[host_contract]
+micro substring(s: string, start: i32): string {
+}
 
-[js]
-micro trim_slashes(s: string): string
+[host_contract]
+micro trim_slashes(s: string): string {
+}
 
-[js]
-micro split_by(s: string, delimiter: string): list
+[host_contract]
+micro split_by(s: string, delimiter: string): list {
+}
 
-[js]
-micro length(lst: list): i32
+[host_contract]
+micro length(lst: list): i32 {
+}
