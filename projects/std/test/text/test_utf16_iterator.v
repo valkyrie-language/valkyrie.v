@@ -1,4 +1,4 @@
-using! std::text::{utf16, Utf16Text, Utf16Iterator}
+using std.text::{utf16, Utf16Text, Utf16Iterator};
 
 [test]
 micro `test utf16 iterator`() {

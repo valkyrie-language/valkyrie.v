@@ -1,9 +1,9 @@
 namespace std.collection.test;
 
-using! std::iterator::{Iterator, IntoIterator, FromIterator}
-using! std::iterator::{EnumerateIterator, FilterIterator, FilterMapIterator, MapIterator, SkipIterator, SkipWhileIterator, TakeIterator, TakeWhileIterator}
-using! std::iterator::{all, any, contains, count, find, first, fold, for_each, last, nth, position, reduce}
-using! std::iterator::{collect, collect_array, collect_array_list}
+using std.iterator::{Iterator, IntoIterator, FromIterator};
+using std.iterator::{EnumerateIterator, FilterIterator, FilterMapIterator, MapIterator, SkipIterator, SkipWhileIterator, TakeIterator, TakeWhileIterator};
+using std.iterator::{all, any, contains, count, find, first, fold, for_each, last, nth, position, reduce};
+using std.iterator::{collect, collect_array, collect_array_list};
 
 [test]
 micro `test array methods`() {

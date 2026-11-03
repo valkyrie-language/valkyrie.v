@@ -1,10 +1,10 @@
 namespace std.collection.test;
 
-using! std::iterator::{Iterator, IntoIterator, FromIterator}
-using! std::iterator::{EnumerateIterator, FilterIterator, FilterMapIterator, MapIterator, SkipIterator, SkipWhileIterator, TakeIterator, TakeWhileIterator}
-using! std::iterator::{all, any, contains, count, find, first, fold, for_each, last, nth, position, reduce}
-using! std::iterator::{collect, collect_array, collect_array_list}
-using! std::collection::ArrayList
+using std.iterator::{Iterator, IntoIterator, FromIterator};
+using std.iterator::{EnumerateIterator, FilterIterator, FilterMapIterator, MapIterator, SkipIterator, SkipWhileIterator, TakeIterator, TakeWhileIterator};
+using std.iterator::{all, any, contains, count, find, first, fold, for_each, last, nth, position, reduce};
+using std.iterator::{collect, collect_array, collect_array_list};
+using std.collection::ArrayList;
 
 [test]
 micro `test iterator collect to array`() {
