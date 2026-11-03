@@ -3,5 +3,5 @@
 [when(target.specification == "wasip3")]
 namespace std.adaptor.wasi.random;
 
-[host_provider(std::random::Random::new)]
-micro host_new() -> std.random.Random
+[host_provider(std::random::entropy)]
+micro host_entropy() -> u64

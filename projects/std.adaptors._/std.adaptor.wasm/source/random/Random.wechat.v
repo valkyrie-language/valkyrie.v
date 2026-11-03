@@ -3,9 +3,9 @@
 [when(target.vendor == "wechat")]
 namespace std.adaptor.wasm.random;
 
-[host_provider(std::random::Random::new)]
-micro host_new() -> std.random.Random {
-    return std.random.Random::with_seed(__random_js_entropy() as u64)
+[host_provider(std::random::entropy)]
+micro host_entropy() -> u64 {
+    return __random_js_entropy() as u64
 }
 
 [js("random")]
