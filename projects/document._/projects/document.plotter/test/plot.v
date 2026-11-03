@@ -98,16 +98,15 @@ micro sequence_activation_note_frame_emit() -> unit {
 
 [test]
 micro self_message_draws_curve() -> unit {
-    let scene: PlotScene = plot_sequence([plot_decl("a", "A")], [plot_edge("a", "a", "loop")])
+    let scene: PlotScene = plot_flowchart([plot_decl("a", "A")], [plot_edge("a", "a", "loop")])
     let svg: utf8 = plot_emit_svg(scene)
-    let expected: utf8 = svg_document(66.0, 98.0,
-        svg_path_dashed(svg_path_line_to(svg_path_move_to(33.0, 38.0), 33.0, 98.0), "#999999", 1.0, "none", "4 3")
-        + plot_emit_self_edge(33.0, 78.0, "loop", plot_font())
+    let expected: utf8 = svg_document(66.0, 58.0,
+        plot_emit_self_edge(33.0, 38.0, "loop", plot_font())
         + svg_rect(20.0, 20.0, 26.0, 18.0, "#ffffff")
         + svg_path(plot_rect_outline(scene.nodes⁅0⁆), "#000000", 1.0, "none")
         + svg_text(28.0, 32.0, "A", "#000000", 10.0))
     if !svg.equals(expected) {
-        panic("self message draws a curved arrow")
+        panic("flowchart self loop keeps layer zero and draws a curved arrow")
     }
 }
 
@@ -172,7 +171,7 @@ micro sequence_layout_spaces_messages() -> unit {
     if scene.nodes.length() != 2 || scene.edges.length() != 2 {
         panic("participants and messages placed")
     }
-    if scene.edges⁅0⁆.y1 != 78.0 || scene.edges⁅1⁆.y1 != 118.0 {
+    if scene.edges⁅0⁆.y1 != 98.0 || scene.edges⁅1⁆.y1 != 138.0 {
         panic("messages stack by declaration order")
     }
     if scene.edges⁅0⁆.x1 != 33.0 || scene.edges⁅0⁆.x2 != 119.0 {
@@ -190,9 +189,9 @@ micro sequence_svg_snapshot() -> unit {
     let expected: utf8 = svg_document(152.0, 138.0,
         svg_path_dashed(svg_path_line_to(svg_path_move_to(33.0, 38.0), 33.0, 138.0), "#999999", 1.0, "none", "4 3")
         + svg_path_dashed(svg_path_line_to(svg_path_move_to(119.0, 38.0), 119.0, 138.0), "#999999", 1.0, "none", "4 3")
-        + svg_line(33.0, 78.0, 119.0, 78.0, "#000000", 1.0)
-        + plot_arrow_head(33.0, 78.0, 119.0, 78.0, 6.0)
-        + svg_text(76.0, 74.0, "hi", "#000000", 10.0)
+        + svg_line(33.0, 98.0, 119.0, 98.0, "#000000", 1.0)
+        + plot_arrow_head(33.0, 98.0, 119.0, 98.0, 6.0)
+        + svg_text(76.0, 90.0, "hi", "#000000", 10.0)
         + svg_rect(20.0, 20.0, 26.0, 18.0, "#ffffff")
         + svg_path(plot_rect_outline(scene.nodes⁅0⁆), "#000000", 1.0, "none")
         + svg_text(28.0, 32.0, "A", "#000000", 10.0)
@@ -210,7 +209,7 @@ micro self_message_draws_stub() -> unit {
     let svg: utf8 = plot_emit_svg(scene)
     let expected: utf8 = svg_document(66.0, 138.0,
         svg_path_dashed(svg_path_line_to(svg_path_move_to(33.0, 38.0), 33.0, 138.0), "#999999", 1.0, "none", "4 3")
-        + plot_emit_self_edge(33.0, 78.0, "loop", plot_font())
+        + plot_emit_self_edge(33.0, 98.0, "loop", plot_font())
         + svg_rect(20.0, 20.0, 26.0, 18.0, "#ffffff")
         + svg_path(plot_rect_outline(scene.nodes⁅0⁆), "#000000", 1.0, "none")
         + svg_text(28.0, 32.0, "A", "#000000", 10.0))

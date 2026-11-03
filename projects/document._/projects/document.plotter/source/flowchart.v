@@ -7,7 +7,8 @@ namespace document.plot;
 #   ×2 + 24、高 = em + 18；圆角矩形同矩形。网格统一列宽（全体节点最大宽 + 40），
 #   层距 = 全体节点最大高 + 40，外边距 20。
 # - 分层：入度为 0 的节点为第 0 层；其余节点层 = max(前驱层) + 1，按边集做
-#   |V| 轮松弛；循环依赖按输入序兜底（不可达节点留 0 层）。孤立节点第 0 层。
+#   |V| 轮松弛；自环不参与分层（凝聚后无层级意义）；循环依赖按输入序兜底
+#   （不可达节点留 0 层）。孤立节点第 0 层。
 # - 聚类（`PlotDecl.cluster` 非空）：布局不参与分组，发射时按成员包围盒 + 12
 #   内缩距画底色框，标签居中置顶。同名聚类共享一个框。
 # - 层内顺序 = 输入声明序。
@@ -77,21 +78,24 @@ micro plot_flowchart_layers(decls: [PlotDecl], edges: [PlotEdge]) -> [usize] {
         let mut changed: bool = false
         let mut edge_index: usize = 0
         while edge_index < edges.length() {
-            let mut from_index: usize = 0
-            let mut to_index: usize = 0
-            let mut scan: usize = 0
-            while scan < decls.length() {
-                if decls⁅scan⁆.id.equals(edges⁅edge_index⁆.source) {
-                    from_index = scan
+            # 自环不携带层级信息（凝聚后消失），分层一律跳过。
+            if !edges⁅edge_index⁆.source.equals(edges⁅edge_index⁆.target) {
+                let mut from_index: usize = 0
+                let mut to_index: usize = 0
+                let mut scan: usize = 0
+                while scan < decls.length() {
+                    if decls⁅scan⁆.id.equals(edges⁅edge_index⁆.source) {
+                        from_index = scan
+                    }
+                    if decls⁅scan⁆.id.equals(edges⁅edge_index⁆.target) {
+                        to_index = scan
+                    }
+                    scan = scan + 1
                 }
-                if decls⁅scan⁆.id.equals(edges⁅edge_index⁆.target) {
-                    to_index = scan
+                if layers⁅from_index⁆ + 1 > layers⁅to_index⁆ {
+                    layers⁅to_index⁆ = layers⁅from_index⁆ + 1
+                    changed = true
                 }
-                scan = scan + 1
-            }
-            if layers⁅from_index⁆ + 1 > layers⁅to_index⁆ {
-                layers⁅to_index⁆ = layers⁅from_index⁆ + 1
-                changed = true
             }
             edge_index = edge_index + 1
         }
