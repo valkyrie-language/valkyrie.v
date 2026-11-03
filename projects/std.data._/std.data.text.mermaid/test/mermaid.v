@@ -32,7 +32,7 @@ micro flowchart_edge_label_snapshot() -> unit {
     let expected: utf8 = svg_document(66.0, 116.0,
         svg_line(33.0, 38.0, 33.0, 78.0, "#000000", 1.0)
         + plot_arrow_head(33.0, 38.0, 33.0, 78.0, 6.0)
-        + svg_text(33.0, 56.0, "go", "#000000", 10.0)
+        + svg_text(39.0, 56.0, "go", "#000000", 10.0)
         + svg_rect(20.0, 20.0, 26.0, 18.0, "#ffffff")
         + svg_path(plot_rect_outline(scene.nodes⁅0⁆), "#000000", 1.0, "none")
         + svg_text(28.0, 32.0, "A", "#000000", 10.0)
@@ -49,18 +49,18 @@ micro sequence_svg_snapshot() -> unit {
     let outcome: DataOutcome<utf8> = mermaid_render_svg("sequenceDiagram\nparticipant A as Alice\nA->>B: hi\n")
     let svg: utf8 = data_outcome_value_or(outcome, "")
     let scene: PlotScene = plot_sequence([plot_decl("A", "Alice"), plot_decl("B", "B")], [plot_edge("A", "B", "hi")])
-    let expected: utf8 = svg_document(244.0, 138.0,
+    let expected: utf8 = svg_document(232.0, 138.0,
         svg_path_dashed(svg_path_line_to(svg_path_move_to(53.0, 38.0), 53.0, 138.0), "#999999", 1.0, "none", "4 3")
-        + svg_path_dashed(svg_path_line_to(svg_path_move_to(159.0, 38.0), 159.0, 138.0), "#999999", 1.0, "none", "4 3")
-        + svg_line(53.0, 78.0, 159.0, 78.0, "#000000", 1.0)
-        + plot_arrow_head(53.0, 78.0, 159.0, 78.0, 6.0)
-        + svg_text(106.0, 74.0, "hi", "#000000", 10.0)
+        + svg_path_dashed(svg_path_line_to(svg_path_move_to(179.0, 38.0), 179.0, 138.0), "#999999", 1.0, "none", "4 3")
+        + svg_line(53.0, 98.0, 179.0, 98.0, "#000000", 1.0)
+        + plot_arrow_head(53.0, 98.0, 179.0, 98.0, 6.0)
+        + svg_text(116.0, 90.0, "hi", "#000000", 10.0)
         + svg_rect(20.0, 20.0, 66.0, 18.0, "#ffffff")
         + svg_path(plot_rect_outline(scene.nodes⁅0⁆), "#000000", 1.0, "none")
         + svg_text(28.0, 32.0, "Alice", "#000000", 10.0)
-        + svg_rect(146.0, 20.0, 26.0, 18.0, "#ffffff")
+        + svg_rect(166.0, 20.0, 26.0, 18.0, "#ffffff")
         + svg_path(plot_rect_outline(scene.nodes⁅1⁆), "#000000", 1.0, "none")
-        + svg_text(154.0, 32.0, "B", "#000000", 10.0))
+        + svg_text(174.0, 32.0, "B", "#000000", 10.0))
     if !svg.equals(expected) {
         panic("sequence svg snapshot matches")
     }
