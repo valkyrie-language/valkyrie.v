@@ -1,6 +1,6 @@
 # plotter
 
-Valkyrie 图形语法库：不可变 `PlotSpec`、管道 `|>`、SVG 优先出图。
+Valkyrie 绘图/图表的统一后端：方言导入 → 唯一中间表示 → 可插拔渲染后端。
 
 ## 快速开始
 
@@ -14,15 +14,17 @@ let svg = dataframe_from_xy(["nyar", "clr"], [1.8, 0.4])
     |> render_svg()
 ```
 
-## 模块
+## 分层
 
-| 路径                 | 内容                                             |
-|:---------------------|:-------------------------------------------------|
-| `source/data`        | DataFrame / Column                               |
-| `source/grammar`     | plot / aes / geom / scale / coord / theme / labs |
-| `source/scene`       | Mark / PlotScene                                 |
-| `source/render`      | `render_svg`                                     |
-| `source/serialize.v` | PlotSpec JSON/von 契约                           |
+| 层   | 路径                | 内容                                                     |
+|:-----|:--------------------|:---------------------------------------------------------|
+| L1   | `source/semantic`   | DataFrame / 美学映射 / 几何图层 / PlotSpec / GraphModel  |
+| L2   | `source/layout`     | 标度 / 坐标系 / 分面 / 统计解析 / 图布局调用             |
+| L3   | `source/scene`      | 唯一中间表示：已解析的几何、样式、文本、图层顺序、裁剪   |
+| L4   | `source/backend`    | SVG 等渲染后端，只消费 L3                               |
+| 前端 | `source/format`     | 各方言导入适配器，只产出 L3                             |
+
+层间只通过合同通信；方言知识只存在于 `source/format`；渲染细节只在 `source/backend`。
 
 ## 文档
 
