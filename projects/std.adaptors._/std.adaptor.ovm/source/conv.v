@@ -35,12 +35,14 @@ micro utf16_to_utf8(s: utf16): utf8
 [ovm("utf8_to_c_str")]
 micro utf8_to_c_str(s: utf8): c_str
 
+[host_provider(std::text::c_str_to_utf8)]
 [ovm("c_str_to_utf8")]
 micro c_str_to_utf8(s: c_str): utf8
 
 [ovm("utf16_to_c_str")]
 micro utf16_to_c_str(s: utf16): c_str
 
+[host_provider(std::text::c_str_to_utf16)]
 [ovm("c_str_to_utf16")]
 micro c_str_to_utf16(s: c_str): utf16
 
@@ -51,6 +53,7 @@ micro c_str_to_utf16(s: c_str): utf16
 [ovm("utf16_length")]
 micro utf16_length(s: utf16): i32
 
+[host_provider(std::text::c_str_length)]
 [ovm("c_str_length")]
 micro c_str_length(s: c_str): i32
 
