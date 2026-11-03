@@ -1,4 +1,4 @@
-namespace document.plotter;
+namespace document.plot;
 
 # flowchart 布局（TB 方向）：最长路分层，层内按输入序横排。
 #

@@ -1,4 +1,4 @@
-namespace document.plotter;
+namespace document.plot;
 
 # sequence 布局：事件驱动。参与者按输入序横排，事件自上而下推进游标。
 #

@@ -19,7 +19,7 @@
 - `document.layout`：盒模型内核（度量/基线/断行/拍平/缩放）+ `paginate` 页面层已落地
 - `document.render`：HTML / 纯文本 / Markdown 三目标渲染管线已落地
 - `document.vector`：SVG 矢量文本发射原语已落地
-- `document.plot`：flowchart / sequence 布局与 SVG 发射已落地
+- `document.plotter`：flowchart / sequence 布局与 SVG 发射已落地
 - `document.mermaid`：mermaid 子集（flowchart、sequence）解析已落地
 - `vutex`：TeX 数学子集（`\frac`/`\sqrt`/上下标/希腊字母/运算符）→ 盒 → SVG 已落地
 - `notedown`：文档语义 IR（Block / Inline / DocumentGraph / 校验）已入树，markdown → IR 链路待接 `std.data` 三段管线

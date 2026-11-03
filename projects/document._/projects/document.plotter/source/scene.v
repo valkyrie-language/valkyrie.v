@@ -1,4 +1,4 @@
-namespace document.plotter;
+namespace document.plot;
 
 using document.layout::{BoxFont, box_char_cell_font};
 using document.vector::{svg_document, svg_line, svg_path, svg_path_curve_to, svg_path_dashed, svg_path_line_to, svg_path_move_to, svg_rect, svg_rect_round, svg_text};
