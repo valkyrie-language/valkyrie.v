@@ -57,6 +57,20 @@ micro i32_shr(a: i32, b: i32): i32
 
 #endregion
 
+#region u8 比较
+# u8 在 OVM 复用 i32 载体槽。等值比较走拓宽到 i32 后的 `i32.eq`，不需要截断或掩码。
+# `[ovm_operator("i32.eq")]` 不能直接挂在 u8 参数上：操作数载体合同只承认
+# Integer32/Integer64/Character，Integer8 会被计划校验拒绝。
+
+[host_provider(std::primitive::__u8_eq)]
+private micro u8_eq(a: u8, b: u8): bool {
+    return (a as i32) == (b as i32)
+}
+
+# u8 算术仍不登记：加/减/乘会溢出到 i32 高位，VM 没有掩码指令，见 `unsigned.v`。
+
+#endregion
+
 #region i64 算术
 
 [host_provider(std::primitive::__i64_add)]
