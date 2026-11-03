@@ -10,8 +10,76 @@ class AsciiIterator {
     _offset: usize
 }
 
+⍝ ────────── 不可变 ASCII 视图 ──────────
+⍝ 视图是对 `AsciiText` 的引用加一个字节区间，不拥有数据。
+structure AsciiView {
+    text: &AsciiText,
+    span: TextSpan,
+}
+
+imply AsciiView: TextView {
+    type Text = AsciiText;
+
+    micro span(self) -> TextSpan {
+        return self.span
+    }
+
+    micro to_text(self) -> AsciiText {
+        let mut bytes: ArrayList<u8> = ArrayList::new(self.span.length)
+        let end: usize = self.end_offset()
+        let mut index: usize = self.span.offset
+        while index < end {
+            bytes.push(self.text._bytes⁅index⁆)
+            index = index + 1
+        }
+
+        return AsciiText { _bytes: bytes.to_array() }
+    }
+}
+
+imply AsciiView: Text {
+    type View = AsciiView;
+
+    micro is_empty(self) -> bool {
+        return self.span.length == 0
+    }
+
+    micro view(self, span: TextSpan) -> AsciiView {
+        let view_end: usize = self.end_offset()
+        let start: usize = self.span.offset + span.offset
+        if start >= view_end {
+            return AsciiView {
+                text: self.text,
+                span: TextSpan { offset: view_end, length: 0 },
+            }
+        }
+
+        let mut length: usize = span.length
+        if start + length > view_end {
+            length = view_end - start
+        }
+
+        return AsciiView {
+            text: self.text,
+            span: TextSpan { offset: start, length: length },
+        }
+    }
+
+    micro slice(self, span: TextSpan) -> AsciiView {
+        return self.view(span)
+    }
+}
+
+imply AsciiView {
+    private micro end_offset(self) -> usize {
+        return self.span.offset + self.span.length
+    }
+}
+
 # 基本方法
 imply AsciiText: Text {
+    type View = AsciiView;
+
     ⍝ 获取 ascii 文本的字节数长度
     micro byte_length(self) -> usize {
         return self._bytes.length()
@@ -23,6 +91,31 @@ imply AsciiText: Text {
 
     micro is_empty(self) -> bool {
         return self._bytes.is_empty()
+    }
+
+    ⍝ 获取覆盖 `span` 区间的不可变视图；区间越界时收敛到有效范围
+    micro view(self, span: TextSpan) -> AsciiView {
+        let full_length: usize = self._bytes.length()
+        let mut begin: usize = span.offset
+        if begin > full_length {
+            begin = full_length
+        }
+
+        let remaining: usize = full_length - begin
+        let mut take: usize = span.length
+        if take > remaining {
+            take = remaining
+        }
+
+        return AsciiView {
+            text: self,
+            span: TextSpan { offset: begin, length: take },
+        }
+    }
+
+    ⍝ 切分一段具有独立所有权的 ascii 文本
+    micro slice(self, span: TextSpan) -> AsciiText {
+        return self.view(span).to_text()
     }
 
     micro to_utf8(self) -> utf8 {
