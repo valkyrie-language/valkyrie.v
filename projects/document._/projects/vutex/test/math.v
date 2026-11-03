@@ -20,7 +20,7 @@ micro snapshot_script() -> unit {
 micro snapshot_frac() -> unit {
     let node: MathNode = math_frac(math_symbol("1"), math_symbol("x"))
     let svg: utf8 = math_emit_svg(math_typeset(node, math_default_font()), math_default_font())
-    let expected: utf8 = svg_document(18.0, 30.5,
+    let expected: utf8 = svg_document(18.0, 28.5,
         svg_text(4.0, 12.0, "1", "#000000", 10.0)
         + svg_rect(4.0, 14.0, 10.0, 0.5, "#000000")
         + svg_text(4.0, 22.5, "x", "#000000", 10.0))
@@ -88,13 +88,13 @@ micro big_op_stacks_limits() -> unit {
 micro delimited_scales_with_content() -> unit {
     let node: MathNode = math_delimited("(", ")", [math_frac(math_symbol("1"), math_symbol("x"))])
     let svg: utf8 = math_emit_svg(math_typeset(node, math_default_font()), math_default_font())
-    # 内容总分式高 20.5 深 2 → 括号缩放 2.25：宽 22.5；分式宽 10
-    let expected: utf8 = svg_document(63.0, 30.5,
-        svg_text(4.0, 22.0, "(", "#000000", 22.5)
-        + svg_text(26.5, 12.0, "1", "#000000", 10.0)
-        + svg_rect(26.5, 14.0, 10.0, 0.5, "#000000")
-        + svg_text(26.5, 22.5, "x", "#000000", 10.0)
-        + svg_text(36.5, 22.0, ")", "#000000", 22.5))
+    # 内容总分式高 18.5 深 2 → 总高 20.5、缩放 2.05：括号宽 20.5；分式宽 10
+    let expected: utf8 = svg_document(59.0, 28.5,
+        svg_text(4.0, 20.4, "(", "#000000", 20.5)
+        + svg_text(24.5, 12.0, "1", "#000000", 10.0)
+        + svg_rect(24.5, 14.0, 10.0, 0.5, "#000000")
+        + svg_text(24.5, 22.5, "x", "#000000", 10.0)
+        + svg_text(34.5, 20.4, ")", "#000000", 20.5))
     if !svg.equals(expected) {
         panic("delimited svg snapshot matches")
     }
@@ -104,8 +104,8 @@ micro delimited_scales_with_content() -> unit {
 micro aligned_right_aligns_left_column() -> unit {
     let node: MathNode = math_aligned([[math_symbol("aa"), math_symbol("=b")], [math_symbol("c"), math_symbol("=dd")]])
     let svg: utf8 = math_emit_svg(math_typeset(node, math_default_font()), math_default_font())
-    # 列宽 20 / 20；首列右对齐；行高 10 行距 4
-    let expected: utf8 = svg_document(48.0, 32.0,
+    # 列宽 20 / 30；首列右对齐；行高 10 行距 4
+    let expected: utf8 = svg_document(58.0, 32.0,
         svg_text(4.0, 12.0, "aa", "#000000", 10.0)
         + svg_text(24.0, 12.0, "=b", "#000000", 10.0)
         + svg_text(14.0, 26.0, "c", "#000000", 10.0)
