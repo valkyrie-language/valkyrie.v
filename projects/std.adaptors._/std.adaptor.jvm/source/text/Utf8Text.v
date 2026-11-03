@@ -21,7 +21,7 @@ micro host_slice(value: std.text.utf8, start: usize, count: usize): std.text.utf
 micro host_index_of(value: std.text.utf8, other: std.text.utf8): Option<usize> {
     let index: i32 = utf8_scalar_index_of(value, other)
     if index < 0 {
-        return std::types::option_none::<usize>()
+        return None
     }
     return Some(index as usize)
 }

@@ -51,7 +51,7 @@ micro host_equals(value: std.text.utf8, other: std.text.utf8): bool {
 micro host_index_of(value: std.text.utf8, other: std.text.utf8): Option<usize> {
     let index: i32 = __js_utf8_index_of(value, other)
     if index < 0 {
-        return option_none::<usize>()
+        return None
     }
     return Some(index as usize)
 }
