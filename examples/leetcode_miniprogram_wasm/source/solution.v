@@ -2,7 +2,7 @@ namespace std.random;
 
 [export]
 micro solve(seed: i32, max_exclusive: i32) -> i32 {
-    let generator: Random = Random::with_seed(seed)
+    let generator: Random = Random::with_seed(seed as u64)
     return generator.next_i32(max_exclusive)
 }
 

@@ -1,33 +1,12 @@
 namespace std.adaptor.jvm.random;
 
+# 宿主熵源：`System.nanoTime`；序列语义归 std 默认实现，平台不另挂宿主 RNG 算法
+# （宿主 `java.util.Random` 与 SplitMix64 序列不同，绑定它会违反同种子同序列合同）。
+
 [host_provider(std::random::Random::new)]
 micro host_new() -> std.random.Random {
-    return __random_jvm_new()
+    return std.random.Random::with_seed(__random_jvm_entropy() as u64)
 }
 
-[host_provider(std::random::Random::with_seed)]
-micro host_with_seed(seed: i32) -> std.random.Random {
-    return __random_jvm_with_seed(i64(seed))
-}
-
-[host_provider(std::random::Random::next_i32)]
-micro host_next_i32(random: std.random.Random, max_exclusive: i32) -> i32 {
-    return __random_jvm_next_i32(random, max_exclusive)
-}
-
-[host_provider(std::random::Random::next_f64)]
-micro host_next_f64(random: std.random.Random) -> f64 {
-    return __random_jvm_next_f64(random)
-}
-
-[jvm("java.util.Random", "<init>")]
-private micro __random_jvm_new(): std.random.Random { }
-
-[jvm("java.util.Random", "<init>")]
-private micro __random_jvm_with_seed(seed: i64): std.random.Random { }
-
-[jvm("java.util.Random", "nextInt")]
-private micro __random_jvm_next_i32(random: std.random.Random, max_exclusive: i32): i32 { }
-
-[jvm("java.util.Random", "nextDouble")]
-private micro __random_jvm_next_f64(random: std.random.Random): f64 { }
+[jvm("java.lang.System", "nanoTime")]
+private micro __random_jvm_entropy(): i64 { }
