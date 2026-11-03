@@ -1,0 +1,15 @@
+{
+    name: "animator",
+    version: "workspace",
+    description: "Valkyrie 2D 角色动画运行时（格式中立，宿主绘制）",
+    type: "library",
+    dependencies: { "std": { version: "workspace" } },
+    build: [
+        {
+            target: "ovm"
+        },
+        {
+            target: "clr"
+        }
+    ]
+}
