@@ -5,7 +5,7 @@
 ## 定位
 
 - 数据（DataFrame）+ 图形语法（`plot / aes / geom / scale / coord / theme / labs`）+ 出图（`render_svg`）
-- 不可变 `PlotSpec`，管道 `|>` 组合
+- 不可变 `PlotSpec`，函数组合式图层累加
 - SVG 优先出图
 
 ## 文档

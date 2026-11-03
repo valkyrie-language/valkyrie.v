@@ -4,7 +4,7 @@
 
 ## 组成
 
-- `projects/plotter`：Valkyrie 图形语法库 —— 不可变 `PlotSpec`、管道 `|>`、SVG 优先出图
+- `projects/plotter`：Valkyrie 图形语法库 —— 不可变 `PlotSpec`、分层绘图能力、SVG 优先出图
 
 ## 边界
 
