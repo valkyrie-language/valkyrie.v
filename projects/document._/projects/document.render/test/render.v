@@ -174,7 +174,7 @@ micro markdown_table_pads_columns() -> unit {
     ], [], [])
     match render_markdown(document) {
         case Fine(payload):
-            let expected: utf8 = "| Name | V  |\n| ---- | -- |\n| a    | 10 |"
+            let expected: utf8 = "| Name | V  |\n| ---- | --- |\n| a    | 10 |"
             if !payload.value.equals(expected) {
                 panic("markdown table pads cells to column width")
             }

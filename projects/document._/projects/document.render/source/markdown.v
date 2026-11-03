@@ -74,6 +74,20 @@ micro markdown_plain_blocks(blocks: [Block], index: DocumentIndex) -> utf8 {
     return out
 }
 
+# 列表项的紧凑连接（与纯文本目标同语义：项内块间不插空行）。
+micro markdown_emit_blocks_tight(blocks: [Block], index: DocumentIndex) -> utf8 {
+    let mut out: utf8 = ""
+    let mut position: usize = 0
+    while position < blocks.length() {
+        if position > 0 {
+            out = out + "\n"
+        }
+        out = out + markdown_emit_block(blocks⁅position⁆, index)
+        position = position + 1
+    }
+    return out
+}
+
 micro markdown_emit_block(block: Block, index: DocumentIndex) -> utf8 {
     match block.kind {
         case Heading(payload):
@@ -88,7 +102,7 @@ micro markdown_emit_block(block: Block, index: DocumentIndex) -> utf8 {
                 if payload.ordered {
                     marker = render_number(payload.start + position) + ". "
                 }
-                let content: utf8 = text_emit_blocks_markdown(payload.items⁅position⁆.blocks, index)
+                let content: utf8 = markdown_emit_blocks_tight(payload.items⁅position⁆.blocks, index)
                 if position > 0 {
                     out = out + "\n"
                 }

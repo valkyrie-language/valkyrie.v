@@ -61,6 +61,21 @@ micro text_emit_blocks(blocks: [Block], index: DocumentIndex) -> utf8 {
     return out
 }
 
+# 列表项内容按紧凑形态连接：项内块间不插空行，嵌套列表直接挂在上一块之下
+# （与 HTML `<li>` 内顺序块的语义等价；项内多个段落本模型不区分松/紧）。
+micro text_emit_blocks_tight(blocks: [Block], index: DocumentIndex) -> utf8 {
+    let mut out: utf8 = ""
+    let mut position: usize = 0
+    while position < blocks.length() {
+        if position > 0 {
+            out = out + "\n"
+        }
+        out = out + text_emit_block(blocks⁅position⁆, index)
+        position = position + 1
+    }
+    return out
+}
+
 # 块文本的单行投影（表格单元、脚注行等单行场景）。
 micro text_plain_blocks(blocks: [Block], index: DocumentIndex) -> utf8 {
     let mut out: utf8 = ""
@@ -143,7 +158,7 @@ micro text_emit_block(block: Block, index: DocumentIndex) -> utf8 {
                 if payload.ordered {
                     marker = render_number(payload.start + position) + ". "
                 }
-                let content: utf8 = text_emit_blocks(payload.items⁅position⁆.blocks, index)
+                let content: utf8 = text_emit_blocks_tight(payload.items⁅position⁆.blocks, index)
                 if position > 0 {
                     out = out + "\n"
                 }
