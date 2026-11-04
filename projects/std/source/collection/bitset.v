@@ -143,6 +143,40 @@ imply BitSet {
         }
     }
 
+    # 置位数：逐 word 用 `word & (word - 1)` 清除最低置位，全 0 位图为 0。
+    micro count(self): usize {
+        let mut total: usize = 0
+        let mut i: usize = 0
+        while i < self.words.length() {
+            let mut word: u64 = self.words.get((i + 1) as isize).unwrap()
+            while word != 0 {
+                word = word & (word - 1)
+                total = total + 1
+            }
+            i = i + 1
+        }
+        return total
+    }
+
+    # 最高置位 + 1（有效位宽）；全 0 位图为 0。
+    micro bit_length(self): usize {
+        let mut i: usize = self.words.length()
+        while i > 0 {
+            let word: u64 = self.words.get(i as isize).unwrap()
+            if word != 0 {
+                let mut bit: usize = 64
+                while bit > 0 {
+                    bit = bit - 1
+                    if (word & ((1 as u64) << (bit as u64))) != 0 {
+                        return (i - 1) * 64 + bit + 1
+                    }
+                }
+            }
+            i = i - 1
+        }
+        return 0
+    }
+
     micro ensure_capacity(mut self, needed: usize): unit {
         while self.words.length() < needed {
             self.words.push(0)
