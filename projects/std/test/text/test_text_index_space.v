@@ -11,8 +11,8 @@ micro `test utf8 codepoint index read`() {
         panic("utf8 codepoint cardinal last failed")
     }
 
-    let second: Option<char> = text[2]
-    if second.is_none() || second.unwrap() as u32 != 0x597D {
+    let second: char = text[2]
+    if second as u32 != 0x597D {
         panic("utf8 codepoint ordinal read failed")
     }
 }
@@ -21,17 +21,18 @@ micro `test utf8 codepoint index read`() {
 micro `test utf8 ordinal missing positions`() {
     let text: utf8 = "你好世界"
 
-    # 1 基序数：0、负数、超出码点个数均为缺失，读返回 `None`。
-    if text[0].is_some() {
+    # 1 基序数：0、负数、超出码点个数均为越界。裸 `[ ]` 结构化失败，
+    # 可恢复判定走 `get`（越界返回 `None`）。
+    if text.get(0).is_some() {
         panic("utf8 ordinal zero failed")
     }
 
     let negative: isize = -1
-    if text[negative].is_some() {
+    if text.get(negative).is_some() {
         panic("utf8 ordinal negative failed")
     }
 
-    if text[5].is_some() {
+    if text.get(5).is_some() {
         panic("utf8 ordinal beyond failed")
     }
 }
@@ -55,8 +56,8 @@ micro `test utf8 codepoint write readback`() {
         panic("utf8 ordinal write cardinal readback failed")
     }
 
-    let third: Option<char> = text[3]
-    if third.is_none() || third.unwrap() as u32 != 99 {
+    let third: char = text[3]
+    if third as u32 != 99 {
         panic("utf8 ordinal write tail failed")
     }
 }
@@ -110,12 +111,12 @@ micro `test utf16 code unit index space`() {
         panic("utf16 cardinal read failed")
     }
 
-    let second: Option<char> = text[2]
-    if second.is_none() || second.unwrap() as u32 != 108 {
+    let second: char = text[2]
+    if second as u32 != 108 {
         panic("utf16 ordinal read failed")
     }
 
-    if text[6].is_some() {
+    if text.get(6).is_some() {
         panic("utf16 ordinal bounds failed")
     }
 }
