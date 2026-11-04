@@ -548,6 +548,44 @@ imply Utf8Text: std::operator::Equal {
     }
 }
 
+# 字节序比较：按内部 UTF-8 字节逐字节无符号比较，前缀关系以长度决胜
+# （短者为 `Less`）。这是编码字节的字典序，不引入区域规则、大小写折叠或
+# Unicode 规范化；返回 `Equal` 当且仅当两侧字节完全相同，与 `==` 一致。
+imply Utf8Text: std::operator::Comparable {
+    micro compare(self, other: Self): std::operator::Ordering {
+        let left: [u8] = self._repr
+        let right: [u8] = other._repr
+        let left_length: usize = left.length()
+        let right_length: usize = right.length()
+        let mut limit: usize = right_length
+        if left_length < right_length {
+            limit = left_length
+        }
+
+        let mut index: usize = 0
+        while index < limit {
+            # 字节扩宽到 `i32` 再比较：无符号字节序不变，也不依赖 `u8` 比较算子的宿主 provider。
+            let left_byte: i32 = (left⁅index⁆) as i32
+            let right_byte: i32 = (right⁅index⁆) as i32
+            if left_byte < right_byte {
+                return std::operator::Ordering.Less
+            }
+            if left_byte > right_byte {
+                return std::operator::Ordering.Greater
+            }
+            index = index + 1
+        }
+
+        if left_length < right_length {
+            return std::operator::Ordering.Less
+        }
+        if left_length > right_length {
+            return std::operator::Ordering.Greater
+        }
+        return std::operator::Ordering.Equal
+    }
+}
+
 imply Utf8Text: std::operator::Identical {
     infix `===`(self, other: utf8): bool {
         return self == other
