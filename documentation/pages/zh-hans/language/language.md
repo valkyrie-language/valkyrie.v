@@ -255,7 +255,8 @@ using std::collection::*
 | trait | 核心方法 | 说明 |
 |:---|:---|:---|
 | `ExtractLength` | `extract_length(self) -> i32` | O(1) 获取长度 |
-| `Countable` | `count_hint(self) -> i32`、`count(self) -> i32` | 估算 / 精确计数 |
+| `Countable` | `length(self) -> usize` | 精确元素计数；`length` 是承载的元素个数，不是容量或索引空间上界 |
+| `Cardinal` | `⁅ ⁆` / `⁅ ⁆=`、`get_cardinal` / `set_cardinal`（`offset: Self::Index`） | 0 基索引读写；关联类型 `Element` 与 `Index`，常见序列实现取 `Index = usize` |
 | `Indexable` | `at(ref self, index: i32) -> Self::Item` | 整数索引 |
 | `Lookup` | `lookup(ref self, key: Self::Key) -> Option<Self::Value>` | 键值查找 |
 | `Contains` | `contains(ref self, value: Self::Item) -> bool` | 包含判断 |

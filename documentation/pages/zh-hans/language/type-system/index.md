@@ -194,7 +194,7 @@ let value: i32 | f32 | utf8 = 42
 | 语法糖 | 等价形式 | 说明 |
 |:---|:---|:---|
 | `[T]` | `list<T>` | 动态列表 |
-| `[T; N]` | `array<T, N>` | 定长数组 |
+| `[T; N]` | `FixedArray<T, N>` | 定长数组，栈类型、值语义 |
 | `T?` | `T \| null` | 可空（扁平化） |
 
 详见 [容器与可空类型](container-nullable-types.md)。

@@ -123,12 +123,13 @@ trait 别名是纯语法糖：
 | trait | 方法 | 说明 |
 |:---|:---|:---|
 | `ExtractLength` | `extract_length(self) -> i32` | 获取元素数量，保证 O(1) 时间复杂度 |
-| `Countable` | `count_hint(self) -> i32`、`count(self) -> i32` | `count_hint` 提供估计数量，`count` 精确计数（可能 O(n)） |
+| `Countable` | `length(self) -> usize` | 精确元素计数。`length` 是承载的元素个数，不是容量、也不是索引空间上界 |
 
 ### 索引与查找
 
 | trait | 方法 | 说明 |
 |:---|:---|:---|
+| `Cardinal` | `⁅ ⁆` / `⁅ ⁆=`、`get_cardinal` / `set_cardinal`（`offset: Self::Index`） | 0 基索引读写。关联类型 `Element` 与 `Index`；常见序列实现取 `Index = usize`，多维数组可用元组索引 |
 | `Indexable` | `at(ref self, index: i32) -> Self::Item` | 整数索引访问。关联类型 `Item` |
 | `Lookup` | `lookup(ref self, key: Self::Key) -> Option<Self::Value>` | 键值查找。关联类型 `Key` 和 `Value` |
 | `Contains` | `contains(ref self, value: Self::Item) -> bool` | 判断是否包含指定元素。关联类型 `Item` |
