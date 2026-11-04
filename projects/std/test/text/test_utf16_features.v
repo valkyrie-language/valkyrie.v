@@ -22,7 +22,7 @@ micro `test utf16 text features`() {
         panic("utf16 index_of test failed")
     }
 
-    let part: utf16 = value.substring(1, 3)
+    let part: utf16 = value.slice(1, 3)
     if part.length() != 3 {
         panic("utf16 substring length test failed")
     }

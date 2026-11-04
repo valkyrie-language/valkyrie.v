@@ -30,7 +30,7 @@ micro `test utf8 text features`() {
         panic("utf8 index_of test failed")
     }
 
-    let part: utf8 = utf8_slice(value, 1, 3)
+    let part: utf8 = value.slice(1, 3)
     if part.length() != 3 {
         panic("utf8 substring length test failed")
     }
