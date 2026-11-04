@@ -58,7 +58,7 @@ micro linear_search<
 }
 ```
 
-trait 别名是纯语法糖；本仓标准库目前没有已声明的 trait 别名。
+语言层没有 `trait X = A & B` 形式的别名语法；`&` 表示 trait 组合（"同时满足"），直接写在约束位置。本仓标准库也没有已声明的 trait 别名。
 
 语义：值必须同时满足 `&` 分隔的所有类型。`&` 是左结合的，`A & B & C` 等价于 `(A & B) & C`。
 
@@ -190,6 +190,8 @@ micro process() -> Config / ConfigError + UserError {
 let processor: micro(i32) -> i32 | f32 = choose_handler()
 let mixed: (Serializable & Comparable) | null = try_create()
 ```
+
+本示例中除 `Comparable` 外，`Serializable` 为示意类型，源码没有对应声明。
 
 ## 适用范围总结
 

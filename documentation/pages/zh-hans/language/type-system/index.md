@@ -106,19 +106,19 @@ structure UserSnapshot { id: i32, name: utf8 }
 
 ### trait 类型
 
-使用 `trait` 关键字定义结构类型约束，编译器推导 class 是否自动满足 trait：
+使用 `trait` 关键字定义结构类型约束。结构推导要求成员名精确匹配，且只对**无 supertrait、无关联类型**的 trait 的 `structure` / `class` 候选生效；显式 `imply` 实现优先：
 
 ```valkyrie
 trait Display {
-    to_utf8(self) -> utf8
+    display(self) -> utf8
 }
 
-micro display(value: Display) {
-    println(value.to_utf8())
+micro render(value: Display) {
+    println(value.display())
 }
 ```
 
-任何定义了 `to_utf8(self) -> utf8` 的类型自动满足 `Display`，无需显式声明实现。
+`Display` 没有 supertrait 和关联类型，`structure` / `class` 候选只要提供签名精确匹配的 `display(self) -> utf8`，即可被结构推导满足；带关联类型的 trait（如 `IntoIterator`）必须显式 `imply`。
 
 ### 类类型
 

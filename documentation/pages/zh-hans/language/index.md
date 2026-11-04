@@ -16,7 +16,7 @@ Valkyrie 语言是面向 ECS、游戏引擎与 Web 全栈的领域特定语言�
 | [语句](statements.md) | `if`、`loop`、`while`、`return` |
 | [表达式](expressions.md) | 运算符、闭包、管道、成员访问 |
 | [模式匹配](pattern-matching.md) | `match`、`case`、`when`、解构 |
-| [trait 系统](trait-system/) | trait 定义、结构推导、关联类型、默认方法、trait 别名 |
+| [trait 系统](trait-system/) | trait 定义、结构推导、关联类型、默认方法、trait 组合 |
 | [方法分派](method-dispatch.md) | 分派规则（class > trait > micro）、消歧手段、witness table |
 | [特性标注](attributes.md) | 元数据标注 |
 | [类继承](class-inheritance.md) | 单继承、多继承、具名继承 |
