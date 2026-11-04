@@ -104,9 +104,6 @@ private micro __u16_div(lhs: u16, rhs: u16): u16
 private micro __u16_rem(lhs: u16, rhs: u16): u16
 
 [host_contract]
-private micro __u16_eq(lhs: u16, rhs: u16): bool
-
-[host_contract]
 private micro __u16_lt(lhs: u16, rhs: u16): bool
 
 [host_contract]
@@ -125,8 +122,9 @@ private micro __u16_shl(lhs: u16, rhs: u16): u16
 private micro __u16_shr(lhs: u16, rhs: u16): u16
 # end region
 imply u16: Equal {
+    # u16 值域 0..=65535 完整落在 u32 位宽内，拓宽后按位判定即精确等值。
     infix `==`(self, rhs: Self): bool {
-        return __u16_eq(self, rhs)
+        return (self as u32) == (rhs as u32)
     }
 
     infix `!=`(self, rhs: Self): bool {

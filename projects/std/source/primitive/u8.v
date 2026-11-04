@@ -104,9 +104,6 @@ private micro __u8_div(lhs: u8, rhs: u8): u8
 private micro __u8_rem(lhs: u8, rhs: u8): u8
 
 [host_contract]
-private micro __u8_eq(lhs: u8, rhs: u8): bool
-
-[host_contract]
 private micro __u8_lt(lhs: u8, rhs: u8): bool
 
 [host_contract]
@@ -125,8 +122,11 @@ private micro __u8_shl(lhs: u8, rhs: u8): u8
 private micro __u8_shr(lhs: u8, rhs: u8): u8
 # end region
 imply u8: Equal {
+    # u8 在各 lane 的物理载体是 i32（`[primitive]` 声明只冻结 u8 身份，
+    # 后端不为其单独提供 Integer8 载体）。等值比较拓宽到 u32 后按位判定：
+    # u8 值域 0..=255 落在 i32 低位，拓宽不改变任何位的取值，语义精确。
     infix `==`(self, rhs: Self): bool {
-        return __u8_eq(self, rhs)
+        return (self as u32) == (rhs as u32)
     }
 
     infix `!=`(self, rhs: Self): bool {
