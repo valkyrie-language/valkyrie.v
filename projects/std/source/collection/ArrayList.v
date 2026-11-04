@@ -126,6 +126,14 @@ imply ArrayList<T> {
         return self.get(size as isize)
     }
 
+    # 集合族统一的回调式遍历 API；与 `IntoIterator`/`for-in` 是两件事：
+    # 这里只按现有 `loop` 协议遍历本列表，不新增遍历协议，也不改变迭代顺序。
+    micro iter(self, f: micro(T) -> unit) -> unit {
+        loop item in self {
+            f(item)
+        }
+    }
+
     # 下标 `[ ]` 即裸值读取，1 基序数，越界结构化失败。
     [host_contract]
     micro at(self, ordinal: usize): T {
