@@ -6,8 +6,11 @@
 structure u8 { }
 
 imply u8 {
+    # `u8` 在 lane 侧的物理载体是 i32：后端只承认 Integer32/Integer64/Character，
+    # 不提供 Integer8。这里把加宽到 u32 后再窄化回 u8；窄化按位截断（实测
+    # `256 as u8 == 0`、`65535 as u8 == 255`），等价于模 256 的环加，语义精确。
     infix `+`(self, rhs: Self): Self {
-        __u8_add(self, rhs)
+        return ((self as u32) + (rhs as u32)) as u8
     }
 
     infix `-`(self, rhs: Self): Self {
@@ -88,9 +91,7 @@ imply u8 {
 }
 
 # region u8 内部指令映射
-[host_contract]
-private micro __u8_add(lhs: u8, rhs: u8): u8
-
+# 加与等值不经宿主合同：两者都由 u32 载体上的同名运算加窄化/拓宽构成（见上）。
 [host_contract]
 private micro __u8_sub(lhs: u8, rhs: u8): u8
 

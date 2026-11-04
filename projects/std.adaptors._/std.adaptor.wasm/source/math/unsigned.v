@@ -1,7 +1,9 @@
 namespace std.adaptor.wasm.math;
 
 # std.adaptor.wasm: 无符号固定宽度整数的目标绑定
-# u8/u16 需要截断或掩码，wasm 没有对应单条指令，必须保持未绑定并结构化失败。
+# u8/u16 的加与等值由 `std.primitive` 在 u32 载体上合成（加宽/窄化或拓宽比较），
+# 不经本文件。其余 u8/u16 算术需要截断或掩码，wasm 没有对应单条指令，
+# 必须保持未绑定并结构化失败。
 
 #region u32
 

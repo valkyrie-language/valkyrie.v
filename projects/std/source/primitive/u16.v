@@ -6,8 +6,11 @@
 structure u16 { }
 
 imply u16 {
+    # `u16` 与 `u8` 同族：后端只承认 Integer32/Integer64/Character 载体，
+    # 不提供 Integer16。加宽到 u32 再窄化回 u16，窄化按位截断，
+    # 等价于模 65536 的环加，语义精确。
     infix `+`(self, rhs: Self): Self {
-        __u16_add(self, rhs)
+        return ((self as u32) + (rhs as u32)) as u16
     }
 
     infix `-`(self, rhs: Self): Self {
@@ -88,9 +91,7 @@ imply u16 {
 }
 
 # region u16 内部指令映射
-[host_contract]
-private micro __u16_add(lhs: u16, rhs: u16): u16
-
+# 加与等值不经宿主合同：两者都由 u32 载体上的同名运算加窄化/拓宽构成（见上）。
 [host_contract]
 private micro __u16_sub(lhs: u16, rhs: u16): u16
 
