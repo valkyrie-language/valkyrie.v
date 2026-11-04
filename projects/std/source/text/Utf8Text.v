@@ -397,6 +397,7 @@ imply Utf8Text {
 # `char` 是 u16 code unit，astral 标量无法表示（类型系统层限制）。
 imply Utf8Text: std::operator::Cardinal {
     type Element = u8;
+    type Index = usize;
 
     # 0 基字节索引自动取值，O(1)；越界结构化失败（合同语义见 `std::operator::Cardinal`）。
     # 单一实现来源：本算子只委托 `byte_at`，不内联第二份读取逻辑。

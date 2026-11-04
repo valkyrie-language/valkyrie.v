@@ -49,6 +49,7 @@ imply Array<T> {
 # 序数语义（1 基）由 `Ordinal` 委托本合同实现。元素个数由 `length` 承担，与本合同无关。
 imply Array<T>: std::operator::Cardinal {
     type Element = T;
+    type Index = usize;
 
     # 0 基索引自动取值；越界结构化失败（合同语义见 `std::operator::Cardinal`）。
     suffix `⁅ ⁆`(self, offset: usize): T {

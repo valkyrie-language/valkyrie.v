@@ -34,6 +34,7 @@ imply ArrayView<T> {
 # 写经窗口落到底层存储（写穿），越界结构化失败。
 imply ArrayView<T>: std::operator::Cardinal {
     type Element = T;
+    type Index = usize;
 
     suffix `⁅ ⁆`(self, offset: usize): T {
         if offset >= self._length {

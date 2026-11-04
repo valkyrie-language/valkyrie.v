@@ -200,6 +200,7 @@ imply ArrayList<T> {
 # 读写都只对逻辑长度（`[0, _length)`）开放，容量余量不对索引暴露。
 imply ArrayList<T>: std::operator::Cardinal {
     type Element = T;
+    type Index = usize;
 
     # 0 基索引自动取值；越界结构化失败（合同语义见 `std::operator::Cardinal`）。
     suffix `⁅ ⁆`(self, offset: usize): T {

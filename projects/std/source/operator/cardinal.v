@@ -16,15 +16,18 @@ namespace std.operator;
 #   不许把计数实现借道索引访问，也不许把索引读写借道计数方法。
 # - 当前测试框架无 expected-panic 断言能力，越界 panic 语义由本注释固定。
 #
-# `Element` 是自由关联类型；索引参数固定 `usize`（0 基偏移）。
+# `Element` / `Index` 都是自由关联类型。常规序列 `Index = usize`（0 基偏移）；
+# 多维数组用元组索引（`(usize, usize)` 等），仍由同一个 `⁅ ⁆` 成员承担，
+# 不按索引参数个数重载。关联类型没有可用默认值：每个 impl 必须显式绑定。
 trait Cardinal {
     type Element;
+    type Index;
 
-    suffix `⁅ ⁆`(self, offset: usize): Element
+    suffix `⁅ ⁆`(self, offset: Self::Index): Element
 
-    suffix `⁅ ⁆=`(mut self, offset: usize, value: Element)
+    suffix `⁅ ⁆=`(mut self, offset: Self::Index, value: Element)
 
-    micro get_cardinal(self, offset: usize): Element
+    micro get_cardinal(self, offset: Self::Index): Element
 
-    micro set_cardinal(mut self, offset: usize, value: Element)
+    micro set_cardinal(mut self, offset: Self::Index, value: Element)
 }

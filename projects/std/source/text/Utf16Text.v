@@ -95,6 +95,7 @@ imply Utf16Text: std::iterator::IntoIterator {
 # 不混入本合同。元素个数由 `length` 承担，与本合同无关。
 imply Utf16Text: std::operator::Cardinal {
     type Element = char;
+    type Index = usize;
 
     # 0 基码元索引自动取值；越界结构化失败（合同语义见 `std::operator::Cardinal`）。
     # 读取只此一份：直接落在 `_repr` 的 0 基数组合同，与 `⁅ ⁆=` 的 `array::set` 对称。
