@@ -85,16 +85,13 @@ micro `test utf8 byte view`() {
         panic("utf8 bytes view first byte failed")
     }
 
-    if text.byte_at(0).unwrap() != 0xE4 {
+    # `byte_at` 是裸 `u8`：界内直接读，越界结构化失败（没有 `Option` 形态）。
+    if text.byte_at(0) != 0xE4 {
         panic("utf8 byte_at first failed")
     }
 
-    if text.byte_at(3).unwrap() != 0xE5 {
+    if text.byte_at(3) != 0xE5 {
         panic("utf8 byte_at second scalar start failed")
-    }
-
-    if text.byte_at(6).is_some() {
-        panic("utf8 byte_at bounds failed")
     }
 }
 
