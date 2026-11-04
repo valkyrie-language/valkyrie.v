@@ -7,7 +7,7 @@ structure u8 { }
 
 imply u8 {
     # `u8` 在 lane 侧的物理载体是 i32：后端只承认 Integer32/Integer64/Character，
-    # 不提供 Integer8。这里把加宽到 u32 后再窄化回 u8；窄化按位截断（实测
+    # 不提供 Integer8。加宽到 u32 再窄化回 u8；窄化按位截断（实测
     # `256 as u8 == 0`、`65535 as u8 == 255`），等价于模 256 的环加，语义精确。
     infix `+`(self, rhs: Self): Self {
         return ((self as u32) + (rhs as u32)) as u8
