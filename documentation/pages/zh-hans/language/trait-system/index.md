@@ -41,44 +41,42 @@ trait 体只包含方法签名和关联类型声明，不得包含字段。
 | 3 | 验证关联类型约束 | 确保推断出的关联类型满足其边界约束（如 `Iter: Iterator`） |
 | 4 | 建立满足关系 | 将 `class` 注册为该 trait 的满足者 |
 
-以 `Vec<T>` 满足 `IntoIterator` 为例：
+以 `ArrayList<T>` 满足 `IntoIterator` 为例（源码在 `ArrayList.v:291-301` 给出显式实现）：
 
-1. **检查方法签名**：`Vec<T>` 中存在 `into_iterator(self) -> VecIterator<T>`，与 `IntoIterator` 的 `into_iterator(self) -> Self::Iter` 形状匹配。
+1. **检查方法签名**：`ArrayList<T>` 中存在 `into_iterator(self) -> ArrayListIterator<T>`，与 `IntoIterator` 的 `into_iterator(self) -> Self::Iter` 形状匹配。
 2. **推断关联类型**：
-   - `Self::Item` 从 `VecIterator<T>` 的 `Item` 关联类型推导 → `T`
-   - `Self::Iter` 从返回类型推导 → `VecIterator<T>`
-3. **验证约束**：`VecIterator<T>` 确实满足 `Iterator<Item = T>`，通过。
-4. **建立关系**：`Vec<T>` 被注册为 `IntoIterator`，编译器在需要 `IntoIterator` 的上下文中接受 `Vec<T>`。
+   - `Self::Item` 从 `ArrayListIterator<T>` 的 `Item` 关联类型推导 → `T`
+   - `Self::Iter` 从返回类型推导 → `ArrayListIterator<T>`
+3. **验证约束**：`ArrayListIterator<T>` 确实满足 `Iterator<Item = T>`，通过。
+4. **建立关系**：`ArrayList<T>` 被注册为 `IntoIterator`，编译器在需要 `IntoIterator` 的上下文中接受 `ArrayList<T>`。
 
-整个过程发生在编译期，零运行时开销，`Vec<T>` 的作者无需任何声明。
+整个过程发生在编译期，零运行时开销。
 
 ## trait 默认方法
 
-trait 可提供 `default` 方法的实现，依赖当前 trait 的其他方法：
+trait 可提供 `default` 方法的实现。源码中 `Iterator` 的 `enumerate`、`skip`、`take`、`map`、`filter` 等均为默认方法，依赖 `has_next` / `next`：
 
 ```valkyrie
-trait IntoIterator {
+trait Iterator {
     type Item
-    type Iter: Iterator<Item = Self::Item>
 
-    into_iterator(self) -> Self::Iter
+    has_next(self) -> bool
+    next(mut self) -> Option<Self::Item>
 
-    collect(self) -> Vec<Self::Item> {
-        let mut out = Vec::new()
-        loop item in self.into_iterator() {
-            out.push_back(item)
+    enumerate(self) -> EnumerateIterator<Item, Self> {
+        return EnumerateIterator {
+            _iter: self,
+            _ordinal: 1,
         }
-        out
-    }
-
-    count(self) -> i32 {
-        let mut n = 0
-        loop _ in self.into_iterator() {
-            n = n + 1
-        }
-        n
     }
 }
+```
+
+`collect` 不是 `IntoIterator` 的默认方法，而是 `std.iterator` 下的自由函数；`collect_array_list` 与 `collect_array` 分别返回 `ArrayList<T>` 与 `[T]`：
+
+```valkyrie
+let list: ArrayList<i32> = collect_array_list(items.into_iterator())
+let array: [i32] = collect_array(items.into_iterator())
 ```
 
 **覆盖规则**：
@@ -93,10 +91,6 @@ trait IntoIterator {
 
 ## trait 别名
 
-```valkyrie
-trait RandomAccessContainer<T> = Indexable<Item = T> & ExtractLength
-```
-
 trait 别名是纯语法糖：
 
 | 特性 | 说明 |
@@ -104,7 +98,7 @@ trait 别名是纯语法糖：
 | 能力 | 不引入新的能力实体，仅为已有 trait 组合起名 |
 | 分派 | 不参与方法分派，方法调用追溯到组合中的原始 trait |
 | 推导 | 结构推导检查组合中的每个 trait 是否被满足 |
-| 约束 | `where T: RandomAccessContainer<i32>` 等价于 `where T: Indexable<Item = i32> & ExtractLength` |
+| 约束 | `where T: 别名<...>` 等价于 `where T: 组合中的各个原始 trait` |
 
 `&` 是 trait 组合运算符，表示"同时满足"。
 
@@ -115,57 +109,42 @@ trait 别名是纯语法糖：
 | trait | 方法 | 说明 |
 |:---|:---|:---|
 | `IntoIterator` | `into_iterator(self) -> Self::Iter` | 转换为迭代器，消耗自身所有权。关联类型 `Item` 和 `Iter: Iterator<Item = Self::Item>` |
-| `Iterator` | `next(ref self) -> Option<Self::Item>` | 推进迭代器到下一项，返回 `Some(item)` 或 `None`。关联类型 `Item` |
-| `DoubleEndedIterator` | `next_back(ref self) -> Option<Self::Item>` | 从尾部推进，支持双向迭代。继承 `Iterator` |
+| `Iterator` | `has_next(self) -> bool`、`next(mut self) -> Option<Self::Item>` | 推进迭代器到下一项，返回 `Some(item)` 或 `None`。关联类型 `Item`；默认方法含 `enumerate` / `skip` / `take` / `map` / `filter` 等 |
 
 ### 长度信息
 
 | trait | 方法 | 说明 |
 |:---|:---|:---|
-| `ExtractLength` | `extract_length(self) -> i32` | 获取元素数量，保证 O(1) 时间复杂度 |
 | `Countable` | `length(self) -> usize` | 精确元素计数。`length` 是承载的元素个数，不是容量、也不是索引空间上界 |
 
-### 索引与查找
+### 索引
 
 | trait | 方法 | 说明 |
 |:---|:---|:---|
-| `Cardinal` | `⁅ ⁆` / `⁅ ⁆=`、`get_cardinal` / `set_cardinal`（`offset: Self::Index`） | 0 基索引读写。关联类型 `Element` 与 `Index`；常见序列实现取 `Index = usize`，多维数组可用元组索引 |
-| `Indexable` | `at(ref self, index: i32) -> Self::Item` | 整数索引访问。关联类型 `Item` |
-| `Lookup` | `lookup(ref self, key: Self::Key) -> Option<Self::Value>` | 键值查找。关联类型 `Key` 和 `Value` |
-| `Contains` | `contains(ref self, value: Self::Item) -> bool` | 判断是否包含指定元素。关联类型 `Item` |
+| `Cardinal` | `⁅ ⁆` / `⁅ ⁆=`、`get_cardinal` / `set_cardinal`（`offset: Self::Index`） | 0 基索引读写。关联类型 `Element` 与 `Index`；常见序列实现取 `Index = usize`。合同允许元组索引，但目前无实现（现有五个实现均为 `Index = usize`），多维形状尚未落地 |
 
-### 添加与移除
+### 有序比较
 
 | trait | 方法 | 说明 |
 |:---|:---|:---|
-| `PushBack` | `push_back(ref self, value: Self::Item)` | 在尾部添加元素 |
-| `PushFront` | `push_front(ref self, value: Self::Item)` | 在头部添加元素 |
-| `PopBack` | `pop_back(ref self) -> Option<Self::Item>` | 移除并返回尾部元素 |
-| `PopFront` | `pop_front(ref self) -> Option<Self::Item>` | 移除并返回头部元素 |
-| `Insertable` | `insert(ref self, index: i32, value: Self::Item)` | 在指定位置插入元素 |
-| `RemovableAt` | `remove_at(ref self, index: i32) -> Option<Self::Item>` | 移除指定位置的元素 |
-| `Clearable` | `clear(ref self)` | 清空所有元素 |
+| `Comparable` | `compare(self, other: Self) -> Ordering` | 全序比较。继承 `Equal`；`Ordering` 是 enums，另含 `<=>`、`<`、`<=`、`>` 等派生算子 |
 
-### 有序与优先级
+## 尚未实现的合同
 
-| trait | 方法 | 说明 |
-|:---|:---|:---|
-| `Ordered` | `compare(ref self, other: Self) -> Ordering` | 全序比较。派生 `PartialEq` 和 `PartialOrd` 行为 |
-| `Priority` | `extract_priority(self) -> i32` | 提取优先级整数值，用于优先队列排序 |
+以下能力形状在文档中曾以统一 trait 描述，但源码目前只有具体类型上的同名成员，没有统一 trait。
 
-### 并行
-
-| trait | 方法 | 说明 |
-|:---|:---|:---|
-| `ParallelIterable` | `into_parallel_iterator(self) -> Self::ParIter` | 转换为并行迭代器。关联类型 `ParIter: ParallelIterator` |
-| `ParallelIterator` | `next_chunk(ref self, size: i32) -> Option<list<Self::Item>>` | 并行拉取一批元素 |
-
-### 批量与映射
-
-| trait | 方法 | 说明 |
-|:---|:---|:---|
-| `Extendable` | `extend(ref self, other: Self::Item)` | 批量追加另一个容器中的所有元素 |
-| `ImmPushBack` | `imm_push_back(self, value: Self::Item) -> Self` | 不可变式尾部追加，返回新实例，原实例不变。用于持久化数据结构 |
+- `Contains`：文档原描述为带 `Item` 关联类型的包含判断 trait；源码现状是 `contains(self, value: T): bool` 仅作为具体类型的成员存在（`Array.v:32`、`ArrayList.v:137`、`set.v:8`、`LinkedList.v:146`），没有统一 trait。
+- `PushFront` / `PushBack` / `PopFront` / `PopBack`：文档原描述为头尾增删 trait；源码现状是 `deque.v:16-35` 与 `LinkedList.v:35-93` 上的同名成员，没有统一 trait。
+- `Insertable`：文档原描述为 `insert(ref self, index: i32, value: Self::Item)`；源码现状是 `ArrayList.v:67` 的 `insert(mut self, ordinal: usize, value: T): unit`，没有统一 trait。
+- `RemovableAt`：文档原描述为 `remove_at(ref self, index: i32)`；源码现状只有 `ArrayList.v:90` 的 `remove(mut self, ordinal: usize): Option<T>`，`remove_at` 零命中，没有统一 trait。
+- `Clearable`：文档原描述为 `clear(ref self)`；源码现状是 `ArrayList.v:49` 等具体类型上的 `clear(mut self): unit`，没有统一 trait。
+- `Lookup`：文档原描述为带 `Key` / `Value` 关联类型的 `lookup` trait；源码现状是映射类型用 `get` / `insert` / `remove`（`map.v:7-8`），`lookup` 零命中，没有统一 trait。
+- `Extendable`：文档原描述为 `extend(ref self, other: Self::Item)`；源码现状是 `extend` 零命中，没有统一 trait。
+- `ImmPushBack`：文档原描述为不可变式尾部追加；源码现状是 `imm_push_back` 零命中，没有统一 trait。
+- `Priority`：文档原描述为 `extract_priority(self) -> i32`；源码现状只有 `PriorityQueue.v:4` 的 `class PriorityQueue<T>`，没有该 trait 与成员。
+- `ParallelIterable` / `ParallelIterator`：文档原描述为并行迭代转换与分批拉取；源码现状是两者及 `into_parallel_iterator` / `next_chunk` 均零命中，没有统一 trait。
+- `DoubleEndedIterator`：文档原描述为 `next_back(ref self)` 双向迭代；源码现状是 `next_back` 零命中，没有统一 trait。
+- `RandomAccessContainer`：文档原描述为 `trait RandomAccessContainer<T> = Indexable<Item = T> & ExtractLength` 的别名示例；源码现状是该别名与 `Indexable` / `ExtractLength` 均零命中。
 
 ## 与其他关键字的关系
 
@@ -222,7 +201,7 @@ trait 方法返回联合类型时，调用方使用 `catch` 处理各变体分�
 
 | trait 类别 | 推导方式 | 示例 |
 |:---|:---|:---|
-| 普通 trait | 编译器自动从形状推导 | `IntoIterator`、`Indexable`、`ExtractLength` |
+| 普通 trait | 编译器自动从形状推导 | `IntoIterator`、`Countable`、`Cardinal` |
 | 显式 trait | 类型作者显式声明 | `Serializable`、`Sendable`、`Syncable`、`Cloneable` |
 
 例如 `Serializable` 要求类型的所有字段都可序列化——这是递归的语义保证，不是签名级信息。
@@ -232,14 +211,14 @@ trait 方法返回联合类型时，调用方使用 `catch` 处理各变体分�
 外部代码（来自其他包或运行时的类型）**绝不**通过形状自动获得显式 trait。外部类型必须通过**包裹类**（Wrapper Class）显式封装后才能参与 trait 推导：
 
 ```valkyrie
-# 外部类型 ExternVec 有 push_back 方法，但不会自动满足 PushBack
+# 外部类型 ExternVec 有 length 方法，但不会自动满足 Countable
 # 必须创建包裹类：
 
 class MyVec
     inner: ExternVec
 
-    push_back(ref self, value: i32) {
-        self.inner.push_back(value)
+    length(self) -> usize {
+        return self.inner.length()
     }
 end
 ```

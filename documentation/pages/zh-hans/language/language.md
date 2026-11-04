@@ -110,10 +110,7 @@ trait IntoIterator {
     type Item
     type Iter: Iterator<Item = Self::Item>
     into_iterator(self) -> Self::Iter
-    default collect(self) -> Vec<Self::Item> { ... }
 }
-
-trait RandomAccessContainer<T> = Indexable<Item = T> & ExtractLength  # trait 别名
 ```
 
 任何定义了 `into_iterator(self)` 方法的类型自动进入 `IntoIterator` 生态，无需显式声明——这是结构推导的核心价值。
@@ -247,36 +244,31 @@ using std::collection::*
 | trait | 核心方法 | 说明 |
 |:---|:---|:---|
 | `IntoIterator` | `into_iterator(self) -> Self::Iter` | 转换为迭代器 |
-| `Iterator` | `next(mut self) -> Option<Self::Item>` | 推进迭代器 |
-| `DoubleEndedIterator` | `next_back(mut self) -> Option<Self::Item>` | 双向迭代 |
+| `Iterator` | `has_next(self) -> bool`、`next(mut self) -> Option<Self::Item>` | 推进迭代器 |
 
 ### 长度与索引
 
 | trait | 核心方法 | 说明 |
 |:---|:---|:---|
-| `ExtractLength` | `extract_length(self) -> i32` | O(1) 获取长度 |
 | `Countable` | `length(self) -> usize` | 精确元素计数；`length` 是承载的元素个数，不是容量或索引空间上界 |
-| `Cardinal` | `⁅ ⁆` / `⁅ ⁆=`、`get_cardinal` / `set_cardinal`（`offset: Self::Index`） | 0 基索引读写；关联类型 `Element` 与 `Index`，常见序列实现取 `Index = usize` |
-| `Indexable` | `at(ref self, index: i32) -> Self::Item` | 整数索引 |
-| `Lookup` | `lookup(ref self, key: Self::Key) -> Option<Self::Value>` | 键值查找 |
-| `Contains` | `contains(ref self, value: Self::Item) -> bool` | 包含判断 |
+| `Cardinal` | `⁅ ⁆` / `⁅ ⁆=`、`get_cardinal` / `set_cardinal`（`offset: Self::Index`） | 0 基索引读写；关联类型 `Element` 与 `Index`，常见序列实现取 `Index = usize`。合同允许元组索引，但目前无实现（现有五个实现均为 `Index = usize`），多维形状尚未落地 |
 
-### 添加与移除
+### 有序比较
 
 | trait | 核心方法 | 说明 |
 |:---|:---|:---|
-| `PushBack` | `push_back(ref self, value: Self::Item)` | 尾部添加 |
-| `PushFront` | `push_front(ref self, value: Self::Item)` | 头部添加 |
-| `PopBack` | `pop_back(ref self) -> Option<Self::Item>` | 尾部移除 |
-| `PopFront` | `pop_front(ref self) -> Option<Self::Item>` | 头部移除 |
+| `Comparable` | `compare(self, other: Self) -> Ordering` | 全序比较；约束为 `Equal` |
 
-### 有序与并行
+## 尚未实现的合同
 
-| trait | 核心方法 | 说明 |
-|:---|:---|:---|
-| `Ordered` | `compare(ref self, other: Self) -> Ordering` | 全序比较 |
-| `Priority` | `extract_priority(self) -> i32` | 优先级提取 |
-| `ParallelIterable` | `into_parallel_iterator(self) -> Self::ParIter` | 并行迭代转换 |
+以下能力形状在文档中曾以统一 trait 描述，但源码目前只有具体类型上的同名成员，没有统一 trait。
+
+- `Contains`：原描述为带 `Item` 关联类型的包含判断 trait；源码现状是 `contains(self, value: T): bool` 仅作为具体类型成员存在（`Array.v:32`、`ArrayList.v:137`、`set.v:8`），没有统一 trait。
+- `PushFront` / `PushBack` / `PopFront` / `PopBack`：原描述为头尾增删 trait；源码现状是 `deque.v:16-35` 与 `LinkedList.v:35-93` 上的同名成员，没有统一 trait。
+- `Lookup`：原描述为带 `Key` / `Value` 关联类型的 `lookup` trait；源码现状是映射类型用 `get` / `insert` / `remove`（`map.v:7-8`），`lookup` 零命中，没有统一 trait。
+- `Priority`：原描述为 `extract_priority(self) -> i32`；源码现状只有 `PriorityQueue.v:4` 的 `class PriorityQueue<T>`，没有该 trait 与成员。
+- `ParallelIterable`：原描述为并行迭代转换；源码现状是 `into_parallel_iterator` 零命中，没有统一 trait。
+- `DoubleEndedIterator`：原描述为 `next_back(ref self)` 双向迭代；源码现状是 `next_back` 零命中，没有统一 trait。
 
 ## 语法速查表
 
