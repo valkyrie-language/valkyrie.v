@@ -33,16 +33,12 @@ trait 组合约束：
 
 ```valkyrie
 # trait 组合约束
-micro binary_search<T: Ord>(self: Indexable<Item = T> & ExtractLength, target: T) -> Option<usize> {
-    # 同时使用 self.length() 和 self.get()
+micro binary_search<T: Ord>(self: Countable & Cardinal<Element = T>, target: T) -> Option<usize> {
+    # 同时使用 self.length() 和索引访问
 }
 ```
 
-也支持 trait 别名：
-
-```valkyrie
-trait RandomAccessContainer<T> = Indexable<Item = T> & ExtractLength;
-```
+trait 别名是纯语法糖；本仓标准库目前没有已声明的 trait 别名。
 
 语义：值必须同时满足 `&` 分隔的所有类型。`&` 是左结合的，`A & B & C` 等价于 `(A & B) & C`。
 
@@ -126,7 +122,7 @@ let handler: EventHandler & Loggable & Configurable = setup()
 trait 组合：
 
 ```valkyrie
-micro binary_search<T: Ord>(self: Indexable<Item = T> & ExtractLength, target: T) -> Option<usize> {
+micro binary_search<T: Ord>(self: Countable & Cardinal<Element = T>, target: T) -> Option<usize> {
     # ...
 }
 ```
