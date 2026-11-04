@@ -33,8 +33,26 @@ trait 组合约束：
 
 ```valkyrie
 # trait 组合约束
-micro binary_search<T: Ord>(self: Countable & Cardinal<Element = T>, target: T) -> Option<usize> {
-    # 同时使用 self.length() 和索引访问
+# 文档示例函数，不是标准库成员：`binary_search` / `Ord` 在源码中不存在，
+# 现有能力是 `Ordinal`（1 基序数）与 `Cardinal`（0 基索引）。
+micro linear_search<
+    T: Comparable,
+    C: Countable & Cardinal<Element = T, Index = usize>,
+>(container: C, target: T) -> Option<usize> {
+    let mut i: usize = 0
+    while i < container.length() {
+        match container⁅i⁆ <=> target {
+            case Equal:
+                return Some(i)
+            case Less:
+                i = i + 1
+            case Greater:
+                i = i + 1
+            case Unordered:
+                i = i + 1
+        }
+    }
+    return None
 }
 ```
 
@@ -122,8 +140,25 @@ let handler: EventHandler & Loggable & Configurable = setup()
 trait 组合：
 
 ```valkyrie
-micro binary_search<T: Ord>(self: Countable & Cardinal<Element = T>, target: T) -> Option<usize> {
-    # ...
+# 文档示例函数，不是标准库成员：`binary_search` / `Ord` 在源码中不存在。
+micro linear_search<
+    T: Comparable,
+    C: Countable & Cardinal<Element = T, Index = usize>,
+>(container: C, target: T) -> Option<usize> {
+    let mut i: usize = 0
+    while i < container.length() {
+        match container⁅i⁆ <=> target {
+            case Equal:
+                return Some(i)
+            case Less:
+                i = i + 1
+            case Greater:
+                i = i + 1
+            case Unordered:
+                i = i + 1
+        }
+    }
+    return None
 }
 ```
 
