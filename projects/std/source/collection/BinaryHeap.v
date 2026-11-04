@@ -49,7 +49,9 @@ imply BinaryHeap<T> {
         self.data.clear()
     }
 
-    micro sift_up(mut self, index: usize): unit {
+    micro sift_up(mut self, index: usize): unit
+        where T: Comparable
+    {
         let mut cursor: usize = index
         while cursor > 0 {
             let parent: usize = (cursor - 1) / 2
@@ -65,7 +67,9 @@ imply BinaryHeap<T> {
         }
     }
 
-    micro sift_down(mut self, index: usize): unit {
+    micro sift_down(mut self, index: usize): unit
+        where T: Comparable
+    {
         let length: usize = self.data.length()
         let mut cursor: usize = index
         while true {

@@ -201,7 +201,9 @@ imply BTreeMap<K, V> {
         return self.set_existing(node.children.get((self.find_child_index(node, key) + 1) as isize).unwrap(), key, value)
     }
 
-    micro insert_non_full(mut self, node: BTreeNode<K, V>, key: K, value: V): unit {
+    micro insert_non_full(mut self, node: BTreeNode<K, V>, key: K, value: V): unit
+        where K: Comparable
+    {
         if node.leaf {
             let mut insert_at: usize = 0
             while insert_at < node.keys.length() {
@@ -274,7 +276,9 @@ imply BTreeMap<K, V> {
         return current
     }
 
-    micro find_child_index(self, node: BTreeNode<K, V>, key: K): usize {
+    micro find_child_index(self, node: BTreeNode<K, V>, key: K): usize
+        where K: Comparable
+    {
         let mut cursor: usize = 0
         while cursor < node.keys.length() {
             if key < node.keys.get((cursor + 1) as isize).unwrap() {

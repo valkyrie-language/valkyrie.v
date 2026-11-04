@@ -163,7 +163,9 @@ imply BTreeSet<T> {
         return self.search_node(node.children.get((self.find_child_index(node, value) + 1) as isize).unwrap(), value)
     }
 
-    micro insert_non_full(mut self, node: BTreeSetNode<T>, value: T): unit {
+    micro insert_non_full(mut self, node: BTreeSetNode<T>, value: T): unit
+        where T: Comparable
+    {
         if node.leaf {
             let mut insert_at: usize = 0
             while insert_at < node.keys.length() {
@@ -233,7 +235,9 @@ imply BTreeSet<T> {
         return current
     }
 
-    micro find_child_index(self, node: BTreeSetNode<T>, value: T): usize {
+    micro find_child_index(self, node: BTreeSetNode<T>, value: T): usize
+        where T: Comparable
+    {
         let mut cursor: usize = 0
         while cursor < node.keys.length() {
             if value < node.keys.get((cursor + 1) as isize).unwrap() {
