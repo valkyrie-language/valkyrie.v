@@ -47,6 +47,15 @@ imply u64: Hash {
     }
 }
 
+# `char` 是 u16 code unit，按码位拓宽到 `usize` 后直接作为哈希值。
+# 与 `utf8` 的逐字符混合哈希同口径：同一码位得到同一哈希输入，
+# 不同码位在整数哈希上落到不同值（不额外引入随机化）。
+imply char: Hash {
+    micro hash(self) -> usize {
+        return self as usize
+    }
+}
+
 imply f32: Hash {
     micro hash(self) -> usize {
         return (self * 1000000.0) as usize

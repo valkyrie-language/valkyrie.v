@@ -467,6 +467,71 @@ micro `test hash map keys and values`() {
     }
 }
 
+# 哈希探针：`where T: std::collection::Hash` 让 `hash` 合同在体内可见，
+# 测试文件本身不依赖 trait 的隐式作用域。
+micro hash_of<T>(value: T): usize
+    where T: std::collection::Hash
+{
+    return value.hash()
+}
+
+[test]
+micro `test char hash map insert query overwrite`() {
+    let a: char = 97 as u16 as char
+    let b: char = 98 as u16 as char
+    let map: HashMap<char, i64> = HashMap::new(0)
+
+    map.insert(a, 1)
+    map.insert(b, 2)
+
+    if map.length() != 2 {
+        panic("char hash map length test failed")
+    }
+
+    if !map.contains_key(a) {
+        panic("char hash map contains key test failed")
+    }
+
+    if map.get(a).unwrap() != 1 {
+        panic("char hash map first value test failed")
+    }
+
+    if map.get(b).unwrap() != 2 {
+        panic("char hash map second value test failed")
+    }
+
+    let previous: Option<i64> = map.insert(a, 7)
+    if previous.unwrap() != 1 {
+        panic("char hash map overwrite previous value test failed")
+    }
+
+    if map.length() != 2 {
+        panic("char hash map overwrite length test failed")
+    }
+
+    if map.get(a).unwrap() != 7 {
+        panic("char hash map overwrite value test failed")
+    }
+}
+
+[test]
+micro `test char hash distinct code points`() {
+    let a: char = 97 as u16 as char
+    let b: char = 98 as u16 as char
+
+    if hash_of(a) == hash_of(b) {
+        panic("char hash distinct code point test failed")
+    }
+
+    # 不同码位进入同一张表后仍是两个独立键，不是碰撞覆盖。
+    let map: HashMap<char, i64> = HashMap::new(0)
+    map.insert(a, 1)
+    map.insert(b, 2)
+    if map.length() != 2 {
+        panic("char hash distinct bucket test failed")
+    }
+}
+
 [test]
 micro `test hash set basic operations`() {
     let set: HashSet<i32> = HashSet::new()
