@@ -12,16 +12,6 @@ imply char {
         return code as u16 as char
     }
 
-    # 相等性按码位判定：char 是 u16 code unit，拓宽到 u32 后值域完全保持，
-    # 复用 u32 的既有 provider 链，不为 char 新造平台相关 host contract。
-    infix `==`(self, rhs: Self): bool {
-        return self as u32 == rhs as u32
-    }
-
-    infix `!=`(self, rhs: Self): bool {
-        return !(self == rhs)
-    }
-
     micro is_ascii_digit(self): bool {
         let code: u32 = self as u32
         return code >= 48 && code <= 57
@@ -71,5 +61,17 @@ imply char {
             return empty
         }
         return Some { value: (code - 97) as i64 }
+    }
+}
+
+imply char: std::operator::Equal {
+    # 相等性按码位判定：char 是 u16 code unit，拓宽到 u32 后值域完全保持，
+    # 复用 u32 的既有 provider 链，不为 char 新造平台相关 host contract。
+    infix `==`(self, rhs: Self): bool {
+        return self as u32 == rhs as u32
+    }
+
+    infix `!=`(self, rhs: Self): bool {
+        return !(self == rhs)
     }
 }
