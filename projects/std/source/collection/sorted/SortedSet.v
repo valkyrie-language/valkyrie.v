@@ -7,21 +7,21 @@ class SortedSet<T> {
 imply SortedSet<T>: Set<T> {
     [host_contract]
     micro insert(mut self, value: T): bool
-        where T: Equal
+        where T: Equal & std::operator::Comparable
     {
         return self._impl.insert(value)
     }
 
     [host_contract]
     micro remove(mut self, value: T): bool
-        where T: Equal
+        where T: Equal & std::operator::Comparable
     {
         return self._impl.remove(value)
     }
 
     [host_contract]
     micro contains(self, value: T): bool
-        where T: Equal
+        where T: Equal & std::operator::Comparable
     {
         return self._impl.contains(value)
     }
@@ -53,7 +53,7 @@ imply SortedSet<T>: Set<T> {
     }
 
     micro from_list(list: ArrayList<T>): Self
-        where T: Equal
+        where T: Equal & std::operator::Comparable
     {
         let mut result: Self = Self::new()
         list.iter(micro(value: T) -> unit { result.insert(value) })

@@ -11,12 +11,16 @@ imply BinaryHeap<T> {
         }
     }
 
-    micro push(mut self, value: T): unit {
+    micro push(mut self, value: T): unit
+        where T: std::operator::Comparable
+    {
         self.data.push(value)
         self.sift_up(self.data.length() - 1)
     }
 
-    micro pop(mut self): Option<T> {
+    micro pop(mut self): Option<T>
+        where T: std::operator::Comparable
+    {
         if self.data.is_empty() {
             return None
         }
@@ -50,7 +54,7 @@ imply BinaryHeap<T> {
     }
 
     micro sift_up(mut self, index: usize): unit
-        where T: Comparable
+        where T: std::operator::Comparable
     {
         let mut cursor: usize = index
         while cursor > 0 {
@@ -68,7 +72,7 @@ imply BinaryHeap<T> {
     }
 
     micro sift_down(mut self, index: usize): unit
-        where T: Comparable
+        where T: std::operator::Comparable
     {
         let length: usize = self.data.length()
         let mut cursor: usize = index

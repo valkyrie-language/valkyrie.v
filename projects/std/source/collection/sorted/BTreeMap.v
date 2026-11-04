@@ -27,7 +27,7 @@ imply BTreeMap<K, V> {
     }
 
     micro `get`(self, key: K): Option<V>
-        where K: Equal
+        where K: Equal & std::operator::Comparable
     {
         if self._root.is_none() {
             return None
@@ -37,7 +37,7 @@ imply BTreeMap<K, V> {
     }
 
     micro insert(mut self, key: K, value: V): Option<V>
-        where K: Equal
+        where K: Equal & std::operator::Comparable
     {
         if self._root.is_none() {
             let root: BTreeNode<K, V> = BTreeNode {
@@ -79,7 +79,7 @@ imply BTreeMap<K, V> {
     }
 
     micro remove(mut self, key: K): Option<V>
-        where K: Equal
+        where K: Equal & std::operator::Comparable
     {
         let old_option: Option<V> = self.get(key)
         if old_option.is_none() {
@@ -109,7 +109,7 @@ imply BTreeMap<K, V> {
     }
 
     micro contains_key(self, key: K): bool
-        where K: Equal
+        where K: Equal & std::operator::Comparable
     {
         return self.get(key).is_some()
     }
@@ -162,7 +162,7 @@ imply BTreeMap<K, V> {
     }
 
     micro search_node(self, node: BTreeNode<K, V>, key: K): Option<V>
-        where K: Equal
+        where K: Equal & std::operator::Comparable
     {
         if node.leaf {
             let mut cursor: usize = 0
@@ -181,7 +181,7 @@ imply BTreeMap<K, V> {
     }
 
     micro set_existing(self, node: BTreeNode<K, V>, key: K, value: V): Option<V>
-        where K: Equal
+        where K: Equal & std::operator::Comparable
     {
         if node.leaf {
             let mut cursor: usize = 0
@@ -202,7 +202,7 @@ imply BTreeMap<K, V> {
     }
 
     micro insert_non_full(mut self, node: BTreeNode<K, V>, key: K, value: V): unit
-        where K: Comparable
+        where K: std::operator::Comparable
     {
         if node.leaf {
             let mut insert_at: usize = 0
@@ -277,7 +277,7 @@ imply BTreeMap<K, V> {
     }
 
     micro find_child_index(self, node: BTreeNode<K, V>, key: K): usize
-        where K: Comparable
+        where K: std::operator::Comparable
     {
         let mut cursor: usize = 0
         while cursor < node.keys.length() {

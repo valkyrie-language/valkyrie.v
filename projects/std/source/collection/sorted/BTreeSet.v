@@ -21,7 +21,7 @@ imply BTreeSet<T> {
     }
 
     micro insert(mut self, value: T): bool
-        where T: Equal
+        where T: Equal & std::operator::Comparable
     {
         if self._root.is_none() {
             let root: BTreeSetNode<T> = BTreeSetNode {
@@ -59,7 +59,7 @@ imply BTreeSet<T> {
     }
 
     micro remove(mut self, value: T): bool
-        where T: Equal
+        where T: Equal & std::operator::Comparable
     {
         if !self.contains(value) {
             return false
@@ -82,7 +82,7 @@ imply BTreeSet<T> {
     }
 
     micro contains(self, value: T): bool
-        where T: Equal
+        where T: Equal & std::operator::Comparable
     {
         if self._root.is_none() {
             return false
@@ -135,7 +135,7 @@ imply BTreeSet<T> {
     }
 
     micro from_list(list: ArrayList<T>): Self
-        where T: Equal
+        where T: Equal & std::operator::Comparable
     {
         let mut result: Self = Self::new()
         list.iter(micro(value: T) -> unit {
@@ -145,7 +145,7 @@ imply BTreeSet<T> {
     }
 
     micro search_node(self, node: BTreeSetNode<T>, value: T): bool
-        where T: Equal
+        where T: Equal & std::operator::Comparable
     {
         if node.leaf {
             let mut cursor: usize = 0
@@ -164,7 +164,7 @@ imply BTreeSet<T> {
     }
 
     micro insert_non_full(mut self, node: BTreeSetNode<T>, value: T): unit
-        where T: Comparable
+        where T: std::operator::Comparable
     {
         if node.leaf {
             let mut insert_at: usize = 0
@@ -236,7 +236,7 @@ imply BTreeSet<T> {
     }
 
     micro find_child_index(self, node: BTreeSetNode<T>, value: T): usize
-        where T: Comparable
+        where T: std::operator::Comparable
     {
         let mut cursor: usize = 0
         while cursor < node.keys.length() {

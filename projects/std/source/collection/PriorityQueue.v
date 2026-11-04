@@ -14,12 +14,16 @@ imply PriorityQueue<T> {
     }
 
     [host_contract]
-    micro push(mut self, value: T): unit {
+    micro push(mut self, value: T): unit
+        where T: std::operator::Comparable
+    {
         self._impl.push(value)
     }
 
     [host_contract]
-    micro pop(mut self): Option<T> {
+    micro pop(mut self): Option<T>
+        where T: std::operator::Comparable
+    {
         if self.is_empty() {
             return None
         }

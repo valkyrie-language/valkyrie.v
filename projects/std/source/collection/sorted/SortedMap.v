@@ -7,28 +7,28 @@ class SortedMap<K, V> {
 imply SortedMap<K, V>: Map<K, V> {
     [host_contract]
     micro `get`(self, key: K): Option<V>
-        where K: Equal
+        where K: Equal & std::operator::Comparable
     {
         return self._impl.get(key)
     }
 
     [host_contract]
     micro insert(mut self, key: K, value: V): Option<V>
-        where K: Equal
+        where K: Equal & std::operator::Comparable
     {
         return self._impl.insert(key, value)
     }
 
     [host_contract]
     micro remove(mut self, key: K): Option<V>
-        where K: Equal
+        where K: Equal & std::operator::Comparable
     {
         return self._impl.remove(key)
     }
 
     [host_contract]
     micro contains_key(self, key: K): bool
-        where K: Equal
+        where K: Equal & std::operator::Comparable
     {
         return self._impl.contains_key(key)
     }
@@ -58,7 +58,7 @@ imply SortedMap<K, V>: Map<K, V> {
     }
 
     micro iterator(self, f: micro(K, V) -> unit) -> unit
-        where K: Equal
+        where K: Equal & std::operator::Comparable
     {
         let keys: ArrayList<K> = self.keys()
         loop key in keys {
