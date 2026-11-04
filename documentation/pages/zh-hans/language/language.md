@@ -8,7 +8,7 @@ Valkyrie 是面向 ECS、游戏引擎与 Web 全栈的领域特定语言。它�
 
 Valkyrie 的语言设计围绕三条核心原则展开：
 
-- **trait 是能力宪法**：trait 定义操作形状，描述类型"能做什么"。满足关系有两种来源：显式 `imply` 实现优先；仅对**无 supertrait、无关联类型**的 trait，编译器才对 `struct` 候选按方法签名做结构推导。带关联类型的 trait（如 `IntoIterator`）必须显式 `imply`，不会因为存在同名方法自动进入生态。
+- **trait 是能力宪法**：trait 定义操作形状，描述类型"能做什么"。满足关系有两种来源：显式 `imply` 实现优先；仅对**无 supertrait、无关联类型**的 trait，编译器才对结构类型（`structure` / `class`）候选按方法签名做结构推导。带关联类型的 trait（如 `IntoIterator`）必须显式 `imply`，不会因为存在同名方法自动进入生态。
 - **class 是行为唯一实体**：所有特化必须在 `class` 内部以同名方法或条件方法的形式提供。外部绝不允许定义特化块。
 - **micro 是通用算法蓝图**：独立泛型函数，基于最少 trait 约束编写。`micro` 不允许重载——不同功能必须使用不同名字。
 
@@ -103,7 +103,7 @@ using game::physics::Vector
 
 ## trait 系统
 
-trait 定义类型的能力形状，编译器通过**结构推导**自动判定满足关系。详见 [trait 系统](trait-system/)。
+trait 定义类型的能力形状。满足关系以显式 `imply` 实现为准；仅对**无 supertrait、无关联类型**的 trait，编译器才对结构类型（`structure` / `class`）候选按方法签名做结构推导。带关联类型的 trait 必须显式 `imply`。详见 [trait 系统](trait-system/)。
 
 ```valkyrie
 trait IntoIterator {
@@ -113,7 +113,7 @@ trait IntoIterator {
 }
 ```
 
-`IntoIterator` 带有 `Item` / `Iter` 关联类型，必须通过显式 `imply` 声明实现；定义同名 `into_iterator` 方法不会自动进入其生态。结构推导只覆盖**无 supertrait、无关联类型**的 trait 的 `struct` 候选，且显式实现优先于结构推导（实现见 `trait_system.rs:489-528`；有关联类型时返回 `MissingExplicitImplForAssociatedTypes`，见 `:503-505`）。
+`IntoIterator` 带有 `Item` / `Iter` 关联类型，必须通过显式 `imply` 声明实现；定义同名 `into_iterator` 方法不会自动进入其生态。结构推导只覆盖**无 supertrait、无关联类型**的 trait 的 `structure` / `class` 候选，且显式实现优先于结构推导（实现见 `trait_system.rs:489-528`；有关联类型时返回 `MissingExplicitImplForAssociatedTypes`，见 `:503-505`）。
 
 ## 方法分派
 

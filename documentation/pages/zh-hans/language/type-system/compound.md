@@ -29,6 +29,8 @@ let obj: Serializable & Equatable = create()
 let widget: Renderable & Clickable & Draggable = build()
 ```
 
+本示例中的 `Serializable`、`Equatable`、`Renderable`、`Clickable`、`Draggable` 均为示意类型，源码没有对应声明。
+
 trait 组合约束：
 
 ```valkyrie
@@ -136,6 +138,8 @@ let result: Success(i32) | Error(string) = compute()
 let obj: Serializable & Comparable = create()
 let handler: EventHandler & Loggable & Configurable = setup()
 ```
+
+本示例中除 `Comparable` 外，`Serializable`、`EventHandler`、`Loggable`、`Configurable` 均为示意类型，源码没有对应声明。
 
 trait 组合：
 
