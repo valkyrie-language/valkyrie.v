@@ -148,4 +148,28 @@ imply DisjointSet<T> {
 
         return result
     }
+
+    # 返回与 `root` 同组的成员个数（含 `root` 自身）；`root` 不在集合中时
+    # 结构化失败。与 `group_members` 同源（`find_root` 归一），只计数不建表。
+    micro group_sizes(mut self, root: T) -> usize
+        where T: Equal & Hash
+    {
+        if !self.contains(root) {
+            std::types::panic("DisjointSet.group_sizes 越界：root 不在集合中")
+        }
+
+        let canonical: T = self.find_root(root)
+        let values: ArrayList<T> = self._parent.keys()
+        let mut total: usize = 0
+        let mut index: usize = 0
+        while index < values.length() {
+            if self.find_root(values.get((index + 1) as isize).unwrap()) == canonical {
+                total = total + 1
+            }
+
+            index = index + 1
+        }
+
+        return total
+    }
 }
