@@ -182,6 +182,79 @@ imply BitSet {
             self.words.push(0)
         }
     }
+
+    # 深拷贝：words 逐项复制，副本与原位图互不影响。
+    micro clone(self): Self {
+        let mut words: ArrayList<u64> = ArrayList::new(self.words.length())
+        let mut index: usize = 0
+        while index < self.words.length() {
+            words.push(self.words.get((index + 1) as isize).unwrap())
+            index = index + 1
+        }
+
+        return Self { words: words }
+    }
+
+    # 分配位宽（`words.length() * 64`，必为 64 的倍数），不是已用位宽。
+    # 已用位宽（最高置位 + 1）用 `bit_length()`；空位图为 0。
+    micro length(self): usize {
+        return self.words.length() * 64
+    }
+
+    # 置位下标（0 基）升序迭代；迭代器持有 words 快照，之后原位图变化不影响它。
+    micro iter(self) -> BitSetIterator {
+        return BitSetIterator { _words: self.words.to_array(), _cursor: 0 }
+    }
+}
+
+# 位图迭代器：按置位下标（0 基）升序产出，所有置位访问完后返回 `None`。
+class BitSetIterator {
+    _words: [u64]
+    _cursor: usize
+}
+
+imply BitSetIterator: std::iterator::Iterator {
+    type Item = usize;
+
+    micro has_next(self): bool {
+        let total: usize = self._words.length() * 64
+        let mut index: usize = self._cursor
+        while index < total {
+            let word: u64 = self._words⁅index / 64⁆
+            let bit: usize = index % 64
+            if (word & ((1 as u64) << (bit as u64))) != 0 {
+                return true
+            }
+
+            index = index + 1
+        }
+
+        return false
+    }
+
+    micro next(mut self): Option<usize> {
+        let total: usize = self._words.length() * 64
+        while self._cursor < total {
+            let index: usize = self._cursor
+            let word: u64 = self._words⁅index / 64⁆
+            let bit: usize = index % 64
+            self._cursor = index + 1
+            if (word & ((1 as u64) << (bit as u64))) != 0 {
+                return Some(index)
+            }
+        }
+
+        return None
+    }
+}
+
+imply BitSet: std::iterator::IntoIterator {
+    type Item = usize;
+    type Iter = BitSetIterator;
+
+    micro into_iterator(self): BitSetIterator {
+        return self.iter()
+    }
 }
 
 
