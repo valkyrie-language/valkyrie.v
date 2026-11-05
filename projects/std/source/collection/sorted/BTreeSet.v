@@ -253,4 +253,63 @@ imply BTreeSet<T> {
     micro is_full(self, node: BTreeSetNode<T>): bool {
         return node.keys.length() >= 3
     }
+
+    # 最小的 `>= value` 元素；空集或全部元素都小于 `value` 时返回 `None`。
+    # 与 `BTreeMap.ceiling_key` 同口径：沿叶链顺序扫描，单次 O(n)。
+    micro ceiling(self, value: T) -> Option<T>
+        where T: std::operator::Comparable
+    {
+        if self._root.is_none() {
+            return None
+        }
+
+        let mut current: Option<BTreeSetNode<T>> = Some(self.leftmost_leaf(self._root.unwrap()))
+        while current.is_some() {
+            let leaf: BTreeSetNode<T> = current.unwrap()
+            let mut cursor: usize = 0
+            while cursor < leaf.keys.length() {
+                let candidate: T = leaf.keys.get((cursor + 1) as isize).unwrap()
+                if candidate >= value {
+                    return Some(candidate)
+                }
+
+                cursor = cursor + 1
+            }
+
+            current = leaf.next
+        }
+
+        return None
+    }
+
+    # 最大的 `<= value` 元素；空集或全部元素都大于 `value` 时返回 `None`。
+    # 与 `BTreeMap.floor_key` 同口径：叶链已有序，遇到第一个大于 `value`
+    # 的元素即可停止（后续只会更大）。
+    micro floor(self, value: T) -> Option<T>
+        where T: std::operator::Comparable
+    {
+        if self._root.is_none() {
+            return None
+        }
+
+        let mut found: Option<T> = None
+        let mut current: Option<BTreeSetNode<T>> = Some(self.leftmost_leaf(self._root.unwrap()))
+        while current.is_some() {
+            let leaf: BTreeSetNode<T> = current.unwrap()
+            let mut cursor: usize = 0
+            while cursor < leaf.keys.length() {
+                let candidate: T = leaf.keys.get((cursor + 1) as isize).unwrap()
+                if candidate > value {
+                    return found
+                }
+
+                found = Some(candidate)
+                cursor = cursor + 1
+            }
+
+            current = leaf.next
+        }
+
+        return found
+    }
 }
