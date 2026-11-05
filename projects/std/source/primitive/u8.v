@@ -14,23 +14,23 @@ imply u8 {
     }
 
     infix `-`(self, rhs: Self): Self {
-        __u8_sub(self, rhs)
+        return ((self as u32) - (rhs as u32)) as u8
     }
 
     infix `*`(self, rhs: Self): Self {
-        __u8_mul(self, rhs)
+        return ((self as u32) * (rhs as u32)) as u8
     }
 
     infix `/`(self, rhs: Self): Self {
-        __u8_div(self, rhs)
+        return ((self as u32) / (rhs as u32)) as u8
     }
 
     infix `%`(self, rhs: Self): Self {
-        __u8_rem(self, rhs)
+        return ((self as u32) % (rhs as u32)) as u8
     }
 
     infix `<`(self, rhs: Self): bool {
-        __u8_lt(self, rhs)
+        return (self as u32) < (rhs as u32)
     }
 
     infix `<=`(self, rhs: Self): bool {
@@ -46,15 +46,15 @@ imply u8 {
     }
 
     bit_and(self, rhs: Self): Self {
-        __u8_and(self, rhs)
+        return ((self as u32) & (rhs as u32)) as u8
     }
 
     bit_or(self, rhs: Self): Self {
-        __u8_or(self, rhs)
+        return ((self as u32) | (rhs as u32)) as u8
     }
 
     bit_xor(self, rhs: Self): Self {
-        __u8_xor(self, rhs)
+        return ((self as u32) ^ (rhs as u32)) as u8
     }
 
     bit_shift_left(self, rhs: Self): Self {
@@ -91,31 +91,8 @@ imply u8 {
 }
 
 # region u8 内部指令映射
-# 加与等值不经宿主合同：两者都由 u32 载体上的同名运算加窄化/拓宽构成（见上）。
-[host_contract]
-private micro __u8_sub(lhs: u8, rhs: u8): u8
-
-[host_contract]
-private micro __u8_mul(lhs: u8, rhs: u8): u8
-
-[host_contract]
-private micro __u8_div(lhs: u8, rhs: u8): u8
-
-[host_contract]
-private micro __u8_rem(lhs: u8, rhs: u8): u8
-
-[host_contract]
-private micro __u8_lt(lhs: u8, rhs: u8): bool
-
-[host_contract]
-private micro __u8_and(lhs: u8, rhs: u8): u8
-
-[host_contract]
-private micro __u8_or(lhs: u8, rhs: u8): u8
-
-[host_contract]
-private micro __u8_xor(lhs: u8, rhs: u8): u8
-
+# 除移位守卫外，u8 的算术、比较与位运算全部在 u32 载体上计算后按位截断，
+# 不经宿主合同；语义由「值域完整落在 u32 低 8 位」保证。
 [host_contract]
 private micro __u8_shl(lhs: u8, rhs: u8): u8
 

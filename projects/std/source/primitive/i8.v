@@ -6,28 +6,32 @@
 structure i8 { }
 
 imply i8 {
+    # `i8` 与无符号窄整数同族：后端只承认 Integer32/Integer64/Character 载体，
+    # 不提供 Integer8。算术与比较一律在 i32 载体上计算，结果窄化回 i8；
+    # `as i32` 是符号扩展，`as i8` 是按位截断，两者合起来即模 256 的环运算，
+    # 有符号比较因符号扩展而精确。
     infix `+`(self, rhs: Self): Self {
-        __i8_add(self, rhs)
+        return ((self as i32) + (rhs as i32)) as i8
     }
 
     infix `-`(self, rhs: Self): Self {
-        __i8_sub(self, rhs)
+        return ((self as i32) - (rhs as i32)) as i8
     }
 
     infix `*`(self, rhs: Self): Self {
-        __i8_mul(self, rhs)
+        return ((self as i32) * (rhs as i32)) as i8
     }
 
     infix `/`(self, rhs: Self): Self {
-        __i8_div(self, rhs)
+        return ((self as i32) / (rhs as i32)) as i8
     }
 
     infix `%`(self, rhs: Self): Self {
-        __i8_rem(self, rhs)
+        return ((self as i32) % (rhs as i32)) as i8
     }
 
     infix `<`(self, rhs: Self): bool {
-        __i8_lt(self, rhs)
+        return (self as i32) < (rhs as i32)
     }
 
     infix `<=`(self, rhs: Self): bool {
@@ -43,19 +47,19 @@ imply i8 {
     }
 
     prefix `-`(self): Self {
-        __i8_neg(self)
+        return ((0 as i32) - (self as i32)) as i8
     }
 
     bit_and(self, rhs: Self): Self {
-        __i8_and(self, rhs)
+        return ((self as i32) & (rhs as i32)) as i8
     }
 
     bit_or(self, rhs: Self): Self {
-        __i8_or(self, rhs)
+        return ((self as i32) | (rhs as i32)) as i8
     }
 
     bit_xor(self, rhs: Self): Self {
-        __i8_xor(self, rhs)
+        return ((self as i32) ^ (rhs as i32)) as i8
     }
 
     bit_shift_left(self, rhs: Self): Self {
@@ -87,44 +91,13 @@ imply i8 {
     }
 
     bit_not(self): Self {
-        self.bit_xor(-1)
+        self.bit_xor(-1 as i8)
     }
 }
 
 # region i8 内部指令映射
-[host_contract]
-private micro __i8_add(lhs: i8, rhs: i8): i8
-
-[host_contract]
-private micro __i8_sub(lhs: i8, rhs: i8): i8
-
-[host_contract]
-private micro __i8_neg(self: i8): i8
-
-[host_contract]
-private micro __i8_mul(lhs: i8, rhs: i8): i8
-
-[host_contract]
-private micro __i8_div(lhs: i8, rhs: i8): i8
-
-[host_contract]
-private micro __i8_rem(lhs: i8, rhs: i8): i8
-
-[host_contract]
-private micro __i8_eq(lhs: i8, rhs: i8): bool
-
-[host_contract]
-private micro __i8_lt(lhs: i8, rhs: i8): bool
-
-[host_contract]
-private micro __i8_and(lhs: i8, rhs: i8): i8
-
-[host_contract]
-private micro __i8_or(lhs: i8, rhs: i8): i8
-
-[host_contract]
-private micro __i8_xor(lhs: i8, rhs: i8): i8
-
+# 除移位守卫外，i8 的算术、比较与位运算全部在 i32 载体上计算后按位截断，
+# 不经宿主合同；`as i32` 符号扩展、`as i8` 按位截断，语义精确。
 [host_contract]
 private micro __i8_shl(lhs: i8, rhs: i8): i8
 
@@ -133,8 +106,9 @@ private micro __i8_shr(lhs: i8, rhs: i8): i8
 # end region
 
 imply i8: Equal {
+    # i8 经 `as i32` 符号扩展后比较，值域完整落在 i32 内，语义精确。
     infix `==`(self, rhs: Self): bool {
-        return __i8_eq(self, rhs)
+        return (self as i32) == (rhs as i32)
     }
 
     infix `!=`(self, rhs: Self): bool {

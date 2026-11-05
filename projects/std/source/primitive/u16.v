@@ -7,30 +7,31 @@ structure u16 { }
 
 imply u16 {
     # `u16` 与 `u8` 同族：后端只承认 Integer32/Integer64/Character 载体，
-    # 不提供 Integer16。加宽到 u32 再窄化回 u16，窄化按位截断，
-    # 等价于模 65536 的环加，语义精确。
+    # 不提供 Integer16。算术与比较一律在 u32 载体上计算，结果窄化回 u16；
+    # 窄化按位截断（实测 `65536 as u16 == 0`），等价于模 65536 的环运算，
+    # 语义由「值域完整落在 u32 低 16 位」保证。
     infix `+`(self, rhs: Self): Self {
         return ((self as u32) + (rhs as u32)) as u16
     }
 
     infix `-`(self, rhs: Self): Self {
-        __u16_sub(self, rhs)
+        return ((self as u32) - (rhs as u32)) as u16
     }
 
     infix `*`(self, rhs: Self): Self {
-        __u16_mul(self, rhs)
+        return ((self as u32) * (rhs as u32)) as u16
     }
 
     infix `/`(self, rhs: Self): Self {
-        __u16_div(self, rhs)
+        return ((self as u32) / (rhs as u32)) as u16
     }
 
     infix `%`(self, rhs: Self): Self {
-        __u16_rem(self, rhs)
+        return ((self as u32) % (rhs as u32)) as u16
     }
 
     infix `<`(self, rhs: Self): bool {
-        __u16_lt(self, rhs)
+        return (self as u32) < (rhs as u32)
     }
 
     infix `<=`(self, rhs: Self): bool {
@@ -46,15 +47,15 @@ imply u16 {
     }
 
     bit_and(self, rhs: Self): Self {
-        __u16_and(self, rhs)
+        return ((self as u32) & (rhs as u32)) as u16
     }
 
     bit_or(self, rhs: Self): Self {
-        __u16_or(self, rhs)
+        return ((self as u32) | (rhs as u32)) as u16
     }
 
     bit_xor(self, rhs: Self): Self {
-        __u16_xor(self, rhs)
+        return ((self as u32) ^ (rhs as u32)) as u16
     }
 
     bit_shift_left(self, rhs: Self): Self {
@@ -91,31 +92,8 @@ imply u16 {
 }
 
 # region u16 内部指令映射
-# 加与等值不经宿主合同：两者都由 u32 载体上的同名运算加窄化/拓宽构成（见上）。
-[host_contract]
-private micro __u16_sub(lhs: u16, rhs: u16): u16
-
-[host_contract]
-private micro __u16_mul(lhs: u16, rhs: u16): u16
-
-[host_contract]
-private micro __u16_div(lhs: u16, rhs: u16): u16
-
-[host_contract]
-private micro __u16_rem(lhs: u16, rhs: u16): u16
-
-[host_contract]
-private micro __u16_lt(lhs: u16, rhs: u16): bool
-
-[host_contract]
-private micro __u16_and(lhs: u16, rhs: u16): u16
-
-[host_contract]
-private micro __u16_or(lhs: u16, rhs: u16): u16
-
-[host_contract]
-private micro __u16_xor(lhs: u16, rhs: u16): u16
-
+# 除移位守卫外，u16 的算术、比较与位运算全部在 u32 载体上计算后按位截断，
+# 不经宿主合同；语义由「值域完整落在 u32 低 16 位」保证。
 [host_contract]
 private micro __u16_shl(lhs: u16, rhs: u16): u16
 

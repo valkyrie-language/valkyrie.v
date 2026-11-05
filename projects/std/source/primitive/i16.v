@@ -6,28 +6,31 @@
 structure i16 { }
 
 imply i16 {
+    # `i16` 与无符号窄整数同族：后端只承认 Integer32/Integer64/Character 载体，
+    # 不提供 Integer16。算术与比较一律在 i32 载体上计算，结果窄化回 i16；
+    # `as i32` 是符号扩展，`as i16` 是按位截断，两者合起来即模 65536 的环运算。
     infix `+`(self, rhs: Self): Self {
-        __i16_add(self, rhs)
+        return ((self as i32) + (rhs as i32)) as i16
     }
 
     infix `-`(self, rhs: Self): Self {
-        __i16_sub(self, rhs)
+        return ((self as i32) - (rhs as i32)) as i16
     }
 
     infix `*`(self, rhs: Self): Self {
-        __i16_mul(self, rhs)
+        return ((self as i32) * (rhs as i32)) as i16
     }
 
     infix `/`(self, rhs: Self): Self {
-        __i16_div(self, rhs)
+        return ((self as i32) / (rhs as i32)) as i16
     }
 
     infix `%`(self, rhs: Self): Self {
-        __i16_rem(self, rhs)
+        return ((self as i32) % (rhs as i32)) as i16
     }
 
     infix `<`(self, rhs: Self): bool {
-        __i16_lt(self, rhs)
+        return (self as i32) < (rhs as i32)
     }
 
     infix `<=`(self, rhs: Self): bool {
@@ -43,19 +46,19 @@ imply i16 {
     }
 
     prefix `-`(self): Self {
-        __i16_neg(self)
+        return ((0 as i32) - (self as i32)) as i16
     }
 
     bit_and(self, rhs: Self): Self {
-        __i16_and(self, rhs)
+        return ((self as i32) & (rhs as i32)) as i16
     }
 
     bit_or(self, rhs: Self): Self {
-        __i16_or(self, rhs)
+        return ((self as i32) | (rhs as i32)) as i16
     }
 
     bit_xor(self, rhs: Self): Self {
-        __i16_xor(self, rhs)
+        return ((self as i32) ^ (rhs as i32)) as i16
     }
 
     bit_shift_left(self, rhs: Self): Self {
@@ -87,44 +90,13 @@ imply i16 {
     }
 
     bit_not(self): Self {
-        self.bit_xor(-1)
+        self.bit_xor(-1 as i16)
     }
 }
 
 # region i16 内部指令映射
-[host_contract]
-private micro __i16_add(lhs: i16, rhs: i16): i16
-
-[host_contract]
-private micro __i16_sub(lhs: i16, rhs: i16): i16
-
-[host_contract]
-private micro __i16_neg(self: i16): i16
-
-[host_contract]
-private micro __i16_mul(lhs: i16, rhs: i16): i16
-
-[host_contract]
-private micro __i16_div(lhs: i16, rhs: i16): i16
-
-[host_contract]
-private micro __i16_rem(lhs: i16, rhs: i16): i16
-
-[host_contract]
-private micro __i16_eq(lhs: i16, rhs: i16): bool
-
-[host_contract]
-private micro __i16_lt(lhs: i16, rhs: i16): bool
-
-[host_contract]
-private micro __i16_and(lhs: i16, rhs: i16): i16
-
-[host_contract]
-private micro __i16_or(lhs: i16, rhs: i16): i16
-
-[host_contract]
-private micro __i16_xor(lhs: i16, rhs: i16): i16
-
+# 除移位守卫外，i16 的算术、比较与位运算全部在 i32 载体上计算后按位截断，
+# 不经宿主合同；`as i32` 符号扩展、`as i16` 按位截断，语义精确。
 [host_contract]
 private micro __i16_shl(lhs: i16, rhs: i16): i16
 
@@ -132,8 +104,9 @@ private micro __i16_shl(lhs: i16, rhs: i16): i16
 private micro __i16_shr(lhs: i16, rhs: i16): i16
 # end region
 imply i16: Equal {
+    # i16 经 `as i32` 符号扩展后比较，值域完整落在 i32 内，语义精确。
     infix `==`(self, rhs: Self): bool {
-        return __i16_eq(self, rhs)
+        return (self as i32) == (rhs as i32)
     }
 
     infix `!=`(self, rhs: Self): bool {
