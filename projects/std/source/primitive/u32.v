@@ -42,6 +42,16 @@ imply u32 {
         !(self < rhs)
     }
 
+    # 半开区间 `[start, end)`；32 位目标 `usize = u32`，本 impl 同时服务 `usize`。
+    infix `..`(self, rhs: Self): std::types::U32Range {
+        return std::types::u32_range(self, rhs)
+    }
+
+    # 闭区间 `[start, end]`；声明侧就位，表达式形态待 `..=` token 落地。
+    infix `..=`(self, rhs: Self): std::types::U32InclusiveRange {
+        return std::types::u32_inclusive_range(self, rhs)
+    }
+
     bit_and(self, rhs: Self): Self {
         __u32_and(self, rhs)
     }

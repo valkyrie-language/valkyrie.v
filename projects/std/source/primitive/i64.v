@@ -42,6 +42,16 @@ imply i64 {
         !(self < rhs)
     }
 
+    # 半开区间 `[start, end)`；64 位目标 `isize = i64`，本 impl 同时服务 `isize`。
+    infix `..`(self, rhs: Self): std::types::I64Range {
+        return std::types::i64_range(self, rhs)
+    }
+
+    # 闭区间 `[start, end]`；声明侧就位，表达式形态待 `..=` token 落地。
+    infix `..=`(self, rhs: Self): std::types::I64InclusiveRange {
+        return std::types::i64_inclusive_range(self, rhs)
+    }
+
     prefix `-`(self): Self {
         __i64_neg(self)
     }
