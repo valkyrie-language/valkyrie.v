@@ -17,13 +17,19 @@ namespace std.operator;
 #   （默认体在当前前端无法解析 `self[ordinal]` 算子调用）。
 # - 有序且支持 0 基索引读写的容器应先实现 `Cardinal`，再把序数 `n`（1 基）落到
 #   0 基偏移 `n - 1` 委托给自身的 `Cardinal` 实现；不要反向维护一套独立的序数下标逻辑。
-# - 只有位置语义、没有计数语义的类型（如 `HashMap` 按键存取）只实现本合同，
-#   不实现 `Cardinal`。
+# - 映射与集合（`HashMap` / `HashSet` / `BTreeMap` / `BTreeSet`）只有按键语义、
+#   没有位置计数语义：只实现本合同，`Index = K`（键），不实现 `Cardinal`
+#   （`⁅ ⁆` 对它们不存在入口）。对它们而言"序数"就是键：`[key]` 读、
+#   `[key] = value` 写（缺键即新增，与 `insert` 同源），删除走类型自身的 `remove`。
+#   集合里键与元素同型，`Index = Element = T`。
 #
 # `Index` 是自由关联类型，下标参数一律写 `Self::Index`：常规序列实现选 `isize`
-# （允许负值进入越界判定）；键即索引的映射（`HashMap` / `SwissTable`）直接选 `Index = K`，
+# （允许负值进入越界判定）；键即索引的映射/集合直接选 `Index = K`，
 # 不许拿 `isize` / `usize` 硬套；非整数索引（CST 节点句柄、utf8 字节偏移等）
 # 只要能给出上述等价语义即可实现本合同。
+#
+# 键索引实现的合法域是"键存在"（不是 `1 <= ordinal <= 元素个数`）：
+# 键缺失等价于越界，`[ ]` 结构化失败、`get` 返回 `None`，两者语义一致。
 trait Ordinal {
     type Index;
     type Element;

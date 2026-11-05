@@ -408,3 +408,29 @@ imply BTreeMap<K, V> {
         return node.keys.length() >= 3
     }
 }
+
+# 序数合同：键即索引，`Index = K`，与 `isize` / `usize` 无关。
+# map 只有按键访问语义、没有 0 基偏移计数语义，因此不实现 `Cardinal`（`⁅ ⁆` 不存在入口）。
+# 读路径：`[ ]` 是裸值形态，缺键结构化失败；可恢复形态是 `get`（`Option<V>`，本类型已提供）。
+# 写路径：`[ ]=` 与 `insert` 同源——缺键时新增、已有键时覆盖值。
+imply BTreeMap<K, V>: std::operator::Ordinal {
+    type Index = K;
+    type Element = V;
+
+    suffix `[ ]`(self, key: K): V {
+        let result: Option<V> = self.get(key)
+        if result.is_none() {
+            std::types::panic("BTreeMap [ ] 键缺失：主访问是裸值形态")
+        }
+        return result.unwrap()
+    }
+
+    suffix `[ ]=`(mut self, key: K, value: V) {
+        let previous: Option<V> = self.insert(key, value)
+    }
+
+    # 与 `[ ]=` 同源：命名方法形态，互为委托。
+    micro set(mut self, key: K, value: V) {
+        self[key] = value
+    }
+}

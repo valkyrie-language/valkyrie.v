@@ -15,6 +15,9 @@ namespace std.operator;
 # - 本合同不管元素个数：计数语义（`length` / `count()` 等）由类型自行声明，
 #   不许把计数实现借道索引访问，也不许把索引读写借道计数方法。
 # - 当前测试框架无 expected-panic 断言能力，越界 panic 语义由本注释固定。
+# - 映射与集合（`HashMap` / `HashSet` / `BTreeMap` / `BTreeSet`）不实现本合同：
+#   它们只有按键语义、没有 0 基偏移语义，`⁅ ⁆` 对它们不存在入口
+#   （反例见 `projects/std/negative/cardinal_on_map_set.v`）；它们只实现 `Ordinal`。
 #
 # `Element` / `Index` 都是自由关联类型。常规序列 `Index = usize`（0 基偏移）；
 # 多维数组用元组索引（`(usize, usize)` 等），仍由同一个 `⁅ ⁆` 成员承担，

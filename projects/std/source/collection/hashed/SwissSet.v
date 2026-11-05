@@ -78,6 +78,20 @@ imply SwissSet<T> {
         return self.find_slot(value).is_some()
     }
 
+    # 按键取回存储的元素（集合里键即元素）：命中返回存储值，未命中 `None`。
+    # `HashSet` 的 `Ordinal` 主访问与可恢复路径共用这一条查找逻辑。
+    micro get(self, value: T): Option<T>
+        where T: Equal & Hash
+    {
+        let slot: Option<usize> = self.find_slot(value)
+        if slot.is_none() {
+            return None
+        }
+
+        let index: usize = slot.unwrap()
+        return self._values.get((index + 1) as isize).unwrap()
+    }
+
     micro length(self): usize {
         return self._length
     }

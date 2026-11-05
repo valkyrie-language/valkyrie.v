@@ -163,6 +163,28 @@ imply BTreeSet<T> {
         return self.search_node(node.children.get((self.find_child_index(node, value) + 1) as isize).unwrap(), value)
     }
 
+    # 按键取回存储的元素（集合里键即元素）：命中返回叶子中的键，未命中 `None`。
+    # 内部节点的键只是路由副本，命中判定必须在叶子完成。
+    private micro lookup(self, node: BTreeSetNode<T>, value: T): Option<T>
+        where T: Equal & std::operator::Comparable
+    {
+        if node.leaf {
+            let mut cursor: usize = 0
+            while cursor < node.keys.length() {
+                let candidate: T = node.keys.get((cursor + 1) as isize).unwrap()
+                if candidate == value {
+                    return Some(candidate)
+                }
+
+                cursor = cursor + 1
+            }
+
+            return None
+        }
+
+        return self.lookup(node.children.get((self.find_child_index(node, value) + 1) as isize).unwrap(), value)
+    }
+
     micro insert_non_full(mut self, node: BTreeSetNode<T>, value: T): unit
         where T: std::operator::Comparable
     {
@@ -311,5 +333,39 @@ imply BTreeSet<T> {
         }
 
         return found
+    }
+}
+
+# 序数合同：键即索引，`Index = T`（集合里键与元素同型），与 `isize` / `usize` 无关。
+# 集合只有按键访问语义、没有 0 基偏移计数语义，因此不实现 `Cardinal`。
+# 读路径：`[ ]` 是裸值形态，缺键结构化失败；可恢复形态是 `get`（`Option<T>`）。
+# 写路径：`[ ]=` 与 `insert` 同源——缺键时新增，已存在时不改变元素个数。
+imply BTreeSet<T>: std::operator::Ordinal {
+    type Index = T;
+    type Element = T;
+
+    suffix `[ ]`(self, value: T): T {
+        let result: Option<T> = self.get(value)
+        if result.is_none() {
+            std::types::panic("BTreeSet [ ] 键缺失：主访问是裸值形态")
+        }
+        return result.unwrap()
+    }
+
+    suffix `[ ]=`(mut self, key: T, element: T) {
+        let inserted: bool = self.insert(element)
+    }
+
+    micro get(self, value: T): Option<T> {
+        if self._root.is_none() {
+            return None
+        }
+
+        return self.lookup(self._root.unwrap(), value)
+    }
+
+    # 与 `[ ]=` 同源：键用于定位，元素即写入值。
+    micro set(mut self, value: T, element: T) {
+        self[value] = element
     }
 }
