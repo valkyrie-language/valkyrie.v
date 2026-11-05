@@ -101,6 +101,46 @@ imply i8 {
     bit_not(self): Self {
         self.bit_xor(-1 as i8)
     }
+
+    # 位元查询按位模式解释 `i8`：负数的高位为 1，结果与无符号同宽位模式一致。
+    # 只用 `&` / `-` / `<<` 与比较，不依赖右移，也不做符号特判。
+    micro count_ones(self): u32 {
+        let mut value: i8 = self
+        let mut total: u32 = 0
+        while value != 0 as i8 {
+            value = value & (value - (1 as i8))
+            total = total + 1
+        }
+        return total
+    }
+
+    micro leading_zeros(self): u32 {
+        if self == 0 as i8 {
+            return 8
+        }
+
+        let mut value: i8 = self
+        let mut count: u32 = 0
+        while (value & ((1 as i8) << (7 as i8))) == 0 as i8 {
+            value = value << (1 as i8)
+            count = count + 1
+        }
+        return count
+    }
+
+    micro trailing_zeros(self): u32 {
+        if self == 0 as i8 {
+            return 8
+        }
+
+        let mut mask: i8 = 1 as i8
+        let mut count: u32 = 0
+        while (self & mask) == 0 as i8 {
+            mask = mask << (1 as i8)
+            count = count + 1
+        }
+        return count
+    }
 }
 
 # 移位守卫与其余算术均在 std 层合成，本文件已无宿主合同。

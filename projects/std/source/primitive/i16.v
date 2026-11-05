@@ -100,6 +100,46 @@ imply i16 {
     bit_not(self): Self {
         self.bit_xor(-1 as i16)
     }
+
+    # 位元查询按位模式解释 `i16`，与无符号同宽位模式一致。
+    # 只用 `&` / `-` / `<<` 与比较，不依赖右移，也不做符号特判。
+    micro count_ones(self): u32 {
+        let mut value: i16 = self
+        let mut total: u32 = 0
+        while value != 0 as i16 {
+            value = value & (value - (1 as i16))
+            total = total + 1
+        }
+        return total
+    }
+
+    micro leading_zeros(self): u32 {
+        if self == 0 as i16 {
+            return 16
+        }
+
+        let mut value: i16 = self
+        let mut count: u32 = 0
+        while (value & ((1 as i16) << (15 as i16))) == 0 as i16 {
+            value = value << (1 as i16)
+            count = count + 1
+        }
+        return count
+    }
+
+    micro trailing_zeros(self): u32 {
+        if self == 0 as i16 {
+            return 16
+        }
+
+        let mut mask: i16 = 1 as i16
+        let mut count: u32 = 0
+        while (self & mask) == 0 as i16 {
+            mask = mask << (1 as i16)
+            count = count + 1
+        }
+        return count
+    }
 }
 
 # 移位守卫与其余算术均在 std 层合成，本文件已无宿主合同。

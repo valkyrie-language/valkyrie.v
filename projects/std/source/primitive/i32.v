@@ -89,6 +89,46 @@ imply i32 {
     bit_not(self): Self {
         self.bit_xor(-1)
     }
+
+    # 位元查询按位模式解释 `i32`：负数的最高位为 1，前导零为 0。
+    # 只用 `&` / `-` / `<<` 与比较，不依赖右移。
+    micro count_ones(self): u32 {
+        let mut value: i32 = self
+        let mut total: u32 = 0
+        while value != 0 as i32 {
+            value = value & (value - (1 as i32))
+            total = total + 1
+        }
+        return total
+    }
+
+    micro leading_zeros(self): u32 {
+        if self == 0 as i32 {
+            return 32
+        }
+
+        let mut value: i32 = self
+        let mut count: u32 = 0
+        while (value & ((1 as i32) << (31 as i32))) == 0 as i32 {
+            value = value << (1 as i32)
+            count = count + 1
+        }
+        return count
+    }
+
+    micro trailing_zeros(self): u32 {
+        if self == 0 as i32 {
+            return 32
+        }
+
+        let mut mask: i32 = 1 as i32
+        let mut count: u32 = 0
+        while (self & mask) == 0 as i32 {
+            mask = mask << (1 as i32)
+            count = count + 1
+        }
+        return count
+    }
 }
 
 # region i32 内部指令映射

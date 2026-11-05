@@ -85,6 +85,46 @@ imply u32 {
     bit_not(self): Self {
         self.bit_xor(0xFFFFFFFF as u32)
     }
+
+    # 位元查询：位宽由 `u32` 的 32 位定义，全 0 的前导/尾随零均为 32。
+    # 只用 `&` / `-` / `<<` 与比较：`>>` 在 wasm 上仍被 lower 成左旋。
+    micro count_ones(self): u32 {
+        let mut value: u32 = self
+        let mut total: u32 = 0
+        while value != 0 as u32 {
+            value = value & (value - (1 as u32))
+            total = total + 1
+        }
+        return total
+    }
+
+    micro leading_zeros(self): u32 {
+        if self == 0 as u32 {
+            return 32
+        }
+
+        let mut value: u32 = self
+        let mut count: u32 = 0
+        while (value & (0x80000000 as u32)) == 0 as u32 {
+            value = value << (1 as u32)
+            count = count + 1
+        }
+        return count
+    }
+
+    micro trailing_zeros(self): u32 {
+        if self == 0 as u32 {
+            return 32
+        }
+
+        let mut mask: u32 = 1 as u32
+        let mut count: u32 = 0
+        while (self & mask) == 0 as u32 {
+            mask = mask << (1 as u32)
+            count = count + 1
+        }
+        return count
+    }
 }
 
 [host_contract]

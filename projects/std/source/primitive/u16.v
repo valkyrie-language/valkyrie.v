@@ -99,6 +99,46 @@ imply u16 {
     bit_not(self): Self {
         self.bit_xor(0xFFFF as u16)
     }
+
+    # 位元查询：位宽由 `u16` 的 16 位定义，全 0 的前导/尾随零均为 16。
+    # 与 `u8` 同族，只用 `&` / `-` / `<<` 与比较，不依赖右移。
+    micro count_ones(self): u32 {
+        let mut value: u16 = self
+        let mut total: u32 = 0
+        while value != 0 as u16 {
+            value = value & (value - (1 as u16))
+            total = total + 1
+        }
+        return total
+    }
+
+    micro leading_zeros(self): u32 {
+        if self == 0 as u16 {
+            return 16
+        }
+
+        let mut value: u16 = self
+        let mut count: u32 = 0
+        while (value & (0x8000 as u16)) == 0 as u16 {
+            value = value << (1 as u16)
+            count = count + 1
+        }
+        return count
+    }
+
+    micro trailing_zeros(self): u32 {
+        if self == 0 as u16 {
+            return 16
+        }
+
+        let mut mask: u16 = 1 as u16
+        let mut count: u32 = 0
+        while (self & mask) == 0 as u16 {
+            mask = mask << (1 as u16)
+            count = count + 1
+        }
+        return count
+    }
 }
 
 # 移位守卫与其余算术均在 std 层合成，本文件已无宿主合同。

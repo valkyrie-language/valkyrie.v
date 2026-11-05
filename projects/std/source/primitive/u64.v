@@ -86,6 +86,47 @@ imply u64 {
     bit_not(self): Self {
         self.bit_xor(((0xFFFFFFFF as u64) << 32) | (0xFFFFFFFF as u64))
     }
+
+    # 位元查询：位宽由 `u64` 的 64 位定义，全 0 的前导/尾随零均为 64。
+    # 最高位掩码同样以 hi/lo 组合表达，不写超 i64 上限的字面量。
+    micro count_ones(self): u32 {
+        let mut value: u64 = self
+        let mut total: u32 = 0
+        while value != 0 as u64 {
+            value = value & (value - (1 as u64))
+            total = total + 1
+        }
+        return total
+    }
+
+    micro leading_zeros(self): u32 {
+        if self == 0 as u64 {
+            return 64
+        }
+
+        let mut value: u64 = self
+        let mut count: u32 = 0
+        let top: u64 = (0x80000000 as u64) << 32
+        while (value & top) == 0 as u64 {
+            value = value << (1 as u64)
+            count = count + 1
+        }
+        return count
+    }
+
+    micro trailing_zeros(self): u32 {
+        if self == 0 as u64 {
+            return 64
+        }
+
+        let mut mask: u64 = 1 as u64
+        let mut count: u32 = 0
+        while (self & mask) == 0 as u64 {
+            mask = mask << (1 as u64)
+            count = count + 1
+        }
+        return count
+    }
 }
 
 [host_contract]

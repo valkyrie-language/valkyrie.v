@@ -99,6 +99,47 @@ imply u8 {
     bit_not(self): Self {
         self.bit_xor(0xFF as u8)
     }
+
+    # 位元查询：位宽由 `u8` 的 8 位定义，全 0 的前导/尾随零均为 8。
+    # 只用 `&` / `-` / `<<` 与比较：`>>` 在 wasm 上仍被 lower 成左旋，
+    # 因此计位与扫描都写成不依赖右移的形式。
+    micro count_ones(self): u32 {
+        let mut value: u8 = self
+        let mut total: u32 = 0
+        while value != 0 as u8 {
+            value = value & (value - (1 as u8))
+            total = total + 1
+        }
+        return total
+    }
+
+    micro leading_zeros(self): u32 {
+        if self == 0 as u8 {
+            return 8
+        }
+
+        let mut value: u8 = self
+        let mut count: u32 = 0
+        while (value & (0x80 as u8)) == 0 as u8 {
+            value = value << (1 as u8)
+            count = count + 1
+        }
+        return count
+    }
+
+    micro trailing_zeros(self): u32 {
+        if self == 0 as u8 {
+            return 8
+        }
+
+        let mut mask: u8 = 1 as u8
+        let mut count: u32 = 0
+        while (self & mask) == 0 as u8 {
+            mask = mask << (1 as u8)
+            count = count + 1
+        }
+        return count
+    }
 }
 
 # 移位守卫与其余算术均在 std 层合成，本文件已无宿主合同。
