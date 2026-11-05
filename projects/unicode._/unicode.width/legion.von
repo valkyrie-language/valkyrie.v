@@ -1,0 +1,40 @@
+{
+    name: "unicode.width",
+    version: "0.1.0",
+    description: "Unicode 16.0.0 显示宽度（East Asian Width）：未实现骨架，不要调用",
+    artifact: "library",
+    dependencies: {
+        "unicode.types": "workspace"
+    },
+    build: [
+        {
+            target: "ovm"
+        },
+        {
+            target: "clr-microsoft-unknown-managed",
+            msil: true
+        },
+        {
+            target: "jvm-openjdk-unknown-managed"
+        },
+        {
+            target: "wasm",
+            source_map: true
+        },
+        {
+            target: "wasm32-unknown-browser-wasm",
+            source_map: true,
+            typescript: true,
+            wat: true
+        },
+        {
+            target: "wasm32-wechat-unknown-wasm"
+        },
+        {
+            target: "wasm32-node-unknown-wasm"
+        }
+    ],
+    engines: {
+        vcc: "0.1.*"
+    }
+}

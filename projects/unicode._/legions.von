@@ -4,7 +4,10 @@
     description: "Unicode 数据包群 — 按 UCD 版本钉死的码点属性、大小写与文本分段能力",
     members: [
         "unicode.types",
-        "unicode.case"
+        "unicode.case",
+        "unicode.segment",
+        "unicode.width",
+        "unicode.normalization"
     ],
     dependencies: {},
     workspace: {
