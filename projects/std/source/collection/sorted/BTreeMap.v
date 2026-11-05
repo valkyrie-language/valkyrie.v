@@ -11,6 +11,9 @@ class BTreeNode<K, V> {
     values: ArrayList<V>
     children: ArrayList<BTreeNode<K, V>>
     next: Option<BTreeNode<K, V>>
+    # 子树键总数（秩查询用）：叶子等于 `keys.length()`，内部节点等于各子树规模之和。
+    # 内部节点的键是子叶已含键的路由副本，不重复计入。
+    size: usize
 }
 
 class BTreeMap<K, V> {
@@ -46,6 +49,7 @@ imply BTreeMap<K, V> {
                 values: ArrayList::new(4),
                 children: ArrayList::new(0),
                 next: None,
+                size: 1,
             }
             root.keys.push(key)
             root.values.push(value)
@@ -67,6 +71,7 @@ imply BTreeMap<K, V> {
                 values: ArrayList::new(0),
                 children: ArrayList::new(4),
                 next: None,
+                size: root.size,
             }
             new_root.children.push(root)
             self.split_child(new_root, 0)
@@ -139,7 +144,10 @@ imply BTreeMap<K, V> {
     }
 
     micro clear(mut self) -> unit {
-        self._root = None
+        # 显式类型局部量：`None` 直接写入 `Option` 字段在 OVM 降级时字段写形态不完整，
+        # 先绑定成带类型局部量再赋值，语义不变。
+        let empty: Option<BTreeNode<K, V>> = None
+        self._root = empty
         self._length = 0
     }
 
@@ -219,6 +227,44 @@ imply BTreeMap<K, V> {
         return candidate
     }
 
+    # 按秩取键：第 `rank` 小（0 基）的键，键唯一因此秩即去重后的位置。
+    # 空树或 `rank >= length()` 返回 `None`，不回落首键/末键。
+    # 沿各节点记录的子树的键总数下降，单层至多 4 个孩子，单次 O(log n)。
+    micro nth_key(self, rank: usize): Option<K> {
+        if self._root.is_none() {
+            return None
+        }
+
+        let mut node: BTreeNode<K, V> = self._root.unwrap()
+        if rank >= node.size {
+            return None
+        }
+
+        let mut target: usize = rank
+        while !node.leaf {
+            let mut cursor: usize = 0
+            let mut descended: bool = false
+            while cursor < node.children.length() {
+                let child: BTreeNode<K, V> = node.children.get((cursor + 1) as isize).unwrap()
+                if target < child.size {
+                    node = child
+                    descended = true
+                    break
+                }
+
+                target = target - child.size
+                cursor = cursor + 1
+            }
+
+            # 内部规模与排名不一致（不应发生）：结构化失败，不伪造元素。
+            if !descended {
+                return None
+            }
+        }
+
+        return Some(node.keys.get((target + 1) as isize).unwrap())
+    }
+
     micro search_node(self, node: BTreeNode<K, V>, key: K): Option<V>
         where K: Equal & std::operator::Comparable
     {
@@ -274,6 +320,7 @@ imply BTreeMap<K, V> {
 
             node.keys.insert(insert_at + 1, key)
             node.values.insert(insert_at + 1, value)
+            node.size = node.size + 1
             return
         }
 
@@ -287,6 +334,7 @@ imply BTreeMap<K, V> {
         }
 
         self.insert_non_full(node.children.get((child_index + 1) as isize).unwrap(), key, value)
+        node.size = node.size + 1
     }
 
     micro split_child(self, parent: BTreeNode<K, V>, child_index: usize): unit {
@@ -297,6 +345,7 @@ imply BTreeMap<K, V> {
             values: ArrayList::new(4),
             children: ArrayList::new(4),
             next: None,
+            size: 0,
         }
 
         if child.leaf {
@@ -308,6 +357,9 @@ imply BTreeMap<K, V> {
             right.next = child.next
             child.next = Some(right)
 
+            # 分裂不改变父节点子树规模：左 + 右 = 分裂前的 child。
+            child.size = child.keys.length()
+            right.size = right.keys.length()
             parent.children.insert(child_index + 2, right)
             parent.keys.insert(child_index + 1, parent.children.get((child_index + 2) as isize).unwrap().keys.get(1 as isize).unwrap())
             return
@@ -321,6 +373,9 @@ imply BTreeMap<K, V> {
             right.children.push(child.children.remove(3).unwrap())
         }
 
+        # 内部节点规模按子树合计，路由副本键不重复计数；左右各留两个孩子。
+        child.size = child.children.get(1 as isize).unwrap().size + child.children.get(2 as isize).unwrap().size
+        right.size = right.children.get(1 as isize).unwrap().size + right.children.get(2 as isize).unwrap().size
         parent.children.insert(child_index + 2, right)
         parent.keys.insert(child_index + 1, separator)
     }
