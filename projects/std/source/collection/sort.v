@@ -3,10 +3,15 @@ namespace std.collection;
 # std.collection: sort - 排序入口
 #
 # 稳定性是入口名属性，不是可声明的布尔参数：
-#   - `sort`：稳定入口（归并 + 插入基例），默认；
-#   - `sort_unstable`：唯一显式不稳定入口（快排 + 堆回退 + 插入基例）；
+#   - `merge_sort(list, cmp)`：稳定的比较器入口，原地排序；
+#   - `quick_sort(list, cmp)`：显式不稳定的比较器入口，原地排序；
+#   - `sort` / `sort_unstable`：自然序入口，默认稳定 / 显式不稳定；
 #   - `sorted_by`：稳定的比较器入口，返回新 `ArrayList`，不改动入参。
-# `quick_sort` / `merge_sort` 只作为私有实现，不再是公开入口。
+# `merge_sort_range` / `quick_sort_range` 只作为私有区间实现，由公开入口委托
+# 调用，不再暴露 4/5 参形态。
+# 定长 `[T]` 的 `sort` 走同一套稳定实现：先取快照到 `ArrayList`，排好后再写回。
+# `Array<T>` 的 `sort` 重载暂缺：该类没有公开构造入口，且当前编译器对第三个同名
+# 泛型重载的解析失败（`[T]` 实参会被判为无匹配），见本批验证报告。
 # 比较只有一条实现路径：`micro(T, T) -> i32`，负数表示前者先出，零保持原
 # 相对次序（稳定），正数表示后者先出。`sort` / `sort_unstable` 由元素自身的
 # `Comparable` 派生该比较器，不复制第二套排序实现。
@@ -47,7 +52,8 @@ private micro is_less_or_equal<T>(a: T, b: T, cmp: micro(T, T) -> i32): bool {
 }
 
 # `Comparable` 到比较器的唯一转换点：`Unordered` 在排序里是结构化失败。
-private micro natural_order<T>(a: T, b: T): i32
+# 非私有：比较器闭包（`sort` / `BinaryHeap` 的自然序入口）需要按名调用它。
+micro natural_order<T>(a: T, b: T): i32
     where T: std::operator::Comparable
 {
     match a.compare(b) {
@@ -83,10 +89,54 @@ micro sort<T>(mut list: ArrayList<T>): unit
         return
     }
 
-    merge_sort(list, 0, length - 1, micro(a: T, b: T) -> i32 {
-        return natural_order(a, b)
+    merge_sort(list, micro(a: T, b: T) -> i32 {
+        if a < b {
+            return -1
+        }
+
+        if a > b {
+            return 1
+        }
+
+        return 0
     })
 }
+
+# 稳定入口：按调用方比较器原地排序（相等元素保持原相对次序）。
+micro merge_sort<T>(mut list: ArrayList<T>, cmp: micro(T, T) -> i32): unit {
+    let length: usize = list.length()
+    if length < 2 {
+        return
+    }
+
+    merge_sort_range(list, 0, length - 1, cmp)
+}
+
+# 定长 `[T]` 的稳定自然序排序：快照到 `ArrayList`，复用归并实现后写回。
+micro sort<T>(mut values: [T]): unit
+    where T: std::operator::Comparable
+{
+    let size: usize = values.length()
+    if size < 2 {
+        return
+    }
+
+    let mut buffer: ArrayList<T> = ArrayList::new(size)
+    let mut index: usize = 0
+    while index < size {
+        buffer.push(values⁅index⁆)
+        index = index + 1
+    }
+
+    sort(buffer)
+
+    index = 0
+    while index < size {
+        values⁅index⁆ = buffer.get((index + 1) as isize).unwrap()
+        index = index + 1
+    }
+}
+
 
 # 稳定入口：按调用方比较器排序，返回排好序的新 `ArrayList`；入参保持原序。
 # 比较器语义与内部实现一致：负数 / 零 / 正数，零不交换相对次序。
@@ -98,16 +148,12 @@ micro sorted_by<T>(items: ArrayList<T>, cmp: micro(T, T) -> i32): ArrayList<T> {
         index = index + 1
     }
 
-    let length: usize = copy.length()
-    if length > 1 {
-        merge_sort(copy, 0, length - 1, cmp)
-    }
-
+    merge_sort(copy, cmp)
     return copy
 }
 
 # 私有：归并排序（稳定）。相等时先取左段，保证相对次序。
-private micro merge_sort<T>(mut list: ArrayList<T>, left: usize, right: usize, cmp: micro(T, T) -> i32): unit {
+private micro merge_sort_range<T>(mut list: ArrayList<T>, left: usize, right: usize, cmp: micro(T, T) -> i32): unit {
     if left >= right {
         return
     }
@@ -118,8 +164,8 @@ private micro merge_sort<T>(mut list: ArrayList<T>, left: usize, right: usize, c
     }
 
     let mid: usize = left + (right - left) / 2
-    merge_sort(list, left, mid, cmp)
-    merge_sort(list, mid + 1, right, cmp)
+    merge_sort_range(list, left, mid, cmp)
+    merge_sort_range(list, mid + 1, right, cmp)
     merge(list, left, mid, right, cmp)
 }
 
@@ -168,6 +214,21 @@ private micro merge<T>(mut list: ArrayList<T>, left: usize, mid: usize, right: u
 micro sort_unstable<T>(mut list: ArrayList<T>): unit
     where T: std::operator::Comparable
 {
+    quick_sort(list, micro(a: T, b: T) -> i32 {
+        if a < b {
+            return -1
+        }
+
+        if a > b {
+            return 1
+        }
+
+        return 0
+    })
+}
+
+# 不稳定入口：按调用方比较器原地排序（相等元素不保证原相对次序）。
+micro quick_sort<T>(mut list: ArrayList<T>, cmp: micro(T, T) -> i32): unit {
     let length: usize = list.length()
     if length < 2 {
         return
@@ -181,13 +242,11 @@ micro sort_unstable<T>(mut list: ArrayList<T>): unit
         depth = depth + 1
     }
 
-    quick_sort(list, 0, length - 1, depth * 2, micro(a: T, b: T) -> i32 {
-        return natural_order(a, b)
-    })
+    quick_sort_range(list, 0, length - 1, depth * 2, cmp)
 }
 
 # 私有：快排。短区间走插入基例，深度耗尽走堆排序回退。
-private micro quick_sort<T>(mut list: ArrayList<T>, left: usize, right: usize, depth: usize, cmp: micro(T, T) -> i32): unit {
+private micro quick_sort_range<T>(mut list: ArrayList<T>, left: usize, right: usize, depth: usize, cmp: micro(T, T) -> i32): unit {
     if left >= right {
         return
     }
@@ -204,10 +263,10 @@ private micro quick_sort<T>(mut list: ArrayList<T>, left: usize, right: usize, d
 
     let pivot_index: usize = partition(list, left, right, cmp)
     if pivot_index > left {
-        quick_sort(list, left, pivot_index - 1, depth - 1, cmp)
+        quick_sort_range(list, left, pivot_index - 1, depth - 1, cmp)
     }
     if pivot_index < right {
-        quick_sort(list, pivot_index + 1, right, depth - 1, cmp)
+        quick_sort_range(list, pivot_index + 1, right, depth - 1, cmp)
     }
 }
 
