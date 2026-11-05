@@ -7,7 +7,9 @@ class PriorityQueue<T> {
 
 imply PriorityQueue<T> {
     [host_contract]
-    micro new(): Self {
+    micro new(): Self
+        where T: std::operator::Comparable
+    {
         return Self {
             _impl: BinaryHeap::new(),
         }

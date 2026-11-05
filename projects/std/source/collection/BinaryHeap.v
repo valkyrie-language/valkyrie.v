@@ -3,18 +3,33 @@ namespace std.collection;
 # std.collection: BinaryHeap - 堆，序方向由实例决定
 #
 # `new()` 是小顶堆（元素自然序的最小值先出堆），`max()` 是大顶堆（自然序的
-# 最大值先出堆）。两者共用同一套上浮/下沉实现，`Comparable → i32` 只在
-# `natural_order` 转换一次；方向翻转也只发生在 `comes_first` 这一处。
+# 最大值先出堆），`new_by(cmp)` 按调用方比较器建堆（负数表示前者先出堆）。
+# 三者共用同一套上浮/下沉实现；`_cmp` 是唯一序判定来源，方向翻转只发生在
+# `comes_first` 这一处。`new()` / `max()` 需要 `T: Comparable`，`new_by` 不需要。
 
 class BinaryHeap<T> {
     data: ArrayList<T>
+    _cmp: micro(T, T) -> i32
     _descending: bool
 }
 
 imply BinaryHeap<T> {
-    micro new(): Self {
+    micro new(): Self
+        where T: std::operator::Comparable
+    {
         return Self {
             data: ArrayList::new(0),
+            _cmp: micro(a: T, b: T) -> i32 {
+                if a < b {
+                    return -1
+                }
+
+                if a > b {
+                    return 1
+                }
+
+                return 0
+            },
             _descending: false,
         }
     }
@@ -25,20 +40,37 @@ imply BinaryHeap<T> {
     {
         return Self {
             data: ArrayList::new(0),
+            _cmp: micro(a: T, b: T) -> i32 {
+                if a < b {
+                    return -1
+                }
+
+                if a > b {
+                    return 1
+                }
+
+                return 0
+            },
             _descending: true,
         }
     }
 
-    micro push(mut self, value: T): unit
-        where T: std::operator::Comparable
-    {
+    # 比较器堆：比较器语义与 `sort` 一致（负数 / 零 / 正数）。
+    # 不要求 `T: Comparable`，因此 `f64` 等非全序元素也能建堆。
+    micro new_by(cmp: micro(T, T) -> i32): Self {
+        return Self {
+            data: ArrayList::new(0),
+            _cmp: cmp,
+            _descending: false,
+        }
+    }
+
+    micro push(mut self, value: T): unit {
         self.data.push(value)
         self.sift_up(self.data.length() - 1)
     }
 
-    micro pop(mut self): Option<T>
-        where T: std::operator::Comparable
-    {
+    micro pop(mut self): Option<T> {
         if self.data.is_empty() {
             return None
         }
@@ -71,20 +103,16 @@ imply BinaryHeap<T> {
         self.data.clear()
     }
 
-    # 堆内唯一的序判定入口：`natural_order` 给出自然序，大顶堆在此翻转。
-    private micro comes_first(self, left: T, right: T): bool
-        where T: std::operator::Comparable
-    {
-        let order: i32 = natural_order(left, right)
+    # 堆内唯一的序判定入口：`_cmp` 给出序，大顶堆在此翻转。
+    private micro comes_first(self, left: T, right: T): bool {
+        let order: i32 = self._cmp(left, right)
         if self._descending {
             return order > 0
         }
         return order < 0
     }
 
-    micro sift_up(mut self, index: usize): unit
-        where T: std::operator::Comparable
-    {
+    micro sift_up(mut self, index: usize): unit {
         let mut cursor: usize = index
         while cursor > 0 {
             let parent: usize = (cursor - 1) / 2
@@ -100,9 +128,7 @@ imply BinaryHeap<T> {
         }
     }
 
-    micro sift_down(mut self, index: usize): unit
-        where T: std::operator::Comparable
-    {
+    micro sift_down(mut self, index: usize): unit {
         let length: usize = self.data.length()
         let mut cursor: usize = index
         while true {
