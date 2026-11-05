@@ -438,24 +438,28 @@ imply Utf8Text {
         return byte_index
     }
 
-    # Unicode White_Space（U+0009..U+000D、U+0020、U+0085、U+00A0、U+1680、
-    # U+2000..U+200A、U+2028、U+2029、U+202F、U+205F、U+3000）。
+    # Unicode `White_Space` 判定。码点数据来自 `unicode.types`（UCD 16.0.0，脚本生成），
+    # `std` 不内嵌随 UCD 版本漂移的属性表，只保留这段稳定查表算法。
+    # 空白集合：U+0009–U+000D、U+0020、U+0085、U+00A0、U+1680、U+2000–U+200A、
+    # U+2028、U+2029、U+202F、U+205F、U+3000；U+200B 与 U+FEFF 不是空白。
     private micro is_whitespace_code_point(self, value: char) -> bool {
+        let ranges: [char] = unicode::types::unicode_white_space_ranges()
         let code: u32 = value as u32
-        if code == 0x09 || code == 0x0A || code == 0x0B || code == 0x0C || code == 0x0D || code == 0x20 {
-            return true
-        }
-
-        if code == 0x85 || code == 0xA0 || code == 0x1680 {
-            return true
-        }
-
-        if code >= 0x2000 && code <= 0x200A {
-            return true
-        }
-
-        if code == 0x2028 || code == 0x2029 || code == 0x202F || code == 0x205F || code == 0x3000 {
-            return true
+        let mut low: usize = 0
+        let mut high: usize = ranges.length() / 2
+        while low < high {
+            let mid: usize = (low + high) / 2
+            let start: u32 = ranges⁅mid * 2⁆ as u32
+            let end: u32 = ranges⁅mid * 2 + 1⁆ as u32
+            if code < start {
+                high = mid
+            }
+            else if code > end {
+                low = mid + 1
+            }
+            else {
+                return true
+            }
         }
 
         return false

@@ -12,6 +12,7 @@
         "projects/nyar._",
         "projects/std.data._",
         "projects/std.adaptors._",
+        "projects/unicode._",
         "projects/titan._",
         "projects/unity._",
         "projects/database._",

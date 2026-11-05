@@ -1,0 +1,38 @@
+{
+    name: "unicode.types",
+    version: "0.1.0",
+    description: "Unicode 16.0.0 码点属性数据（White_Space）：纯数据底包、locale 无关、无宿主绑定",
+    artifact: "library",
+    dependencies: {},
+    build: [
+        {
+            target: "ovm"
+        },
+        {
+            target: "clr-microsoft-unknown-managed",
+            msil: true
+        },
+        {
+            target: "jvm-openjdk-unknown-managed"
+        },
+        {
+            target: "wasm",
+            source_map: true
+        },
+        {
+            target: "wasm32-unknown-browser-wasm",
+            source_map: true,
+            typescript: true,
+            wat: true
+        },
+        {
+            target: "wasm32-wechat-unknown-wasm"
+        },
+        {
+            target: "wasm32-node-unknown-wasm"
+        }
+    ],
+    engines: {
+        vcc: "0.1.*"
+    }
+}
