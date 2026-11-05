@@ -36,6 +36,33 @@ micro `test utf8 cardinal multibyte`() {
 }
 
 [test]
+micro `test utf8 cardinal multibyte prefix`() {
+    let text: utf8 = "aé中"
+
+    if text.length() != 3 {
+        panic("utf8 multibyte prefix length failed")
+    }
+
+    # 第 1、2 个码点：é (U+00E9) 与 中 (U+4E2D)，索引按码点而非字节。
+    if (text⁅0⁆) as u32 != 0x61 {
+        panic("utf8 multibyte prefix first failed")
+    }
+
+    if (text⁅1⁆) as u32 != 0xE9 {
+        panic("utf8 multibyte prefix second failed")
+    }
+
+    if (text⁅2⁆) as u32 != 0x4E2D {
+        panic("utf8 multibyte prefix third failed")
+    }
+
+    # 字节视图仍独立：3 个码点占 6 个字节。
+    if text.byte_length() != 6 {
+        panic("utf8 multibyte prefix byte length failed")
+    }
+}
+
+[test]
 micro `test utf8 cardinal write same width`() {
     let mut text: utf8 = "hello"
 

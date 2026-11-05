@@ -90,9 +90,9 @@ imply Utf16Text: std::iterator::IntoIterator {
 
 # 0 基码元索引读写合同：`⁅ ⁆` / `⁅ ⁆=` 与同源的 `get_cardinal` / `set_cardinal`。
 # 索引空间选定为 UTF-16 码元（code unit，与 `length` 的计数单位一致，`char` 即 u16 码元）：
-# astral 码点占两个码元（代理对），本索引口径与 `Utf8Text` 的码点口径不等——
-# 这是各自 repr 的忠实口径，显式记录；码点/字素口径未来以显式视图 API 单独开，
-# 不混入本合同。元素个数由 `length` 承担，与本合同无关。
+# astral 码点占两个码元（代理对）。与 `Utf8Text` 的 0 基码点合同同构——都按各自 repr 的
+# 字符单位计，只是单位不同（UTF-16 码元、UTF-8 码点）；字素口径未来以显式视图 API
+# 单独开，不混入本合同。元素个数由 `length` 承担，与本合同无关。
 imply Utf16Text: std::operator::Cardinal {
     type Element = char;
     type Index = usize;

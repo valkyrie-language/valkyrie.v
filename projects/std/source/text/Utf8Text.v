@@ -37,7 +37,8 @@ imply Utf8Text {
     }
 
     # 按字节偏移读取单个字节，O(1)；越界结构化失败。
-    # 调用方不查边界时用 `⁅ ⁆`（同源委托），需要 `Option` 语义时自行先比长度。
+    # 字节访问的唯一显式入口：`⁅ ⁆` 已收口到码点空间，不再委托本方法；
+    # 需要 `Option` 语义时自行先比 `byte_length()`。
     micro byte_at(self, offset: usize): u8 {
         if offset >= self._repr.length() {
             std::types::panic("Utf8Text byte_at 越界：offset 超出字节长度")
@@ -471,36 +472,59 @@ imply Utf8Text {
     }
 }
 
-# 0 基字节索引合同：`⁅ ⁆` ≡ `byte_at`（返回 `u8`），O(1)；写入同理按字节。
-# 字符（码点）访问不走本合同——走序数 `[ ]` / `character_at`。
-# `char` 是 u16 code unit，astral 标量无法表示（类型系统层限制）。
+# 0 基码点索引合同：`⁅ ⁆` 的元素是 `char`，与序数 `[ ]`（1 基码点）同源，
+# 只差基址；读取委托 `character_at`，写入按码点重建内部存储（不做字节近似）。
+# 字节访问是独立显式视图：`bytes` / `byte_at` / `byte_length`，不经本算子。
 imply Utf8Text: std::operator::Cardinal {
-    type Element = u8;
+    type Element = char;
     type Index = usize;
 
-    # 0 基字节索引自动取值，O(1)；越界结构化失败（合同语义见 `std::operator::Cardinal`）。
-    # 单一实现来源：本算子只委托 `byte_at`，不内联第二份读取逻辑。
-    suffix `⁅ ⁆`(self, offset: usize): u8 {
-        return self.byte_at(offset)
+    # 0 基码点读取，单次 O(n)；越界结构化失败。元素个数与 `length()` 码点计数一致。
+    suffix `⁅ ⁆`(self, offset: usize): char {
+        return self.character_at(offset)
     }
 
-    # 0 基字节写入，只改该字节不改长度；写进多字节码点内部会破坏编码，
-    # 属调用方责任（字节级合同是原始视图）。越界结构化失败。
-    suffix `⁅ ⁆=`(mut self, offset: usize, value: u8): unit {
-        if offset >= self._repr.length() {
-            std::types::panic("Utf8Text ⁅ ⁆= 越界：offset 超出字节长度")
+    # 0 基码点写入：与序数 `[ ]=` 同源，按码点重建内部存储（单标量替换单标量，
+    # 元素个数不变、字节长度可变）。越界结构化失败。
+    suffix `⁅ ⁆=`(mut self, offset: usize, value: char): unit {
+        if offset >= self.length() {
+            std::types::panic("Utf8Text ⁅ ⁆= 越界：offset 超出码点个数")
         }
 
-        self._repr⁅offset⁆ = value
+        # 定位到该码点的字节边界，三段字节拼接重建：前缀 + 新码点编码 + 后缀。
+        # 与序数 `[ ]=` 同源，不做字节近似；单个标量替换单个标量，元素个数不变。
+        let start: usize = self.byte_offset(offset)
+        let end: usize = self.byte_offset(offset + 1)
+        let replacement: Utf8Text = encode_char_as_utf8(value)
+        let mut bytes: ArrayList<u8> = ArrayList::new(self._repr.length())
+        let mut index: usize = 0
+        while index < start {
+            bytes.push(self._repr⁅index⁆)
+            index = index + 1
+        }
+
+        index = 0
+        while index < replacement._repr.length() {
+            bytes.push(replacement._repr⁅index⁆)
+            index = index + 1
+        }
+
+        index = end
+        while index < self._repr.length() {
+            bytes.push(self._repr⁅index⁆)
+            index = index + 1
+        }
+
+        self._repr = bytes.to_array()
     }
 
     # 与 `⁅ ⁆` 同源：命名方法形态，互为委托。
-    micro get_cardinal(self, offset: usize): u8 {
-        return self.byte_at(offset)
+    micro get_cardinal(self, offset: usize): char {
+        return self.character_at(offset)
     }
 
     # 与 `⁅ ⁆=` 同源：命名方法形态，互为委托。
-    micro set_cardinal(mut self, offset: usize, value: u8): unit {
+    micro set_cardinal(mut self, offset: usize, value: char): unit {
         self⁅offset⁆ = value
     }
 }
@@ -533,19 +557,15 @@ imply Utf8Text: std::operator::Ordinal {
         return Some(self.character_at((ordinal - 1) as usize))
     }
 
-    # 按标量写入 `char`：新旧字符的 UTF-8 宽度可以不同，经 slice/concat 重建内部
+    # 按标量写入 `char`：新旧字符的 UTF-8 宽度可以不同，委托 0 基码点写入重建内部
     # 存储；替换一个标量为一个标量，元素个数不变，字节长度可变。越界结构化失败。
+    # 与 `⁅ ⁆=` 同源，本 impl 不重复实现重建逻辑。
     suffix `[ ]=`(mut self, ordinal: isize, value: char): unit {
         if ordinal < 1 || ordinal > self.length() as isize {
             std::types::panic("Ordinal [ ]= 越界：序数超出 [1, 元素个数]")
         }
 
-        let index: usize = (ordinal - 1) as usize
-        let size: usize = self.length()
-        let head: utf8 = self.slice(0, index)
-        let tail: utf8 = self.slice(index + 1, size - index - 1)
-        let replacement: utf8 = encode_char_as_utf8(value)
-        self._repr = (head + replacement + tail)._repr
+        self.set_cardinal((ordinal - 1) as usize, value)
     }
 
     # 与 `[ ]=` 同源：命名方法形态，互为委托。

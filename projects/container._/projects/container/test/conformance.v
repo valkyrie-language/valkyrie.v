@@ -9,8 +9,9 @@ namespace container;
 micro container_conformance_bytes_of(text: utf8) -> [u8] {
     let mut out: [u8] = []
     let mut index: usize = 0
-    while index < text.length() {
-        out = push(out, (text⁅index⁆ as u32) as u8)
+    # 字节视图：`⁅ ⁆` 已收口到码点空间，这里按字节取原始 UTF-8 存储。
+    while index < text.byte_length() {
+        out = push(out, text.byte_at(index))
         index = index + 1
     }
     return out
