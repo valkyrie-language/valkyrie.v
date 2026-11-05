@@ -475,6 +475,8 @@ imply Utf8Text {
 # 0 基码点索引合同：`⁅ ⁆` 的元素是 `char`，与序数 `[ ]`（1 基码点）同源，
 # 只差基址；读取委托 `character_at`，写入按码点重建内部存储（不做字节近似）。
 # 字节访问是独立显式视图：`bytes` / `byte_at` / `byte_length`，不经本算子。
+# `char` 是 u16 code unit：astral 标量（U+10000 以上）无法写入，读取时按低 16 位
+# 截断——这是类型层限制，与索引口径无关。
 imply Utf8Text: std::operator::Cardinal {
     type Element = char;
     type Index = usize;
