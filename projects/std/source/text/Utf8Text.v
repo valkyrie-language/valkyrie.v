@@ -7,6 +7,12 @@ class Utf8Text {
     _repr: [u8]
 }
 
+# `split_once` 的结果：分隔符首次出现处的头部与尾部（分隔符本身被丢弃）。
+structure SplitParts {
+    head: utf8
+    tail: utf8
+}
+
 imply Utf8Text {
     micro new(capacity: usize) -> Self {
         return Self { _repr: [] }
@@ -232,6 +238,56 @@ imply Utf8Text {
         }
     }
 
+    # 在分隔符首次出现处切成 `head` / `tail`，两者都不含分隔符。
+    # 分隔符为空或未出现时返回 `None`（结构化“无解”，不伪造空切分）。
+    micro split_once(self, separator: utf8) -> Option<SplitParts> {
+        let separator_length: usize = separator.length()
+        if separator_length == 0 {
+            return None
+        }
+
+        let index_option: Option<usize> = self.index_of(separator)
+        if index_option.is_none() {
+            return None
+        }
+
+        let index: usize = index_option.unwrap()
+        let self_length: usize = self.length()
+        let tail_start: usize = index + separator_length
+        let head: utf8 = self.slice(0, index)
+        let tail: utf8 = self.slice(tail_start, self_length - tail_start)
+        return Some(SplitParts { head: head, tail: tail })
+    }
+
+    # 按 Unicode White_Space 切分并丢弃空段；连续空白算一个分隔符。
+    # 空白集合见 `is_whitespace_code_point`。空串或纯空白输入返回空数组。
+    micro split_whitespace(self) -> [utf8] {
+        let mut result: ArrayList<utf8> = ArrayList::new(0)
+        let size: usize = self.byte_length()
+        let mut cursor: usize = 0
+        let mut position: usize = 0
+        while cursor < size {
+            while cursor < size && self.is_whitespace_code_point(self.character_at_byte(cursor)) {
+                cursor = cursor + self.char_width_at(cursor)
+                position = position + 1
+            }
+
+            if cursor >= size {
+                break
+            }
+
+            let word_start: usize = position
+            while cursor < size && !self.is_whitespace_code_point(self.character_at_byte(cursor)) {
+                cursor = cursor + self.char_width_at(cursor)
+                position = position + 1
+            }
+
+            result.push(self.slice(word_start, position - word_start))
+        }
+
+        return result.to_array()
+    }
+
     # 严格宿主切片：越界区间由宿主结构化失败，不做任何截断。
     # 各 lane 用自身宿主实现覆盖；默认实现按标量边界逐字节拷贝，越界显式失败。
     [host_contract]
@@ -304,6 +360,29 @@ imply Utf8Text {
         }
 
         return byte_index
+    }
+
+    # Unicode White_Space（U+0009..U+000D、U+0020、U+0085、U+00A0、U+1680、
+    # U+2000..U+200A、U+2028、U+2029、U+202F、U+205F、U+3000）。
+    private micro is_whitespace_code_point(self, value: char) -> bool {
+        let code: u32 = value as u32
+        if code == 0x09 || code == 0x0A || code == 0x0B || code == 0x0C || code == 0x0D || code == 0x20 {
+            return true
+        }
+
+        if code == 0x85 || code == 0xA0 || code == 0x1680 {
+            return true
+        }
+
+        if code >= 0x2000 && code <= 0x200A {
+            return true
+        }
+
+        if code == 0x2028 || code == 0x2029 || code == 0x202F || code == 0x205F || code == 0x3000 {
+            return true
+        }
+
+        return false
     }
 
     private micro index_of_repr(self, value: utf8) -> Option<usize> {
