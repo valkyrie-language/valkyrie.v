@@ -149,7 +149,7 @@ imply HashMultiSet<T> {
         let mut result: Self = Self::new(values.length())
         let mut i: usize = 0
         while i < values.length() {
-            result.insert(values.get(i + 1).unwrap())
+            result.insert(values.get((i + 1) as isize).unwrap())
             i = i + 1
         }
 
