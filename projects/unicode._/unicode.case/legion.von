@@ -1,0 +1,41 @@
+{
+    name: "unicode.case",
+    version: "0.1.0",
+    description: "Unicode 16.0.0 大小写映射：simple、1→多与 Final_Sigma，locale 无关，依赖 unicode.types",
+    artifact: "library",
+    dependencies: {
+        "std": "workspace",
+        "unicode.types": "workspace"
+    },
+    build: [
+        {
+            target: "ovm"
+        },
+        {
+            target: "clr-microsoft-unknown-managed",
+            msil: true
+        },
+        {
+            target: "jvm-openjdk-unknown-managed"
+        },
+        {
+            target: "wasm",
+            source_map: true
+        },
+        {
+            target: "wasm32-unknown-browser-wasm",
+            source_map: true,
+            typescript: true,
+            wat: true
+        },
+        {
+            target: "wasm32-wechat-unknown-wasm"
+        },
+        {
+            target: "wasm32-node-unknown-wasm"
+        }
+    ],
+    engines: {
+        vcc: "0.1.*"
+    }
+}

@@ -229,10 +229,15 @@ imply Utf8Text {
         return Utf8Text::from_bytes(bytes.to_array())
     }
 
+    # Unicode 默认全映射、locale 无关（不做土耳其语 `I→ı`）。
+    # std 只保留签名；实现由 `unicode.case`（UCD 版本钉死在该包）经宿主 provider 提供，
+    # 各 target 的 adaptor 负责绑定。未绑定 provider 的 target 退回本 shell，行为等同恒等映射。
+    [host_contract]
     micro to_lower(self) -> utf8 {
         return self
     }
 
+    [host_contract]
     micro to_upper(self) -> utf8 {
         return self
     }
