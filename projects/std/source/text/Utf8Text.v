@@ -189,9 +189,44 @@ imply Utf8Text {
         return self.index_of_repr(value)
     }
 
+    # 按 Unicode `White_Space` 属性删去首尾连续空白，内部空白原样保留。
+    # 空白集合即 `is_whitespace_code_point` 的 25 个码点：U+0009–U+000D、U+0020、
+    # U+0085、U+00A0、U+1680、U+2000–U+200A、U+2028、U+2029、U+202F、U+205F、U+3000。
+    # U+200B（零宽空格）与 U+FEFF（BOM）不是空白，不删。空串与全空白串返回空串。
+    # 不做 ASCII-only 近似，也不提供 TrimStart/TrimEnd 变体——单侧裁剪用显式 `slice`。
+    # 宿主 provider 只能是等价加速，语义以本实现为准。
     [host_contract]
     micro trim(self) -> utf8 {
-        return self
+        let size: usize = self.byte_length()
+        let mut start_byte: usize = 0
+        while start_byte < size && self.is_whitespace_code_point(self.character_at_byte(start_byte)) {
+            start_byte = start_byte + self.char_width_at(start_byte)
+        }
+
+        let mut end_byte: usize = size
+        while end_byte > start_byte {
+            # UTF-8 尾字节回退到码点起点：跳过 0x80..0xBF 连续字节。
+            let mut boundary: usize = end_byte - 1
+            while boundary > start_byte && (self._repr⁅boundary⁆ as u32) & 0xC0 == 0x80 {
+                boundary = boundary - 1
+            }
+
+            if !self.is_whitespace_code_point(self.character_at_byte(boundary)) {
+                break
+            }
+
+            end_byte = boundary
+        }
+
+        # 直接按字节区间重建，避免 `slice` 的别名返回值穿越 impl 边界。
+        let mut bytes: ArrayList<u8> = ArrayList::new(end_byte - start_byte)
+        let mut index: usize = start_byte
+        while index < end_byte {
+            bytes.push(self._repr⁅index⁆)
+            index = index + 1
+        }
+
+        return Utf8Text::from_bytes(bytes.to_array())
     }
 
     micro to_lower(self) -> utf8 {
@@ -202,9 +237,49 @@ imply Utf8Text {
         return self
     }
 
+    # 从左到右、非重叠、全部替换；`new_value` 可为空，即删除匹配段。
+    # `old_value` 为空（0 码点）时返回 `self`，不做任何插入——这是对 Rust
+    # `str::replace`（空模式按字符间插值）的明确偏离。不做正则、不做 Unicode 规范化。
+    # 匹配按 UTF-8 字节序列进行：起点始终落在码点边界，整段命中即码点序列相同。
     [host_contract]
     micro replace(self, old_value: utf8, new_value: utf8) -> utf8 {
-        return self
+        let needle: [u8] = old_value._repr
+        if needle.length() == 0 {
+            return self
+        }
+
+        let mut bytes: ArrayList<u8> = ArrayList::new(self._repr.length())
+        let mut cursor: usize = 0
+        let mut copied: usize = 0
+        while cursor + needle.length() <= self._repr.length() {
+            if self.byte_prefix_at(cursor, needle) {
+                let mut index: usize = copied
+                while index < cursor {
+                    bytes.push(self._repr⁅index⁆)
+                    index = index + 1
+                }
+
+                index = 0
+                while index < new_value._repr.length() {
+                    bytes.push(new_value._repr⁅index⁆)
+                    index = index + 1
+                }
+
+                cursor = cursor + needle.length()
+                copied = cursor
+            }
+            else {
+                cursor = cursor + self.char_width_at(cursor)
+            }
+        }
+
+        let mut index: usize = copied
+        while index < self._repr.length() {
+            bytes.push(self._repr⁅index⁆)
+            index = index + 1
+        }
+
+        return Utf8Text::from_bytes(bytes.to_array())
     }
 
     micro split(self, separator: utf8) -> [utf8] {
@@ -451,6 +526,25 @@ imply Utf8Text {
             }
             index = index + 1
         }
+        return true
+    }
+
+    # 字节级前缀比对：`start` 必须是码点边界；`needle` 是完整 UTF-8 编码串，
+    # 整段命中即码点序列相同（UTF-8 自同步，不会跨码点误配）。
+    private micro byte_prefix_at(self, start: usize, needle: [u8]) -> bool {
+        if start + needle.length() > self._repr.length() {
+            return false
+        }
+
+        let mut index: usize = 0
+        while index < needle.length() {
+            if self._repr⁅start + index⁆ != needle⁅index⁆ {
+                return false
+            }
+
+            index = index + 1
+        }
+
         return true
     }
 
