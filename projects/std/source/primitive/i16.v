@@ -62,11 +62,19 @@ imply i16 {
     }
 
     bit_shift_left(self, rhs: Self): Self {
-        __i16_shl(self, rhs)
+        # 窄语义：移位量达到位宽（16）后全部位已移出，结果为 0。
+        if rhs >= 16 as i16 {
+            return 0 as i16
+        }
+        return ((self as i32) << (rhs as i32)) as i16
     }
 
     bit_shift_right(self, rhs: Self): Self {
-        __i16_shr(self, rhs)
+        # 算术右移：达到位宽后由符号位填满（非负为 0，负数为 -1）。
+        if rhs >= 16 as i16 {
+            return ((self as i32) >> 31) as i16
+        }
+        return ((self as i32) >> (rhs as i32)) as i16
     }
 
     infix `&`(self, rhs: Self): Self {
@@ -94,15 +102,7 @@ imply i16 {
     }
 }
 
-# region i16 内部指令映射
-# 除移位守卫外，i16 的算术、比较与位运算全部在 i32 载体上计算后按位截断，
-# 不经宿主合同；`as i32` 符号扩展、`as i16` 按位截断，语义精确。
-[host_contract]
-private micro __i16_shl(lhs: i16, rhs: i16): i16
-
-[host_contract]
-private micro __i16_shr(lhs: i16, rhs: i16): i16
-# end region
+# 移位守卫与其余算术均在 std 层合成，本文件已无宿主合同。
 imply i16: Equal {
     # i16 经 `as i32` 符号扩展后比较，值域完整落在 i32 内，语义精确。
     infix `==`(self, rhs: Self): bool {

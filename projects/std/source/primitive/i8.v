@@ -63,11 +63,19 @@ imply i8 {
     }
 
     bit_shift_left(self, rhs: Self): Self {
-        __i8_shl(self, rhs)
+        # 窄语义：移位量达到位宽（8）后全部位已移出，结果为 0。
+        if rhs >= 8 as i8 {
+            return 0 as i8
+        }
+        return ((self as i32) << (rhs as i32)) as i8
     }
 
     bit_shift_right(self, rhs: Self): Self {
-        __i8_shr(self, rhs)
+        # 算术右移：达到位宽后由符号位填满（非负为 0，负数为 -1）。
+        if rhs >= 8 as i8 {
+            return ((self as i32) >> 31) as i8
+        }
+        return ((self as i32) >> (rhs as i32)) as i8
     }
 
     infix `&`(self, rhs: Self): Self {
@@ -95,15 +103,7 @@ imply i8 {
     }
 }
 
-# region i8 内部指令映射
-# 除移位守卫外，i8 的算术、比较与位运算全部在 i32 载体上计算后按位截断，
-# 不经宿主合同；`as i32` 符号扩展、`as i8` 按位截断，语义精确。
-[host_contract]
-private micro __i8_shl(lhs: i8, rhs: i8): i8
-
-[host_contract]
-private micro __i8_shr(lhs: i8, rhs: i8): i8
-# end region
+# 移位守卫与其余算术均在 std 层合成，本文件已无宿主合同。
 
 imply i8: Equal {
     # i8 经 `as i32` 符号扩展后比较，值域完整落在 i32 内，语义精确。

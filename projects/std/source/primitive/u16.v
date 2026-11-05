@@ -59,11 +59,21 @@ imply u16 {
     }
 
     bit_shift_left(self, rhs: Self): Self {
-        __u16_shl(self, rhs)
+        # 窄语义：移位量达到位宽（16）后全部位已移出，结果为 0。
+        # 拓宽到 u32 再移会保留高位，因此必须显式守卫。
+        if rhs >= 16 as u16 {
+            return 0 as u16
+        }
+        return ((self as u32) << (rhs as u32)) as u16
     }
 
     bit_shift_right(self, rhs: Self): Self {
-        __u16_shr(self, rhs)
+        if rhs >= 16 as u16 {
+            return 0 as u16
+        }
+        # u32 载体的 `>>` 在 wasm 上仍被 lower 成左旋（见 06 卡点），
+        # 逻辑右移改写成除以 2^n，两个 lane 都精确。
+        return ((self as u32) / ((1 as u32) << (rhs as u32))) as u16
     }
 
     infix `&`(self, rhs: Self): Self {
@@ -91,15 +101,7 @@ imply u16 {
     }
 }
 
-# region u16 内部指令映射
-# 除移位守卫外，u16 的算术、比较与位运算全部在 u32 载体上计算后按位截断，
-# 不经宿主合同；语义由「值域完整落在 u32 低 16 位」保证。
-[host_contract]
-private micro __u16_shl(lhs: u16, rhs: u16): u16
-
-[host_contract]
-private micro __u16_shr(lhs: u16, rhs: u16): u16
-# end region
+# 移位守卫与其余算术均在 std 层合成，本文件已无宿主合同。
 imply u16: Equal {
     # u16 值域 0..=65535 完整落在 u32 位宽内，拓宽后按位判定即精确等值。
     infix `==`(self, rhs: Self): bool {

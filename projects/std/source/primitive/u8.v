@@ -58,11 +58,22 @@ imply u8 {
     }
 
     bit_shift_left(self, rhs: Self): Self {
-        __u8_shl(self, rhs)
+        # 窄语义：移位量达到位宽（8）后全部位已移出，结果为 0。
+        # 直接拓宽成 u32 再移会保留高位（`0xFF << 8` 在 u32 上是 `0xFF00`），
+        # 因此必须显式守卫，不能只靠截断。
+        if rhs >= 8 as u8 {
+            return 0 as u8
+        }
+        return ((self as u32) << (rhs as u32)) as u8
     }
 
     bit_shift_right(self, rhs: Self): Self {
-        __u8_shr(self, rhs)
+        if rhs >= 8 as u8 {
+            return 0 as u8
+        }
+        # u32 载体的 `>>` 在 wasm 上仍被 lower 成左旋（见 06 卡点），
+        # 因此逻辑右移改写成除以 2^n；在 u32 上与逻辑右移等价，两个 lane 都精确。
+        return ((self as u32) / ((1 as u32) << (rhs as u32))) as u8
     }
 
     infix `&`(self, rhs: Self): Self {
@@ -90,15 +101,7 @@ imply u8 {
     }
 }
 
-# region u8 内部指令映射
-# 除移位守卫外，u8 的算术、比较与位运算全部在 u32 载体上计算后按位截断，
-# 不经宿主合同；语义由「值域完整落在 u32 低 8 位」保证。
-[host_contract]
-private micro __u8_shl(lhs: u8, rhs: u8): u8
-
-[host_contract]
-private micro __u8_shr(lhs: u8, rhs: u8): u8
-# end region
+# 移位守卫与其余算术均在 std 层合成，本文件已无宿主合同。
 imply u8: Equal {
     # u8 在各 lane 的物理载体是 i32（`[primitive]` 声明只冻结 u8 身份，
     # 后端不为其单独提供 Integer8 载体）。等值比较拓宽到 u32 后按位判定：
