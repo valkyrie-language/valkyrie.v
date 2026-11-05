@@ -200,6 +200,58 @@ micro `test signed i32 range endpoints`() {
 }
 
 [test]
+micro `test signed i32 inclusive upper bound at max iterates once`() {
+    # 0x7FFFFFFF 是 i32_max；自增只在 `current < end` 时发生，上界不被加一。
+    let max: i32 = 0x7FFFFFFF as i32
+    let mut count: i32 = 0
+    let mut seen: i32 = 0
+    loop value in i32_inclusive_range(max, max) {
+        seen = value
+        count = count + 1
+    }
+    if count != 1 {
+        std::types::panic("i32_max..=i32_max 必须一次迭代")
+    }
+    if seen != max {
+        std::types::panic("i32_max 上界迭代值必须是 i32_max")
+    }
+
+    let mut empty: i32 = 0
+    loop value in max..max {
+        empty = empty + 1
+    }
+    if empty != 0 {
+        std::types::panic("i32_max..i32_max 必须零次迭代")
+    }
+}
+
+[test]
+micro `test signed i64 inclusive upper bound at max iterates once`() {
+    # 0x7FFFFFFFFFFFFFFF 是 i64_max（未达 2^63，避开超上限十六进制字面量溢栈）。
+    let max: i64 = 0x7FFFFFFFFFFFFFFF as i64
+    let mut count: i32 = 0
+    let mut seen: i64 = 0
+    loop value in i64_inclusive_range(max, max) {
+        seen = value
+        count = count + 1
+    }
+    if count != 1 {
+        std::types::panic("i64_max..=i64_max 必须一次迭代")
+    }
+    if seen != max {
+        std::types::panic("i64_max 上界迭代值必须是 i64_max")
+    }
+
+    let mut empty: i32 = 0
+    loop value in max..max {
+        empty = empty + 1
+    }
+    if empty != 0 {
+        std::types::panic("i64_max..i64_max 必须零次迭代")
+    }
+}
+
+[test]
 micro `test signed i64 inclusive range`() {
     let start: i64 = 1
     let end: i64 = 4
