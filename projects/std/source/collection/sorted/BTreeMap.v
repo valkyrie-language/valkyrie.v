@@ -161,6 +161,64 @@ imply BTreeMap<K, V> {
         }
     }
 
+    # 按值查键：最小的不小于 `value` 的键（include 边界）。
+    # 空树或无解返回 `None`，不伪造首键/末键。
+    micro ceiling_key(self, value: K): Option<K>
+        where K: std::operator::Comparable
+    {
+        if self._root.is_none() {
+            return None
+        }
+
+        let mut current: Option<BTreeNode<K, V>> = Some(self.leftmost_leaf(self._root.unwrap()))
+        while current.is_some() {
+            let leaf: BTreeNode<K, V> = current.unwrap()
+            let mut cursor: usize = 0
+            while cursor < leaf.keys.length() {
+                let key: K = leaf.keys.get((cursor + 1) as isize).unwrap()
+                if key >= value {
+                    return Some(key)
+                }
+
+                cursor = cursor + 1
+            }
+
+            current = leaf.next
+        }
+
+        return None
+    }
+
+    # 按值查键：最大的不大于 `value` 的键（include 边界）。
+    # 空树或无解返回 `None`，不伪造首键/末键。
+    micro floor_key(self, value: K): Option<K>
+        where K: std::operator::Comparable
+    {
+        if self._root.is_none() {
+            return None
+        }
+
+        let mut candidate: Option<K> = None
+        let mut current: Option<BTreeNode<K, V>> = Some(self.leftmost_leaf(self._root.unwrap()))
+        while current.is_some() {
+            let leaf: BTreeNode<K, V> = current.unwrap()
+            let mut cursor: usize = 0
+            while cursor < leaf.keys.length() {
+                let key: K = leaf.keys.get((cursor + 1) as isize).unwrap()
+                if key > value {
+                    return candidate
+                }
+
+                candidate = Some(key)
+                cursor = cursor + 1
+            }
+
+            current = leaf.next
+        }
+
+        return candidate
+    }
+
     micro search_node(self, node: BTreeNode<K, V>, key: K): Option<V>
         where K: Equal & std::operator::Comparable
     {
