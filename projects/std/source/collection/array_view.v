@@ -19,6 +19,17 @@ micro array_view<T>(source: [T]) -> ArrayView<T> {
     return ArrayView { _source: source, _offset: 0, _length: source.length }
 }
 
+# 区间窗口：覆盖 `source` 的 `[offset, offset + count)`。
+# `offset + count` 超出源长度时结构化失败，不截断、不钳制。
+micro array_view<T>(source: [T], offset: usize, count: usize) -> ArrayView<T> {
+    let size: usize = source.length
+    if offset > size || count > size - offset {
+        std::types::panic("array_view 越界：窗口超出源数组范围")
+    }
+
+    return ArrayView { _source: source, _offset: offset, _length: count }
+}
+
 imply ArrayView<T> {
     # 窗口长度（元素个数）。
     micro length(self): usize {

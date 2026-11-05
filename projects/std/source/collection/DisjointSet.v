@@ -59,17 +59,22 @@ imply DisjointSet<T> {
         let left_rank: usize = self._rank.get(left_root).unwrap()
         let right_rank: usize = self._rank.get(right_root).unwrap()
 
+        # 每个分支自带 `return`：分支尾值不再汇入同一 `Option` 汇合点
+        # （`_parent.insert` 返回 `Option<T>`，`_rank.insert` 返回 `Option<usize>`）。
         if left_rank < right_rank {
             self._parent.insert(left_root, right_root)
-        }
-        else if left_rank > right_rank {
-            self._parent.insert(right_root, left_root)
-        }
-        else {
-            self._parent.insert(right_root, left_root)
-            self._rank.insert(left_root, left_rank + 1)
+            self._count = self._count - 1
+            return true
         }
 
+        if left_rank > right_rank {
+            self._parent.insert(right_root, left_root)
+            self._count = self._count - 1
+            return true
+        }
+
+        self._parent.insert(right_root, left_root)
+        self._rank.insert(left_root, left_rank + 1)
         self._count = self._count - 1
         return true
     }
@@ -117,5 +122,30 @@ imply DisjointSet<T> {
         let root: T = self.find_root(parent)
         self._parent.insert(value, root)
         return root
+    }
+
+    # 返回与 `root` 同组的全部成员（含 `root` 自身）；`root` 不在集合中时
+    # 结构化失败。成员顺序不保证（底层哈希键序），需要有序时由调用方排序。
+    micro group_members(mut self, root: T): ArrayList<T>
+        where T: Equal & Hash
+    {
+        if !self.contains(root) {
+            std::types::panic("DisjointSet.group_members 越界：root 不在集合中")
+        }
+
+        let canonical: T = self.find_root(root)
+        let values: ArrayList<T> = self._parent.keys()
+        let mut result: ArrayList<T> = ArrayList::new(0)
+        let mut index: usize = 0
+        while index < values.length() {
+            let value: T = values.get((index + 1) as isize).unwrap()
+            if self.find_root(value) == canonical {
+                result.push(value)
+            }
+
+            index = index + 1
+        }
+
+        return result
     }
 }
