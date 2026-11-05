@@ -10,9 +10,13 @@ Unicode 码点属性**数据**底包（纯数据，无宿主绑定，locale 无�
 
 ## 当前能力
 
-| 属性           | UCD 来源         | 数据 |
-|:---------------|:-----------------|:-----|
-| `White_Space`  | `PropList.txt`   | `unicode_white_space_ranges()`：10 段 / 25 个码点 |
+| 属性             | UCD 来源                 | 数据 |
+|:-----------------|:-------------------------|:-----|
+| `White_Space`    | `PropList.txt`           | `unicode_white_space_ranges()`：10 段 / 25 个码点 |
+| `Cased`          | `DerivedCoreProperties.txt` | `unicode_cased_ranges()`：117 段 |
+| `Case_Ignorable` | `DerivedCoreProperties.txt` | `unicode_case_ignorable_ranges()`：335 段 |
+
+后两项供 `unicode.case` 的 Final_Sigma 上下文判定使用；本包只提供数据，不做判定。
 
 ## 为什么这里只有数据
 
@@ -31,8 +35,9 @@ Unicode 码点属性**数据**底包（纯数据，无宿主绑定，locale 无�
 ## 再生成
 
 ```powershell
-node scripts/gen-unicode-types.mjs
+node scripts/gen-unicode-types.mjs    # White_Space
+node scripts/gen-unicode-case.mjs     # Cased / Case_Ignorable（与 unicode.case 同一次生成）
 ```
 
-脚本默认从 `https://www.unicode.org/Public/16.0.0/ucd/PropList.txt` 下载数据到
+脚本默认从 `https://www.unicode.org/Public/16.0.0/ucd/` 下载数据到
 `.cache/unicode/16.0.0`（已存在则复用），并把输入 SHA-256 写入生成文件头。

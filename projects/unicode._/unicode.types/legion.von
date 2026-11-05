@@ -1,7 +1,7 @@
 {
     name: "unicode.types",
     version: "0.1.0",
-    description: "Unicode 16.0.0 码点属性数据（White_Space）：纯数据底包、locale 无关、无宿主绑定",
+    description: "Unicode 16.0.0 码点属性数据（White_Space、Cased、Case_Ignorable）：纯数据底包、locale 无关、无宿主绑定",
     artifact: "library",
     dependencies: {},
     build: [
