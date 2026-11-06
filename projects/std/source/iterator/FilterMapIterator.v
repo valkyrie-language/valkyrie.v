@@ -13,11 +13,15 @@ structure FilterMapIterator<T, U, I> {
 imply FilterMapIterator<T, U, I>: Iterator {
     type Item = U;
 
-    micro has_next(self): bool {
+    micro has_next(self): bool
+        where I: Iterator<Item = T>
+    {
         return self._iter.has_next()
     }
 
-    micro next(mut self): Option<U> {
+    micro next(mut self): Option<U>
+        where I: Iterator<Item = T>
+    {
         while self._iter.has_next() {
             let item: T = self._iter.next().unwrap()
             let mapped: Option<U> = self._mapper(item)
