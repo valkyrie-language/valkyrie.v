@@ -14,7 +14,7 @@ imply Queue<T> {
 
     [host_contract]
     micro enqueue(mut self, value: T): unit {
-        self.data.push(value)
+        self.data.push_back(value)
     }
 
     [host_contract]
