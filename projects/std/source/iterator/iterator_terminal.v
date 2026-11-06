@@ -154,3 +154,47 @@ micro count<I, T>(self: I): usize
 
     return result
 }
+
+# 数值终端：空迭代器返回 `None`；序判定复用 `std.collection.natural_order`，
+# 不在这里自建 `Ordering` 匹配，保证与 `sort` / `BinaryHeap` 同一转换点。
+# `sum` / `product` 需要加法/乘法合同，std 尚无对应 operator，暂不提供。
+
+micro max<I, T>(self: I): Option<T>
+    where I: Iterator<Item = T>, T: std::operator::Comparable
+{
+    let mut iter: I = self
+    if !iter.has_next() {
+        return None
+    }
+
+    let mut best: T = iter.next().unwrap()
+    while iter.has_next() {
+        let item: T = iter.next().unwrap()
+        let order: i32 = std.collection.natural_order(best, item)
+        if order < 0 {
+            best = item
+        }
+    }
+
+    return Some(best)
+}
+
+micro min<I, T>(self: I): Option<T>
+    where I: Iterator<Item = T>, T: std::operator::Comparable
+{
+    let mut iter: I = self
+    if !iter.has_next() {
+        return None
+    }
+
+    let mut best: T = iter.next().unwrap()
+    while iter.has_next() {
+        let item: T = iter.next().unwrap()
+        let order: i32 = std.collection.natural_order(best, item)
+        if order > 0 {
+            best = item
+        }
+    }
+
+    return Some(best)
+}
