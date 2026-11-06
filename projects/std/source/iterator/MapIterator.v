@@ -13,11 +13,15 @@ structure MapIterator<T, U, I> {
 imply MapIterator<T, U, I>: Iterator {
     type Item = U;
 
-    micro has_next(self): bool {
+    micro has_next(self): bool
+        where I: Iterator<Item = T>
+    {
         return self._iter.has_next()
     }
 
-    micro next(mut self): Option<U> {
+    micro next(mut self): Option<U>
+        where I: Iterator<Item = T>
+    {
         if !self._iter.has_next() {
             return None
         }
