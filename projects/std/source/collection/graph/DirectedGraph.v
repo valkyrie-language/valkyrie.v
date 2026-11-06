@@ -70,7 +70,7 @@ imply DirectedGraph<N> {
     micro has_edge(self, from: N, to: N): bool
         where N: Equal & Hash
     {
-        let targets: Option<ArrayList<N>> = self._forward[from]
+        let targets: Option<ArrayList<N>> = self._forward.get(from)
         if targets.is_none() {
             return false
         }
@@ -89,7 +89,7 @@ imply DirectedGraph<N> {
             return
         }
 
-        let existing_forward: Option<ArrayList<N>> = self._forward[from]
+        let existing_forward: Option<ArrayList<N>> = self._forward.get(from)
         if existing_forward.is_some() {
             let mut targets: ArrayList<N> = existing_forward.unwrap()
             targets.push(to)
@@ -101,7 +101,7 @@ imply DirectedGraph<N> {
             self._forward[from] = targets
         }
 
-        let existing_backward: Option<ArrayList<N>> = self._backward[to]
+        let existing_backward: Option<ArrayList<N>> = self._backward.get(to)
         if existing_backward.is_some() {
             let mut sources: ArrayList<N> = existing_backward.unwrap()
             sources.push(from)
@@ -124,10 +124,10 @@ imply DirectedGraph<N> {
             return
         }
 
-        let targets: ArrayList<N> = self._forward[from].unwrap()
+        let targets: ArrayList<N> = self._forward.get(from).unwrap()
         self._forward[from] = remove_list_value(targets, to)
 
-        let sources: ArrayList<N> = self._backward[to].unwrap()
+        let sources: ArrayList<N> = self._backward.get(to).unwrap()
         self._backward[to] = remove_list_value(sources, from)
 
         self._edge_count = self._edge_count - 1
@@ -141,13 +141,13 @@ imply DirectedGraph<N> {
             return
         }
 
-        let outgoing: Option<ArrayList<N>> = self._forward[node]
+        let outgoing: Option<ArrayList<N>> = self._forward.get(node)
         if outgoing.is_some() {
             let targets: ArrayList<N> = outgoing.unwrap()
             let mut i: usize = 0
             while i < targets.length() {
                 let target: N = targets⁅i⁆
-                let sources: ArrayList<N> = self._backward[target].unwrap()
+                let sources: ArrayList<N> = self._backward.get(target).unwrap()
                 self._backward[target] = remove_list_value(sources, node)
                 self._edge_count = self._edge_count - 1
                 i = i + 1
@@ -156,13 +156,13 @@ imply DirectedGraph<N> {
             self._forward.remove(node)
         }
 
-        let incoming: Option<ArrayList<N>> = self._backward[node]
+        let incoming: Option<ArrayList<N>> = self._backward.get(node)
         if incoming.is_some() {
             let sources: ArrayList<N> = incoming.unwrap()
             let mut i: usize = 0
             while i < sources.length() {
                 let source: N = sources⁅i⁆
-                let targets: ArrayList<N> = self._forward[source].unwrap()
+                let targets: ArrayList<N> = self._forward.get(source).unwrap()
                 self._forward[source] = remove_list_value(targets, node)
                 self._edge_count = self._edge_count - 1
                 i = i + 1
@@ -189,7 +189,7 @@ imply DirectedGraph<N> {
     micro successors(self, node: N): ArrayList<N>
         where N: Equal & Hash
     {
-        let targets: Option<ArrayList<N>> = self._forward[node]
+        let targets: Option<ArrayList<N>> = self._forward.get(node)
         if targets.is_none() {
             return ArrayList::new(0)
         }
@@ -201,7 +201,7 @@ imply DirectedGraph<N> {
     micro predecessors(self, node: N): ArrayList<N>
         where N: Equal & Hash
     {
-        let sources: Option<ArrayList<N>> = self._backward[node]
+        let sources: Option<ArrayList<N>> = self._backward.get(node)
         if sources.is_none() {
             return ArrayList::new(0)
         }
