@@ -7,9 +7,9 @@ using std.collection::{BTreeMap, BTreeSet, HashMap, HashSet};
 # （0 基 `⁅ ⁆`）。`Cardinal` 只属于序列类容器（Array / ArrayList / ArrayView /
 # Utf8Text / Utf16Text）。
 #
-# 最小复现：把本文件放进任意临时项目的 `source/` 后执行
+# 用法：把本文件放进临时项目的 `source/` 后执行
 # `legion build <临时项目> --target ovm`。
-# 预期结果：编译期报找不到 `⁅ ⁆` 的索引实现（不满足 `Cardinal`），
+# 预期：编译期拒绝 `⁅ ⁆` 索引（`HashMap` 不满足 `Cardinal`），
 # 不是运行期 panic，也不是按插入顺序取第 N 条。
 
 micro negative_cardinal_on_hash_map(map: HashMap<i64, i64>): i64 {
