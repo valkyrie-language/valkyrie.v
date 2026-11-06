@@ -68,6 +68,12 @@ imply HashSet<T> {
     micro new(): Self {
         return Self { _impl: SwissSet::new(16) }
     }
+
+    # 预分配构造：与 `new()` 同源，只把容量交给存储层。
+    [host_contract]
+    micro new(capacity: usize): Self {
+        return Self { _impl: SwissSet::new(capacity) }
+    }
 }
 
 # 序数合同：键即索引，`Index = T`（集合里键与元素同型），与 `isize` / `usize` 无关。
