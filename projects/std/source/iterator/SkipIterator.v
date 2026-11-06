@@ -9,7 +9,9 @@ structure SkipIterator<T, I> {
 imply SkipIterator<T, I>: Iterator {
     type Item = T;
 
-    micro has_next(self): bool {
+    micro has_next(self): bool
+        where I: Iterator<Item = T>
+    {
         let mut iter: I = self._iter
         let mut skipped: usize = self._skipped
         while skipped < self._count {
@@ -24,7 +26,9 @@ imply SkipIterator<T, I>: Iterator {
         return iter.has_next()
     }
 
-    micro next(mut self): Option<T> {
+    micro next(mut self): Option<T>
+        where I: Iterator<Item = T>
+    {
         while self._skipped < self._count {
             if !self._iter.has_next() {
                 return None
