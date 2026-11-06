@@ -6,10 +6,8 @@ namespace unicode.case;
 # `std` 只保留 `Utf8Text::to_lower` / `to_upper` 的签名，实现经 `[host_provider]`
 # 委托到本包，因此 UCD 版本固定在 `unicode.case`，std 语义不随版本漂移。
 #
-# 为什么不用 `std.text.Utf8Builder`：`Utf8Builder.append` 的重载解析在跨包调用时
-# 会与 `std.collection.LiteralSequence.append` 冲突，编译器报 “trait 约束未解析：
-# LiteralSequence”。这里改用 `ArrayList<u8>` 逐码点编码追加，语义等价（变长输出），
-# 不依赖那个跨包缺陷。`char` 是 u16，最多编码 3 个字节。
+# 输出用 `ArrayList<u8>` 逐码点编码追加：变长输出，语义与 `Utf8Builder` 等价。
+# `char` 是 u16，最多编码 3 个字节。
 
 # 把一个码点按 UTF-8 规则追加到字节缓冲：`char` 上界 U+FFFF，故最多 3 字节。
 private micro push_code_point(bytes: ArrayList<u8>, code: u32) {

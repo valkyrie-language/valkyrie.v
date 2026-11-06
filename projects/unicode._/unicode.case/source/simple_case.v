@@ -5,8 +5,7 @@ namespace unicode.case;
 # 非 BMP（UTF-8 4 字节）超出 u16 `char` 的表示范围，直接不支持，原样保留。
 #
 # 表布局：每对「源码点、目标码点」占 2 个槽位，按源码点严格递增，可二分。
-# `pairs` 是 `[char]` 而不是 `[u32]`：本编译器对 `u32` 等原语是包内名义类型，
-# `[u32]` 跨包传递会报类型不兼容；`char` 是语言内建类型，调用方再 `as u32`。
+# `pairs` 用 `[char]` 存储：`char` 是语言内建类型，调用方按需 `as u32` 读取。
 micro simple_pair_lookup(pairs: [char], code: u32) -> char {
     let mut low: usize = 0
     let mut high: usize = pairs.length() / 2

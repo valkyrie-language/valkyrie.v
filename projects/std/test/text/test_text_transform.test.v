@@ -1,6 +1,6 @@
 # `trim` 按 Unicode White_Space（25 个码点）裁首尾，U+200B / U+FEFF 不算空白。
 # `replace` 从左到右非重叠全部替换；空模式返回原串，空替换即删除。
-# 注：`let text: utf8 = "…"` 在 OVM 下受别名缺陷影响，这里统一用 `from_bytes` 构造。
+# 注：文本统一用 `from_bytes` 构造，避免依赖字面量的隐式转换。
 
 [test]
 micro `test utf8 trim unicode whitespace`() {

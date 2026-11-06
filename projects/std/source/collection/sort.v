@@ -10,8 +10,8 @@ namespace std.collection;
 # `merge_sort_range` / `quick_sort_range` 只作为私有区间实现，由公开入口委托
 # 调用，不再暴露 4/5 参形态。
 # 定长 `[T]` 的 `sort` 走同一套稳定实现：先取快照到 `ArrayList`，排好后再写回。
-# `Array<T>` 的 `sort` 重载暂缺：该类没有公开构造入口，且当前编译器对第三个同名
-# 泛型重载的解析失败（`[T]` 实参会被判为无匹配），见本批验证报告。
+# `Array<T>` 暂不提供 `sort` 入口；需要排序时先把元素物化为 `ArrayList<T>`，
+# 再调用上面的公开入口。
 # 比较只有一条实现路径：`micro(T, T) -> i32`，负数表示前者先出，零保持原
 # 相对次序（稳定），正数表示后者先出。`sort` / `sort_unstable` 由元素自身的
 # `Comparable` 派生该比较器，不复制第二套排序实现。

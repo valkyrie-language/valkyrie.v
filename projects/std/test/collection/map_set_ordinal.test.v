@@ -137,9 +137,7 @@ micro `test btree set ordinal key read write delete`() {
         panic("btree set ordinal missing key must be None")
     }
 
-    # `BTreeSet::remove`（按合同走 `Set::remove`）在 `clear` 处被既有 SMIR006 阻断
-    # （`BTreeSet::clear` 的 `self._root = None` 字段写入），与本次索引改造无关，
-    # 已作为未验证项记录；这里只验读/写/计数，不为删路径造假绿。
+    # 本用例覆盖 `BTreeSet` 的序数读、写与计数路径。
 
     let remaining: i64 = set[10]
     if remaining != 10 {

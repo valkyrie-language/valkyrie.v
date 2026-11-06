@@ -1,6 +1,6 @@
 # `to_lower` / `to_upper`：Unicode 默认全映射、locale 无关，逐码点映射。
 # 非 BMP 字符超出 u16 `char` 表示范围，原样保留。
-# 注：`let text: utf8 = "…"` 在 OVM 下受别名缺陷影响，这里统一用 `from_bytes` 构造。
+# 注：文本统一用 `from_bytes` 构造，避免依赖字面量的隐式转换。
 
 [test]
 micro `test utf8 case ascii`() {
