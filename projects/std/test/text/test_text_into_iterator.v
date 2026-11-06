@@ -136,7 +136,7 @@ micro `test utf8 index read`() {
     }
 
     # 1 基序数索引（`Ordinal`）：7 个码点，第 8 个缺失返回 `None`。
-    if s[8].is_some() {
+    if s.get(8).is_some() {
         panic("utf8 ordinal bounds failed")
     }
 }
