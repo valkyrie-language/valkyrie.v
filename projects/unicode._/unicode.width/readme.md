@@ -2,11 +2,19 @@
 
 Unicode 显示宽度包（East Asian Width）。
 
-## 状态：未实现，不要调用
+## 能力边界
 
-本包只有一个 `namespace! unicode.width;` 声明，**不导出任何可用入口**。
-`std` 也不提供 `width` 一类入口（`std` 不新增随 UCD 版本漂移的 API）。
-终端排版、表格对齐等场合请继续自己处理，不要依赖本包。
+- 已提供：本包声明（`namespace! unicode.width;`）与 UCD `16.0.0` 版本元数据。
+- 未提供：任何宽度查询公开入口，也不返回默认宽度。
+- `std` 不提供 `width` 一类入口，终端排版、表格对齐等场合应自行处理。
+
+## 未覆盖的能力
+
+- 宽度分类表（`EastAsianWidth.txt` 的 `Na`/`N`/`A`/`W`/`F`/`H`）。
+- 码点宽度（0/1/2）查询。
+- `A`（Ambiguous）分类：语义依赖 locale，本包若提供会固定为 locale 无关口径。
+- 组合标记宽度 0（依赖 `Grapheme_Extend` 类属性）。
+- 非 BMP 码点（`char` 为 u16，宽度结论只能覆盖 BMP）。
 
 ## 版本
 
@@ -14,19 +22,7 @@ Unicode 显示宽度包（East Asian Width）。
 - UCD 版本：`16.0.0`
 - 依赖：`unicode.types`（属性数据底包）
 
-## 缺口账本
-
-| 缺口 | 依据 | 前置条件 |
-|:-----|:-----|:---------|
-| 宽度分类表 | UAX #11 `EastAsianWidth.txt`（`Na`/`N`/`A`/`W`/`F`/`H`） | `unicode.types` 增属性表 |
-| 码点宽度查询（0/1/2） | 同上 | 同上 |
-| `A`（Ambiguous）取舍 | 依 locale 变化，本包语义为 locale 无关 | 需要一次显式裁决，本轮不猜 |
-| 组合标记宽度 0 | 依赖 `Grapheme_Extend` 类属性 | 与 `unicode.segment` 同源缺口 |
-| 非 BMP 码点 | `char` 是 u16，宽度结论只能覆盖 BMP | 先扩展文本表示 |
-
-上述条目全部**未落地**；本包不返回任何默认宽度，以免调用方误信。
-
 ## 边界
 
-- 不做终端渲染、不做截断算法；只负责码点宽度数据与查询（本轮均未实现）。
-- 表将由脚本生成（`EastAsianWidth.txt`），本包不手抄数据。
+- 不做终端渲染、不做截断算法；只负责码点宽度数据与查询。
+- 表由脚本生成（`EastAsianWidth.txt`），本包不手抄数据。
