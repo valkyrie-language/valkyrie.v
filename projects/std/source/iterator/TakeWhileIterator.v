@@ -14,14 +14,18 @@ structure TakeWhileIterator<T, I> {
 imply TakeWhileIterator<T, I>: Iterator {
     type Item = T;
 
-    micro has_next(self): bool {
+    micro has_next(self): bool
+        where I: Iterator<Item = T>
+    {
         if self._done {
             return false
         }
         return self._iter.has_next()
     }
 
-    micro next(mut self): Option<T> {
+    micro next(mut self): Option<T>
+        where I: Iterator<Item = T>
+    {
         if self._done {
             return None
         }
