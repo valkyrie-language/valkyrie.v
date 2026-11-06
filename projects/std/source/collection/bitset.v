@@ -30,7 +30,7 @@ imply BitSet {
         let bit_idx: usize = index % 64
         self.ensure_capacity(word_idx + 1)
         let word: u64 = self.words.get((word_idx + 1) as isize).unwrap()
-        self.words.set((word_idx + 1) as isize, word | (1 << bit_idx))
+        self.words.set((word_idx + 1) as isize, word | ((1 as u64) << (bit_idx as u64)))
     }
 
     [host_contract]
@@ -41,7 +41,7 @@ imply BitSet {
             return
         }
         let word: u64 = self.words.get((word_idx + 1) as isize).unwrap()
-        self.words.set((word_idx + 1) as isize, word ^ (word & (1 << bit_idx)))
+        self.words.set((word_idx + 1) as isize, word ^ (word & ((1 as u64) << (bit_idx as u64))))
     }
 
     [host_contract]
@@ -52,7 +52,7 @@ imply BitSet {
             return false
         }
         let word: u64 = self.words.get((word_idx + 1) as isize).unwrap()
-        return (word & (1 << bit_idx)) != 0
+        return (word & ((1 as u64) << (bit_idx as u64))) != 0
     }
 
     [host_contract]
