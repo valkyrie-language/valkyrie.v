@@ -5,6 +5,8 @@
 
 namespace std.adaptor.wasm.console;
 
+using std.adaptor.wasm.text::{utf8_to_utf16};
+
 [host_provider(std::console::write)]
 micro write(message: utf8): unit {
     let host_message: utf16 = utf8_to_utf16(message)
