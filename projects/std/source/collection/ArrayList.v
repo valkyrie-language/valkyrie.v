@@ -126,6 +126,20 @@ imply ArrayList<T> {
         return self.get(size as isize)
     }
 
+    # 原地反序：首尾成对交换，O(n/2)。空表不进入循环；单元素自换一次为无操作。
+    # 只改逻辑区 `[0, _length)`，容量余量不参与。
+    micro reverse(mut self): unit {
+        let mut left: usize = 0
+        let mut right: usize = self._length
+        while left < right {
+            right = right - 1
+            let kept: T = self._items⁅left⁆
+            self._items⁅left⁆ = self._items⁅right⁆
+            self._items⁅right⁆ = kept
+            left = left + 1
+        }
+    }
+
     # 集合族统一的回调式遍历 API；与 `IntoIterator`/`for-in` 是两件事：
     # 这里只按现有 `loop` 协议遍历本列表，不新增遍历协议，也不改变迭代顺序。
     micro iter(self, f: micro(T) -> unit) -> unit {
