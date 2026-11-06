@@ -34,7 +34,7 @@ micro write_file_text(path: utf8, content: utf8) -> bool {
 
 [host_provider(std::io::get_files)]
 micro get_files(path: utf8, pattern: utf8, recursive: bool) -> [utf8] {
-    let search_option: i32 = if recursive { 1 } else { 0 }
+    let search_option: i32 = if recursive { i32(1) } else { i32(0) }
     return __get_files(path, pattern, search_option)
 }
 
