@@ -9,7 +9,9 @@ structure TakeIterator<T, I> {
 imply TakeIterator<T, I>: Iterator {
     type Item = T;
 
-    micro has_next(self): bool {
+    micro has_next(self): bool
+        where I: Iterator<Item = T>
+    {
         if self._taken >= self._count {
             return false
         }
@@ -17,7 +19,9 @@ imply TakeIterator<T, I>: Iterator {
         return self._iter.has_next()
     }
 
-    micro next(mut self): Option<T> {
+    micro next(mut self): Option<T>
+        where I: Iterator<Item = T>
+    {
         if self._taken >= self._count {
             return None
         }
