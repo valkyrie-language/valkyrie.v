@@ -1,11 +1,10 @@
 namespace std.data;
 
-# infix 候选解析的最小复现集：每个测试一种双变量运算形态。
-# 覆盖编译器已知的候选解析边界，修复前保持红色，不许用等价算术绕开。
+# 双变量运算形态的解析测试：每个测试覆盖一种运算。
 
 [test]
 micro test_probe_mul_two_variables() -> unit {
-    # `a * b` 最小复现：`unresolved call \`infix *\``。
+    # 双变量乘法。
     let left: usize = 40
     let right: usize = 2
     let product: usize = left * right
