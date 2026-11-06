@@ -2,7 +2,7 @@ namespace std.math.graph_theory;
 
 # 无权图算法：消费 `std.collection.DirectedGraph` 的邻接表表示。
 # BFS/DFS、拓扑排序与环检测由 `std.collection` 的 `DirectedGraph` 自带，
-# 本模块不重复实现；这里只补连通分量与无权最短路。
+# 本模块不重复实现；这里只补连通分量、二分图判定与无权最短路。
 
 # 无权最短路结果：距离表（边数）+ 前驱表。`distances` 缺键即不可达。
 class ShortestPaths<N> {
@@ -104,6 +104,68 @@ micro weak_components<N>(graph: std.collection.DirectedGraph<N>) -> ArrayList<Ar
     }
 
     return components
+}
+
+# 二分图判定（二色着色）：与 `weak_components` 同口径，把有向边当作无向。
+# 返回 `Some(coloring)`（每点 0/1 着色）表示二分；`None` 表示存在冲突边。
+# 分量按节点插入序扫描、分量内按 BFS 发现序着色，结果确定。
+micro bipartition<N>(graph: std.collection.DirectedGraph<N>) -> Option<HashMap<N, i64>>
+    where N: Equal & Hash
+{
+    let mut coloring: HashMap<N, i64> = HashMap::new(graph.node_count())
+    let nodes: ArrayList<N> = graph.nodes()
+
+    let mut i: usize = 0
+    while i < nodes.length() {
+        let node: N = nodes⁅i⁆
+        if coloring.get(node).is_none() {
+            coloring[node] = 0
+            let mut queue: ArrayList<N> = ArrayList::new(0)
+            queue.push(node)
+
+            let mut head: usize = 0
+            while head < queue.length() {
+                let current: N = queue⁅head⁆
+                head = head + 1
+                let color: i64 = coloring.get(current).unwrap()
+                let opposite: i64 = 1 - color
+
+                let successors: ArrayList<N> = graph.successors(current)
+                let mut s: usize = 0
+                while s < successors.length() {
+                    let next: N = successors⁅s⁆
+                    if coloring.get(next).is_none() {
+                        coloring[next] = opposite
+                        queue.push(next)
+                    }
+                    else if coloring.get(next).unwrap() == color {
+                        return None
+                    }
+
+                    s = s + 1
+                }
+
+                let predecessors: ArrayList<N> = graph.predecessors(current)
+                let mut p: usize = 0
+                while p < predecessors.length() {
+                    let previous: N = predecessors⁅p⁆
+                    if coloring.get(previous).is_none() {
+                        coloring[previous] = opposite
+                        queue.push(previous)
+                    }
+                    else if coloring.get(previous).unwrap() == color {
+                        return None
+                    }
+
+                    p = p + 1
+                }
+            }
+        }
+
+        i = i + 1
+    }
+
+    return Some(coloring)
 }
 
 # 强连通分量：Kosaraju 两遍 DFS（第一遍按插入序，第二遍在转置图上按完成序逆序）。
