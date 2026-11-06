@@ -8,11 +8,15 @@ structure EnumerateIterator<T, I> {
 imply EnumerateIterator<T, I>: Iterator {
     type Item = (ordinal: usize, value: T);
 
-    micro has_next(self): bool {
+    micro has_next(self): bool
+        where I: Iterator<Item = T>
+    {
         return self._iter.has_next()
     }
 
-    micro next(mut self): Option<(ordinal: usize, value: T)> {
+    micro next(mut self): Option<(ordinal: usize, value: T)>
+        where I: Iterator<Item = T>
+    {
         if !self._iter.has_next() {
             let empty: Option<(ordinal: usize, value: T)> = None
             return empty
