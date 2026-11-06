@@ -4,5 +4,5 @@
 
 <script>
 let title: utf8 = __TITLE__
-let series: list = __SERIES__
+let series: [asgard.plotter::ColSeriesItem] = __SERIES__
 </script>
