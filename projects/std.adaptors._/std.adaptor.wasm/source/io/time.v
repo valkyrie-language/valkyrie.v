@@ -2,6 +2,9 @@
 
 namespace std.adaptor.wasm.io;
 
+using std.adaptor.wasm.performance::{perf_now};
+using std.adaptor.wasm.timer::{set_timeout};
+
 [host_provider(std::io::now)]
 micro time_ms(): i64 {
     return i64(perf_now())
