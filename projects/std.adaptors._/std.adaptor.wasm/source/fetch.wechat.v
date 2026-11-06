@@ -1,6 +1,8 @@
 [when(target.vendor == "wechat")]
 namespace std.adaptor.wasm.fetch;
 
+using std.adaptor.wasm.text::{utf8_to_utf16, utf16_to_utf8};
+
 [js_builtin("wx.request")]
 micro wx_request(url: utf16, options: i32): i32
 
