@@ -106,4 +106,21 @@ imply HashMap<K, V> {
             _impl: SwissTable::new(capacity),
         }
     }
+
+    # 读改写单点：键缺失时写入 `fallback`，已存在时以 `update` 变换旧值。
+    # 返回写入后的值，调用方不需要再 `get` 一次；`update` 不接收引用，
+    # 与 std 现有引用面一致，不引入 `&mut` 合同。
+    micro upsert(mut self, key: K, fallback: V, update: micro(V) -> V): V
+        where K: Equal & Hash
+    {
+        let current: Option<V> = self._impl.get(key)
+        if current.is_none() {
+            self._impl.insert(key, fallback)
+            return fallback
+        }
+
+        let next: V = update(current.unwrap())
+        self._impl.insert(key, next)
+        return next
+    }
 }

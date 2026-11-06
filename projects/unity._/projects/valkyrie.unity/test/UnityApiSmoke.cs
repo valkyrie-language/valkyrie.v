@@ -8,12 +8,7 @@ internal static class Program
     {
         var unityRoot = args.Length > 0
             ? args[0]
-            : Environment.GetEnvironmentVariable("VALKYRIE_UNITY_EDITOR_ROOT");
-        if (string.IsNullOrWhiteSpace(unityRoot))
-        {
-            Console.Error.WriteLine("Unity editor root is not configured. Pass it as the first argument or set the VALKYRIE_UNITY_EDITOR_ROOT environment variable.");
-            return 2;
-        }
+            : @"E:\UnityEditor\6000.2.6f2\Editor\Data\Managed\UnityEngine";
         var checks = new (string Module, string Type, string Member)[]
         {
             ("UnityEngine.CoreModule.dll", "UnityEngine.Application", "get_dataPath"),

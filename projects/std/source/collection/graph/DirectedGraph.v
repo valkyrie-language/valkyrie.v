@@ -220,6 +220,34 @@ imply DirectedGraph<N> {
     {
         return self.predecessors(node).length()
     }
+
+    # 深拷贝：按插入序重放节点与边，供不可变外壳（如文档 IR）在变更前复制，
+    # 旧版本持有的图实例不被后续修改污染。
+    micro clone(self): Self
+        where N: Equal & Hash
+    {
+        let mut copy: DirectedGraph<N> = DirectedGraph::new()
+        let mut i: usize = 0
+        while i < self._nodes.length() {
+            copy.add_node(self._nodes⁅i⁆)
+            i = i + 1
+        }
+
+        i = 0
+        while i < self._nodes.length() {
+            let node: N = self._nodes⁅i⁆
+            let targets: ArrayList<N> = self.successors(node)
+            let mut s: usize = 0
+            while s < targets.length() {
+                copy.add_edge(node, targets⁅s⁆)
+                s = s + 1
+            }
+
+            i = i + 1
+        }
+
+        return copy
+    }
 }
 
 # 从列表中按值删除首个匹配项（1 基序数移除），返回新列表；供邻接表收缩使用。
