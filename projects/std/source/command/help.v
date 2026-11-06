@@ -1,5 +1,7 @@
 namespace std.command;
 
+using std.iterator::{reduce};
+
 micro render_command_summary_line(cmd: CommandModel) -> utf8 {
     let mut line: utf8 = "  "
     line = line.concat(cmd.name)
