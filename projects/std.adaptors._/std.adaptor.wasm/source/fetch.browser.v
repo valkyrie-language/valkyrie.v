@@ -1,6 +1,8 @@
 [when(target.specification == "browser")]
 namespace std.adaptor.wasm.fetch;
 
+using std.adaptor.wasm.text::{utf8_to_utf16, utf16_to_utf8};
+
 [host_provider(std::net::get)]
 micro get(url: utf8): utf8 {
     let host_url: utf16 = utf8_to_utf16(url)
