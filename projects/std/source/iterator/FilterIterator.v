@@ -13,7 +13,9 @@ structure FilterIterator<T, I> {
 imply FilterIterator<T, I>: Iterator {
     type Item = T;
 
-    micro has_next(self): bool {
+    micro has_next(self): bool
+        where I: Iterator<Item = T>
+    {
         let mut iter: I = self._iter
         while iter.has_next() {
             let item: T = iter.next().unwrap()
@@ -25,7 +27,9 @@ imply FilterIterator<T, I>: Iterator {
         return false
     }
 
-    micro next(mut self): Option<T> {
+    micro next(mut self): Option<T>
+        where I: Iterator<Item = T>
+    {
         while self._iter.has_next() {
             let item: T = self._iter.next().unwrap()
             if self._predicate(item) {
