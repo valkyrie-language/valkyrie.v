@@ -1,5 +1,7 @@
 namespace std.adaptor.wasm.crypto;
 
+using std.adaptor.wasm.text::{utf16_to_utf8};
+
 # std.web_sdk: Crypto API
 # [js_builtin] 直接映射 JS 内置 Crypto API，无依赖
 # getRandomValues 有副作用（填充随机值），randomUUID 有副作用
