@@ -3,6 +3,9 @@
 
 namespace std.adaptor.wasm.io;
 
+using std.adaptor.wasm.text::{utf8_to_utf16};
+using std.adaptor.wasm.console::{console_log, console_error};
+
 micro print(msg: utf8): unit {
     let msg16: utf16 = utf8_to_utf16(msg)
     console_log(msg16)
