@@ -8,5 +8,5 @@ micro host_entropy() -> u64 {
     return __random_js_entropy() as u64
 }
 
-[js("random")]
+[js_builtin("random")]
 private micro __random_js_entropy(): i32
