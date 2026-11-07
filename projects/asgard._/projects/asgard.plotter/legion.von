@@ -9,6 +9,9 @@
     build: [
         {
             target: "ovm"
+        },
+        {
+            target: "wasm32-unknown-browser-wasm"
         }
     ]
 }

@@ -10,6 +10,9 @@
         },
         {
             target: "clr"
+        },
+        {
+            target: "wasm32-unknown-browser-wasm"
         }
     ]
 }
