@@ -113,12 +113,7 @@ micro graph_model() -> GraphModel {
 }
 
 micro graph_add_node(model: GraphModel, node: GraphNode) -> GraphModel {
-    let mut nodes: ArrayList<GraphNode> = []
-    let mut index: usize = 0
-    while index < model.nodes.length() {
-        nodes.push(model.nodes⁅index⁆)
-        index = index + 1
-    }
+    let mut nodes: ArrayList<GraphNode> = model.nodes.into_iterator().collect()
     nodes.push(node)
     return GraphModel {
         nodes: nodes.to_array(),
@@ -128,12 +123,7 @@ micro graph_add_node(model: GraphModel, node: GraphNode) -> GraphModel {
 }
 
 micro graph_add_edge(model: GraphModel, edge: GraphEdge) -> GraphModel {
-    let mut edges: ArrayList<GraphEdge> = []
-    let mut index: usize = 0
-    while index < model.edges.length() {
-        edges.push(model.edges⁅index⁆)
-        index = index + 1
-    }
+    let mut edges: ArrayList<GraphEdge> = model.edges.into_iterator().collect()
     edges.push(edge)
     return GraphModel {
         nodes: model.nodes,

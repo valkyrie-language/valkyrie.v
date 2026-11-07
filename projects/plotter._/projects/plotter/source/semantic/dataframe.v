@@ -28,12 +28,7 @@ micro dataframe_add_numeric(data: DataFrame, name: utf8, values: [f64]) -> DataF
         numbers: values,
         labels: []
     }
-    let mut columns: ArrayList<Column> = []
-    let mut column_index: usize = 0
-    while column_index < data.columns.length() {
-        columns.push(data.columns⁅column_index⁆)
-        column_index = column_index + 1
-    }
+    let mut columns: ArrayList<Column> = data.columns.into_iterator().collect()
     columns.push(column)
     let rows: usize = if data.row_count > values.length() { data.row_count } else { values.length() }
     return DataFrame {
@@ -49,12 +44,7 @@ micro dataframe_add_categorical(data: DataFrame, name: utf8, labels: [utf8]) -> 
         numbers: [],
         labels: labels
     }
-    let mut columns: ArrayList<Column> = []
-    let mut column_index: usize = 0
-    while column_index < data.columns.length() {
-        columns.push(data.columns⁅column_index⁆)
-        column_index = column_index + 1
-    }
+    let mut columns: ArrayList<Column> = data.columns.into_iterator().collect()
     columns.push(column)
     let rows: usize = if data.row_count > labels.length() { data.row_count } else { labels.length() }
     return DataFrame {
