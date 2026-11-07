@@ -10,7 +10,7 @@ micro svg_escape_text(text: utf8) -> utf8 {
     let mut position: usize = 1
     let length: usize = text.length()
     while position <= length {
-        let current: char = text[position]
+        let current: char = text⁅position - 1⁆
         if current == '&' {
             out = out + "&amp;"
         } else if current == '<' {
@@ -30,7 +30,7 @@ micro svg_escape_attribute(text: utf8) -> utf8 {
     let mut position: usize = 1
     let length: usize = text.length()
     while position <= length {
-        let current: char = text[position]
+        let current: char = text⁅position - 1⁆
         if current == '&' {
             out = out + "&amp;"
         } else if current == '<' {
