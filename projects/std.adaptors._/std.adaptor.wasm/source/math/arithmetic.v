@@ -80,3 +80,11 @@ namespace std.adaptor.wasm.math;
 [host_provider(std::primitive::__f64_lt)] [wasm_operator("f64.lt")] micro f64_lt(a: f64, b: f64): bool
 
 #endregion
+
+#region f64 位模式重解释
+# 只搬位、不做数值转换。opcode 由后端按助记符结构性冻结，不按函数名特判。
+[host_provider(std::primitive::__f64_to_bits)] [wasm_operator("i64.reinterpret_f64")] micro f64_to_bits(a: f64): u64
+
+[host_provider(std::primitive::__f64_from_bits)] [wasm_operator("f64.reinterpret_i64")] micro f64_from_bits(a: u64): f64
+
+#endregion
