@@ -172,4 +172,27 @@ imply DisjointSet<T> {
 
         return total
     }
+
+    # 一次返回全部分量的规模表：键为分量根，值为该分量的成员个数（含根自身）。
+    # 语义等价于对每个根逐个调用 `group_sizes`，但只遍历一遍元素并按根累计，
+    # 复杂度为 O(元素数) 次 `find_root`（含路径压缩），不是「分量数 × 元素数」。
+    micro group_size_table(mut self): HashMap<T, usize>
+        where T: Equal & Hash
+    {
+        let values: ArrayList<T> = self._parent.keys()
+        let mut sizes: HashMap<T, usize> = HashMap::new(self._parent.length())
+        let mut index: usize = 0
+        while index < values.length() {
+            let root: T = self.find_root(values.get((index + 1) as isize).unwrap())
+            if sizes.contains_key(root) {
+                sizes.insert(root, sizes.get(root).unwrap() + 1)
+            } else {
+                sizes.insert(root, 1)
+            }
+
+            index = index + 1
+        }
+
+        return sizes
+    }
 }
