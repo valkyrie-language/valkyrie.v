@@ -4,13 +4,13 @@
 namespace std.adaptor.wasm.text;
 
 [host_provider(std::text::Utf16Text::length)]
-micro host_length(value: std.text.utf16): isize {
-    return __js_utf16_length(value)
+micro host_length(value: std.text.utf16): usize {
+    return __js_utf16_length(value) as usize
 }
 
 [host_provider(std::text::Utf16Text::slice)]
-micro host_slice(value: std.text.utf16, start: isize, count: isize): std.text.utf16 {
-    return __js_utf16_slice(value, start, count)
+micro host_slice(value: std.text.utf16, start: usize, count: usize): std.text.utf16 {
+    return __js_utf16_slice(value, start as isize, count as isize)
 }
 
 [host_provider(std::text::Utf16Text::concat)]
@@ -34,8 +34,12 @@ micro host_ends_with(value: std.text.utf16, suffix: std.text.utf16): bool {
 }
 
 [host_provider(std::text::Utf16Text::index_of)]
-micro host_index_of(value: std.text.utf16, other: std.text.utf16): isize {
-    return __js_utf16_index_of(value, other)
+micro host_index_of(value: std.text.utf16, other: std.text.utf16): Option<usize> {
+    let index: isize = __js_utf16_index_of(value, other)
+    if index < 0 {
+        return None
+    }
+    return Some(index as usize)
 }
 
 [host_provider(std::text::Utf16Text::trim)]
