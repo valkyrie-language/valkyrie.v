@@ -172,3 +172,18 @@ micro f64_eq(a: f64, b: f64): bool
 micro f64_lt(a: f64, b: f64): bool
 
 #endregion
+
+#region f64 位模式重解释
+# 只搬位、不做数值转换：`to_bits` / `from_bits` 是 VM 头码（0x60 / 0x61），
+# 与 wasm 的 `i64.reinterpret_f64` / `f64.reinterpret_i64` 同一语义。
+# 操作数/结果按声明签名跨载体（f64 ↔ i64），不引入宿主函数、不新增 capability。
+
+[host_provider(std::primitive::__f64_to_bits)]
+[ovm_operator("i64.reinterpret_f64")]
+micro f64_to_bits(a: f64): u64
+
+[host_provider(std::primitive::__f64_from_bits)]
+[ovm_operator("f64.reinterpret_i64")]
+micro f64_from_bits(bits: u64): f64
+
+#endregion
