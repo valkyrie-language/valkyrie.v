@@ -116,6 +116,15 @@ imply DirectedGraph<N> {
         self._edge_count = self._edge_count + 1
     }
 
+    # 添加无向边 `a — b`：双向写入，自动补缺失节点；重复边幂等。
+    # 与 `GraphMatrix` / `WeightedGraph` 的同名入口同形，只命名约定、不建立独立合同。
+    micro add_undirected_edge(mut self, a: N, b: N): unit
+        where N: Equal & Hash
+    {
+        self.add_edge(a, b)
+        self.add_edge(b, a)
+    }
+
     # 删除一条有向边；边不存在则忽略（幂等）。
     micro remove_edge(mut self, from: N, to: N): unit
         where N: Equal & Hash
