@@ -187,3 +187,52 @@ micro f64_to_bits(a: f64): u64
 micro f64_from_bits(bits: u64): f64
 
 #endregion
+
+#region f32 算术
+# f32 是独立载体（`Value::F32`），不是 f64 的别名；算术/比较均在单精度上完成。
+# 指令走头码（0x64–0x6A），不引入宿主函数、不新增 capability。
+
+[host_provider(std::primitive::__f32_add)]
+[ovm_operator("f32.add")]
+micro f32_add(a: f32, b: f32): f32
+
+[host_provider(std::primitive::__f32_sub)]
+[ovm_operator("f32.sub")]
+micro f32_sub(a: f32, b: f32): f32
+
+[host_provider(std::primitive::__f32_mul)]
+[ovm_operator("f32.mul")]
+micro f32_mul(a: f32, b: f32): f32
+
+[host_provider(std::primitive::__f32_div)]
+[ovm_operator("f32.div")]
+micro f32_div(a: f32, b: f32): f32
+
+[host_provider(std::primitive::__f32_neg)]
+[ovm_operator("f32.neg")]
+micro f32_neg(a: f32): f32
+
+[host_provider(std::primitive::__f32_eq)]
+[ovm_operator("f32.eq")]
+micro f32_eq(a: f32, b: f32): bool
+
+[host_provider(std::primitive::__f32_lt)]
+[ovm_operator("f32.lt")]
+micro f32_lt(a: f32, b: f32): bool
+
+#endregion
+
+#region f32 位模式重解释
+# 只搬位、不做数值转换：`to_bits` / `from_bits` 是 VM 头码（0x62 / 0x63），
+# 32 位位模式、`i32`/`u32` 同宽载体，与 wasm 的 `i32.reinterpret_f32` /
+# `f32.reinterpret_i32` 同一语义。
+
+[host_provider(std::primitive::__f32_to_bits)]
+[ovm_operator("i32.reinterpret_f32")]
+micro f32_to_bits(a: f32): u32
+
+[host_provider(std::primitive::__f32_from_bits)]
+[ovm_operator("f32.reinterpret_i32")]
+micro f32_from_bits(bits: u32): f32
+
+#endregion

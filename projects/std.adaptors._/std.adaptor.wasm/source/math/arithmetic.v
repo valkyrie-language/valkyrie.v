@@ -88,3 +88,31 @@ namespace std.adaptor.wasm.math;
 [host_provider(std::primitive::__f64_from_bits)] [wasm_operator("f64.reinterpret_i64")] micro f64_from_bits(a: u64): f64
 
 #endregion
+
+#region f32 算术
+# f32 是独立载体（`VALTYPE_F32` / 真实 4 字节），不得复用 f64 指令或载体。
+# 算术与比较都在单精度上完成，不提升到 f64 再降回。
+
+[host_provider(std::primitive::__f32_add)] [wasm_operator("f32.add")] micro f32_add(a: f32, b: f32): f32
+
+[host_provider(std::primitive::__f32_sub)] [wasm_operator("f32.sub")] micro f32_sub(a: f32, b: f32): f32
+
+[host_provider(std::primitive::__f32_mul)] [wasm_operator("f32.mul")] micro f32_mul(a: f32, b: f32): f32
+
+[host_provider(std::primitive::__f32_div)] [wasm_operator("f32.div")] micro f32_div(a: f32, b: f32): f32
+
+[host_provider(std::primitive::__f32_neg)] [wasm_operator("f32.neg")] micro f32_neg(a: f32): f32
+
+[host_provider(std::primitive::__f32_eq)] [wasm_operator("f32.eq")] micro f32_eq(a: f32, b: f32): bool
+
+[host_provider(std::primitive::__f32_lt)] [wasm_operator("f32.lt")] micro f32_lt(a: f32, b: f32): bool
+
+#endregion
+
+#region f32 位模式重解释
+# 32 位位模式、`i32`/`u32` 同宽载体：只搬位，NaN payload 23 位与 -0.0/次正规保位。
+[host_provider(std::primitive::__f32_to_bits)] [wasm_operator("i32.reinterpret_f32")] micro f32_to_bits(a: f32): u32
+
+[host_provider(std::primitive::__f32_from_bits)] [wasm_operator("f32.reinterpret_i32")] micro f32_from_bits(a: u32): f32
+
+#endregion
