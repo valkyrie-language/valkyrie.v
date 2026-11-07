@@ -31,15 +31,24 @@ micro status_chart_svg() -> utf8 {
     let data: DataFrame = empty_dataframe()
     let with_x: DataFrame = dataframe_add_categorical(data, "status", labels)
     let with_y: DataFrame = dataframe_add_numeric(with_x, "count", values)
-    return with_y
-        |> plot()
-        |> aes_fill("status", "count", "status")
-        |> geom_col()
-        |> scale_y_continuous()
-        |> labs("Test Status", "status", "count")
-        |> theme_minimal()
-        |> with_size(640.0, 280.0)
-        |> render_svg()
+    return render_svg(
+        with_size(
+            theme_minimal(
+                labs(
+                    scale_y_continuous(
+                        geom_col(
+                            aes_fill(plot(with_y), "status", "count", "status")
+                        )
+                    ),
+                    "Test Status",
+                    "status",
+                    "count"
+                )
+            ),
+            640.0,
+            280.0
+        )
+    )
 }
 
 micro bench_chart_svg() -> utf8 {

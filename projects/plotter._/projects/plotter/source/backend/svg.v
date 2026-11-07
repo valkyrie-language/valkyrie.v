@@ -7,7 +7,7 @@ micro escape_xml(text: utf8) -> utf8 {
         .replace("&", "&amp;")
         .replace("<", "&lt;")
         .replace(">", "&gt;")
-        .replace("\"", "&quot;")
+        .replace(quote_text(), "&quot;")
 }
 
 micro render_svg(spec: PlotSpec) -> utf8 {
@@ -28,83 +28,69 @@ micro scene_to_svg(scene: PlotScene) -> utf8 {
         index = index + 1
     }
 
-    return "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\""
-        + format("{}", scene.width)
-        + "\" height=\""
-        + format("{}", scene.height)
-        + "\" viewBox=\"0 0 "
-        + format("{}", scene.width)
-        + " "
-        + format("{}", scene.height)
-        + "\">"
-        + "<rect width=\"100%\" height=\"100%\" fill=\"#ffffff\"/>"
-        + body
-        + "</svg>"
+    let q: utf8 = quote_text()
+    let mut out: utf8 = "<svg xmlns=" + q + "http://www.w3.org/2000/svg" + q
+    out = out + " width=" + q + format("{}", scene.width) + q
+    out = out + " height=" + q + format("{}", scene.height) + q
+    out = out + " viewBox=" + q + "0 0 " + format("{}", scene.width) + " " + format("{}", scene.height) + q
+    out = out + ">"
+    out = out + "<rect width=" + q + "100%" + q
+    out = out + " height=" + q + "100%" + q
+    out = out + " fill=" + q + "#ffffff" + q + "/>"
+    out = out + body
+    out = out + "</svg>"
+    return out
 }
 
 micro mark_to_svg(mark: Mark) -> utf8 {
+    let q: utf8 = quote_text()
     if mark.kind == 0 {
-        return "<rect x=\""
-            + format("{}", mark.x)
-            + "\" y=\""
-            + format("{}", mark.y)
-            + "\" width=\""
-            + format("{}", mark.width)
-            + "\" height=\""
-            + format("{}", mark.height)
-            + "\" fill=\""
-            + mark.fill
-            + "\"/>"
+        let mut out: utf8 = "<rect x=" + q + format("{}", mark.x)
+        out = out + q + " y=" + q + format("{}", mark.y)
+        out = out + q + " width=" + q + format("{}", mark.width)
+        out = out + q + " height=" + q + format("{}", mark.height)
+        out = out + q + " fill=" + q + mark.fill
+        out = out + q + "/>"
+        return out
     }
     if mark.kind == 1 {
-        return "<line x1=\""
-            + format("{}", mark.x)
-            + "\" y1=\""
-            + format("{}", mark.y)
-            + "\" x2=\""
-            + format("{}", mark.x2)
-            + "\" y2=\""
-            + format("{}", mark.y2)
-            + "\" stroke=\""
-            + mark.stroke
-            + "\" stroke-width=\""
-            + format("{}", mark.stroke_width)
-            + "\"/>"
+        let mut out: utf8 = "<line x1=" + q + format("{}", mark.x)
+        out = out + q + " y1=" + q + format("{}", mark.y)
+        out = out + q + " x2=" + q + format("{}", mark.x2)
+        out = out + q + " y2=" + q + format("{}", mark.y2)
+        out = out + q + " stroke=" + q + mark.stroke
+        out = out + q + " stroke-width=" + q + format("{}", mark.stroke_width)
+        out = out + q + "/>"
+        return out
     }
     if mark.kind == 2 {
-        return "<path d=\""
-            + mark.path
-            + "\" fill=\""
-            + mark.fill
-            + "\" stroke=\""
-            + mark.stroke
-            + "\" stroke-width=\""
-            + format("{}", mark.stroke_width)
-            + "\" fill-opacity=\"0\"/>"
+        let mut out: utf8 = "<path d=" + q + mark.path
+        out = out + q + " fill=" + q + mark.fill
+        out = out + q + " stroke=" + q + mark.stroke
+        out = out + q + " stroke-width=" + q + format("{}", mark.stroke_width)
+        out = out + q + " fill-opacity=" + q + "0"
+        out = out + q + "/>"
+        return out
     }
     if mark.kind == 3 {
-        return "<circle cx=\""
-            + format("{}", mark.x)
-            + "\" cy=\""
-            + format("{}", mark.y)
-            + "\" r=\""
-            + format("{}", mark.radius)
-            + "\" fill=\""
-            + mark.fill
-            + "\" stroke=\""
-            + mark.stroke
-            + "\"/>"
+        let mut out: utf8 = "<circle cx=" + q + format("{}", mark.x)
+        out = out + q + " cy=" + q + format("{}", mark.y)
+        out = out + q + " r=" + q + format("{}", mark.radius)
+        out = out + q + " fill=" + q + mark.fill
+        out = out + q + " stroke=" + q + mark.stroke
+        out = out + q + "/>"
+        return out
     }
     if mark.kind == 4 {
-        return "<text x=\""
-            + format("{}", mark.x)
-            + "\" y=\""
-            + format("{}", mark.y)
-            + "\" fill=\""
-            + mark.fill
-            + "\" font-family=\"system-ui,sans-serif\" font-size=\"12\">"
-            + escape_xml(mark.text)
-            + "</text>"
+        let mut out: utf8 = "<text x=" + q + format("{}", mark.x)
+        out = out + q + " y=" + q + format("{}", mark.y)
+        out = out + q + " fill=" + q + mark.fill
+        out = out + q + " font-family=" + q + "system-ui,sans-serif"
+        out = out + q + " font-size=" + q + "12"
+        out = out + q + ">"
+        out = out + escape_xml(mark.text)
+        out = out + "</text>"
+        return out
     }
     return ""
 }

@@ -51,34 +51,52 @@ micro col_series_items(keys: [utf8], labels: [utf8], values: [f64], fills: [utf8
 # 便捷：从列数据直接生成可嵌入的 SVG HTML。
 
 micro plot_col_svg(labels: [utf8], values: [f64], title: utf8, x_lab: utf8, y_lab: utf8) -> utf8 {
-    return dataframe_from_xy(labels, values)
-        |> plot()
-        |> aes("x", "y")
-        |> geom_col()
-        |> scale_y_continuous()
-        |> labs(title, x_lab, y_lab)
-        |> theme_minimal()
-        |> render_svg()
+    return render_svg(
+        theme_minimal(
+            labs(
+                scale_y_continuous(
+                    geom_col(
+                        aes(plot(dataframe_from_xy(labels, values)), "x", "y")
+                    )
+                ),
+                title,
+                x_lab,
+                y_lab
+            )
+        )
+    )
 }
 
 micro plot_line_svg(labels: [utf8], values: [f64], title: utf8) -> utf8 {
-    return dataframe_from_xy(labels, values)
-        |> plot()
-        |> aes("x", "y")
-        |> geom_line()
-        |> geom_point()
-        |> labs(title, "x", "y")
-        |> theme_minimal()
-        |> render_svg()
+    return render_svg(
+        theme_minimal(
+            labs(
+                geom_point(
+                    geom_line(
+                        aes(plot(dataframe_from_xy(labels, values)), "x", "y")
+                    )
+                ),
+                title,
+                "x",
+                "y"
+            )
+        )
+    )
 }
 
 micro plot_histogram_svg(values: [f64], bins: i32, title: utf8) -> utf8 {
     let data: DataFrame = dataframe_add_numeric(empty_dataframe(), "x", values)
-    return data
-        |> plot()
-        |> aes("x", "")
-        |> geom_histogram(bins)
-        |> labs(title, "value", "count")
-        |> theme_minimal()
-        |> render_svg()
+    return render_svg(
+        theme_minimal(
+            labs(
+                geom_histogram(
+                    aes(plot(data), "x", ""),
+                    bins
+                ),
+                title,
+                "value",
+                "count"
+            )
+        )
+    )
 }

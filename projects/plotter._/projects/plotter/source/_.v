@@ -16,3 +16,8 @@ namespace plotter;
 #   任何方言概念。
 #
 # 方言知识只存在于 `format/` 的导入适配器里；渲染细节只在 `backend/` 里。
+
+# 双引号字符：`utf8` 字面量不能内嵌裸引号，需要引号时统一从这里取。
+micro quote_text() -> utf8 {
+    return std::text::encode_char_as_utf8('"')
+}
