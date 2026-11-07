@@ -167,7 +167,7 @@ imply ProbeBuilderB: ProbeBuilder {
     type Ast = ProbeAstB;
     type Settings = ProbeBuildSettingsB;
 
-    micro build(self, node: DataCstNode<ProbeTokenKind>, settings: ProbeBuildSettingsB) -> DataOutcome<DataCstNode<ProbeTokenKind>> {
+    micro build(self, node: DataCstNode<ProbeTokenKind>, settings: ProbeBuildSettingsB) -> DataOutcome<ProbeAstB> {
         match node {
             case Node(payload):
                 return data_outcome_of(ProbeAstB { token_count: payload.children.length() })
