@@ -137,12 +137,11 @@ Valkyrie 通过属性标注声明 JS 互操作：
 | 属性 | 含义 | 示例 |
 |:---|:---|:---|
 | `[js_builtin("console.log")]` | 浏览器内置 API，零依赖 | `console.log` / `Math.floor` |
-| `[js("axios", "get")]` | 第三方库，动态 `import()` | `axios.get` / `lodash.debounce` |
 | `pure` | 纯函数标注，可被 DCE 删除 | `[js_builtin("Math.floor"), pure]` |
 
 **关键区别**：
 - `[js_builtin]`：零依赖，直接调用全局对象，胶水函数为同步
-- `[js]`：需要 `import()` 加载第三方库，胶水函数为 `async`
+- `[js(...)]` 已退役，不再作为函数宿主绑定属性；第三方库由对应 `sdk` / 构建器的宿主绑定层提供
 
 详见 [JS FFI 体系](internals/js-ffi.md)。
 
