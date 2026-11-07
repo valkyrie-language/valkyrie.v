@@ -21,7 +21,7 @@ micro plot_spec_to_json(spec: PlotSpec) -> utf8 {
         if index > 0 {
             geoms_json = geoms_json + ","
         }
-        let layer: GeomLayer = spec.geoms[index]
+        let layer: GeomLayer = spec.geoms⁅index⁆
         geoms_json = geoms_json + "{" + q + "kind" + q + ":" + q + geom_kind_name(layer.kind) + q
         geoms_json = geoms_json + "," + q + "bins" + q + ":" + format("{}", layer.bins)
         geoms_json = geoms_json + "," + q + "intercept" + q + ":" + format("{}", layer.intercept) + "}"
@@ -35,7 +35,7 @@ micro plot_spec_to_json(spec: PlotSpec) -> utf8 {
         if index > 0 {
             columns_json = columns_json + ","
         }
-        let column: Column = spec.data.columns[index]
+        let column: Column = spec.data.columns⁅index⁆
         columns_json = columns_json + "{" + q + "name" + q + ":" + q + column.name + q
         let is_numeric_text: utf8 = if column.is_numeric { "true" } else { "false" }
         columns_json = columns_json + "," + q + "is_numeric" + q + ":" + is_numeric_text

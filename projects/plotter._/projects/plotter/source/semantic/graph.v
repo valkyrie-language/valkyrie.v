@@ -50,8 +50,8 @@ structure GraphModel {
 micro graph_attr_value(attrs: [GraphAttr], key: utf8) -> Option<utf8> {
     let mut index: usize = 0
     while index < attrs.length() {
-        if attrs[index].key.equals(key) {
-            return Some(attrs[index].value)
+        if attrs⁅index⁆.key.equals(key) {
+            return Some(attrs⁅index⁆.value)
         }
         index = index + 1
     }
@@ -113,21 +113,31 @@ micro graph_model() -> GraphModel {
 }
 
 micro graph_add_node(model: GraphModel, node: GraphNode) -> GraphModel {
-    let mut nodes: [GraphNode] = model.nodes
-    push(nodes, node)
+    let mut nodes: ArrayList<GraphNode> = []
+    let mut index: usize = 0
+    while index < model.nodes.length() {
+        nodes.push(model.nodes⁅index⁆)
+        index = index + 1
+    }
+    nodes.push(node)
     return GraphModel {
-        nodes: nodes,
+        nodes: nodes.to_array(),
         edges: model.edges,
         attrs: model.attrs
     }
 }
 
 micro graph_add_edge(model: GraphModel, edge: GraphEdge) -> GraphModel {
-    let mut edges: [GraphEdge] = model.edges
-    push(edges, edge)
+    let mut edges: ArrayList<GraphEdge> = []
+    let mut index: usize = 0
+    while index < model.edges.length() {
+        edges.push(model.edges⁅index⁆)
+        index = index + 1
+    }
+    edges.push(edge)
     return GraphModel {
         nodes: model.nodes,
-        edges: edges,
+        edges: edges.to_array(),
         attrs: model.attrs
     }
 }
@@ -135,8 +145,8 @@ micro graph_add_edge(model: GraphModel, edge: GraphEdge) -> GraphModel {
 micro graph_find_node(model: GraphModel, id: utf8) -> Option<GraphNode> {
     let mut index: usize = 0
     while index < model.nodes.length() {
-        if model.nodes[index].id.equals(id) {
-            return Some(model.nodes[index])
+        if model.nodes⁅index⁆.id.equals(id) {
+            return Some(model.nodes⁅index⁆)
         }
         index = index + 1
     }

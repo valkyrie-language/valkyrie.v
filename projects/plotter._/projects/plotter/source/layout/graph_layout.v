@@ -101,7 +101,7 @@ micro graph_layout_explicit(model: GraphModel, request: GraphLayoutRequest) -> G
 
     let mut index: usize = 0
     while index < model.nodes.length() {
-        if !model.nodes[index].has_position {
+        if !model.nodes⁅index⁆.has_position {
             return GraphLayoutUnavailable {
                 capability: "graph_layout.explicit_position_missing"
             }
@@ -109,13 +109,13 @@ micro graph_layout_explicit(model: GraphModel, request: GraphLayoutRequest) -> G
         index = index + 1
     }
 
-    let mut min_x: f64 = model.nodes[0].x
-    let mut max_x: f64 = model.nodes[0].x
-    let mut min_y: f64 = model.nodes[0].y
-    let mut max_y: f64 = model.nodes[0].y
+    let mut min_x: f64 = model.nodes⁅0⁆.x
+    let mut max_x: f64 = model.nodes⁅0⁆.x
+    let mut min_y: f64 = model.nodes⁅0⁆.y
+    let mut max_y: f64 = model.nodes⁅0⁆.y
     index = 1
     while index < model.nodes.length() {
-        let node: GraphNode = model.nodes[index]
+        let node: GraphNode = model.nodes⁅index⁆
         if node.x < min_x { min_x = node.x }
         if node.x > max_x { max_x = node.x }
         if node.y < min_y { min_y = node.y }
@@ -129,17 +129,17 @@ micro graph_layout_explicit(model: GraphModel, request: GraphLayoutRequest) -> G
     let span_x: f64 = max_x - min_x
     let span_y: f64 = max_y - min_y
 
-    let mut placements: [PlacedNode] = []
+    let mut placements: ArrayList<PlacedNode> = []
     index = 0
     while index < model.nodes.length() {
-        let node: GraphNode = model.nodes[index]
+        let node: GraphNode = model.nodes⁅index⁆
         let x: f64 = if span_x <= 0.0 { pad } else { pad + ((node.x - min_x) / span_x) * inner_width }
         let y: f64 = if span_y <= 0.0 { pad } else { pad + ((node.y - min_y) / span_y) * inner_height }
-        push(placements, PlacedNode { id: node.id, x: x, y: y })
+        placements.push(PlacedNode { id: node.id, x: x, y: y })
         index = index + 1
     }
 
     return GraphLayoutLaidOut {
-        placements: placements
+        placements: placements.to_array()
     }
 }

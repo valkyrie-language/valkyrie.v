@@ -63,7 +63,7 @@ micro map_discrete_index(domain: ScaleDomain, label: utf8, range_min: f64, range
     let mut found: usize = 0
     let mut matched: bool = false
     while index < domain.labels.length() {
-        if domain.labels[index].equals(label) {
+        if domain.labels⁅index⁆.equals(label) {
             found = index
             matched = true
         }
@@ -92,7 +92,7 @@ micro palette_color(index: usize) -> utf8 {
         return "#3873ad"
     }
     let offset: usize = index % colors.length()
-    return colors[offset]
+    return colors⁅offset⁆
 }
 
 micro status_color(status: utf8) -> utf8 {

@@ -22,22 +22,22 @@ micro col_series_items(keys: [utf8], labels: [utf8], values: [f64], fills: [utf8
     let mut max_value: f64 = 1.0
     let mut index: usize = 0
     while index < values.length() {
-        if values[index] > max_value {
-            max_value = values[index]
+        if values⁅index⁆ > max_value {
+            max_value = values⁅index⁆
         }
         index = index + 1
     }
 
-    let mut items: [ColSeriesItem] = []
+    let mut items: ArrayList<ColSeriesItem> = []
     index = 0
     while index < keys.length() {
-        let value: f64 = if index < values.length() { values[index] } else { 0.0 }
+        let value: f64 = if index < values.length() { values⁅index⁆ } else { 0.0 }
         let pct: f64 = (value / max_value) * 100.0
         let height: f64 = if pct < 4.0 { 4.0 } else { pct }
-        let fill: utf8 = if index < fills.length() { fills[index] } else { palette_color(index) }
-        let label: utf8 = if index < labels.length() { labels[index] } else { keys[index] }
-        push(items, ColSeriesItem {
-            key: keys[index],
+        let fill: utf8 = if index < fills.length() { fills⁅index⁆ } else { palette_color(index) }
+        let label: utf8 = if index < labels.length() { labels⁅index⁆ } else { keys⁅index⁆ }
+        items.push(ColSeriesItem {
+            key: keys⁅index⁆,
             label: label,
             value_text: format_series_value(value, unit),
             fill: fill,
@@ -45,7 +45,7 @@ micro col_series_items(keys: [utf8], labels: [utf8], values: [f64], fills: [utf8
         })
         index = index + 1
     }
-    return items
+    return items.to_array()
 }
 
 # 便捷：从列数据直接生成可嵌入的 SVG HTML。

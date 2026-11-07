@@ -28,11 +28,16 @@ micro dataframe_add_numeric(data: DataFrame, name: utf8, values: [f64]) -> DataF
         numbers: values,
         labels: []
     }
-    let mut columns: [Column] = data.columns
-    push(columns, column)
+    let mut columns: ArrayList<Column> = []
+    let mut column_index: usize = 0
+    while column_index < data.columns.length() {
+        columns.push(data.columns⁅column_index⁆)
+        column_index = column_index + 1
+    }
+    columns.push(column)
     let rows: usize = if data.row_count > values.length() { data.row_count } else { values.length() }
     return DataFrame {
-        columns: columns,
+        columns: columns.to_array(),
         row_count: rows
     }
 }
@@ -44,11 +49,16 @@ micro dataframe_add_categorical(data: DataFrame, name: utf8, labels: [utf8]) -> 
         numbers: [],
         labels: labels
     }
-    let mut columns: [Column] = data.columns
-    push(columns, column)
+    let mut columns: ArrayList<Column> = []
+    let mut column_index: usize = 0
+    while column_index < data.columns.length() {
+        columns.push(data.columns⁅column_index⁆)
+        column_index = column_index + 1
+    }
+    columns.push(column)
     let rows: usize = if data.row_count > labels.length() { data.row_count } else { labels.length() }
     return DataFrame {
-        columns: columns,
+        columns: columns.to_array(),
         row_count: rows
     }
 }
@@ -62,7 +72,7 @@ micro dataframe_from_xy(x_labels: [utf8], y_values: [f64]) -> DataFrame {
 micro find_column(data: DataFrame, name: utf8) -> Option<Column> {
     let mut index: usize = 0
     while index < data.columns.length() {
-        let column: Column = data.columns[index]
+        let column: Column = data.columns⁅index⁆
         if column.name.equals(name) {
             return Some(column)
         }
@@ -74,7 +84,7 @@ micro find_column(data: DataFrame, name: utf8) -> Option<Column> {
 micro column_numeric_at(column: Column, row: usize) -> f64 {
     if column.is_numeric {
         if row < column.numbers.length() {
-            return column.numbers[row]
+            return column.numbers⁅row⁆
         }
         return 0.0
     }
@@ -84,21 +94,21 @@ micro column_numeric_at(column: Column, row: usize) -> f64 {
 micro column_label_at(column: Column, row: usize) -> utf8 {
     if !column.is_numeric {
         if row < column.labels.length() {
-            return column.labels[row]
+            return column.labels⁅row⁆
         }
         return ""
     }
-    return format("{}", column.numbers[row])
+    return format("{}", column.numbers⁅row⁆)
 }
 
 micro column_min(column: Column) -> f64 {
     if !column.is_numeric || column.numbers.length() == 0 {
         return 0.0
     }
-    let mut min_value: f64 = column.numbers[0]
+    let mut min_value: f64 = column.numbers⁅0⁆
     let mut index: usize = 1
     while index < column.numbers.length() {
-        let value: f64 = column.numbers[index]
+        let value: f64 = column.numbers⁅index⁆
         if value < min_value {
             min_value = value
         }
@@ -111,10 +121,10 @@ micro column_max(column: Column) -> f64 {
     if !column.is_numeric || column.numbers.length() == 0 {
         return 1.0
     }
-    let mut max_value: f64 = column.numbers[0]
+    let mut max_value: f64 = column.numbers⁅0⁆
     let mut index: usize = 1
     while index < column.numbers.length() {
-        let value: f64 = column.numbers[index]
+        let value: f64 = column.numbers⁅index⁆
         if value > max_value {
             max_value = value
         }
@@ -124,17 +134,17 @@ micro column_max(column: Column) -> f64 {
 }
 
 micro unique_labels(column: Column) -> [utf8] {
-    let mut result: [utf8] = []
+    let mut result: ArrayList<utf8> = []
     if column.is_numeric {
-        return result
+        return result.to_array()
     }
     let mut index: usize = 0
     while index < column.labels.length() {
-        let label: utf8 = column.labels[index]
+        let label: utf8 = column.labels⁅index⁆
         if !result.contains(label) {
-            push(result, label)
+            result.push(label)
         }
         index = index + 1
     }
-    return result
+    return result.to_array()
 }

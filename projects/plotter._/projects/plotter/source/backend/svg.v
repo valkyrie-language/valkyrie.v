@@ -24,7 +24,7 @@ micro scene_to_svg(scene: PlotScene) -> utf8 {
     let mut body: utf8 = ""
     let mut index: usize = 0
     while index < scene.marks.length() {
-        body = body + mark_to_svg(scene.marks[index])
+        body = body + mark_to_svg(scene.marks⁅index⁆)
         index = index + 1
     }
 

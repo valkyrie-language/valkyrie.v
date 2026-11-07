@@ -3,9 +3,14 @@ namespace plotter;
 # 几何图层。kind: 0=col, 1=bar, 2=point, 3=line, 4=histogram, 5=hline, 6=vline
 
 micro push_geom(spec: PlotSpec, layer: GeomLayer) -> PlotSpec {
-    let mut geoms: [GeomLayer] = spec.geoms
-    push(geoms, layer)
-    return clone_spec_with_geoms(spec, geoms)
+    let mut geoms: ArrayList<GeomLayer> = []
+    let mut index: usize = 0
+    while index < spec.geoms.length() {
+        geoms.push(spec.geoms⁅index⁆)
+        index = index + 1
+    }
+    geoms.push(layer)
+    return clone_spec_with_geoms(spec, geoms.to_array())
 }
 
 micro geom_col(spec: PlotSpec) -> PlotSpec {

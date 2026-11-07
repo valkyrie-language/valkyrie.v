@@ -54,7 +54,7 @@ micro resolve_y_domain(spec: PlotSpec) -> ScaleDomain {
 }
 
 micro build_scene(spec: PlotSpec) -> PlotScene {
-    let mut marks: [Mark] = []
+    let mut marks: ArrayList<Mark> = []
     let x_domain: ScaleDomain = resolve_x_domain(spec)
     let y_domain: ScaleDomain = resolve_y_domain(spec)
     let left: f64 = panel_left(spec)
@@ -63,83 +63,77 @@ micro build_scene(spec: PlotSpec) -> PlotScene {
     let bottom: f64 = panel_bottom(spec)
 
     if spec.show_grid {
-        marks = append_grid(marks, left, right, top, bottom)
+        append_grid(marks, left, right, top, bottom)
     }
     if spec.show_axis {
-        marks = append_axes(marks, left, right, top, bottom)
-        marks = append_axis_labels(marks, spec, x_domain, y_domain, left, right, top, bottom)
+        append_axes(marks, left, right, top, bottom)
+        append_axis_labels(marks, spec, x_domain, y_domain, left, right, top, bottom)
     }
     if !spec.title.equals("") {
-        push(marks, mark_text(left, 20.0, spec.title, "#1a1a2e"))
+        marks.push(mark_text(left, 20.0, spec.title, "#1a1a2e"))
     }
     if !spec.subtitle.equals("") {
-        push(marks, mark_text(left, 36.0, spec.subtitle, "#666666"))
+        marks.push(mark_text(left, 36.0, spec.subtitle, "#666666"))
     }
 
     let mut geom_index: usize = 0
     while geom_index < spec.geoms.length() {
-        let layer: GeomLayer = spec.geoms[geom_index]
-        marks = append_geom_marks(marks, spec, layer, x_domain, y_domain, left, right, top, bottom, geom_index)
+        let layer: GeomLayer = spec.geoms⁅geom_index⁆
+        append_geom_marks(marks, spec, layer, x_domain, y_domain, left, right, top, bottom, geom_index)
         geom_index = geom_index + 1
     }
 
     return PlotScene {
         width: spec.width,
         height: spec.height,
-        marks: marks
+        marks: marks.to_array()
     }
 }
 
-micro append_grid(marks: [Mark], left: f64, right: f64, top: f64, bottom: f64) -> [Mark] {
-    let mut result: [Mark] = marks
+micro append_grid(mut marks: ArrayList<Mark>, left: f64, right: f64, top: f64, bottom: f64) -> unit {
     let mut i: i32 = 1
     while i < 5 {
         let t: f64 = (i as f64) / 5.0
         let y: f64 = bottom - t * (bottom - top)
-        push(result, mark_line(left, y, right, y, "#e5e7eb", 1.0))
+        marks.push(mark_line(left, y, right, y, "#e5e7eb", 1.0))
         let x: f64 = left + t * (right - left)
-        push(result, mark_line(x, top, x, bottom, "#e5e7eb", 1.0))
+        marks.push(mark_line(x, top, x, bottom, "#e5e7eb", 1.0))
         i = i + 1
     }
-    return result
 }
 
-micro append_axes(marks: [Mark], left: f64, right: f64, top: f64, bottom: f64) -> [Mark] {
-    let mut result: [Mark] = marks
-    push(result, mark_line(left, bottom, right, bottom, "#333333", 1.5))
-    push(result, mark_line(left, top, left, bottom, "#333333", 1.5))
-    return result
+micro append_axes(mut marks: ArrayList<Mark>, left: f64, right: f64, top: f64, bottom: f64) -> unit {
+    marks.push(mark_line(left, bottom, right, bottom, "#333333", 1.5))
+    marks.push(mark_line(left, top, left, bottom, "#333333", 1.5))
 }
 
-micro append_axis_labels(marks: [Mark], spec: PlotSpec, x_domain: ScaleDomain, y_domain: ScaleDomain, left: f64, right: f64, top: f64, bottom: f64) -> [Mark] {
-    let mut result: [Mark] = marks
+micro append_axis_labels(mut marks: ArrayList<Mark>, spec: PlotSpec, x_domain: ScaleDomain, y_domain: ScaleDomain, left: f64, right: f64, top: f64, bottom: f64) -> unit {
     if x_domain.is_discrete {
         let mut index: usize = 0
         while index < x_domain.labels.length() {
-            let label: utf8 = x_domain.labels[index]
+            let label: utf8 = x_domain.labels⁅index⁆
             let x: f64 = map_discrete_index(x_domain, label, left, right)
-            push(result, mark_text(x - 12.0, bottom + 18.0, label, "#555555"))
+            marks.push(mark_text(x - 12.0, bottom + 18.0, label, "#555555"))
             index = index + 1
         }
     } else {
-        push(result, mark_text(left, bottom + 18.0, format("{}", x_domain.min_value), "#555555"))
-        push(result, mark_text(right - 24.0, bottom + 18.0, format("{}", x_domain.max_value), "#555555"))
+        marks.push(mark_text(left, bottom + 18.0, format("{}", x_domain.min_value), "#555555"))
+        marks.push(mark_text(right - 24.0, bottom + 18.0, format("{}", x_domain.max_value), "#555555"))
     }
 
-    push(result, mark_text(4.0, bottom, format("{}", y_domain.min_value), "#555555"))
-    push(result, mark_text(4.0, top + 12.0, format("{}", y_domain.max_value), "#555555"))
+    marks.push(mark_text(4.0, bottom, format("{}", y_domain.min_value), "#555555"))
+    marks.push(mark_text(4.0, top + 12.0, format("{}", y_domain.max_value), "#555555"))
 
     if !spec.x_lab.equals("") {
-        push(result, mark_text((left + right) * 0.5 - 20.0, bottom + 34.0, spec.x_lab, "#333333"))
+        marks.push(mark_text((left + right) * 0.5 - 20.0, bottom + 34.0, spec.x_lab, "#333333"))
     }
     if !spec.y_lab.equals("") {
-        push(result, mark_text(8.0, (top + bottom) * 0.5, spec.y_lab, "#333333"))
+        marks.push(mark_text(8.0, (top + bottom) * 0.5, spec.y_lab, "#333333"))
     }
-    return result
 }
 
 micro append_geom_marks(
-    marks: [Mark],
+    mut marks: ArrayList<Mark>,
     spec: PlotSpec,
     layer: GeomLayer,
     x_domain: ScaleDomain,
@@ -149,32 +143,33 @@ micro append_geom_marks(
     top: f64,
     bottom: f64,
     geom_index: usize
-) -> [Mark] {
+) -> unit {
     if layer.kind == 5 {
         let y: f64 = map_continuous(y_domain, layer.intercept, bottom, top)
-        let mut result: [Mark] = marks
-        push(result, mark_line(left, y, right, y, "#ef4444", 1.5))
-        return result
+        marks.push(mark_line(left, y, right, y, "#ef4444", 1.5))
+        return
     }
     if layer.kind == 6 {
         let x: f64 = map_continuous(x_domain, layer.intercept, left, right)
-        let mut result: [Mark] = marks
-        push(result, mark_line(x, top, x, bottom, "#ef4444", 1.5))
-        return result
+        marks.push(mark_line(x, top, x, bottom, "#ef4444", 1.5))
+        return
     }
     if layer.kind == 4 {
-        return append_histogram_marks(marks, spec, layer, y_domain, left, right, top, bottom)
+        append_histogram_marks(marks, spec, layer, y_domain, left, right, top, bottom)
+        return
     }
     if layer.kind == 0 || layer.kind == 1 {
-        return append_col_marks(marks, spec, x_domain, y_domain, left, right, top, bottom, geom_index)
+        append_col_marks(marks, spec, x_domain, y_domain, left, right, top, bottom, geom_index)
+        return
     }
     if layer.kind == 2 {
-        return append_point_marks(marks, spec, x_domain, y_domain, left, right, top, bottom, geom_index)
+        append_point_marks(marks, spec, x_domain, y_domain, left, right, top, bottom, geom_index)
+        return
     }
     if layer.kind == 3 {
-        return append_line_marks(marks, spec, x_domain, y_domain, left, right, top, bottom, geom_index)
+        append_line_marks(marks, spec, x_domain, y_domain, left, right, top, bottom, geom_index)
+        return
     }
-    return marks
 }
 
 micro row_x(spec: PlotSpec, x_domain: ScaleDomain, row: usize, left: f64, right: f64) -> f64 {
@@ -211,7 +206,7 @@ micro row_fill(spec: PlotSpec, row: usize, fallback_index: usize) -> utf8 {
             let categories: [utf8] = unique_labels(column)
             let mut index: usize = 0
             while index < categories.length() {
-                if categories[index].equals(label) {
+                if categories⁅index⁆.equals(label) {
                     return palette_color(index)
                 }
                 index = index + 1
@@ -222,7 +217,7 @@ micro row_fill(spec: PlotSpec, row: usize, fallback_index: usize) -> utf8 {
 }
 
 micro append_col_marks(
-    marks: [Mark],
+    mut marks: ArrayList<Mark>,
     spec: PlotSpec,
     x_domain: ScaleDomain,
     y_domain: ScaleDomain,
@@ -231,8 +226,7 @@ micro append_col_marks(
     top: f64,
     bottom: f64,
     geom_index: usize
-) -> [Mark] {
-    let mut result: [Mark] = marks
+) -> unit {
     let count: f64 = if x_domain.is_discrete { x_domain.labels.length() as f64 } else { spec.data.row_count as f64 }
     let slot: f64 = if count <= 0.0 { 20.0 } else { (right - left) / count }
     let bar_width: f64 = slot * 0.7
@@ -242,14 +236,13 @@ micro append_col_marks(
         let y: f64 = row_y(spec, y_domain, row, top, bottom)
         let height: f64 = bottom - y
         let fill: utf8 = row_fill(spec, row, geom_index + row)
-        push(result, mark_rect(x_center - bar_width * 0.5, y, bar_width, height, fill))
+        marks.push(mark_rect(x_center - bar_width * 0.5, y, bar_width, height, fill))
         row = row + 1
     }
-    return result
 }
 
 micro append_point_marks(
-    marks: [Mark],
+    mut marks: ArrayList<Mark>,
     spec: PlotSpec,
     x_domain: ScaleDomain,
     y_domain: ScaleDomain,
@@ -258,21 +251,19 @@ micro append_point_marks(
     top: f64,
     bottom: f64,
     geom_index: usize
-) -> [Mark] {
-    let mut result: [Mark] = marks
+) -> unit {
     let mut row: usize = 0
     while row < spec.data.row_count {
         let x: f64 = row_x(spec, x_domain, row, left, right)
         let y: f64 = row_y(spec, y_domain, row, top, bottom)
         let fill: utf8 = row_fill(spec, row, geom_index + row)
-        push(result, mark_circle(x, y, 4.0, fill, "#1a1a2e"))
+        marks.push(mark_circle(x, y, 4.0, fill, "#1a1a2e"))
         row = row + 1
     }
-    return result
 }
 
 micro append_line_marks(
-    marks: [Mark],
+    mut marks: ArrayList<Mark>,
     spec: PlotSpec,
     x_domain: ScaleDomain,
     y_domain: ScaleDomain,
@@ -281,10 +272,9 @@ micro append_line_marks(
     top: f64,
     bottom: f64,
     geom_index: usize
-) -> [Mark] {
-    let mut result: [Mark] = marks
+) -> unit {
     if spec.data.row_count == 0 {
-        return result
+        return
     }
     let mut path: utf8 = ""
     let mut row: usize = 0
@@ -299,26 +289,11 @@ micro append_line_marks(
         row = row + 1
     }
     let stroke: utf8 = palette_color(geom_index)
-    push(result, mark_path(path, stroke, 2.0, "none"))
-    return result
-}
-
-micro increment_bin(counts: [f64], index: usize) -> [f64] {
-    let mut result: [f64] = []
-    let mut i: usize = 0
-    while i < counts.length() {
-        if i == index {
-            push(result, counts[i] + 1.0)
-        } else {
-            push(result, counts[i])
-        }
-        i = i + 1
-    }
-    return result
+    marks.push(mark_path(path, stroke, 2.0, "none"))
 }
 
 micro append_histogram_marks(
-    marks: [Mark],
+    mut marks: ArrayList<Mark>,
     spec: PlotSpec,
     layer: GeomLayer,
     y_domain: ScaleDomain,
@@ -326,12 +301,11 @@ micro append_histogram_marks(
     right: f64,
     top: f64,
     bottom: f64
-) -> [Mark] {
-    let mut result: [Mark] = marks
+) -> unit {
     let maybe_x: Option<Column> = find_column(spec.data, spec.aes.x)
     let maybe_y: Option<Column> = find_column(spec.data, spec.aes.y)
     if maybe_x.is_none() && maybe_y.is_none() {
-        return result
+        return
     }
 
     let column: Column = if maybe_x.is_some() {
@@ -340,7 +314,7 @@ micro append_histogram_marks(
         maybe_y.unwrap()
     }
     if !column.is_numeric || column.numbers.length() == 0 {
-        return result
+        return
     }
 
     let bins: i32 = if layer.bins < 1 { 10 } else { layer.bins }
@@ -349,16 +323,16 @@ micro append_histogram_marks(
     let span: f64 = max_value - min_value
     let width: f64 = if span <= 0.0 { 1.0 } else { span / (bins as f64) }
 
-    let mut counts: [f64] = []
+    let mut counts: ArrayList<f64> = []
     let mut b: i32 = 0
     while b < bins {
-        push(counts, 0.0)
+        counts.push(0.0)
         b = b + 1
     }
 
     let mut row: usize = 0
     while row < column.numbers.length() {
-        let value: f64 = column.numbers[row]
+        let value: f64 = column.numbers⁅row⁆
         let mut index: i32 = 0
         if width > 0.0 {
             index = ((value - min_value) / width) as i32
@@ -369,15 +343,15 @@ micro append_histogram_marks(
         if index >= bins {
             index = bins - 1
         }
-        counts = increment_bin(counts, index as usize)
+        counts⁅index as usize⁆ = counts⁅index as usize⁆ + 1.0
         row = row + 1
     }
 
     let mut max_count: f64 = 1.0
     let mut i: usize = 0
     while i < counts.length() {
-        if counts[i] > max_count {
-            max_count = counts[i]
+        if counts⁅i⁆ > max_count {
+            max_count = counts⁅i⁆
         }
         i = i + 1
     }
@@ -385,12 +359,11 @@ micro append_histogram_marks(
     let slot: f64 = (right - left) / (bins as f64)
     let mut bin_index: usize = 0
     while bin_index < counts.length() {
-        let count: f64 = counts[bin_index]
+        let count: f64 = counts⁅bin_index⁆
         let bar_height: f64 = (count / max_count) * (bottom - top)
         let x: f64 = left + (bin_index as f64) * slot
         let y: f64 = bottom - bar_height
-        push(result, mark_rect(x + slot * 0.05, y, slot * 0.9, bar_height, palette_color(0)))
+        marks.push(mark_rect(x + slot * 0.05, y, slot * 0.9, bar_height, palette_color(0)))
         bin_index = bin_index + 1
     }
-    return result
 }
