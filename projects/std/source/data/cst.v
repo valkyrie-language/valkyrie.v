@@ -70,16 +70,18 @@ micro data_cst_poison<K>(span: Span, children: [DataCstNode<K>], reason: utf8) -
 }
 
 # 节点自身 span。
+# 位置解构按声明顺序绑定：`Node` 为 `kind`、`span`、`children`；
+# `Missing` 为 `span`、`reason`；`Poison` 为 `span`、`children`、`reason`。
 micro data_cst_span<K>(node: DataCstNode<K>) -> Span {
     match node {
-        case Node(payload):
-            payload.span
-        case Token(payload):
-            payload.token.span
-        case Missing(payload):
-            payload.span
-        case Poison(payload):
-            payload.span
+        case Node(kind, span, children):
+            span
+        case Token(token):
+            token.span
+        case Missing(span, reason):
+            span
+        case Poison(span, children, reason):
+            span
     }
 }
 
@@ -101,14 +103,14 @@ micro data_cst_children_within<K>(span: Span, children: [DataCstNode<K>]) -> boo
 # 校验本身是错误容许的：聚合全部越界与非法形态，不在第一个问题上停。
 micro data_cst_validate_spans<K>(node: DataCstNode<K>) -> [Diagnostic] {
     match node {
-        case Node(payload):
-            validate_node_spans(payload.span, payload.children)
-        case Token(payload):
-            validate_token_span(payload.token.span)
-        case Missing(payload):
-            validate_token_span(payload.span)
-        case Poison(payload):
-            validate_node_spans(payload.span, payload.children)
+        case Node(kind, span, children):
+            validate_node_spans(span, children)
+        case Token(token):
+            validate_token_span(token.span)
+        case Missing(span, reason):
+            validate_token_span(span)
+        case Poison(span, children, reason):
+            validate_node_spans(span, children)
     }
 }
 

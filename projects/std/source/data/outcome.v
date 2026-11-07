@@ -59,26 +59,28 @@ micro data_outcome_failed<T>(diagnostics: [Diagnostic]) -> DataOutcome<T> {
     }
 }
 
+# 位置解构按声明顺序绑定：`Partial` 为 `value`、`diagnostics`；`Failed` 为 `diagnostics`。
 micro data_outcome_diagnostics<T>(outcome: DataOutcome<T>) -> [Diagnostic] {
     match outcome {
-        case Fine(payload):
+        case Fine(value):
             []
-        case Partial(payload):
-            payload.diagnostics
-        case Failed(payload):
-            payload.diagnostics
+        case Partial(value, diagnostics):
+            diagnostics
+        case Failed(diagnostics):
+            diagnostics
     }
 }
 
 # 取值（带回退）：`Failed` 无值，返回调用方给的缺省；需要区分缺省来源的
 # 消费方自行 match，不提供 panic 取用。
+# 位置解构按声明顺序绑定：`Fine`/`Partial` 的首字段均为 `value`。
 micro data_outcome_value_or<T>(outcome: DataOutcome<T>, fallback: T) -> T {
     match outcome {
-        case Fine(payload):
-            payload.value
-        case Partial(payload):
-            payload.value
-        case Failed(payload):
+        case Fine(value):
+            value
+        case Partial(value, diagnostics):
+            value
+        case Failed(diagnostics):
             fallback
     }
 }
@@ -107,13 +109,14 @@ micro data_diagnostics_have_error(diagnostics: [Diagnostic]) -> bool {
 
 # 是否有 `Error` 级问题：`Fine` 无诊断恒 false；`Failed` 恒 true（合同保证含
 # Error 级）；`Partial` 现算诊断严重程度，不另存级别字段。
+# 位置解构按声明顺序绑定：`Partial` 的第二个字段是 `diagnostics`。
 micro data_outcome_has_errors<T>(outcome: DataOutcome<T>) -> bool {
     match outcome {
-        case Fine(payload):
+        case Fine(value):
             false
-        case Partial(payload):
-            data_diagnostics_have_error(payload.diagnostics)
-        case Failed(payload):
+        case Partial(value, diagnostics):
+            data_diagnostics_have_error(diagnostics)
+        case Failed(diagnostics):
             true
     }
 }

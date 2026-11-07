@@ -59,22 +59,24 @@ micro data_source_from_bytes(bytes: [u8]) -> DataSource {
 }
 
 # 源内容指纹（缓存键的源半部分）。
+# 位置解构按声明顺序绑定：`Text` 的字段依次为 `text`、`digest`。
 micro data_source_digest(source: DataSource) -> usize {
     match source {
-        case Text(payload):
-            payload.digest
-        case Bytes(payload):
-            payload.digest
+        case Text(text, digest):
+            digest
+        case Bytes(bytes, digest):
+            digest
     }
 }
 
 # 源长度（源单元计数：文本为字符数，字节为字节数）。
+# 位置解构按声明顺序绑定：`Text` 的字段依次为 `text`、`digest`，`Bytes` 为 `bytes`、`digest`。
 micro data_source_length(source: DataSource) -> usize {
     match source {
-        case Text(payload):
-            payload.text.length()
-        case Bytes(payload):
-            payload.bytes.length()
+        case Text(text, digest):
+            text.length()
+        case Bytes(bytes, digest):
+            bytes.length()
     }
 }
 
