@@ -78,13 +78,13 @@ imply ProbeFormatA: ProbeParser {
     type Settings = ProbeSettingsA;
 
     micro parse(self, tokens: [DataToken<ProbeTokenKind>], settings: ProbeSettingsA) -> DataOutcome<DataCstNode<ProbeTokenKind>> {
-        let mut children: [DataCstNode<ProbeTokenKind>] = []
+        let mut children: ArrayList<DataCstNode<ProbeTokenKind>> = ArrayList::new(tokens.length())
         let mut index: usize = 0
         while index < tokens.length() {
-            children = children.push(data_cst_token::<ProbeTokenKind>(tokens⁅index⁆))
+            children.push(data_cst_token::<ProbeTokenKind>(tokens⁅index⁆))
             index = index + 1
         }
-        return data_outcome_of(data_cst_node::<ProbeTokenKind>(Word, new_span(0, 2), children))
+        return data_outcome_of(data_cst_node::<ProbeTokenKind>(Word, new_span(0, 2), children.to_array()))
     }
 }
 
@@ -152,13 +152,13 @@ imply ProbeParserB: ProbeParser {
     type Settings = ProbeParseSettingsB;
 
     micro parse(self, tokens: [DataToken<ProbeTokenKind>], settings: ProbeParseSettingsB) -> DataOutcome<DataCstNode<ProbeTokenKind>> {
-        let mut children: [DataCstNode<ProbeTokenKind>] = []
+        let mut children: ArrayList<DataCstNode<ProbeTokenKind>> = ArrayList::new(tokens.length())
         let mut index: usize = 0
         while index < tokens.length() {
-            children = children.push(data_cst_token::<ProbeTokenKind>(tokens⁅index⁆))
+            children.push(data_cst_token::<ProbeTokenKind>(tokens⁅index⁆))
             index = index + 1
         }
-        return data_outcome_of(data_cst_node::<ProbeTokenKind>(Word, new_span(0, 2), children))
+        return data_outcome_of(data_cst_node::<ProbeTokenKind>(Word, new_span(0, 2), children.to_array()))
     }
 }
 
