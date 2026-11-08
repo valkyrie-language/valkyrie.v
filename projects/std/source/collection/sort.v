@@ -9,7 +9,7 @@ namespace std.collection;
 #   - `sorted_by`：稳定的比较器入口，返回新 `ArrayList`，不改动入参。
 # `merge_sort_range` / `quick_sort_range` 只作为私有区间实现，由公开入口委托
 # 调用，不再暴露 4/5 参形态。
-# 定长 `[T]` 的 `sort` 走同一套稳定实现：先取快照到 `ArrayList`，排好后再写回。
+# 定长 `[T]` 的 `sort` / `sort_by` 走同一套稳定实现：先取快照到 `ArrayList`，排好后再写回。
 # `Array<T>` 暂不提供 `sort` 入口；需要排序时先把元素物化为 `ArrayList<T>`，
 # 再调用上面的公开入口。
 # 比较只有一条实现路径：`micro(T, T) -> i32`，负数表示前者先出，零保持原
@@ -112,29 +112,48 @@ micro merge_sort<T>(mut list: ArrayList<T>, cmp: micro(T, T) -> i32): unit {
     merge_sort_range(list, 0, length - 1, cmp)
 }
 
-# 定长 `[T]` 的稳定自然序排序：快照到 `ArrayList`，复用归并实现后写回。
-micro sort<T>(mut values: [T]): unit
-    where T: std::operator::Comparable
-{
-    let size: usize = values.length()
-    if size < 2 {
-        return
-    }
-
-    let mut buffer: ArrayList<T> = ArrayList::new(size)
+# 定长 `[T]` 的快照 / 写回：自然序 `sort` 与比较器 `sort_by` 共用同一条路径。
+private micro array_to_list<T>(values: [T]) -> ArrayList<T> {
+    let mut buffer: ArrayList<T> = ArrayList::new(values.length())
     let mut index: usize = 0
-    while index < size {
+    while index < values.length() {
         buffer.push(values⁅index⁆)
         index = index + 1
     }
 
-    sort(buffer)
+    return buffer
+}
 
-    index = 0
-    while index < size {
-        values⁅index⁆ = buffer.get((index + 1) as isize).unwrap()
+private micro list_to_array<T>(list: ArrayList<T>, mut values: [T]): unit {
+    let mut index: usize = 0
+    while index < values.length() {
+        values⁅index⁆ = list.get((index + 1) as isize).unwrap()
         index = index + 1
     }
+}
+
+# 定长 `[T]` 的稳定自然序排序：快照到 `ArrayList`，复用归并实现后写回。
+micro sort<T>(mut values: [T]): unit
+    where T: std::operator::Comparable
+{
+    if values.length() < 2 {
+        return
+    }
+
+    let mut buffer: ArrayList<T> = array_to_list(values)
+    sort(buffer)
+    list_to_array(buffer, values)
+}
+
+# 定长 `[T]` 的稳定比较器排序：与自然序 `sort` 共用快照 / 写回路径。
+micro sort_by<T>(mut values: [T], cmp: micro(T, T) -> i32): unit {
+    if values.length() < 2 {
+        return
+    }
+
+    let mut buffer: ArrayList<T> = array_to_list(values)
+    merge_sort(buffer, cmp)
+    list_to_array(buffer, values)
 }
 
 

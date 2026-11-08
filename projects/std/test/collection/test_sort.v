@@ -1,6 +1,6 @@
 namespace std.collection.test;
 
-using std.collection::{ArrayList, sort, sort_unstable, sorted_by};
+using std.collection::{ArrayList, sort, sort_unstable, sorted_by, sort_by};
 
 # `sort` / `sort_unstable` 单参入口：序来自元素的 `Comparable` 实现，
 # 调用方不传比较器，也不编码排序键。
@@ -194,5 +194,27 @@ micro `test sorted by empty and single`() {
     })
     if single_copy.length() != 1 || single_copy.get(1).unwrap() != 7 {
         panic("sorted_by single element test failed")
+    }
+}
+
+[test]
+micro `test sort by comparator on fixed array`() {
+    let mut values: [i64] = [5, 1, 4, 2]
+    sort_by(values, micro(a: i64, b: i64) -> i32 {
+        if a > b {
+            return -1
+        }
+        if a < b {
+            return 1
+        }
+        return 0
+    })
+
+    if values.length() != 4 {
+        panic("sort_by fixed array length test failed")
+    }
+
+    if values⁅0⁆ != 5 || values⁅1⁆ != 4 || values⁅2⁆ != 2 || values⁅3⁆ != 1 {
+        panic("sort_by fixed array order test failed")
     }
 }
