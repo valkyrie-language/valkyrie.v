@@ -7,6 +7,8 @@
 ## 架构
 
 - [GUI 统一编译架构](architecture/gui-compilation.md)
+- [跨平台元素体系与后端绑定合同](architecture/element-contract.md)
+- [元素能力矩阵](architecture/element-capability-matrix.md)
 - [Deploy Profile](architecture/deploy-profiles.md)
 - [UI 渲染策略](architecture/ui-rendering.md)
 - [Asgard Bifrost 自绘后端](../../../asgard.bifrost/documentation/pages/zh-hans/index.md)
