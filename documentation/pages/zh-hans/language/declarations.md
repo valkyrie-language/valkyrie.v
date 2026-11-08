@@ -120,7 +120,7 @@ using std::collection::*
 
 跨包消费 `unite` 变体时，仅导入 unite 类型名不够：变体的负载类型也必须在消费包的 `using` 列表内，否则该负载类型名在构造或匹配处解析失败（`unknown type name`）。
 
-详见 [路径解析](path-resolution.md) 和 [方法分发](method-dispatch.md)。
+详见 [路径解析](path-resolution.md) 和 [方法分发](trait-system/method-dispatch.md)。
 
 ## 结构体声明 — `structure`
 
@@ -184,7 +184,7 @@ class Dog(Animal)
     breed: string
 ```
 
-详见 [类继承](class-inheritance.md)。
+详见 [类继承](trait-system/class-inheritance.md)。
 
 ## trait 声明 — `trait`
 

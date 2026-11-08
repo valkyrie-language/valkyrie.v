@@ -68,7 +68,7 @@ VCC 支持多种目标平台：
 | CLR | microsoft / unity | `.dll` / `.exe` | 托管运行时生态集成 |
 | Native | pc / apple | `.elf` / `.exe` / `.dylib` | 原生高性能 |
 
-详细的目标三元组定义见[目标三元组规范](toolchain/target-triples.md)。
+详细的目标三元组定义见[目标三元组规范](../developer/target-triples.md)。
 
 共享的是语义主线，不是统一终态低层模型。`Partition` 之后，`VCC` 负责把输入分流到各自 family 路线，再进入 `validate -> compile -> package`。
 

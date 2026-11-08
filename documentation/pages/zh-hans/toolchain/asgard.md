@@ -8,7 +8,7 @@
 | 实现落点 | V 侧 `projects/asgard._/projects/asgard/`；Rust 侧 `rusty-valkyrie` 包内 `src/asgard` 模块与 `valkyrie.rs` 装配层 |
 | 用户配置 | 依赖 `asgard` / `asgard.ui` 等包；`asgard.config.v` |
 
-统一编译架构：[Asgard GUI 统一编译架构](../../projects/asgard/documentation/pages/zh-hans/architecture/gui-compilation.md)。UI 策略：[UI 渲染策略](../../projects/asgard/documentation/pages/zh-hans/architecture/ui-rendering.md)。
+统一编译架构：[Asgard GUI 统一编译架构](../../../../projects/asgard._/projects/asgard/documentation/pages/zh-hans/architecture/gui-compilation.md)。UI 策略：[UI 渲染策略](../../../../projects/asgard._/projects/asgard/documentation/pages/zh-hans/architecture/ui-rendering.md)。
 
 Asgard 采用约定优于配置，为应用提供**工程化构建体验**（约定目录、`asgard.config.v`）。**`asgard` 是独立 CLI**；`legion` 负责 V 包依赖与通用构建。
 
@@ -128,7 +128,7 @@ Asgard 支持 **Hybrid Island** 架构，允许混合使用多种渲染模式：
 | `vue` | Vue 3 生态组件 | 复用 Vue 库 |
 | `react` | React 生态组件 | 复用 React 库 |
 
-详见 [Island 架构](guides/island-architecture.md)。
+详见 [Island 架构](../guides/island-architecture.md)。
 
 ## JS FFI 体系
 
@@ -143,7 +143,7 @@ Valkyrie 通过属性标注声明 JS 互操作：
 - `[js_builtin]`：零依赖，直接调用全局对象，胶水函数为同步
 - `[js(...)]` 已退役，不再作为函数宿主绑定属性；第三方库由对应 `sdk` / 构建器的宿主绑定层提供
 
-详见 [JS FFI 体系](internals/js-ffi.md)。
+详见 [JS FFI 体系](../maintainer/js-ffi.md)。
 
 ## 编译架构
 
@@ -182,11 +182,11 @@ Asgard 不实现自己的平行编译器。它只在主线之上增加：
 
 ## 配置
 
-详见 [项目配置](guides/configuration.md)。
+详见 [项目配置](../guides/configuration.md)。
 
 ## 文档索引
 
-- [AWSL 语言规范](language/extensions/awsl.md) — UI 声明语言语法详解
-- [Island 架构](guides/island-architecture.md) — 混合渲染模式
-- [运行时架构](internals/index.md) — 编译管线全景
+- [AWSL 语言规范](../language/extensions/awsl-language.md) — UI 声明语言语法详解
+- [Island 架构](../guides/island-architecture.md) — 混合渲染模式
+- [运行时架构](../maintainer/compilation.md) — 编译管线全景
 - [JS FFI 体系](../maintainer/js-ffi.md) — 宿主绑定与打包边界

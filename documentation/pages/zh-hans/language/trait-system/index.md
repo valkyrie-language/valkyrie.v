@@ -135,7 +135,7 @@ let array: [i32] = collect_array(items.into_iterator())
 - `Priority`：文档原描述为 `extract_priority(self) -> i32`；源码现状只有 `PriorityQueue.v:4` 的 `class PriorityQueue<T>`，没有该 trait 与成员。
 - `ParallelIterable` / `ParallelIterator`：文档原描述为并行迭代转换与分批拉取；源码现状是两者及 `into_parallel_iterator` / `next_chunk` 均零命中，没有统一 trait。
 - `DoubleEndedIterator`：文档原描述为 `next_back(ref self)` 双向迭代；源码现状是 `next_back` 零命中，没有统一 trait。
-- `RandomAccessContainer`：文档原描述为 `trait RandomAccessContainer<T> = Indexable<Item = T> & ExtractLength` 的别名示例；源码现状是该别名与 `Indexable` / `ExtractLength` 均零命中。
+- `RandomAccessContainer`：文档原描述为 `trait RandomAccessContainer<T> = Indexable<Item = T> & ExtractLength`；该写法本身不是合法语法（语言层无 trait 别名），`Indexable` / `ExtractLength` 亦零命中。
 
 ## 与其他关键字的关系
 

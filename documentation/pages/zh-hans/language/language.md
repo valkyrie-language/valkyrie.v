@@ -76,7 +76,7 @@ union Option<T> { Some { value: T }, None }     # 代数数据类型（引用）
 unite CompactResult { Ok { value: i32 }, Err { error: string } } # 紧凑内联 union
 ```
 
-更多参见：[类型系统](type-system/)、[复合类型](type-system/compound-types.md)、[容器与可空类型](type-system/container-nullable-types.md)
+更多参见：[类型系统](type-system/)、[复合类型](type-system/compound.md)、[容器与可空类型](type-system/null-safe.md)
 
 ## 声明
 
@@ -99,7 +99,7 @@ namespace game::physics { ... }
 using game::physics::Vector
 ```
 
-详细规则参见：[declarations.md](declarations.md)、[class-inheritance.md](class-inheritance.md)
+详细规则参见：[declarations.md](declarations.md)、[class-inheritance.md](trait-system/class-inheritance.md)
 
 ## trait 系统
 

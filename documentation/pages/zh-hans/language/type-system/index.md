@@ -91,7 +91,7 @@ let add: micro(i32, i32) -> i32 = micro(a, b) { a + b }
 let callback: micro(event: Event) -> void = on_click
 ```
 
-详见 [复合类型](compound-types.md)。
+详见 [复合类型](compound.md)。
 
 ### 结构体类型
 
@@ -130,7 +130,7 @@ class Animal
     age: i32
 ```
 
-详见 [声明](../declarations.md) 和 [类继承](../class-inheritance.md)。
+详见 [声明](../declarations.md) 和 [类继承](../trait-system/class-inheritance.md)。
 
 ### 枚举类型
 
@@ -187,7 +187,7 @@ unite CompactResult {
 let value: i32 | f32 | utf8 = 42
 ```
 
-详见 [复合类型](compound-types.md)。
+详见 [复合类型](compound.md)。
 
 ## 容器与可空语法糖
 
@@ -197,7 +197,7 @@ let value: i32 | f32 | utf8 = 42
 | `[T; N]` | `FixedArray<T, N>` | 定长数组，栈类型、值语义 |
 | `T?` | `T \| null` | 可空（扁平化） |
 
-详见 [容器与可空类型](container-nullable-types.md)。
+详见 [容器与可空类型](null-safe.md)。
 
 ## 类型兼容性
 

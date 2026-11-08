@@ -47,7 +47,7 @@ my-app/
 └── public/
 ```
 
-全栈金样例布局见 [`examples/test.fullstack`](../../../examples/test.fullstack/readme.md)：`apps/shell`（asgard）∥ `apps/atlas`（atlas）∥ `packages/domain`。
+全栈金样例布局见 [`examples/test.fullstack`](../../../../examples/test.fullstack/readme.md)：`apps/shell`（asgard）∥ `apps/atlas`（atlas）∥ `packages/domain`。
 
 ## CLI 命令参考
 

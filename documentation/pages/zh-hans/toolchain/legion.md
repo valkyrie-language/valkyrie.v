@@ -136,7 +136,7 @@ tag = "latest"
 
 `legion.von` 的 `build` 字段定义了**多目标编译**的 canonical triple 列表。运行 `legion build` 时，Legion 自动读取此列表，为每个目标独立编译。
 
-目标使用**目标三元组**（Target Triple）格式：`arch-vendor-os[-abi]`，完整定义见[目标三元组规范](target-triples.md)。
+目标使用**目标三元组**（Target Triple）格式：`arch-vendor-os[-abi]`，完整定义见[目标三元组规范](../developer/target-triples.md)。
 
 同时也支持短别名，VCC 会自动展开为对应的三元组：
 

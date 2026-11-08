@@ -120,7 +120,7 @@ micro early_return(x: i32) -> i32 {
 
 ## 效应语句
 
-效应系统是 Valkyrie 的代数效应机制，详见 [效应系统设计](../effect-system/)。
+效应系统是 Valkyrie 的代数效应机制，详见 [效应系统设计](effect-system/)。
 
 ### raise — 抛出效应
 
