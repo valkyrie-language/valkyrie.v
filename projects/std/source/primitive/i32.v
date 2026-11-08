@@ -139,6 +139,23 @@ imply i32 {
         }
         return count
     }
+
+    # 位序反转：按 32 位位模式解释，最低位成为最高位。负数不做符号特判，
+    # 只用 `&` / `<<` / `|` 逐位搬移，不依赖右移。
+    micro reverse_bits(self): Self {
+        let mut result: i32 = 0 as i32
+        let mut source_mask: i32 = 1 as i32
+        let mut index: u32 = 0
+        while index < 32 {
+            result = result << (1 as i32)
+            if (self & source_mask) != 0 as i32 {
+                result = result | (1 as i32)
+            }
+            source_mask = source_mask << (1 as i32)
+            index = index + 1
+        }
+        return result
+    }
 }
 
 # region i32 内部指令映射

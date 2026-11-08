@@ -137,6 +137,23 @@ imply u64 {
         }
         return count
     }
+
+    # 位序反转：64 位宽内最低位成为最高位。只用 `&` / `<<` / `|` 逐位搬移，
+    # 不依赖右移（wasm 上 `>>` 仍被 lower 成左旋）。
+    micro reverse_bits(self): Self {
+        let mut result: u64 = 0 as u64
+        let mut source_mask: u64 = 1 as u64
+        let mut index: u32 = 0
+        while index < 64 {
+            result = result << (1 as u64)
+            if (self & source_mask) != 0 as u64 {
+                result = result | (1 as u64)
+            }
+            source_mask = source_mask << (1 as u64)
+            index = index + 1
+        }
+        return result
+    }
 }
 
 [host_contract]

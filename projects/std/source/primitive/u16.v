@@ -139,6 +139,23 @@ imply u16 {
         }
         return count
     }
+
+    # 位序反转：16 位宽内最低位成为最高位。只用 `&` / `<<` / `|` 逐位搬移，
+    # 不依赖右移（wasm 上 `>>` 仍被 lower 成左旋）。
+    micro reverse_bits(self): Self {
+        let mut result: u16 = 0 as u16
+        let mut source_mask: u16 = 1 as u16
+        let mut index: u32 = 0
+        while index < 16 {
+            result = result << (1 as u16)
+            if (self & source_mask) != 0 as u16 {
+                result = result | (1 as u16)
+            }
+            source_mask = source_mask << (1 as u16)
+            index = index + 1
+        }
+        return result
+    }
 }
 
 # 移位守卫与其余算术均在 std 层合成，本文件已无宿主合同。

@@ -139,6 +139,23 @@ imply i64 {
         }
         return count
     }
+
+    # 位序反转：按 64 位位模式解释，最低位成为最高位。负数不做符号特判，
+    # 只用 `&` / `<<` / `|` 逐位搬移，不依赖右移。
+    micro reverse_bits(self): Self {
+        let mut result: i64 = 0 as i64
+        let mut source_mask: i64 = 1 as i64
+        let mut index: u32 = 0
+        while index < 64 {
+            result = result << (1 as i64)
+            if (self & source_mask) != 0 as i64 {
+                result = result | (1 as i64)
+            }
+            source_mask = source_mask << (1 as i64)
+            index = index + 1
+        }
+        return result
+    }
 }
 
 imply i64: Equal {

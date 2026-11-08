@@ -141,6 +141,23 @@ imply i8 {
         }
         return count
     }
+
+    # 位序反转：按 8 位位模式解释，最低位成为最高位。负数不做符号特判，
+    # 只用 `&` / `<<` / `|` 逐位搬移，不依赖右移。
+    micro reverse_bits(self): Self {
+        let mut result: i8 = 0 as i8
+        let mut source_mask: i8 = 1 as i8
+        let mut index: u32 = 0
+        while index < 8 {
+            result = result << (1 as i8)
+            if (self & source_mask) != 0 as i8 {
+                result = result | (1 as i8)
+            }
+            source_mask = source_mask << (1 as i8)
+            index = index + 1
+        }
+        return result
+    }
 }
 
 # 移位守卫与其余算术均在 std 层合成，本文件已无宿主合同。

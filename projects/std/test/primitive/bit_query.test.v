@@ -198,3 +198,73 @@ micro `test signed bit queries use bit pattern`() {
         std::types::panic("i64 minimum trailing_zeros must be 63")
     }
 }
+
+# 位序反转：按各类型自身位宽解释位模式，最低位与最高位互换。
+# 含逐位宽边界（1 与最高位互反）、对称位模式与两次反转还原。
+
+[test]
+micro `test reverse bits`() {
+    if (1 as u8).reverse_bits() != 128 as u8 {
+        std::types::panic("u8 1 reverse_bits must be 128")
+    }
+    if (170 as u8).reverse_bits() != 85 as u8 {
+        std::types::panic("u8 0xAA reverse_bits must be 0x55")
+    }
+    if (240 as u8).reverse_bits() != 15 as u8 {
+        std::types::panic("u8 0xF0 reverse_bits must be 0x0F")
+    }
+
+    if (1 as u16).reverse_bits() != 0x8000 as u16 {
+        std::types::panic("u16 1 reverse_bits must be 0x8000")
+    }
+    if (0x1234 as u16).reverse_bits() != 0x2C48 as u16 {
+        std::types::panic("u16 0x1234 reverse_bits must be 0x2C48")
+    }
+
+    if (1 as u32).reverse_bits() != 0x80000000 as u32 {
+        std::types::panic("u32 1 reverse_bits must be 0x80000000")
+    }
+    if (12 as u32).reverse_bits() != 0x30000000 as u32 {
+        std::types::panic("u32 12 reverse_bits must be 0x30000000")
+    }
+    let u32_value: u32 = 0x2468ACE0 as u32
+    if u32_value.reverse_bits().reverse_bits() != u32_value {
+        std::types::panic("u32 reverse_bits must be an involution")
+    }
+
+    let u64_top: u64 = (0x80000000 as u64) << 32
+    if (1 as u64).reverse_bits() != u64_top {
+        std::types::panic("u64 1 reverse_bits must be the top bit")
+    }
+    if u64_top.reverse_bits() != 1 as u64 {
+        std::types::panic("u64 top bit reverse_bits must be 1")
+    }
+
+    let i8_min: i8 = (1 as i8) << (7 as i8)
+    if (1 as i8).reverse_bits() != i8_min {
+        std::types::panic("i8 1 reverse_bits must set the sign bit")
+    }
+    if i8_min.reverse_bits() != 1 as i8 {
+        std::types::panic("i8 minimum reverse_bits must be 1")
+    }
+
+    let i16_min: i16 = (1 as i16) << (15 as i16)
+    if (1 as i16).reverse_bits() != i16_min {
+        std::types::panic("i16 1 reverse_bits must set the sign bit")
+    }
+    if i16_min.reverse_bits() != 1 as i16 {
+        std::types::panic("i16 minimum reverse_bits must be 1")
+    }
+
+    if (-2 as i32).reverse_bits() != 2147483647 as i32 {
+        std::types::panic("i32 -2 reverse_bits must be 2147483647")
+    }
+
+    let i64_min: i64 = (1 as i64) << (63 as i64)
+    if (1 as i64).reverse_bits() != i64_min {
+        std::types::panic("i64 1 reverse_bits must be the sign bit")
+    }
+    if i64_min.reverse_bits() != 1 as i64 {
+        std::types::panic("i64 minimum reverse_bits must be 1")
+    }
+}
