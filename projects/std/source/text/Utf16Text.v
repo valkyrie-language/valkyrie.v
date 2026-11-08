@@ -6,6 +6,11 @@ class Utf16Text {
 }
 
 imply Utf16Text {
+    # 由码元数组直接落成文本；与 `Utf8Text::from_bytes` 对称，不做额外校验。
+    micro from_units(units: [u16]) -> Self {
+        return Utf16Text { _repr: units }
+    }
+
     [host_contract]
     micro length(self) -> usize {
         return self._repr.length()

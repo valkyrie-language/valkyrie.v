@@ -124,7 +124,16 @@ imply AsciiText: Text {
     }
 
     micro to_utf16(self) -> utf16 {
-        return self._bytes.chars().collect()
+        # ASCII 字节与 UTF-16 码元一一对应：每个字节直接落成一个 `u16` 码元，
+        # 不重新解码、不经 utf8 中转，也不依赖尚不存在的 `[u8].chars`。
+        let mut units: ArrayList<u16> = ArrayList::new(self._bytes.length())
+        let mut index: usize = 0
+        while index < self._bytes.length() {
+            units.push(self._bytes⁅index⁆ as u16)
+            index = index + 1
+        }
+
+        return Utf16Text::from_units(units.to_array())
     }
 
     micro to_c_str(self) -> c_str {
