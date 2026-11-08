@@ -44,10 +44,11 @@ micro `test unsigned u32 range`() {
 
 [test]
 micro `test inclusive range 0..=5 sums to 15`() {
-    let zero: usize = 0
-    let n: usize = 5
+    # `InclusiveRange` 的端点合同固定为 `u64`（32 位目标 `usize = u32`，不隐式加宽）。
+    let zero: u64 = 0
+    let n: u64 = 5
     let mut count: usize = 0
-    let mut total: usize = 0
+    let mut total: u64 = 0
     loop value in inclusive_range(zero, n) {
         count = count + 1
         total = total + value
@@ -62,7 +63,8 @@ micro `test inclusive range 0..=5 sums to 15`() {
 
 [test]
 micro `test empty ranges iterate zero times`() {
-    let lo: usize = 3
+    # 端点统一取 `u64`，与 `InclusiveRange` 的宽度合同一致，避免 32 位目标上 `usize` 隐式加宽。
+    let lo: u64 = 3
     let mut empty_half_open: usize = 0
     loop value in lo..lo {
         empty_half_open = empty_half_open + 1
@@ -71,7 +73,7 @@ micro `test empty ranges iterate zero times`() {
         std::types::panic("3..3 必须零次迭代")
     }
 
-    let hi: usize = 5
+    let hi: u64 = 5
     let mut descending_half_open: usize = 0
     loop value in hi..lo {
         descending_half_open = descending_half_open + 1
@@ -91,7 +93,7 @@ micro `test empty ranges iterate zero times`() {
 
 [test]
 micro `test inclusive single element iterates once`() {
-    let single: usize = 3
+    let single: u64 = 3
     let mut count: usize = 0
     loop value in inclusive_range(single, single) {
         if value != single {
@@ -105,20 +107,21 @@ micro `test inclusive single element iterates once`() {
 }
 
 [test]
-micro `test inclusive upper bound at usize max iterates once`() {
+micro `test inclusive upper bound at u64 max iterates once`() {
     # 全 1 掩码以 hi/lo 组合表达：编译器对超 i64 上限的十六进制字面量溢栈。
-    let max: usize = ((0xFFFFFFFF as usize) << 32) | (0xFFFFFFFF as usize)
+    # `InclusiveRange` 端点固定 `u64`，64 位目标下即 `usize_max`。
+    let max: u64 = ((0xFFFFFFFF as u64) << 32) | (0xFFFFFFFF as u64)
     let mut count: usize = 0
-    let mut seen: usize = 0
+    let mut seen: u64 = 0
     loop value in inclusive_range(max, max) {
         seen = value
         count = count + 1
     }
     if count != 1 {
-        std::types::panic("usize_max..=usize_max 必须一次迭代")
+        std::types::panic("u64_max..=u64_max 必须一次迭代")
     }
     if seen != max {
-        std::types::panic("usize_max 上界迭代值必须是 usize_max")
+        std::types::panic("u64_max 上界迭代值必须是 u64_max")
     }
 
     let mut empty: usize = 0
@@ -126,7 +129,7 @@ micro `test inclusive upper bound at usize max iterates once`() {
         empty = empty + 1
     }
     if empty != 0 {
-        std::types::panic("usize_max..usize_max 必须零次迭代")
+        std::types::panic("u64_max..u64_max 必须零次迭代")
     }
 }
 
