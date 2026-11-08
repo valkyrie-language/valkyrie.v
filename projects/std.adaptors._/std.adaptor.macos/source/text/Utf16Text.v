@@ -1,12 +1,12 @@
 namespace std.adaptor.macos.text;
 
 [host_provider(std::text::Utf16Text::length)]
-micro host_length(value: std.text.utf16): isize {
+micro host_length(value: std.text.utf16): usize {
     return value._repr.length
 }
 
 [host_provider(std::text::Utf16Text::slice)]
-micro host_slice(value: std.text.utf16, start: isize, count: isize): std.text.utf16 {
+micro host_slice(value: std.text.utf16, start: usize, count: usize): std.text.utf16 {
     return value
 }
 
@@ -31,8 +31,8 @@ micro host_ends_with(value: std.text.utf16, suffix: std.text.utf16): bool {
 }
 
 [host_provider(std::text::Utf16Text::index_of)]
-micro host_index_of(value: std.text.utf16, other: std.text.utf16): isize {
-    return -1
+micro host_index_of(value: std.text.utf16, other: std.text.utf16): Option<usize> {
+    return None
 }
 
 [host_provider(std::text::Utf16Text::trim)]
