@@ -102,7 +102,7 @@ imply Utf8Text {
             code_point = first as u32
         }
 
-        return code_point as u16 as char
+        return code_point as char
     }
 
     # 取第 `index` 个码点（0 基）解码为 `char`。定位需从头扫描，单次 O(n)——
@@ -578,8 +578,8 @@ imply Utf8Text {
 # 0 基码点索引合同：`⁅ ⁆` 的元素是 `char`，与序数 `[ ]`（1 基码点）同源，
 # 只差基址；读取委托 `character_at`，写入按码点重建内部存储（不做字节近似）。
 # 字节访问是独立显式视图：`bytes` / `byte_at` / `byte_length`，不经本算子。
-# `char` 是 u16 code unit：astral 标量（U+10000 以上）无法写入，读取时按低 16 位
-# 截断——这是类型层限制，与索引口径无关。
+# `char` 是 32 位无符号码位（Unicode 标量）：astral 标量（U+10000 以上）按完整码位
+# 读写，UTF-8 编码为 4 字节；索引口径仍是码点，与字节视图分离。
 imply Utf8Text: std::operator::Cardinal {
     type Element = char;
     type Index = usize;
@@ -726,9 +726,8 @@ imply Utf8ByteIndicator: std::iterator::Iterator {
     }
 }
 
-# `char`（u16 code unit）的 UTF-8 编码：1 至 3 字节。
-# 限制说明：`char` 是 u16 code unit，astral 标量（> U+FFFF）无法表示，
-# 本函数只需覆盖 u16 值域，不做代理对合成。
+# `char`（32 位无符号码位）的 UTF-8 编码：1 至 4 字节。
+# astral 标量（> U+FFFF）按 4 字节编码，不做代理对合成，与 `Utf8Builder.append` 同源。
 micro encode_char_as_utf8(code: char): utf8 {
     let value: u32 = code as u32
     if value <= 0x7F {
@@ -739,7 +738,11 @@ micro encode_char_as_utf8(code: char): utf8 {
         return Utf8Text::from_bytes([(0xC0 + (value >> 6)) as u8, (0x80 + (value & 0x3F)) as u8])
     }
 
-    return Utf8Text::from_bytes([(0xE0 + (value >> 12)) as u8, (0x80 + ((value >> 6) & 0x3F)) as u8, (0x80 + (value & 0x3F)) as u8])
+    if value <= 0xFFFF {
+        return Utf8Text::from_bytes([(0xE0 + (value >> 12)) as u8, (0x80 + ((value >> 6) & 0x3F)) as u8, (0x80 + (value & 0x3F)) as u8])
+    }
+
+    return Utf8Text::from_bytes([(0xF0 + (value >> 18)) as u8, (0x80 + ((value >> 12) & 0x3F)) as u8, (0x80 + ((value >> 6) & 0x3F)) as u8, (0x80 + (value & 0x3F)) as u8])
 }
 
 imply Utf8Text: std::operator::Equal {

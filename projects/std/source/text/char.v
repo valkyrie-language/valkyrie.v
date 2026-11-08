@@ -8,8 +8,9 @@ structure char {
 
 imply char {
     # 码位 → char 具名构造（与 `Utf8Text.character_at` 的解码规则同源）。
+    # 运行载体是 32 位无符号码位，构造保留完整码位，不按 16 位截断。
     micro from(code: u32) -> char {
-        return code as u16 as char
+        return code as char
     }
 
     micro is_ascii_digit(self): bool {
@@ -65,7 +66,7 @@ imply char {
 }
 
 imply char: std::operator::Equal {
-    # 相等性按码位判定：char 是 u16 code unit，拓宽到 u32 后值域完全保持，
+    # 相等性按码位判定：char 的运行载体是 32 位无符号码位，转成 u32 后值域完全保持，
     # 复用 u32 的既有 provider 链，不为 char 新造平台相关 host contract。
     infix `==`(self, rhs: Self): bool {
         return self as u32 == rhs as u32

@@ -36,7 +36,7 @@ imply Utf16Iterator: std::iterator::Iterator {
                 let low: u32 = (second as u32) - 0xDC00
                 let code_point: u32 = 0x10000 + (high << 10) + low
                 self._offset = self._offset + 2
-                return Some(code_point as u16 as char)
+                return Some(code_point as char)
             }
         }
 
