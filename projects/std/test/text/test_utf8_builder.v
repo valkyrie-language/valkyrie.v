@@ -64,3 +64,24 @@ micro `test utf8 builder from text`() {
         panic("utf8 builder from text build test failed")
     }
 }
+
+[test]
+micro `test utf8 builder prepend`() {
+    let mut builder: Utf8Builder = Utf8Builder::new(8)
+    builder.append(Utf8Text::from_bytes([98, 99]))
+    builder.prepend(char::from(97))
+
+    if builder.byte_length() != 3 {
+        panic("utf8 builder prepend length test failed")
+    }
+
+    if !builder.build().equals(Utf8Text::from_bytes([97, 98, 99])) {
+        panic("utf8 builder prepend build test failed")
+    }
+
+    let mut astral: Utf8Builder = Utf8Builder::new(8)
+    astral.prepend(char::from(128578))
+    if astral.byte_length() != 4 {
+        panic("utf8 builder prepend astral test failed")
+    }
+}

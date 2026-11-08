@@ -38,25 +38,20 @@ imply Utf8Builder {
     ⍝ 追加一个字符：按 UTF-8 规则把码位编码为 1..4 个字节。
     ⍝ `char` 没有 `to_bytes` 成员；位运算一律走 `bit_and` / `bit_or` / `bit_shift_right` 具名方法。
     micro append(mut self, c: char): unit {
-        let code: u32 = c as u32
-        if code <= 127 {
-            self.bytes.push(code as u8)
+        push_char(self.bytes, c)
+    }
+
+    ⍝ 在开头插入一个字符，与 `append` 共用同一码位编码点。
+    micro prepend(mut self, c: char): unit {
+        let mut merged: ArrayList<u8> = ArrayList::new(self.bytes.length() + 4)
+        push_char(merged, c)
+        let mut index: usize = 0
+        while index < self.bytes.length() {
+            merged.push(self.bytes.get((index + 1) as isize).unwrap())
+            index = index + 1
         }
-        else if code <= 2047 {
-            self.bytes.push((192 + code.bit_shift_right(6)) as u8)
-            self.bytes.push((128 + code.bit_and(63)) as u8)
-        }
-        else if code <= 65535 {
-            self.bytes.push((224 + code.bit_shift_right(12)) as u8)
-            self.bytes.push((128 + code.bit_shift_right(6).bit_and(63)) as u8)
-            self.bytes.push((128 + code.bit_and(63)) as u8)
-        }
-        else {
-            self.bytes.push((240 + code.bit_shift_right(18)) as u8)
-            self.bytes.push((128 + code.bit_shift_right(12).bit_and(63)) as u8)
-            self.bytes.push((128 + code.bit_shift_right(6).bit_and(63)) as u8)
-            self.bytes.push((128 + code.bit_and(63)) as u8)
-        }
+
+        self.bytes = merged
     }
 
     micro append(mut self, text: &Utf8Text): unit {
@@ -118,6 +113,30 @@ imply Utf8Builder {
             # 倒数下标 `index ∈ [0, digits.length() - 1]`，界内明确，`⁅ ⁆` 自动取值不会越界。
             self.bytes.push(digits⁅index⁆)
         }
+    }
+}
+
+
+⍝ `append` 与 `prepend` 共用的 UTF-8 码位编码唯一点。
+private micro push_char(mut bytes: ArrayList<u8>, c: char): unit {
+    let code: u32 = c as u32
+    if code <= 127 {
+        bytes.push(code as u8)
+    }
+    else if code <= 2047 {
+        bytes.push((192 + code.bit_shift_right(6)) as u8)
+        bytes.push((128 + code.bit_and(63)) as u8)
+    }
+    else if code <= 65535 {
+        bytes.push((224 + code.bit_shift_right(12)) as u8)
+        bytes.push((128 + code.bit_shift_right(6).bit_and(63)) as u8)
+        bytes.push((128 + code.bit_and(63)) as u8)
+    }
+    else {
+        bytes.push((240 + code.bit_shift_right(18)) as u8)
+        bytes.push((128 + code.bit_shift_right(12).bit_and(63)) as u8)
+        bytes.push((128 + code.bit_shift_right(6).bit_and(63)) as u8)
+        bytes.push((128 + code.bit_and(63)) as u8)
     }
 }
 
