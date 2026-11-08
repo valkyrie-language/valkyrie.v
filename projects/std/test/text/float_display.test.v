@@ -1,17 +1,20 @@
 namespace std.text.test;
 
-# 浮点 `Display`（`f64`）固定用例表：期望文本硬编码，逐字符相等。
+# 浮点 `Display`（`f64` / `f32`）固定用例表：期望文本硬编码，逐字符相等。
 # 不造字符串→浮点解析；被测值一律由 `from_bits` 以 IEEE-754 位模式构造。
 #
-# `f32` 用例暂缺：两个目标后端都还没有 `i32.reinterpret_f32` / `f32.reinterpret_i32`
-# 的冻结合同（OVM 无头码、WASM 无 `f32` 载体），`f32::to_bits` 无法解析，
-# 需先补齐该目标合同再补用例。
+# 用例表与目标无关：任一目标执行本表都必须逐字符命中同一文本，两个目标因此
+# 逐字符相等。`f32` 位重解释已冻结：OVM 在 `i32.reinterpret_f32` /
+# `f32.reinterpret_i32` 上落 `I32ReinterpretF32` / `F32ReinterpretI32`，
+# WASM 落 opcode `0xBC` / `0xBE`，`f32::to_bits` 两个目标都可解析。
 
 using std.text::{utf8, Display};
 
 
+# 位拼接走移位与按位或，不走乘法：`u64` 乘法在 OVM 上降到宿主 `i64_mul`，
+# 按有符号中间量判溢出，符号位命中时（负零、负 `inf`）会先于 `Display` 失败。
 micro join_bits(high: u32, low: u32): u64 {
-    return (high as u64) * (4294967296 as u64) + (low as u64)
+    return ((high as u64) << 32) | (low as u64)
 }
 
 
@@ -20,6 +23,15 @@ micro check_f64(label: utf8, bits: u64, expected: utf8): unit {
     let text: utf8 = value.display()
     if !text.equals(expected) {
         panic("f64 display mismatch: " + label)
+    }
+}
+
+
+micro check_f32(label: utf8, bits: u32, expected: utf8): unit {
+    let value: f32 = f32::from_bits(bits)
+    let text: utf8 = value.display()
+    if !text.equals(expected) {
+        panic("f32 display mismatch: " + label)
     }
 }
 
@@ -42,4 +54,25 @@ micro `test f64 display fixed cases`() {
     check_f64("nan", join_bits(0x7ff80000 as u32, 0x0 as u32), "NaN")
     check_f64("inf", join_bits(0x7ff00000 as u32, 0x0 as u32), "inf")
     check_f64("neg inf", join_bits(0xfff00000 as u32, 0x0 as u32), "-inf")
+}
+
+
+[test]
+micro `test f32 display fixed cases`() {
+    check_f32("zero", 0x00000000 as u32, "0")
+    check_f32("neg zero", 0x80000000 as u32, "-0")
+    check_f32("one", 0x3f800000 as u32, "1")
+    check_f32("integer 1234", 0x449a4000 as u32, "1234")
+    check_f32("integer 2^24", 0x4b800000 as u32, "16777216")
+    check_f32("0.1", 0x3dcccccd as u32, "0.1")
+    check_f32("near 1234.5678", 0x449a522b as u32, "1234.5677")
+    check_f32("1e-7", 0x33d6bf95 as u32, "0.0000001")
+    check_f32("min positive", 0x00800000 as u32, "0.000000000000000000000000000000000000011754944")
+    check_f32("min subnormal", 0x00000001 as u32, "0.000000000000000000000000000000000000000000001")
+    check_f32("max subnormal", 0x007fffff as u32, "0.000000000000000000000000000000000000011754942")
+    check_f32("f32 max", 0x7f7fffff as u32, "340282350000000000000000000000000000000")
+    check_f32("1e30", 0x7149f2ca as u32, "1000000000000000000000000000000")
+    check_f32("nan", 0x7fc00000 as u32, "NaN")
+    check_f32("inf", 0x7f800000 as u32, "inf")
+    check_f32("neg inf", 0xff800000 as u32, "-inf")
 }
