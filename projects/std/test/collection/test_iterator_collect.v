@@ -1,7 +1,7 @@
 namespace std.collection.test;
 
 using std.iterator::{Iterator, IntoIterator, FromIterator};
-using std.iterator::{EnumerateIterator, FilterIterator, FilterMapIterator, MapIterator, SkipIterator, SkipWhileIterator, TakeIterator, TakeWhileIterator};
+using std.iterator::{EnumerateIterator, EnumerateItem, FilterIterator, FilterMapIterator, MapIterator, SkipIterator, SkipWhileIterator, TakeIterator, TakeWhileIterator};
 using std.iterator::{all, any, contains, count, find, first, fold, for_each, last, nth, position, reduce};
 using std.iterator::{collect, collect_array, collect_array_list};
 using std.collection::ArrayList;
@@ -244,7 +244,7 @@ micro `test iterator filter_map`() {
 
 [test]
 micro `test iterator enumerate uses 1 based ordinal`() {
-    let first_pair: Option<(ordinal: usize, value: i32)> = [10, 20]
+    let first_pair: Option<EnumerateItem<i32>> = [10, 20]
         .into_iterator()
         .enumerate()
         .first()
@@ -253,7 +253,7 @@ micro `test iterator enumerate uses 1 based ordinal`() {
         panic("iterator enumerate first pair missing test failed")
     }
 
-    let pair: (ordinal: usize, value: i32) = first_pair.unwrap()
+    let pair: EnumerateItem<i32> = first_pair.unwrap()
     if pair.ordinal != 1 {
         panic("iterator enumerate ordinal base test failed")
     }
