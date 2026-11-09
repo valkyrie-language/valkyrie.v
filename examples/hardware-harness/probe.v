@@ -1,5 +1,7 @@
 namespace hardware_harness;
 
+using hardware.conformance::{c101_enumerate_single_cpu, c102_limits_positive, c103_features_compute_transfer, c104_request_subset_fine, c105_request_superset_feature_missing, c106_device_snapshot_frozen};
+
 # hardware 合同的验证 harness：逐项构造各层声明，
 # 断言词汇、位掩码、注册表三元组与声明可物化。0 = 通过，非 0 = 失败阶段号。
 # Fine 侧运行时用例当前不可构造：调用解析当前无法解析该调用，运行时用例暂不执行；
@@ -43,7 +45,7 @@ micro c0_device_declarations() -> i64 {
     if alignment != 16 {
         return 1
     }
-    let adapter: hardware::Adapter = hardware::Adapter { _backend: hardware::hardware_backend_cpu(), _ordinal: 0, _kind: hardware::hardware_device_kind_cpu() }
+    let adapter: hardware::Adapter = hardware::hardware_cpu_adapter()
     let kind: i64 = adapter._kind
     if kind != hardware::hardware_device_kind_cpu() {
         return 2
@@ -269,4 +271,35 @@ micro c0b_fail_recoverable_only() -> i64 {
         return 1
     }
     return 0
+}
+
+# conformance L1 套件接线（当前注册表仅 CPU 后端）。
+[export]
+micro conformance_c101() -> i64 {
+    return c101_enumerate_single_cpu(hardware::hardware_backend_cpu())
+}
+
+[export]
+micro conformance_c102() -> i64 {
+    return c102_limits_positive(hardware::hardware_backend_cpu())
+}
+
+[export]
+micro conformance_c103() -> i64 {
+    return c103_features_compute_transfer(hardware::hardware_backend_cpu())
+}
+
+[export]
+micro conformance_c104() -> i64 {
+    return c104_request_subset_fine(hardware::hardware_backend_cpu())
+}
+
+[export]
+micro conformance_c105() -> i64 {
+    return c105_request_superset_feature_missing(hardware::hardware_backend_cpu())
+}
+
+[export]
+micro conformance_c106() -> i64 {
+    return c106_device_snapshot_frozen(hardware::hardware_backend_cpu())
 }

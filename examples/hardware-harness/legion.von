@@ -8,6 +8,9 @@
         },
         hardware: {
             version: "workspace"
+        },
+        "hardware.conformance": {
+            version: "workspace"
         }
     },
     build: [

@@ -1,0 +1,16 @@
+{
+    name: "hardware.conformance",
+    version: "workspace",
+    description: "hardware 合同项 conformance 套件 - 同一套对每个注册后端运行",
+    type: "library",
+    dependencies: {
+        "std": { version: "workspace" },
+        "hardware": { version: "workspace" }
+    },
+    build: [
+        { target: "ovm" },
+        { target: "clr" },
+        { target: "jvm" },
+        { target: "wasm" }
+    ]
+}
