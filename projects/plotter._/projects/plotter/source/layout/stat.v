@@ -2,8 +2,10 @@ namespace plotter;
 
 # 统计家族 L2 → L3：标度训练、坐标映射、网格/坐标轴/图层几何解析。
 #
-# 输入是 L1 的 `PlotSpec`，输出是 L3 的 `PlotScene`。本文件不产生任何文本，
-# 也不认识任何输出后端。
+# 输入是 L1 的 `PlotSpec`，输出是 L3 的 `Scene`。输出只包含已解析的几何与
+# 样式；本文件不产生任何文本，也不认识任何输出后端。
+#
+# 图层顺序：网格 → 各几何图层 → 坐标轴 → 坐标轴标签 → 标题。
 
 micro panel_left(spec: PlotSpec) -> f64 {
     return spec.margin.left
@@ -53,87 +55,134 @@ micro resolve_y_domain(spec: PlotSpec) -> ScaleDomain {
     return continuous_domain(column_min(column), column_max(column))
 }
 
-micro build_scene(spec: PlotSpec) -> PlotScene {
-    let mut marks: ArrayList<Mark> = []
+micro panel_clip(spec: PlotSpec) -> ClipRect {
+    return clip_rect(
+        panel_left(spec),
+        panel_top(spec),
+        panel_right(spec) - panel_left(spec),
+        panel_bottom(spec) - panel_top(spec)
+    )
+}
+
+micro resolve_stat_scene(spec: PlotSpec) -> Scene {
     let x_domain: ScaleDomain = resolve_x_domain(spec)
     let y_domain: ScaleDomain = resolve_y_domain(spec)
     let left: f64 = panel_left(spec)
     let right: f64 = panel_right(spec)
     let top: f64 = panel_top(spec)
     let bottom: f64 = panel_bottom(spec)
+    let clip: ClipRect = panel_clip(spec)
+
+    let mut layers: std.collection.ArrayList<SceneLayer> = std.collection.ArrayList::new(0)
 
     if spec.show_grid {
-        append_grid(marks, left, right, top, bottom)
-    }
-    if spec.show_axis {
-        append_axes(marks, left, right, top, bottom)
-        append_axis_labels(marks, spec, x_domain, y_domain, left, right, top, bottom)
-    }
-    if !spec.title.equals("") {
-        marks.push(mark_text(left, 20.0, spec.title, "#1a1a2e"))
-    }
-    if !spec.subtitle.equals("") {
-        marks.push(mark_text(left, 36.0, spec.subtitle, "#666666"))
+        layers.push(scene_layer_of("grid", Some(clip), append_grid(left, right, top, bottom)))
     }
 
     let mut geom_index: usize = 0
     while geom_index < spec.geoms.length() {
         let layer: GeomLayer = spec.geoms⁅geom_index⁆
-        append_geom_marks(marks, spec, layer, x_domain, y_domain, left, right, top, bottom, geom_index)
+        let id: utf8 = "geom-" + i64_text(geom_index as i64)
+        layers.push(scene_layer_of(
+            id,
+            Some(clip),
+            append_geom_marks(spec, layer, x_domain, y_domain, left, right, top, bottom, geom_index)
+        ))
         geom_index = geom_index + 1
     }
 
-    return PlotScene {
+    if spec.show_axis {
+        layers.push(scene_layer_of("axes", None, append_axes(left, right, top, bottom)))
+        layers.push(scene_layer_of(
+            "axis-labels",
+            None,
+            append_axis_labels(spec, x_domain, y_domain, left, right, top, bottom)
+        ))
+    }
+
+    let title_marks: [SceneMark] = append_title_marks(spec, left)
+    if title_marks.length() > 0 {
+        layers.push(scene_layer_of("title", None, title_marks))
+    }
+
+    return Scene {
         width: spec.width,
         height: spec.height,
-        marks: marks.to_array()
+        background: "#ffffff",
+        layers: layers.to_array()
     }
 }
 
-micro append_grid(mut marks: ArrayList<Mark>, left: f64, right: f64, top: f64, bottom: f64) -> unit {
+micro append_title_marks(spec: PlotSpec, left: f64) -> [SceneMark] {
+    let mut result: std.collection.ArrayList<SceneMark> = std.collection.ArrayList::new(0)
+    if !spec.title.equals("") {
+        result.push(mark_text_anchored(
+            left,
+            20.0,
+            spec.title,
+            scene_text_style("#1a1a2e", 16.0, text_anchor_start())
+        ))
+    }
+    if !spec.subtitle.equals("") {
+        result.push(mark_text(left, 36.0, spec.subtitle, "#666666"))
+    }
+    return result.to_array()
+}
+
+micro append_grid(left: f64, right: f64, top: f64, bottom: f64) -> [SceneMark] {
+    let mut result: std.collection.ArrayList<SceneMark> = std.collection.ArrayList::new(0)
     let mut i: i32 = 1
     while i < 5 {
         let t: f64 = (i as f64) / 5.0
         let y: f64 = bottom - t * (bottom - top)
-        marks.push(mark_line(left, y, right, y, "#e5e7eb", 1.0))
+        result.push(mark_line(left, y, right, y, "#e5e7eb", 1.0))
         let x: f64 = left + t * (right - left)
-        marks.push(mark_line(x, top, x, bottom, "#e5e7eb", 1.0))
+        result.push(mark_line(x, top, x, bottom, "#e5e7eb", 1.0))
         i = i + 1
     }
+    return result.to_array()
 }
 
-micro append_axes(mut marks: ArrayList<Mark>, left: f64, right: f64, top: f64, bottom: f64) -> unit {
-    marks.push(mark_line(left, bottom, right, bottom, "#333333", 1.5))
-    marks.push(mark_line(left, top, left, bottom, "#333333", 1.5))
+micro append_axes(left: f64, right: f64, top: f64, bottom: f64) -> [SceneMark] {
+    let mut result: std.collection.ArrayList<SceneMark> = std.collection.ArrayList::new(0)
+    result.push(mark_line(left, bottom, right, bottom, "#333333", 1.5))
+    result.push(mark_line(left, top, left, bottom, "#333333", 1.5))
+    return result.to_array()
 }
 
-micro append_axis_labels(mut marks: ArrayList<Mark>, spec: PlotSpec, x_domain: ScaleDomain, y_domain: ScaleDomain, left: f64, right: f64, top: f64, bottom: f64) -> unit {
+micro append_axis_labels(spec: PlotSpec, x_domain: ScaleDomain, y_domain: ScaleDomain, left: f64, right: f64, top: f64, bottom: f64) -> [SceneMark] {
+    let mut result: std.collection.ArrayList<SceneMark> = std.collection.ArrayList::new(0)
     if x_domain.is_discrete {
         let mut index: usize = 0
         while index < x_domain.labels.length() {
             let label: utf8 = x_domain.labels⁅index⁆
             let x: f64 = map_discrete_index(x_domain, label, left, right)
-            marks.push(mark_text(x - 12.0, bottom + 18.0, label, "#555555"))
+            result.push(mark_text_anchored(
+                x,
+                bottom + 18.0,
+                label,
+                scene_text_style("#555555", 12.0, text_anchor_middle())
+            ))
             index = index + 1
         }
     } else {
-        marks.push(mark_text(left, bottom + 18.0, format("{}", x_domain.min_value), "#555555"))
-        marks.push(mark_text(right - 24.0, bottom + 18.0, format("{}", x_domain.max_value), "#555555"))
+        result.push(mark_text(left, bottom + 18.0, plotter_num(x_domain.min_value), "#555555"))
+        result.push(mark_text(right - 24.0, bottom + 18.0, plotter_num(x_domain.max_value), "#555555"))
     }
 
-    marks.push(mark_text(4.0, bottom, format("{}", y_domain.min_value), "#555555"))
-    marks.push(mark_text(4.0, top + 12.0, format("{}", y_domain.max_value), "#555555"))
+    result.push(mark_text(4.0, bottom, plotter_num(y_domain.min_value), "#555555"))
+    result.push(mark_text(4.0, top + 12.0, plotter_num(y_domain.max_value), "#555555"))
 
     if !spec.x_lab.equals("") {
-        marks.push(mark_text((left + right) * 0.5 - 20.0, bottom + 34.0, spec.x_lab, "#333333"))
+        result.push(mark_text((left + right) * 0.5 - 20.0, bottom + 34.0, spec.x_lab, "#333333"))
     }
     if !spec.y_lab.equals("") {
-        marks.push(mark_text(8.0, (top + bottom) * 0.5, spec.y_lab, "#333333"))
+        result.push(mark_text(8.0, (top + bottom) * 0.5, spec.y_lab, "#333333"))
     }
+    return result.to_array()
 }
 
 micro append_geom_marks(
-    mut marks: ArrayList<Mark>,
     spec: PlotSpec,
     layer: GeomLayer,
     x_domain: ScaleDomain,
@@ -143,33 +192,32 @@ micro append_geom_marks(
     top: f64,
     bottom: f64,
     geom_index: usize
-) -> unit {
+) -> [SceneMark] {
     if layer.kind == 5 {
         let y: f64 = map_continuous(y_domain, layer.intercept, bottom, top)
-        marks.push(mark_line(left, y, right, y, "#ef4444", 1.5))
-        return
+        let mut result: std.collection.ArrayList<SceneMark> = std.collection.ArrayList::new(0)
+        result.push(mark_line(left, y, right, y, "#ef4444", 1.5))
+        return result.to_array()
     }
     if layer.kind == 6 {
         let x: f64 = map_continuous(x_domain, layer.intercept, left, right)
-        marks.push(mark_line(x, top, x, bottom, "#ef4444", 1.5))
-        return
+        let mut result: std.collection.ArrayList<SceneMark> = std.collection.ArrayList::new(0)
+        result.push(mark_line(x, top, x, bottom, "#ef4444", 1.5))
+        return result.to_array()
     }
     if layer.kind == 4 {
-        append_histogram_marks(marks, spec, layer, y_domain, left, right, top, bottom)
-        return
+        return append_histogram_marks(spec, layer, y_domain, left, right, top, bottom)
     }
     if layer.kind == 0 || layer.kind == 1 {
-        append_col_marks(marks, spec, x_domain, y_domain, left, right, top, bottom, geom_index)
-        return
+        return append_col_marks(spec, x_domain, y_domain, left, right, top, bottom, geom_index)
     }
     if layer.kind == 2 {
-        append_point_marks(marks, spec, x_domain, y_domain, left, right, top, bottom, geom_index)
-        return
+        return append_point_marks(spec, x_domain, y_domain, left, right, top, bottom, geom_index)
     }
     if layer.kind == 3 {
-        append_line_marks(marks, spec, x_domain, y_domain, left, right, top, bottom, geom_index)
-        return
+        return append_line_marks(spec, x_domain, y_domain, left, right, top, bottom, geom_index)
     }
+    return []
 }
 
 micro row_x(spec: PlotSpec, x_domain: ScaleDomain, row: usize, left: f64, right: f64) -> f64 {
@@ -217,7 +265,6 @@ micro row_fill(spec: PlotSpec, row: usize, fallback_index: usize) -> utf8 {
 }
 
 micro append_col_marks(
-    mut marks: ArrayList<Mark>,
     spec: PlotSpec,
     x_domain: ScaleDomain,
     y_domain: ScaleDomain,
@@ -226,7 +273,8 @@ micro append_col_marks(
     top: f64,
     bottom: f64,
     geom_index: usize
-) -> unit {
+) -> [SceneMark] {
+    let mut result: std.collection.ArrayList<SceneMark> = std.collection.ArrayList::new(0)
     let count: f64 = if x_domain.is_discrete { x_domain.labels.length() as f64 } else { spec.data.row_count as f64 }
     let slot: f64 = if count <= 0.0 { 20.0 } else { (right - left) / count }
     let bar_width: f64 = slot * 0.7
@@ -236,13 +284,13 @@ micro append_col_marks(
         let y: f64 = row_y(spec, y_domain, row, top, bottom)
         let height: f64 = bottom - y
         let fill: utf8 = row_fill(spec, row, geom_index + row)
-        marks.push(mark_rect(x_center - bar_width * 0.5, y, bar_width, height, fill))
+        result.push(mark_rect(x_center - bar_width * 0.5, y, bar_width, height, fill))
         row = row + 1
     }
+    return result.to_array()
 }
 
 micro append_point_marks(
-    mut marks: ArrayList<Mark>,
     spec: PlotSpec,
     x_domain: ScaleDomain,
     y_domain: ScaleDomain,
@@ -251,19 +299,20 @@ micro append_point_marks(
     top: f64,
     bottom: f64,
     geom_index: usize
-) -> unit {
+) -> [SceneMark] {
+    let mut result: std.collection.ArrayList<SceneMark> = std.collection.ArrayList::new(0)
     let mut row: usize = 0
     while row < spec.data.row_count {
         let x: f64 = row_x(spec, x_domain, row, left, right)
         let y: f64 = row_y(spec, y_domain, row, top, bottom)
         let fill: utf8 = row_fill(spec, row, geom_index + row)
-        marks.push(mark_circle(x, y, 4.0, fill, "#1a1a2e"))
+        result.push(mark_circle(x, y, 4.0, fill, "#1a1a2e"))
         row = row + 1
     }
+    return result.to_array()
 }
 
 micro append_line_marks(
-    mut marks: ArrayList<Mark>,
     spec: PlotSpec,
     x_domain: ScaleDomain,
     y_domain: ScaleDomain,
@@ -272,9 +321,10 @@ micro append_line_marks(
     top: f64,
     bottom: f64,
     geom_index: usize
-) -> unit {
+) -> [SceneMark] {
+    let mut result: std.collection.ArrayList<SceneMark> = std.collection.ArrayList::new(0)
     if spec.data.row_count == 0 {
-        return
+        return result.to_array()
     }
     let mut path: utf8 = ""
     let mut row: usize = 0
@@ -282,18 +332,18 @@ micro append_line_marks(
         let x: f64 = row_x(spec, x_domain, row, left, right)
         let y: f64 = row_y(spec, y_domain, row, top, bottom)
         if row == 0 {
-            path = "M " + format("{}", x) + " " + format("{}", y)
+            path = "M " + plotter_num(x) + " " + plotter_num(y)
         } else {
-            path = path + " L " + format("{}", x) + " " + format("{}", y)
+            path = path + " L " + plotter_num(x) + " " + plotter_num(y)
         }
         row = row + 1
     }
     let stroke: utf8 = palette_color(geom_index)
-    marks.push(mark_path(path, stroke, 2.0, "none"))
+    result.push(mark_path(path, stroke, 2.0, "none"))
+    return result.to_array()
 }
 
 micro append_histogram_marks(
-    mut marks: ArrayList<Mark>,
     spec: PlotSpec,
     layer: GeomLayer,
     y_domain: ScaleDomain,
@@ -301,11 +351,12 @@ micro append_histogram_marks(
     right: f64,
     top: f64,
     bottom: f64
-) -> unit {
+) -> [SceneMark] {
+    let mut result: std.collection.ArrayList<SceneMark> = std.collection.ArrayList::new(0)
     let maybe_x: Option<Column> = find_column(spec.data, spec.aes.x)
     let maybe_y: Option<Column> = find_column(spec.data, spec.aes.y)
     if maybe_x.is_none() && maybe_y.is_none() {
-        return
+        return result.to_array()
     }
 
     let column: Column = if maybe_x.is_some() {
@@ -314,7 +365,7 @@ micro append_histogram_marks(
         maybe_y.unwrap()
     }
     if !column.is_numeric || column.numbers.length() == 0 {
-        return
+        return result.to_array()
     }
 
     let bins: i32 = if layer.bins < 1 { 10 } else { layer.bins }
@@ -323,7 +374,7 @@ micro append_histogram_marks(
     let span: f64 = max_value - min_value
     let width: f64 = if span <= 0.0 { 1.0 } else { span / (bins as f64) }
 
-    let mut counts: ArrayList<f64> = []
+    let mut counts: std.collection.ArrayList<f64> = std.collection.ArrayList::new(0)
     let mut b: i32 = 0
     while b < bins {
         counts.push(0.0)
@@ -363,7 +414,8 @@ micro append_histogram_marks(
         let bar_height: f64 = (count / max_count) * (bottom - top)
         let x: f64 = left + (bin_index as f64) * slot
         let y: f64 = bottom - bar_height
-        marks.push(mark_rect(x + slot * 0.05, y, slot * 0.9, bar_height, palette_color(0)))
+        result.push(mark_rect(x + slot * 0.05, y, slot * 0.9, bar_height, palette_color(0)))
         bin_index = bin_index + 1
     }
+    return result.to_array()
 }

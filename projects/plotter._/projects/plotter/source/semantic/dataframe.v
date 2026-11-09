@@ -28,9 +28,14 @@ micro dataframe_add_numeric(data: DataFrame, name: utf8, values: [f64]) -> DataF
         numbers: values,
         labels: []
     }
-    let mut columns: ArrayList<Column> = data.columns.into_iterator().collect()
-    columns.push(column)
     let rows: usize = if data.row_count > values.length() { data.row_count } else { values.length() }
+    let mut columns: std.collection.ArrayList<Column> = std.collection.ArrayList::new(data.columns.length())
+    let mut index: usize = 0
+    while index < data.columns.length() {
+        columns.push(data.columns⁅index⁆)
+        index = index + 1
+    }
+    columns.push(column)
     return DataFrame {
         columns: columns.to_array(),
         row_count: rows
@@ -44,9 +49,14 @@ micro dataframe_add_categorical(data: DataFrame, name: utf8, labels: [utf8]) -> 
         numbers: [],
         labels: labels
     }
-    let mut columns: ArrayList<Column> = data.columns.into_iterator().collect()
-    columns.push(column)
     let rows: usize = if data.row_count > labels.length() { data.row_count } else { labels.length() }
+    let mut columns: std.collection.ArrayList<Column> = std.collection.ArrayList::new(data.columns.length())
+    let mut index: usize = 0
+    while index < data.columns.length() {
+        columns.push(data.columns⁅index⁆)
+        index = index + 1
+    }
+    columns.push(column)
     return DataFrame {
         columns: columns.to_array(),
         row_count: rows
@@ -88,7 +98,7 @@ micro column_label_at(column: Column, row: usize) -> utf8 {
         }
         return ""
     }
-    return format("{}", column.numbers⁅row⁆)
+    return plotter_num(column.numbers⁅row⁆)
 }
 
 micro column_min(column: Column) -> f64 {
@@ -123,15 +133,26 @@ micro column_max(column: Column) -> f64 {
     return max_value
 }
 
+micro label_listed(labels: std.collection.ArrayList<utf8>, value: utf8) -> bool {
+    let mut index: usize = 0
+    while index < labels.length() {
+        if labels⁅index⁆.equals(value) {
+            return true
+        }
+        index = index + 1
+    }
+    return false
+}
+
 micro unique_labels(column: Column) -> [utf8] {
-    let mut result: ArrayList<utf8> = []
+    let mut result: std.collection.ArrayList<utf8> = std.collection.ArrayList::new(0)
     if column.is_numeric {
         return result.to_array()
     }
     let mut index: usize = 0
     while index < column.labels.length() {
         let label: utf8 = column.labels⁅index⁆
-        if !result.contains(label) {
+        if !label_listed(result, label) {
             result.push(label)
         }
         index = index + 1

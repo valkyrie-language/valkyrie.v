@@ -129,7 +129,7 @@ micro graph_layout_explicit(model: GraphModel, request: GraphLayoutRequest) -> G
     let span_x: f64 = max_x - min_x
     let span_y: f64 = max_y - min_y
 
-    let mut placements: ArrayList<PlacedNode> = []
+    let mut placements: std.collection.ArrayList<PlacedNode> = std.collection.ArrayList::new(model.nodes.length())
     index = 0
     while index < model.nodes.length() {
         let node: GraphNode = model.nodes⁅index⁆

@@ -1,6 +1,25 @@
 namespace plotter;
 
-# PlotSpec 轻量序列化契约（von/JSON 文本），供 legion 等外部工具接入。
+# PlotSpec 轻量序列化契约（JSON 文本），供 legion 等外部工具接入。
+#
+# 这是语义模型的导出，不是渲染后端：不含坐标、不含场景图元。
+
+micro json_escape(text: utf8) -> utf8 {
+    return text
+        .replace("\\", "\\\\")
+        .replace(plotter_quote(), "\\" + plotter_quote())
+}
+
+micro json_string(value: utf8) -> utf8 {
+    return plotter_quote() + json_escape(value) + plotter_quote()
+}
+
+micro json_bool(value: bool) -> utf8 {
+    if value {
+        return "true"
+    }
+    return "false"
+}
 
 micro geom_kind_name(kind: i32) -> utf8 {
     if kind == 0 { return "col" }
@@ -13,70 +32,100 @@ micro geom_kind_name(kind: i32) -> utf8 {
     return "unknown"
 }
 
-micro plot_spec_to_json(spec: PlotSpec) -> utf8 {
-    let q: utf8 = quote_text()
-    let mut geoms_json: utf8 = "["
+micro geom_layer_json(layer: GeomLayer) -> utf8 {
+    let mut body: utf8 = "{"
+    body = body + json_string("kind") + ":"
+    body = body + json_string(geom_kind_name(layer.kind)) + ","
+    body = body + json_string("bins") + ":" + i64_text(layer.bins as i64) + ","
+    body = body + json_string("intercept") + ":" + plotter_num(layer.intercept)
+    body = body + "}"
+    return body
+}
+
+micro column_json(column: Column) -> utf8 {
+    let mut body: utf8 = "{"
+    body = body + json_string("name") + ":" + json_string(column.name) + ","
+    body = body + json_string("is_numeric") + ":" + json_bool(column.is_numeric) + ","
+    body = body + json_string("length") + ":"
+    if column.is_numeric {
+        body = body + i64_text(column.numbers.length() as i64)
+    } else {
+        body = body + i64_text(column.labels.length() as i64)
+    }
+    body = body + "}"
+    return body
+}
+
+micro geoms_json(spec: PlotSpec) -> utf8 {
+    let mut body: utf8 = "["
     let mut index: usize = 0
     while index < spec.geoms.length() {
         if index > 0 {
-            geoms_json = geoms_json + ","
+            body = body + ","
         }
-        let layer: GeomLayer = spec.geoms⁅index⁆
-        geoms_json = geoms_json + "{" + q + "kind" + q + ":" + q + geom_kind_name(layer.kind) + q
-        geoms_json = geoms_json + "," + q + "bins" + q + ":" + format("{}", layer.bins)
-        geoms_json = geoms_json + "," + q + "intercept" + q + ":" + format("{}", layer.intercept) + "}"
+        body = body + geom_layer_json(spec.geoms⁅index⁆)
         index = index + 1
     }
-    geoms_json = geoms_json + "]"
-
-    let mut columns_json: utf8 = "["
-    index = 0
-    while index < spec.data.columns.length() {
-        if index > 0 {
-            columns_json = columns_json + ","
-        }
-        let column: Column = spec.data.columns⁅index⁆
-        columns_json = columns_json + "{" + q + "name" + q + ":" + q + column.name + q
-        let is_numeric_text: utf8 = if column.is_numeric { "true" } else { "false" }
-        columns_json = columns_json + "," + q + "is_numeric" + q + ":" + is_numeric_text
-        columns_json = columns_json + "," + q + "length" + q + ":"
-        columns_json = columns_json + format("{}", if column.is_numeric { column.numbers.length() } else { column.labels.length() }) + "}"
-        index = index + 1
-    }
-    columns_json = columns_json + "]"
-
-    let mut out: utf8 = "{"
-    out = out + q + "width" + q + ":" + format("{}", spec.width) + ","
-    out = out + q + "height" + q + ":" + format("{}", spec.height) + ","
-    out = out + q + "title" + q + ":" + q + spec.title + q + ","
-    out = out + q + "subtitle" + q + ":" + q + spec.subtitle + q + ","
-    out = out + q + "x_lab" + q + ":" + q + spec.x_lab + q + ","
-    out = out + q + "y_lab" + q + ":" + q + spec.y_lab + q + ","
-    out = out + q + "theme_id" + q + ":" + format("{}", spec.theme_id) + ","
-    out = out + q + "aes" + q + ":{" + q + "x" + q + ":" + q + spec.aes.x + q + ","
-    out = out + q + "y" + q + ":" + q + spec.aes.y + q + ","
-    out = out + q + "fill" + q + ":" + q + spec.aes.fill + q + ","
-    out = out + q + "color" + q + ":" + q + spec.aes.color + q + ","
-    out = out + q + "size" + q + ":" + q + spec.aes.size + q + "},"
-    let x_continuous_text: utf8 = if spec.x_continuous { "true" } else { "false" }
-    let y_continuous_text: utf8 = if spec.y_continuous { "true" } else { "false" }
-    let x_discrete_text: utf8 = if spec.x_discrete { "true" } else { "false" }
-    let y_discrete_text: utf8 = if spec.y_discrete { "true" } else { "false" }
-    out = out + q + "scales" + q + ":{" + q + "x_continuous" + q + ":" + x_continuous_text + ","
-    out = out + q + "y_continuous" + q + ":" + y_continuous_text + ","
-    out = out + q + "x_discrete" + q + ":" + x_discrete_text + ","
-    out = out + q + "y_discrete" + q + ":" + y_discrete_text + "},"
-    out = out + q + "geoms" + q + ":" + geoms_json + ","
-    out = out + q + "data" + q + ":{" + q + "row_count" + q + ":" + format("{}", spec.data.row_count) + ","
-    out = out + q + "columns" + q + ":" + columns_json + "}"
-    out = out + "}"
-    return out
+    body = body + "]"
+    return body
 }
 
-micro plot_spec_to_von(spec: PlotSpec) -> utf8 {
-    # von 形态与 JSON 字段同构，外层用花括号与键值。
-    return plot_spec_to_json(spec)
-        .replace(quote_text() + ":", ": ")
-        .replace("," + quote_text(), ", ")
-        .replace("{" + quote_text(), "{ ")
+micro columns_json(spec: PlotSpec) -> utf8 {
+    let mut body: utf8 = "["
+    let mut index: usize = 0
+    while index < spec.data.columns.length() {
+        if index > 0 {
+            body = body + ","
+        }
+        body = body + column_json(spec.data.columns⁅index⁆)
+        index = index + 1
+    }
+    body = body + "]"
+    return body
+}
+
+micro aes_json(spec: PlotSpec) -> utf8 {
+    let mut body: utf8 = "{"
+    body = body + json_string("x") + ":" + json_string(spec.aes.x) + ","
+    body = body + json_string("y") + ":" + json_string(spec.aes.y) + ","
+    body = body + json_string("fill") + ":" + json_string(spec.aes.fill) + ","
+    body = body + json_string("color") + ":" + json_string(spec.aes.color) + ","
+    body = body + json_string("size") + ":" + json_string(spec.aes.size)
+    body = body + "}"
+    return body
+}
+
+micro scales_json(spec: PlotSpec) -> utf8 {
+    let mut body: utf8 = "{"
+    body = body + json_string("x_continuous") + ":" + json_bool(spec.x_continuous) + ","
+    body = body + json_string("y_continuous") + ":" + json_bool(spec.y_continuous) + ","
+    body = body + json_string("x_discrete") + ":" + json_bool(spec.x_discrete) + ","
+    body = body + json_string("y_discrete") + ":" + json_bool(spec.y_discrete)
+    body = body + "}"
+    return body
+}
+
+micro data_json(spec: PlotSpec) -> utf8 {
+    let mut body: utf8 = "{"
+    body = body + json_string("row_count") + ":" + i64_text(spec.data.row_count as i64) + ","
+    body = body + json_string("columns") + ":" + columns_json(spec)
+    body = body + "}"
+    return body
+}
+
+micro plot_spec_to_json(spec: PlotSpec) -> utf8 {
+    let mut body: utf8 = "{"
+    body = body + json_string("width") + ":" + plotter_num(spec.width) + ","
+    body = body + json_string("height") + ":" + plotter_num(spec.height) + ","
+    body = body + json_string("title") + ":" + json_string(spec.title) + ","
+    body = body + json_string("subtitle") + ":" + json_string(spec.subtitle) + ","
+    body = body + json_string("x_lab") + ":" + json_string(spec.x_lab) + ","
+    body = body + json_string("y_lab") + ":" + json_string(spec.y_lab) + ","
+    body = body + json_string("theme_id") + ":" + i64_text(spec.theme_id as i64) + ","
+    body = body + json_string("aes") + ":" + aes_json(spec) + ","
+    body = body + json_string("scales") + ":" + scales_json(spec) + ","
+    body = body + json_string("geoms") + ":" + geoms_json(spec) + ","
+    body = body + json_string("data") + ":" + data_json(spec)
+    body = body + "}"
+    return body
 }

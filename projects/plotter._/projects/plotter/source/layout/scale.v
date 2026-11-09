@@ -27,7 +27,10 @@ structure ScaleDomain {
 
 micro continuous_domain(min_value: f64, max_value: f64) -> ScaleDomain {
     let low: f64 = if min_value < 0.0 { min_value } else { 0.0 }
-    let high: f64 = if max_value <= low { low + 1.0 } else { max_value }
+    let mut high: f64 = max_value
+    if high <= low {
+        high = low + 1.0
+    }
     return ScaleDomain {
         min_value: low,
         max_value: high,
@@ -37,9 +40,13 @@ micro continuous_domain(min_value: f64, max_value: f64) -> ScaleDomain {
 }
 
 micro discrete_domain(labels: [utf8]) -> ScaleDomain {
+    let mut max_value: f64 = 1.0
+    if labels.length() > 0 {
+        max_value = labels.length() as f64
+    }
     return ScaleDomain {
         min_value: 0.0,
-        max_value: if labels.length() == 0 { 1.0 } else { labels.length() as f64 },
+        max_value: max_value,
         labels: labels,
         is_discrete: true
     }

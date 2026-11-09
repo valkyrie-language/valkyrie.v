@@ -24,18 +24,10 @@ micro render_svg_contains_root() -> unit {
     let labels: [utf8] = ["pass", "fail", "skip"]
     let values: [f64] = [12.0, 3.0, 2.0]
     let data: DataFrame = dataframe_from_xy(labels, values)
-    let svg: utf8 = render_svg(
-        theme_minimal(
-            labs(
-                geom_col(
-                    aes(plot(data), "x", "y")
-                ),
-                "Test Status",
-                "status",
-                "count"
-            )
-        )
-    )
+    let mapped: PlotSpec = aes(plot(data), "x", "y")
+    let with_geom: PlotSpec = geom_col(mapped)
+    let labelled: PlotSpec = labs(with_geom, "Test Status", "status", "count")
+    let svg: utf8 = render_svg(theme_minimal(labelled))
     if !svg.contains("<svg") {
         panic("missing svg root")
     }
@@ -52,13 +44,9 @@ micro render_line_and_point() -> unit {
     let labels: [utf8] = ["t0", "t1", "t2", "t3"]
     let values: [f64] = [1.0, 3.0, 2.0, 5.0]
     let data: DataFrame = dataframe_from_xy(labels, values)
-    let svg: utf8 = render_svg(
-        geom_point(
-            geom_line(
-                aes(plot(data), "x", "y")
-            )
-        )
-    )
+    let mapped: PlotSpec = aes(plot(data), "x", "y")
+    let with_line: PlotSpec = geom_line(mapped)
+    let svg: utf8 = render_svg(geom_point(with_line))
     if !svg.contains("<path") {
         panic("missing path for line")
     }
@@ -70,15 +58,10 @@ micro render_line_and_point() -> unit {
 [test]
 micro histogram_emits_rects() -> unit {
     let data: DataFrame = empty_dataframe()
-    let with_x: DataFrame = dataframe_add_numeric(data, "x", [1.0, 1.2, 1.1, 3.0, 3.2, 5.0, 5.1, 5.5])
-    let svg: utf8 = render_svg(
-        theme_minimal(
-            geom_histogram(
-                aes(plot(with_x), "x", ""),
-                4
-            )
-        )
-    )
+    let samples: [f64] = [1.0, 1.2, 1.1, 3.0, 3.2, 5.0, 5.1, 5.5]
+    let with_x: DataFrame = dataframe_add_numeric(data, "x", samples)
+    let mapped: PlotSpec = aes(plot(with_x), "x", "")
+    let svg: utf8 = render_svg(theme_minimal(geom_histogram(mapped, 4)))
     if !svg.contains("<rect") {
         panic("histogram should emit rects")
     }
@@ -86,23 +69,19 @@ micro histogram_emits_rects() -> unit {
 
 [test]
 micro plot_spec_json_contract() -> unit {
-    let data: DataFrame = dataframe_from_xy(["a", "b"], [1.0, 2.0])
-    let spec: PlotSpec = labs(
-        geom_col(
-            aes(plot(data), "x", "y")
-        ),
-        "Demo",
-        "x",
-        "y"
-    )
-    let json: utf8 = plot_spec_to_json(spec)
-    if !json.contains(quote_text() + "geoms" + quote_text()) {
+    let labels: [utf8] = ["a", "b"]
+    let values: [f64] = [1.0, 2.0]
+    let data: DataFrame = dataframe_from_xy(labels, values)
+    let mapped: PlotSpec = aes(plot(data), "x", "y")
+    let labelled: PlotSpec = labs(geom_col(mapped), "Demo", "x", "y")
+    let json: utf8 = plot_spec_to_json(labelled)
+    if !json.contains(json_string("geoms")) {
         panic("json missing geoms")
     }
-    if !json.contains(quote_text() + "col" + quote_text()) {
+    if !json.contains(json_string("col")) {
         panic("json missing col kind")
     }
-    if !json.contains(quote_text() + "title" + quote_text() + ":" + quote_text() + "Demo" + quote_text()) {
+    if !json.contains(json_string("title") + ":" + json_string("Demo")) {
         panic("json missing title")
     }
 }
