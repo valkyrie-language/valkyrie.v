@@ -4,9 +4,9 @@ namespace std.types;
 
 unite Validation<T, E> {
     [constructor]
-    Success { value: T, errors: Vector<E> }
+    Success { value: T, errors: [E] }
     [constructor]
-    Failure { fatal: E, errors: Vector<E> }
+    Failure { fatal: E, errors: [E] }
 }
 
 imply Validation<T, E> {
@@ -28,7 +28,7 @@ imply Validation<T, E> {
         }
     }
 
-    micro errors(self): Vector<E> {
+    micro errors(self): [E] {
         match self {
             case Success { value, errors }:
                 errors
@@ -69,7 +69,7 @@ imply Validation<T, E> {
         }
     }
 
-    micro fold<U>(self, on_success: micro(T, Vector<E>) -> U, on_failure: micro(E, Vector<E>) -> U): U {
+    micro fold<U>(self, on_success: micro(T, [E]) -> U, on_failure: micro(E, [E]) -> U): U {
         match self {
             case Success { value, errors }:
                 on_success(value, errors)
