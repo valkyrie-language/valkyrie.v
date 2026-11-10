@@ -2,7 +2,7 @@
 namespace std.collection;
 
 structure RingBuffer<T> {
-    data: ArrayList<T>
+    data: ArrayList<Option<T>>
     capacity: usize
     head: usize
     tail: usize
@@ -11,10 +11,10 @@ structure RingBuffer<T> {
 
 imply RingBuffer<T> {
     micro new(capacity: usize): Self {
-        let mut data: ArrayList<T> = ArrayList::new(capacity)
+        let mut data: ArrayList<Option<T>> = ArrayList::new(capacity)
         let mut i: usize = 0
         while i < capacity {
-            data.push(T.default)
+            data.push(None)
             i = i + 1
         }
         return Self { data: data, capacity: capacity, head: 0, tail: 0, count: 0 }
@@ -23,7 +23,7 @@ imply RingBuffer<T> {
         if self.count == self.capacity {
             return false
         }
-        self.data.set(self.tail as isize, value)
+        self.data.set_cardinal(self.tail, Some(value))
         self.tail = (self.tail + 1) % self.capacity
         self.count = self.count + 1
         return true
@@ -32,16 +32,17 @@ imply RingBuffer<T> {
         if self.count == 0 {
             return None
         }
-        let value: T = self.data.get(self.head as isize).unwrap()
+        let value: Option<T> = self.data.get_cardinal(self.head)
+        self.data.set_cardinal(self.head, None)
         self.head = (self.head + 1) % self.capacity
         self.count = self.count - 1
-        return Some(value)
+        return value
     }
     micro peek(self): Option<T> {
         if self.count == 0 {
             return None
         }
-        return self.data.get(self.head as isize)
+        return self.data.get_cardinal(self.head)
     }
     micro length(self): usize {
         return self.count
@@ -53,6 +54,11 @@ imply RingBuffer<T> {
         return self.count == self.capacity
     }
     micro clear(mut self) -> unit {
+        while self.count > 0 {
+            self.data.set_cardinal(self.head, None)
+            self.head = (self.head + 1) % self.capacity
+            self.count = self.count - 1
+        }
         self.head = 0
         self.tail = 0
         self.count = 0
