@@ -1,7 +1,7 @@
 {
     name: "std.adaptor.wasm",
     description: "Valkyrie WebAssembly SDK -- 浏览器 / 微信宿主 API 绑定（按 target 条件分流）",
-    dependencies: { "std": "workspace"
+    dependencies: { "std": "workspace", "unicode.case": "workspace"
     },
     sdk_vendor: {
         organization: "valkyrie",
