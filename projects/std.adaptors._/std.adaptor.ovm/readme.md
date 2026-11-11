@@ -16,7 +16,7 @@ std.adaptor.ovm/
     ├── cmp.v           # 比较运算 [ovm] 宿主绑定
     ├── conv.v          # 类型转换 [ovm] 宿主绑定
     ├── unsigned.v      # 无符号整数 [ovm] 宿主绑定
-    ├── collection/     # 数组与 ArrayList provider
+    ├── collection/     # 定长数组载体 provider（ArrayList 算法由 std 唯一承担）
     ├── random/         # 熵源 provider
     └── text/           # utf8 / utf16 宿主绑定与 provider
 ```
