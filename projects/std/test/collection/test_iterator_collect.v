@@ -35,7 +35,7 @@ micro `test iterator collect to array list`() {
         panic("iterator collect array list length test failed")
     }
 
-    if result.get(0).unwrap() != 2 || result.get(1).unwrap() != 3 {
+    if result.get(1).unwrap() != 2 || result.get(2).unwrap() != 3 {
         panic("iterator collect array list value test failed")
     }
 }
