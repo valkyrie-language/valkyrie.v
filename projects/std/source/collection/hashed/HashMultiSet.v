@@ -58,13 +58,10 @@ imply HashMultiSet<T> {
     micro count(self, value: T): usize
         where T: Equal & Hash
     {
-        let mut result: usize = 0
-        self._counts.iterator(micro(entry_value: T, copies: usize) -> unit {
-            if entry_value == value {
-                result = copies
-            }
-        })
-        return result
+        # 频次就是底层映射的读值：`get` 缺键即 0。
+        # 不用捕获外层 `mut` 局部再在闭包里改写——闭包按值捕获，写回不可观察。
+        let found: Option<usize> = self._counts.get(value)
+        return found.unwrap_or(0)
     }
 
     micro contains(self, value: T): bool
