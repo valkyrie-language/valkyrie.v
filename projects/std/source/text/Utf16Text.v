@@ -1,6 +1,7 @@
 namespace std.text;
 
 ⍝ UTF-16 编码的字符串
+[primitive("std::text::utf16")]
 class Utf16Text {
     _repr: [u16]
 }

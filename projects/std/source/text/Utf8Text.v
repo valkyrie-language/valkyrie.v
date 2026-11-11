@@ -3,6 +3,7 @@ namespace std.text;
 # Portable Utf8Text: [host_contract] surfaces bind to std.adaptor.* via Legion resolver.
 # Target-specific glue (wasm env, CLR, …) lives only in adaptor packages — no arch metaprogramming here.
 
+[primitive("std::text::utf8")]
 class Utf8Text {
     _repr: [u8]
 }
