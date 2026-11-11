@@ -72,7 +72,7 @@ private micro decimal_i64(value: i64) -> utf8 {
 
     let lifted: i64 = value + 1
     let magnitude: u64 = ((-lifted) as u64) + 1
-    return "-" + decimal_u64(magnitude)
+    return "-" ++ decimal_u64(magnitude)
 }
 
 imply i8: Display {

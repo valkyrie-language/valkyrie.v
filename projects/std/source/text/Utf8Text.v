@@ -148,7 +148,8 @@ imply Utf8Text {
         return self != other
     }
 
-    infix `+`(self, other: utf8): utf8 {
+    # 文本拼接是独立运算符 `++`：与算术 `+` 分开建模，避免同一 token 在数值/文本间重载。
+    infix `++`(self, other: utf8): utf8 {
         return self.concat(other)
     }
 

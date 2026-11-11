@@ -273,13 +273,13 @@ imply TuiRuntime {
             return 1
         }
         if w.kind == 4 {
-            let display: utf8 = "[ " + w.text + " ]"
+            let display: utf8 = "[ " ++ w.text ++ " ]"
             self.draw_text(row, col, display)
             self.register_focusable(row, col, w.text, w.event, 0, "", "")
             return 1
         }
         if w.kind == 5 {
-            let display: utf8 = "  " + w.text
+            let display: utf8 = "  " ++ w.text
             self.draw_text(row, col, display)
             self.register_focusable(row, col, w.text, w.event, 1, "", "")
             return 1
@@ -425,21 +425,21 @@ imply TuiRuntime {
         move_to(f.row, f.col)
         set_reverse(1)
         if f.kind == 1 {
-            put_str("> " + f.label)
+            put_str("> " ++ f.label)
         } else if f.kind == 2 {
             if self.binding_truthy(f.binding) {
-                put_str("[x] " + f.label)
+                put_str("[x] " ++ f.label)
             } else {
-                put_str("[ ] " + f.label)
+                put_str("[ ] " ++ f.label)
             }
         } else if f.kind == 3 {
             if self.binding_get(f.binding) == f.option {
-                put_str("(x) " + f.label)
+                put_str("(x) " ++ f.label)
             } else {
-                put_str("( ) " + f.label)
+                put_str("( ) " ++ f.label)
             }
         } else {
-            put_str("[ " + f.label + " ]")
+            put_str("[ " ++ f.label ++ " ]")
         }
         set_reverse(0)
     }

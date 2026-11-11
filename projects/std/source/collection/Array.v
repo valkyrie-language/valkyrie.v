@@ -43,6 +43,26 @@ imply Array<T> {
 
         return false
     }
+
+    # 拼接：返回新数组，元素按 `self` 后 `other` 的顺序复制，两端均不被改写。
+    infix `++`(self, other: [T]): [T] {
+        let left: usize = self.length()
+        let right: usize = other.length()
+        let mut merged: [T] = std::collection::array::new::<T>(left + right)
+        let mut index: usize = 0
+        while index < left {
+            merged⁅index⁆ = self⁅index⁆
+            index = index + 1
+        }
+
+        let mut offset: usize = 0
+        while offset < right {
+            merged⁅left + offset⁆ = other⁅offset⁆
+            offset = offset + 1
+        }
+
+        return merged
+    }
 }
 
 # 0 基索引读写合同：`⁅ ⁆` / `⁅ ⁆=` 与同源的 `get_cardinal` / `set_cardinal`；

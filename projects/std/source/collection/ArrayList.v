@@ -17,6 +17,26 @@ imply ArrayList<T> {
         return ArrayList { _items: std::collection::array::new::<T>(capacity), _length: 0 }
     }
 
+    # 拼接：返回新列表，元素按 `self` 后 `other` 的顺序复制，两端均不被改写。
+    infix `++`(self, other: ArrayList<T>): ArrayList<T> {
+        let left: usize = self._length
+        let right: usize = other._length
+        let mut merged: ArrayList<T> = ArrayList::new(left + right)
+        let mut index: usize = 0
+        while index < left {
+            merged.push(self._items⁅index⁆)
+            index = index + 1
+        }
+
+        let mut offset: usize = 0
+        while offset < right {
+            merged.push(other._items⁅offset⁆)
+            offset = offset + 1
+        }
+
+        return merged
+    }
+
     # 容量（载体长度）。
     [host_contract]
     micro capacity(self): usize {
