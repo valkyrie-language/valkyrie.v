@@ -93,3 +93,31 @@ imply MultiSet<T> {
         }
     }
 }
+
+# 多重集等价：总长相同，且每个不同元素在两侧频次相同。
+# 只按 `distinct_elements` 的遍历比较，不依赖哈希遍历顺序，也不需要规范序导出。
+imply MultiSet<T>: std::operator::Equal
+{
+    infix `==`(self, other: Self): bool
+        where T: Equal & Hash
+    {
+        if self.length() != other.length() {
+            return false
+        }
+
+        let keys: ArrayList<T> = self.distinct_elements()
+        loop key in keys {
+            if self.count(key) != other.count(key) {
+                return false
+            }
+        }
+
+        return true
+    }
+
+    infix `!=`(self, other: Self): bool
+        where T: Equal & Hash
+    {
+        return !(self == other)
+    }
+}
