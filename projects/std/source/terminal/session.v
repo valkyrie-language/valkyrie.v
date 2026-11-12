@@ -1,10 +1,15 @@
 namespace std.terminal;
 
+using std.random::{entropy};
+using std.types::{Option, Some, None};
+
 # ────────── 终端会话 ──────────
 ⍝ 会话生命周期合同（本模块的语义事实，不是实现细节）：
 ⍝ - 创建：`TuiSession::new()` 产出空会话，不触碰终端。状态槽由
-⍝   `declare_flag` / `declare_choice` 分配，句柄身份即槽位序号；
-⍝   句柄只在分配它的会话内有效。
+⍝   `declare_flag` / `declare_choice` 分配，句柄身份是「会话记号 +
+⍝   槽位序号」：记号在构造时取自宿主熵源（`std::random::entropy`），
+⍝   每个会话唯一；句柄只在分配它的会话内有效，跨会话误用在读写处
+⍝   一律拒绝。
 ⍝ - 挂载：`mount` 把控件树渲染为帧并重建焦点表，可反复调用（重挂载）；
 ⍝   挂载本身不进入终端特殊状态。
 ⍝ - 运行：`run` 进入备用屏、渲染首帧、启动事件循环。运行期间重入 `run`
@@ -27,6 +32,8 @@ structure TuiSession {
     term_cols: i32
     help_text: utf8
     running: bool
+    identity: u64
+    failure_reason: Option<utf8>
 }
 
 imply TuiSession {
@@ -40,7 +47,9 @@ imply TuiSession {
             term_rows: 24,
             term_cols: 80,
             help_text: "Arrows/hjkl: navigate | Enter/Space: activate | Tab: next | Esc: quit",
-            running: false
+            running: false,
+            identity: entropy(),
+            failure_reason: None
         }
     }
 
@@ -48,29 +57,47 @@ imply TuiSession {
     micro declare_flag(mut self, initial: bool) -> FlagBinding {
         let slot: usize = self.flag_slots.length()
         self.flag_slots.push(initial)
-        return FlagBinding { slot: slot }
+        return FlagBinding { owner: self.identity, slot: slot }
     }
 
     # 分配选项状态槽，返回类型化句柄；槽位初值为当前选中项显示值。
     micro declare_choice(mut self, initial: utf8) -> ChoiceBinding {
         let slot: usize = self.choice_slots.length()
         self.choice_slots.push(initial)
-        return ChoiceBinding { slot: slot }
+        return ChoiceBinding { owner: self.identity, slot: slot }
+    }
+
+    # 句柄归属校验：`owner` 与本会话记号不符即契约违反——A 会话的
+    # 槽位号在 B 会话里可能指向另一格，静默命中就是把误用伪装成成功。
+    private micro check_flag_owner(self, binding: FlagBinding) -> unit {
+        if binding.owner != self.identity {
+            std::types::panic("TuiSession: FlagBinding 不属于本会话，拒绝跨会话读写")
+        }
+    }
+
+    private micro check_choice_owner(self, binding: ChoiceBinding) -> unit {
+        if binding.owner != self.identity {
+            std::types::panic("TuiSession: ChoiceBinding 不属于本会话，拒绝跨会话读写")
+        }
     }
 
     micro flag(self, binding: FlagBinding) -> bool {
+        self.check_flag_owner(binding)
         return self.flag_slots.get((binding.slot + 1) as isize).unwrap()
     }
 
     micro choice(self, binding: ChoiceBinding) -> utf8 {
+        self.check_choice_owner(binding)
         return self.choice_slots.get((binding.slot + 1) as isize).unwrap()
     }
 
     micro set_flag(mut self, binding: FlagBinding, on: bool) -> unit {
+        self.check_flag_owner(binding)
         self.flag_slots.set((binding.slot + 1) as isize, on)
     }
 
     micro set_choice(mut self, binding: ChoiceBinding, selected: utf8) -> unit {
+        self.check_choice_owner(binding)
         self.choice_slots.set((binding.slot + 1) as isize, selected)
     }
 
@@ -106,17 +133,31 @@ imply TuiSession {
         self.help_text = text
     }
 
+    # 事件循环终止原因的可观察面：`Some(reason)` 表示输入读取失败
+    # （区别于正常 `quit` / EOF 的 `None`）。
+    micro input_failure(self) -> Option<utf8> {
+        return self.failure_reason
+    }
+
     micro run(mut self) -> i32 {
         if self.running {
             std::types::panic("TuiSession.run: 会话运行期间重入 run")
         }
         self.running = true
+        self.failure_reason = None
         enter_alt_screen()
         self.render()
         while self.running {
             self.handle_key(poll_key())
         }
         exit_alt_screen()
+        # 正常退出（`quit` 请求或输入流 EOF）返回 0；读取失败返回非零，
+        # 原因经 `input_failure` 观察——EOF 与输入失败不再压成同一成功。
+        # 循环体内的 panic 属契约违反路径：语言尚无跨帧清理/finally 合同，
+        # 备用屏归还无法在 std 侧覆盖该路径（登记为上游缺口，不伪造兜底）。
+        if self.failure_reason.is_some() {
+            return 1
+        }
         return 0
     }
 
@@ -137,6 +178,9 @@ imply TuiSession {
             case EndOfInput:
                 self.quit()
             case ReadFailed(reason):
+                # 保留失败原因并退出循环：`run` 以非零结果收尾，
+                # 调用方经 `input_failure` 取回原因。
+                self.failure_reason = Some(reason)
                 self.quit()
         }
     }
@@ -367,7 +411,9 @@ imply TuiSession {
     }
 
     micro register_focusable(mut self, row: i32, col: i32, target: FocusTarget) -> unit {
-        let width: i32 = self.focus_label(target).length() + 4
+        # 标签长度是 `usize` 计数；`Focusable` 的渲染坐标为 `i32`，
+        # 在显式边界收窄，不把无界计数直接钉进有界坐标。
+        let width: i32 = (self.focus_label(target).length() as i32) + 4
         self.focusables.push(Focusable {
             row: row,
             col: col,
@@ -471,7 +517,7 @@ imply TuiSession {
         if self.help_text == "" {
             return
         }
-        let bottom: i32 = self.term_rows - 1
+        let mut bottom: i32 = self.term_rows - 1
         if bottom < 0 {
             bottom = 0
         }
@@ -486,7 +532,8 @@ imply TuiSession {
         }
         let cur: Focusable = self.focusables.get((self.focus_index + 1) as isize).unwrap()
         let mut best: i64 = -1
-        let mut best_dist: i64 = 9223372036854775807
+        let mut best_primary: i32 = 0
+        let mut best_secondary: i32 = 0
         let mut i: usize = 0
         while i < self.focusables.length() {
             if i == self.focus_index {
@@ -526,10 +573,23 @@ imply TuiSession {
                     }
             }
             if valid {
-                let dist: i64 = primary as i64 * 1000 + secondary as i64
-                if dist < best_dist {
-                    best_dist = dist
+                # 真正的两级排序：主轴优先，主轴同值才比次轴。
+                # 旧 `primary * 1000 + secondary` 隐含次轴差 < 1000 的尺寸
+                # 假设，大终端/远列候选会错序；字典序比较不依赖任何尺寸界。
+                let mut take: bool = best < 0
+                if !take {
+                    let mut order: std::operator::Ordering = primary.compare(best_primary)
+                    if order == std::operator::Ordering.Equal {
+                        order = secondary.compare(best_secondary)
+                    }
+                    if order == std::operator::Ordering.Less {
+                        take = true
+                    }
+                }
+                if take {
                     best = i as i64
+                    best_primary = primary
+                    best_secondary = secondary
                 }
             }
             i = i + 1

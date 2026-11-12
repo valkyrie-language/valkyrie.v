@@ -13,12 +13,19 @@ namespace std.terminal;
 ⍝ 不参与身份判定，不存在"字符串真值"这类语义。
 
 # 布尔状态槽句柄：身份由会话分配（`declare_flag`），值语义固定为 bool。
+# `owner` 是分配会话的身份记号：句柄只在同一 `owner` 的会话内可读写，
+# 跨会话误用（A 会话的槽 0 递给 B 会话）在访问处被拒绝，不静默命中
+# 同名槽位。句柄只由 `declare_flag` / `declare_choice` 产出，作者面
+# 不手工构造。
 structure FlagBinding {
+    owner: u64
     slot: usize
 }
 
 # 选项状态槽句柄：身份由会话分配（`declare_choice`），值语义固定为当前选中项。
+# `owner` 语义同 `FlagBinding`。
 structure ChoiceBinding {
+    owner: u64
     slot: usize
 }
 
