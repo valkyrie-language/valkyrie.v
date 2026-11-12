@@ -43,6 +43,8 @@ imply Utf8View {
 
     ⍝ 字节窗口构造：任意字节范围都合法，不验证码点边界；
     ⍝ 越界区间收敛到文本有效范围（起点不越过文末，长度不越过剩余量）。
+    ⍝ 长度只与「文末剩余量」比较，不与 `offset` 相加后再判界——
+    ⍝ `offset + length` 的回绕路径不存在（01 §4.16）。
     micro new(text: &Utf8Text, span: TextSpan) -> Self {
         let full_length: usize = text.byte_length()
         if span.offset >= full_length {
@@ -55,9 +57,10 @@ imply Utf8View {
             }
         }
 
+        let remaining: usize = full_length - span.offset
         let mut length: usize = span.length
-        if span.offset + length > full_length {
-            length = full_length - span.offset
+        if length > remaining {
+            length = remaining
         }
 
         return Self {
@@ -119,16 +122,43 @@ imply Utf8View {
         return self.span.length == 0
     }
 
-    ⍝ 对窗口自身再取相对字节窗口（任意区间合法，构造同规则收敛）
+    ⍝ 对窗口自身再取相对字节窗口（任意区间合法，构造同规则收敛）。
+    ⍝ 先对父窗口剩余量判界，再换算绝对偏移：子窗口不得逃出父窗口，
+    ⍝ 与底层文本是否还有余量无关（06 §1.29 维持拒收第 7 项）。
     micro view(self, span: TextSpan) -> Utf8View {
-        return Utf8View::new(self.text, TextSpan {
-            offset: self.span.offset + span.offset,
-            length: span.length,
-        })
+        let mut offset: usize = span.offset
+        if offset > self.span.length {
+            offset = self.span.length
+        }
+
+        let remaining: usize = self.span.length - offset
+        let mut length: usize = span.length
+        if length > remaining {
+            length = remaining
+        }
+
+        return Utf8View {
+            text: self.text,
+            span: TextSpan {
+                offset: self.span.offset + offset,
+                length: length,
+            }
+        }
     }
 
-    ⍝ 对窗口自身再取相对区间（按码点边界严格验证）
+    ⍝ 对窗口自身再取相对区间（按码点边界严格验证）。
+    ⍝ 判界顺序同上：先父窗口剩余量，后绝对换算；`try_new` 只可能因
+    ⍝ 码点边界失败，越界已在父窗口处结构化拒绝。
     micro try_view(self, span: TextSpan) -> Result<Utf8View, Utf8ViewError> {
+        if span.offset > self.span.length {
+            return Fail { error: BeyondText { position: span.offset } }
+        }
+
+        let remaining: usize = self.span.length - span.offset
+        if span.length > remaining {
+            return Fail { error: BeyondText { position: self.span.length } }
+        }
+
         return Utf8View::try_new(self.text, TextSpan {
             offset: self.span.offset + span.offset,
             length: span.length,
