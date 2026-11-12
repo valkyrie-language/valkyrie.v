@@ -2,6 +2,8 @@
 # 将 valkyrie-core 的运行时函数映射为 OVM opcode
 # 无函数体 = [ovm] 声明式宿主绑定，编译器发射对 OVM runtime 宿主函数的调用
 
+namespace std.adaptor.ovm.builtin;
+
 #region 输出
 
 [ovm("println")]
