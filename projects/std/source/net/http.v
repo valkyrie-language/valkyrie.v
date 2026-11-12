@@ -2,7 +2,7 @@ namespace std.net;
 
 using std.io::{Reader, Writer, IoError, PartialWrite, write_all};
 using std.types::{Result, Option, Some, None, Fine, Fail};
-using std.text::{Utf8Text};
+using std.text::{Utf8Text, Utf8Builder};
 
 # std.net: HTTP/1.1 报文层——建立在字节流协议模型之上的完整 request/response。
 #
@@ -73,15 +73,12 @@ unite HttpError {
     },
     # 流在报文完整之前结束。
     [tag(1)]
-    [constructor]
     UnexpectedEof,
     # `Content-Length` 缺失于需要实体分帧的报文，或值非法。
     [tag(2)]
-    [constructor]
     InvalidContentLength,
     # 使用了未交付的分帧方式（`Transfer-Encoding` 等）。
     [tag(3)]
-    [constructor]
     UnsupportedTransferEncoding,
     # 传输层失败，携带底层种类。
     [tag(4)]
@@ -174,10 +171,20 @@ micro split_first_byte(line: [u8], separator: u8) -> Option<ByteParts> {
     return None
 }
 
+# 线上字节进入文本字段前必须经 `Utf8Text::from_bytes` 严格验证：解码失败
+# 归报文畸形（`detail` 指出畸形段落）。本层不 unwrap、不以空串顶替非法字节。
+micro decode_wire_text(bytes: [u8], detail: utf8) -> Result<utf8, HttpError> {
+    match Utf8Text::from_bytes(bytes) {
+        case Fine(text):
+            return Fine { value: text }
+        case Fail(error):
+            return Fail { error: Malformed { detail: detail } }
+    }
+}
+
 micro ascii_lower(byte: u8) -> u8 {
-    let value: u32 = byte as u32
-    if value >= 65 && value <= 90 {
-        return (value + 32) as u8
+    if byte >= b'A' && byte <= b'Z' {
+        return byte + (b'a' - b'A')
     }
     return byte
 }
@@ -205,11 +212,11 @@ micro parse_digits_u64(digits: [u8]) -> Option<u64> {
     let mut value: u64 = 0
     let mut index: usize = 0
     while index < digits.length {
-        let byte: u64 = digits⁅index⁆ as u64
-        if byte < 48 || byte > 57 {
+        let byte: u8 = digits⁅index⁆
+        if byte < b'0' || byte > b'9' {
             return None
         }
-        value = value * 10 + (byte - 48)
+        value = value * 10 + (byte as u64) - (b'0' as u64)
         index = index + 1
     }
     return Some(value)
@@ -225,8 +232,8 @@ micro push_text(out: ArrayList<u8>, text: utf8) -> unit {
 }
 
 micro push_crlf(out: ArrayList<u8>) -> unit {
-    out.push(13 as u8)
-    out.push(10 as u8)
+    out.push(b'\r')
+    out.push(b'\n')
 }
 
 micro method_token(method: HttpMethod) -> utf8 {
@@ -380,19 +387,12 @@ micro write_response<W>(mut writer: W, response: HttpResponse) -> Option<HttpErr
     }
 }
 
-# 数值 → 十进制 ASCII 文本（本层自带，不依赖未交付的通用格式化）。
+# 数值 → 十进制 ASCII 文本：委托 `Utf8Builder.append_u64` 的唯一整数内核，
+# 本层不复制第二份十进制实现。
 micro digits_text(value: u64) -> utf8 {
-    if value == 0 {
-        return "0"
-    }
-    let mut digits: ArrayList<u8> = ArrayList::new(20)
-    let mut rest: u64 = value
-    while rest > 0 {
-        digits.push((48 + rest % 10) as u8)
-        rest = rest / 10
-    }
-    digits.reverse()
-    return Utf8Text::from_bytes(digits.to_array())
+    let mut builder: Utf8Builder = Utf8Builder::new(20)
+    builder.append_u64(value)
+    return builder.build()
 }
 
 # ── 读取（解析）───────────────────────────────────────────────────────
@@ -412,8 +412,8 @@ micro read_ascii_line<R>(mut reader: R) -> Result<[u8], HttpError>
                     return Fail { error: UnexpectedEof }
                 }
                 let byte: u8 = chunk⁅0⁆
-                if byte == 10 {
-                    if line.length > 0 && line⁅line.length - 1⁆ == 13 {
+                if byte == b'\n' {
+                    if line.length > 0 && line⁅line.length - 1⁆ == b'\r' {
                         line.pop()
                     }
                     return Fine { value: line.to_array() }
@@ -469,14 +469,23 @@ micro read_headers<R>(mut reader: R) -> Result<[HttpHeader], HttpError>
                     done = true
                 }
                 else {
-                    let colon: Option<ByteParts> = split_first_byte(line, 58 as u8)
+                    let colon: Option<ByteParts> = split_first_byte(line, b':')
                     match colon {
                         case Some(parts): {
                             let value_bytes: [u8] = trim_leading_spaces(parts.tail)
-                            headers = headers.push(HttpHeader {
-                                name: Utf8Text::from_bytes(parts.head),
-                                value: Utf8Text::from_bytes(value_bytes),
-                            })
+                            let name: utf8 = match decode_wire_text(parts.head, "头部名段非 UTF-8") {
+                                case Fine(text):
+                                    text
+                                case Fail(error):
+                                    return Fail { error: error }
+                            }
+                            let value: utf8 = match decode_wire_text(value_bytes, "头部值段非 UTF-8") {
+                                case Fine(text):
+                                    text
+                                case Fail(error):
+                                    return Fail { error: error }
+                            }
+                            headers = headers.push(HttpHeader { name: name, value: value })
                         }
                         case None:
                             return Fail { error: Malformed { detail: "头部行缺少冒号分隔" } }
@@ -492,7 +501,7 @@ micro read_headers<R>(mut reader: R) -> Result<[HttpHeader], HttpError>
 
 micro trim_leading_spaces(line: [u8]) -> [u8] {
     let mut start: usize = 0
-    while start < line.length && line⁅start⁆ == 32 {
+    while start < line.length && line⁅start⁆ == b' ' {
         start = start + 1
     }
     return slice_bytes(line, start, line.length)
@@ -518,18 +527,24 @@ micro read_response_framed<R>(mut reader: R, want_body: bool) -> Result<HttpResp
     let status_line_result: Result<[u8], HttpError> = read_ascii_line(reader)
     let first: Option<ByteParts> = match status_line_result {
         case Fine(line):
-            split_first_byte(line, 32 as u8)
+            split_first_byte(line, b' ')
         case Fail(error):
             return Fail { error: error }
     }
     match first {
         case Some(version_parts): {
-            let version: Option<HttpVersion> = version_from_token(Utf8Text::from_bytes(version_parts.head))
+            let version_token: utf8 = match decode_wire_text(version_parts.head, "状态行版本段非 UTF-8") {
+                case Fine(text):
+                    text
+                case Fail(error):
+                    return Fail { error: error }
+            }
+            let version: Option<HttpVersion> = version_from_token(version_token)
             match version {
                 case None:
                     return Fail { error: Malformed { detail: "状态行版本段非法" } }
                 case Some(parsed_version): {
-                    let second: Option<ByteParts> = split_first_byte(version_parts.tail, 32 as u8)
+                    let second: Option<ByteParts> = split_first_byte(version_parts.tail, b' ')
                     match second {
                         case Some(status_parts): {
                             let status_value: Option<u64> = parse_digits_u64(status_parts.head)
@@ -549,14 +564,21 @@ micro read_response_framed<R>(mut reader: R, want_body: bool) -> Result<HttpResp
                                             match body_result {
                                                 case Fail(error):
                                                     return Fail { error: error }
-                                                case Fine(body):
+                                                case Fine(body): {
+                                                    let reason: utf8 = match decode_wire_text(status_parts.tail, "原因短语段非 UTF-8") {
+                                                        case Fine(text):
+                                                            text
+                                                        case Fail(error):
+                                                            return Fail { error: error }
+                                                    }
                                                     return Fine { value: HttpResponse {
                                                         version: parsed_version,
                                                         status: raw_status as u16,
-                                                        reason: Utf8Text::from_bytes(status_parts.tail),
+                                                        reason: reason,
                                                         headers: headers,
                                                         body: body,
                                                     } }
+                                                }
                                             }
                                         }
                                     }
@@ -640,22 +662,34 @@ micro read_request<R>(mut reader: R) -> Result<HttpRequest, HttpError>
         case Fail(error):
             return Fail { error: error }
         case Fine(line): {
-            let first: Option<ByteParts> = split_first_byte(line, 32 as u8)
+            let first: Option<ByteParts> = split_first_byte(line, b' ')
             match first {
                 case None:
                     return Fail { error: Malformed { detail: "请求行缺少空格分隔" } }
                 case Some(method_parts): {
-                    let method: Option<HttpMethod> = method_from_token(Utf8Text::from_bytes(method_parts.head))
+                    let method_token: utf8 = match decode_wire_text(method_parts.head, "方法段非 UTF-8") {
+                        case Fine(text):
+                            text
+                        case Fail(error):
+                            return Fail { error: error }
+                    }
+                    let method: Option<HttpMethod> = method_from_token(method_token)
                     match method {
                         case None:
                             return Fail { error: Malformed { detail: "方法不在已交付集合内" } }
                         case Some(parsed_method): {
-                            let second: Option<ByteParts> = split_first_byte(method_parts.tail, 32 as u8)
+                            let second: Option<ByteParts> = split_first_byte(method_parts.tail, b' ')
                             match second {
                                 case None:
                                     return Fail { error: Malformed { detail: "请求行缺少版本段" } }
                                 case Some(target_parts): {
-                                    let version: Option<HttpVersion> = version_from_token(Utf8Text::from_bytes(target_parts.tail))
+                                    let version_token: utf8 = match decode_wire_text(target_parts.tail, "版本段非 UTF-8") {
+                                        case Fine(text):
+                                            text
+                                        case Fail(error):
+                                            return Fail { error: error }
+                                    }
+                                    let version: Option<HttpVersion> = version_from_token(version_token)
                                     match version {
                                         case None:
                                             return Fail { error: Malformed { detail: "版本段非法" } }
@@ -670,15 +704,22 @@ micro read_request<R>(mut reader: R) -> Result<HttpRequest, HttpError>
                                                     match body_result {
                                                         case Fail(error):
                                                             return Fail { error: error }
-                                                        case Fine(body):
+                                                        case Fine(body): {
+                                                            let target: utf8 = match decode_wire_text(target_parts.head, "请求目标段非 UTF-8") {
+                                                                case Fine(text):
+                                                                    text
+                                                                case Fail(error):
+                                                                    return Fail { error: error }
+                                                            }
                                                             return Fine { value: HttpRequest {
                                                                 method: parsed_method,
                                                                 host: host_value.unwrap_or(""),
-                                                                target: Utf8Text::from_bytes(target_parts.head),
+                                                                target: target,
                                                                 version: parsed_version,
                                                                 headers: headers,
                                                                 body: body,
                                                             } }
+                                                        }
                                                     }
                                                 }
                                             }
