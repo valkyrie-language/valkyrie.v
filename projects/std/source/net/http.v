@@ -205,10 +205,13 @@ micro ascii_equal_ignore_case(left: utf8, right: utf8) -> bool {
     return true
 }
 
+# 十进制解析进 u64 数值域：超域即拒绝（`None`），不回绕吞值——
+# 20 位以上的 `Content-Length` 若以回绕结果分帧就是长度溢出。
 micro parse_digits_u64(digits: [u8]) -> Option<u64> {
     if digits.length == 0 {
         return None
     }
+    let max_u64: u64 = ((0xFFFFFFFF as u64) << 32) | (0xFFFFFFFF as u64)
     let mut value: u64 = 0
     let mut index: usize = 0
     while index < digits.length {
@@ -216,10 +219,53 @@ micro parse_digits_u64(digits: [u8]) -> Option<u64> {
         if byte < b'0' || byte > b'9' {
             return None
         }
-        value = value * 10 + (byte as u64) - (b'0' as u64)
+        let digit: u64 = (byte as u64) - (b'0' as u64)
+        if value > (max_u64 - digit) / 10 {
+            return None
+        }
+        value = value * 10 + digit
         index = index + 1
     }
     return Some(value)
+}
+
+# 头部名/值含 CR 或 LF 即换行注入：报文边界被伪造，一律拒绝。
+micro contains_line_break(value: utf8) -> bool {
+    let bytes: [u8] = Utf8Text::bytes(value)
+    let mut index: usize = 0
+    while index < bytes.length {
+        if bytes⁅index⁆ == b'\r' || bytes⁅index⁆ == b'\n' {
+            return true
+        }
+        index = index + 1
+    }
+    return false
+}
+
+# 统一分帧验证（02 §4.3）：写侧序列化前对调用方 headers 与实体长度做
+# 单一判据——重复 `Content-Length`（分帧长度归本层唯一负责，重复即请求
+# 走私）、`Transfer-Encoding`（本层未交付该分帧，不得借它伪装）、名/值
+# CR/LF 注入、实体长度越出 `Content-Length` 数值域，一律拒绝。
+micro validate_framing(headers: [HttpHeader], body_length: usize) -> Option<HttpError> {
+    let mut index: usize = 0
+    while index < headers.length {
+        let name: utf8 = headers⁅index⁆.name
+        let value: utf8 = headers⁅index⁆.value
+        if contains_line_break(name) || contains_line_break(value) {
+            return Some(Malformed { detail: "头部字段携带 CR/LF 注入" })
+        }
+        if ascii_equal_ignore_case(name, "Content-Length") {
+            return Some(InvalidContentLength)
+        }
+        if ascii_equal_ignore_case(name, "Transfer-Encoding") {
+            return Some(UnsupportedTransferEncoding)
+        }
+        index = index + 1
+    }
+    if (body_length as u64) as usize != body_length {
+        return Some(InvalidContentLength)
+    }
+    return None
 }
 
 micro push_text(out: ArrayList<u8>, text: utf8) -> unit {
@@ -315,6 +361,10 @@ micro version_from_token(token: utf8) -> Option<HttpVersion> {
 micro write_request<W>(mut writer: W, request: HttpRequest) -> Option<HttpError>
     where W: Writer
 {
+    let framing: Option<HttpError> = validate_framing(request.headers, request.body.length)
+    if framing.is_some() {
+        return framing
+    }
     let mut out: ArrayList<u8> = ArrayList::new(256)
     push_text(out, method_token(request.method))
     push_text(out, " ")
@@ -354,6 +404,10 @@ micro write_request<W>(mut writer: W, request: HttpRequest) -> Option<HttpError>
 micro write_response<W>(mut writer: W, response: HttpResponse) -> Option<HttpError>
     where W: Writer
 {
+    let framing: Option<HttpError> = validate_framing(response.headers, response.body.length)
+    if framing.is_some() {
+        return framing
+    }
     let mut out: ArrayList<u8> = ArrayList::new(256)
     push_text(out, version_token(response.version))
     push_text(out, " ")
@@ -633,6 +687,19 @@ micro frame_body<R>(mut reader: R, headers: [HttpHeader], want_body: bool) -> Re
     if encoding.is_some() {
         return Fail { error: UnsupportedTransferEncoding }
     }
+    # 读侧统一分帧（02 §4.3）：重复 `Content-Length` 一律拒绝——同值重复
+    # 是歧义，异值重复是请求走私，本层不裁决哪份生效。
+    let mut length_count: usize = 0
+    let mut scan: usize = 0
+    while scan < headers.length {
+        if ascii_equal_ignore_case(headers⁅scan⁆.name, "Content-Length") {
+            length_count = length_count + 1
+        }
+        scan = scan + 1
+    }
+    if length_count > 1 {
+        return Fail { error: InvalidContentLength }
+    }
     if !want_body {
         return Fine { value: [] }
     }
@@ -646,6 +713,11 @@ micro frame_body<R>(mut reader: R, headers: [HttpHeader], want_body: bool) -> Re
                 case None:
                     return Fail { error: InvalidContentLength }
                 case Some(count): {
+                    # 长度溢出：计数域回折后无法原样回到本目标地址域即拒绝，
+                    # 不得截断成错误的实体长度去读。
+                    if (count as usize) as u64 != count {
+                        return Fail { error: InvalidContentLength }
+                    }
                     return read_body_bytes(reader, count as usize)
                 }
             }
@@ -746,6 +818,12 @@ micro exchange<C>(mut connection: C, request: HttpRequest) -> Result<HttpRespons
     let send: Option<HttpError> = write_request(connection, request)
     if send.is_some() {
         return Fail { error: send.unwrap() }
+    }
+    # `Writer` 合同允许写入成功但字节仍滞留写者缓冲；必须先压刷落底
+    # 再读响应，否则对合法缓冲连接（`BufferedWriter` 包装）请求永不发出。
+    let drain: Option<IoError> = connection.flush()
+    if drain.is_some() {
+        return Fail { error: Transport { error: drain.unwrap() } }
     }
     return read_response(connection)
 }
