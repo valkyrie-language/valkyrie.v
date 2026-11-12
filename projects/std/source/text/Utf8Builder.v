@@ -4,8 +4,11 @@ namespace std.text;
 ⍝ 集中处理所有修改操作，最终产出不可变的 `Utf8Text`。
 ⍝ 内部使用 `ArrayList<u8>` 累积字节，避免频繁扩容时反复创建新数组。
 class Utf8Builder {
-    ⍝ 只读暴露底层字节，便于外部检查，但禁止直接赋值
-    [get] bytes: ArrayList<u8>
+    ⍝ 内部缓冲不公开：`ArrayList` 是引用语义 `class`，暴露 getter 即泄漏
+    ⍝ 可变句柄，外部可绕过编码入口直接改字节，`build` 的 unchecked 构造
+    ⍝ 便失去可证依据。字节只经本文件的编码内核/已验证文本/十进制内核
+    ⍝ 三条通道进入；外部观察一律走 `byte_length` / `is_empty` / `build`。
+    bytes: ArrayList<u8>
 }
 
 imply Utf8Builder {
