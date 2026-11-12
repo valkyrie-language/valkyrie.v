@@ -117,8 +117,12 @@ micro tls_establish(stream: NetHandle, config: TlsConfig) -> Result<NetHandle, T
 [host_contract]
 micro tls_read(session: NetHandle, max: usize) -> Result<[u8], IoError>
 
+# 写合同失败携带真实吸收前缀：`WriteFailure.absorbed` 是宿主记录层本轮
+# 实际吸收（写出或进宿主缓冲）的字节数；`absorbed: 0` 只允许是宿主确认
+# 的零吸收事实，std 不以保守 0 代报未知（02 §4.3）。若某目标原语保证
+# 错误时零吸收，须在该目标 provider 合同文本写明，由合同承担该事实。
 [host_contract]
-micro tls_write(session: NetHandle, bytes: ArrayView<u8>) -> Result<usize, IoError>
+micro tls_write(session: NetHandle, bytes: ArrayView<u8>) -> Result<usize, WriteFailure>
 
 [host_contract]
 micro tls_close(session: NetHandle) -> Option<IoError>
@@ -154,15 +158,8 @@ imply TlsStream: Writer {
         if !self._open {
             return Fail { error: WriteFailure { absorbed: 0, error: io_closed() } }
         }
-        let step: Result<usize, IoError> = tls_write(self._session, bytes)
-        match step {
-            case Fine(n):
-                return Fine { value: n }
-            case Fail(error):
-                # 记录层失败不报告部分吸收：吸收量按保守 0 归属，
-                # 恢复点由 `write_all` 统一给出。
-                return Fail { error: WriteFailure { absorbed: 0, error: error } }
-        }
+        # 宿主合同直接携带吸收量与错误，std 原样传递，不代报、不折叠。
+        return tls_write(self._session, bytes)
     }
 
     # 本层无 std 侧缓冲：写出即交记录层，`flush` 恒为成功；

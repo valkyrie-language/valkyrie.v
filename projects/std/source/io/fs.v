@@ -39,14 +39,23 @@ structure File {
 
 # ── 宿主合同（adaptor 绑定；缺绑定的目标计划阶段结构化失败，无内建兜底）──
 
+# 句柄载体构造入口：仅供 adaptor provider 把宿主描述符装入不透明句柄；
+# 作者面不经手宿主 `any`，std 不读取、不比较、不以特定值作哨兵。
+micro file_handle(host: any) -> FileHandle {
+    return FileHandle { _host: host }
+}
+
 [host_contract]
 micro fs_open(path: utf8, mode: FileOpenMode) -> Result<FileHandle, IoError>
 
 [host_contract]
 micro fs_read(handle: FileHandle, max: usize) -> Result<[u8], IoError>
 
+# 写合同失败携带真实吸收前缀：`WriteFailure.absorbed` 是宿主本轮实际
+# 吸收（落底或进宿主内部缓冲）的字节数；`absorbed: 0` 只允许是宿主
+# 确认的零吸收事实，std 不以保守 0 代报未知（02 §4.3）。
 [host_contract]
-micro fs_write(handle: FileHandle, bytes: ArrayView<u8>) -> Result<usize, IoError>
+micro fs_write(handle: FileHandle, bytes: ArrayView<u8>) -> Result<usize, WriteFailure>
 
 [host_contract]
 micro fs_flush(handle: FileHandle) -> Option<IoError>
@@ -95,15 +104,8 @@ imply File: Writer {
         if !self._open {
             return Fail { error: WriteFailure { absorbed: 0, error: io_closed() } }
         }
-        let step: Result<usize, IoError> = fs_write(self._handle, bytes)
-        match step {
-            case Fine(n):
-                return Fine { value: n }
-            case Fail(error):
-                # 宿主写失败不报告部分吸收：吸收量按保守 0 归属，
-                # 恢复点由 `write_all` 统一给出。
-                return Fail { error: WriteFailure { absorbed: 0, error: error } }
-        }
+        # 宿主合同直接携带吸收量与错误，std 原样传递，不代报、不折叠。
+        return fs_write(self._handle, bytes)
     }
 
     micro flush(mut self) -> Option<IoError> {

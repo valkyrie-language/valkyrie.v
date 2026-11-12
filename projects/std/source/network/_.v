@@ -64,6 +64,12 @@ structure NetHandle {
     _host: any
 }
 
+# 句柄载体构造入口：仅供 adaptor provider 把宿主描述符装入不透明句柄；
+# 作者面不经手宿主 `any`，std 不读取、不比较、不以特定值作哨兵。
+micro net_handle(host: any) -> NetHandle {
+    return NetHandle { _host: host }
+}
+
 structure TcpStream {
     _handle: NetHandle
     _open: bool
@@ -86,13 +92,14 @@ micro net_listen(addr: SocketAddr, backlog: usize) -> Result<NetHandle, NetError
 [host_contract]
 micro net_accept(listener: NetHandle) -> Result<NetHandle, NetError>
 
-# 流操作：字节模型。`net_read` 空块即流尽；`net_write` 返回实际提交字节数；
-# 失败一律经 `IoError` 种类表达。
+# 流操作：字节模型。`net_read` 空块即流尽；`net_write` 返回实际提交字节数，
+# 失败携带宿主报告的真实吸收前缀（`WriteFailure.absorbed`；0 只允许是
+# 宿主确认的零吸收事实，std 不以保守 0 代报，02 §4.3）。
 [host_contract]
 micro net_read(handle: NetHandle, max: usize) -> Result<[u8], IoError>
 
 [host_contract]
-micro net_write(handle: NetHandle, bytes: ArrayView<u8>) -> Result<usize, IoError>
+micro net_write(handle: NetHandle, bytes: ArrayView<u8>) -> Result<usize, WriteFailure>
 
 [host_contract]
 micro net_close(handle: NetHandle) -> Option<IoError>
@@ -137,15 +144,8 @@ imply TcpStream: Writer {
         if !self._open {
             return Fail { error: WriteFailure { absorbed: 0, error: io_closed() } }
         }
-        let step: Result<usize, IoError> = net_write(self._handle, bytes)
-        match step {
-            case Fine(n):
-                return Fine { value: n }
-            case Fail(error):
-                # 传输层失败不报告部分吸收：吸收量按保守 0 归属，
-                # 恢复点由 `write_all` 统一给出。
-                return Fail { error: WriteFailure { absorbed: 0, error: error } }
-        }
+        # 宿主合同直接携带吸收量与错误，std 原样传递，不代报、不折叠。
+        return net_write(self._handle, bytes)
     }
 
     # 本层无内部缓冲：写出即交底层，`flush` 恒为成功；
