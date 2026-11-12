@@ -13,7 +13,6 @@ using std.types::{Option, Some, None};
 unite Poll<T> {
     ⍝ 尚未完成，可继续轮询。
     [tag(0)]
-    [constructor]
     Pending,
     ⍝ 已完成，携带产出值。
     [tag(1)]
@@ -24,7 +23,6 @@ unite Poll<T> {
     },
     ⍝ 已取消的终态，无产出。
     [tag(2)]
-    [constructor]
     Cancelled,
 }
 
