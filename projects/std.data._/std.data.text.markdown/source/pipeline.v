@@ -11,7 +11,7 @@ using document.render::{RenderResult, html_emit_fields, render_number, render_pr
 #   （`DocumentError` 原码转为 `Diagnostic`）；发射期诊断非空 → `Partial`，否则 `Fine`。
 
 micro weave_error_to_diagnostic(error: DocumentError) -> Diagnostic {
-    return new_diagnostic(error.code, Error, error.message + " (node " + format("{}", error.node_id) + ")", new_span(0, 0))
+    return new_diagnostic(error.code, Error, error.message + " (node " + format("\{}", error.node_id) + ")", new_span(0, 0))
 }
 
 micro weave_emit_document(document: Document, index: DocumentIndex) -> WeaveOut {

@@ -44,7 +44,7 @@ micro markdown_lexeme(state: MarkdownBuildState, start: usize, stop: usize) -> u
 }
 
 micro markdown_is_blank_char(c: char) -> bool {
-    return c == ' ' || c == '\t' || c == '\n' || c as u32 == 13
+    return c == ' ' || c == '\t' || c == '\n' || c == '\r'
 }
 
 micro markdown_trim(text: utf8) -> utf8 {

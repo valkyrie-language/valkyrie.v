@@ -87,9 +87,8 @@ micro markdown_collect_fence(lines: [MarkdownLine], start: usize) -> MarkdownFen
             let token: MarkdownToken = first.unwrap()
             match token.kind {
                 case Backtick:
-                    if token.span.stop - token.span.start >= 3 {
-                        is_close = true
-                    }
+                    # 闭合栅栏至少三个反引号；条件写在臂体内，避免悬挂 else 归属歧义。
+                    is_close = token.span.stop - token.span.start >= 3
                 else:
                     is_close = false
             }

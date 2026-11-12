@@ -23,61 +23,61 @@ micro is_space_char(ch: char) -> bool {
 
 micro is_run_marker_char(ch: char) -> bool {
     return match ch {
-        '#' { true }
-        '`' { true }
-        '~' { true }
-        '*' { true }
-        '_' { true }
-        '=' { true }
-        _ { false }
+        case '#': true
+        case '`': true
+        case '~': true
+        case '*': true
+        case '_': true
+        case '=': true
+        else: false
     }
 }
 
 micro run_marker_kind(ch: char) -> MarkdownTokenKind {
     return match ch {
-        '#' { Hash }
-        '`' { Backtick }
-        '~' { Tilde }
-        '*' { Asterisk }
-        '_' { Underscore }
-        _ { Equals }
+        case '#': Hash
+        case '`': Backtick
+        case '~': Tilde
+        case '*': Asterisk
+        case '_': Underscore
+        else: Equals
     }
 }
 
 micro is_punctuation_char(ch: char) -> bool {
     return match ch {
-        '[' { true }
-        ']' { true }
-        '(' { true }
-        ')' { true }
-        '<' { true }
-        '>' { true }
-        '-' { true }
-        '+' { true }
-        '|' { true }
-        ':' { true }
-        _ { false }
+        case '[': true
+        case ']': true
+        case '(': true
+        case ')': true
+        case '<': true
+        case '>': true
+        case '-': true
+        case '+': true
+        case '|': true
+        case ':': true
+        else: false
     }
 }
 
 micro punctuation_kind(ch: char) -> MarkdownTokenKind {
     return match ch {
-        '[' { BracketOpen }
-        ']' { BracketClose }
-        '(' { ParenOpen }
-        ')' { ParenClose }
-        '<' { AngleOpen }
-        '>' { AngleClose }
-        '-' { Minus }
-        '+' { Plus }
-        '|' { Pipe }
-        _ { Colon }
+        case '[': BracketOpen
+        case ']': BracketClose
+        case '(': ParenOpen
+        case ')': ParenClose
+        case '<': AngleOpen
+        case '>': AngleClose
+        case '-': Minus
+        case '+': Plus
+        case '|': Pipe
+        else: Colon
     }
 }
 
 micro is_text_char(ch: char) -> bool {
-    # 控制字符不是文本：范围判定以字面量拓宽到 u32 表达（数值仅作序比较媒介）。
-    if (ch as u32) < (' ' as u32) {
+    # 控制字符不是文本：用字符序直接比较，不把码位转成数值。
+    if ch < ' ' {
         return false
     }
     if is_space_char(ch) {
@@ -139,7 +139,7 @@ micro markdown_lex(source: utf8) -> DataOutcome<[MarkdownToken]> {
             pending = iter.next()
         }
         # 小于空格码位的不可见控制字符归为非法。
-        else if (ch as u32) < (' ' as u32) {
+        else if ch < ' ' {
             tokens = push(tokens, new_markdown_token(Illegal, start, index))
             diagnostics = push(diagnostics, new_diagnostic("markdown.lex.illegal_code_point", Warning, "不可见控制字符", new_span(start, index)))
             pending = iter.next()
