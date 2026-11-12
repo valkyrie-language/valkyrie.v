@@ -43,13 +43,13 @@ imply i32 {
     }
 
     # 半开区间 `[start, end)`；端点不假设顺序，`start > end` 得到零次迭代的空区间。
-    infix `..`(self, rhs: Self): std::types::I32Range {
-        return std::types::i32_range(self, rhs)
+    infix `..`(self, rhs: Self): std::types::Range {
+        return std::types::range(self, rhs)
     }
 
-    # 闭区间 `[start, end]`；声明侧就位，表达式形态待 `..=` token 落地。
-    infix `..=`(self, rhs: Self): std::types::I32InclusiveRange {
-        return std::types::i32_inclusive_range(self, rhs)
+    # 闭区间 `[start, end]`。
+    infix `..=`(self, rhs: Self): std::types::InclusiveRange {
+        return std::types::inclusive_range(self, rhs)
     }
 
     prefix `-`(self): Self {

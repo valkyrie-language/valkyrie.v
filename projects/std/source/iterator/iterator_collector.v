@@ -12,8 +12,13 @@ micro collect_array<I, T>(self: I) -> [T]
     # 定长数组只能整体落成：先经 `ArrayList` 原地追加累积，再一次性冻结拷贝。
     let mut buffer: std.collection.ArrayList<T> = std.collection.ArrayList::new(0)
     let mut iter: I = self
-    while iter.has_next() {
-        buffer.push(iter.next().unwrap())
+    while true {
+        let item: Option<T> = iter.next()
+        if item.is_none() {
+            break
+        }
+
+        buffer.push(item.unwrap())
     }
 
     return buffer.to_array()
@@ -24,8 +29,13 @@ micro collect_array_list<I, T>(self: I) -> std.collection.ArrayList<T>
 {
     let mut result: std.collection.ArrayList<T> = std.collection.ArrayList::new(0)
     let mut iter: I = self
-    while iter.has_next() {
-        result.push(iter.next().unwrap())
+    while true {
+        let item: Option<T> = iter.next()
+        if item.is_none() {
+            break
+        }
+
+        result.push(item.unwrap())
     }
 
     return result

@@ -2,19 +2,21 @@ namespace std.collection;
 
 # ArrayList：可变长序列（Vec 形态）。
 #
-# 表示：`_items` 是容量载体（定长数组，其长度即容量），`_length` 是逻辑长度；
-# 逻辑部分永远是载体的前缀。`push` 为 `mut self` 原地追加：容量未满时直接写槽
-# （O(1)），满时按倍增扩容（摊还 O(1)）。`clear` 只重置逻辑长度、保留载体。
+# 表示：容量与有效性分离——`_storage` 是带初始化前沿的容量存储
+# （`ArrayStorage`），`_length` 是逻辑长度；逻辑部分是有效元素区的前缀，
+# 且始终不超过初始化前沿。`push` 为 `mut self` 原地追加：容量未满时在前沿
+# 落子（O(1)），满时按倍增扩容（摊还 O(1)）。`clear` 只重置逻辑长度、保留
+# 存储。扩容拿到的是容量槽位而非伪有效 `T`：新载体逐项显式初始化后才对读开放。
 # 只有 `ArrayList` 承载可变序列语义；定长 `[T]` 不提供 push/pop/reserve/clear。
 class ArrayList<T> {
-    _items: [T]
+    _storage: ArrayStorage<T>
     _length: usize
 }
 
 imply ArrayList<T> {
     [host_contract]
     micro new(capacity: usize): Self {
-        return ArrayList { _items: std::collection::array::new::<T>(capacity), _length: 0 }
+        return ArrayList { _storage: ArrayStorage::with_capacity(capacity), _length: 0 }
     }
 
     # 拼接：返回新列表，元素按 `self` 后 `other` 的顺序复制，两端均不被改写。
@@ -24,47 +26,47 @@ imply ArrayList<T> {
         let mut merged: ArrayList<T> = ArrayList::new(left + right)
         let mut index: usize = 0
         while index < left {
-            merged.push(self._items⁅index⁆)
+            merged.push(self._storage.get(index).unwrap())
             index = index + 1
         }
 
         let mut offset: usize = 0
         while offset < right {
-            merged.push(other._items⁅offset⁆)
+            merged.push(other._storage.get(offset).unwrap())
             offset = offset + 1
         }
 
         return merged
     }
 
-    # 容量（载体长度）。
+    # 容量（存储槽位总数）。
     [host_contract]
     micro capacity(self): usize {
-        return self._items.length
+        return self._storage.capacity()
     }
 
-    # 原地追加：容量内直写，满时倍增扩容。O(1) 摊还。
+    # 原地追加：容量内前沿落子，满时倍增扩容。O(1) 摊还。
     [host_contract]
     micro push(mut self, value: T): unit {
-        if self._length >= self._items.length {
+        if self._length >= self._storage.capacity() {
             self.reserve_grow()
         }
 
-        self._items⁅self._length⁆ = value
+        self._storage.place(self._length, value)
         self._length = self._length + 1
     }
 
     # 扩容到至少 `self._length + additional` 的容量（只增不减；已满足时不动）。
     micro reserve(mut self, additional: usize): unit {
         let required: usize = self._length + additional
-        if required <= self._items.length {
+        if required <= self._storage.capacity() {
             return
         }
 
         self.grow_to(required)
     }
 
-    # 清空逻辑内容，保留载体（后续 push 复用既有容量）。
+    # 清空逻辑内容，保留存储（后续 push 复用既有容量）。
     [host_contract]
     micro clear(mut self): unit {
         self._length = 0
@@ -76,7 +78,7 @@ imply ArrayList<T> {
             return None
         }
 
-        let removed: T = self._items⁅size - 1⁆
+        let removed: T = self._storage.get(size - 1).unwrap()
         self._length = size - 1
         return Some(removed)
     }
@@ -90,18 +92,19 @@ imply ArrayList<T> {
             return
         }
 
-        if size >= self._items.length {
+        if size >= self._storage.capacity() {
             self.reserve_grow()
         }
 
-        # 从尾部开始右移一格，为 ordinal - 1 处腾槽。
+        # 从尾部开始逐格右移，为 ordinal - 1 处腾位；尾格落进前沿槽即完成初始化。
         let mut cursor: usize = size
         while cursor >= ordinal {
-            self._items⁅cursor⁆ = self._items⁅cursor - 1⁆
+            let moved: T = self._storage.get(cursor - 1).unwrap()
+            self._storage.place(cursor, moved)
             cursor = cursor - 1
         }
 
-        self._items⁅ordinal - 1⁆ = value
+        self._storage.place(ordinal - 1, value)
         self._length = size + 1
     }
 
@@ -113,10 +116,11 @@ imply ArrayList<T> {
             return None
         }
 
-        let removed: T = self._items⁅ordinal - 1⁆
-        let mut cursor: usize = ordinal
-        while cursor < size {
-            self._items⁅cursor - 1⁆ = self._items⁅cursor⁆
+        let removed: T = self._storage.get(ordinal - 1).unwrap()
+        let mut cursor: usize = ordinal - 1
+        while cursor < size - 1 {
+            let moved: T = self._storage.get(cursor + 1).unwrap()
+            self._storage.set(cursor, moved)
             cursor = cursor + 1
         }
 
@@ -153,9 +157,10 @@ imply ArrayList<T> {
         let mut right: usize = self._length
         while left < right {
             right = right - 1
-            let kept: T = self._items⁅left⁆
-            self._items⁅left⁆ = self._items⁅right⁆
-            self._items⁅right⁆ = kept
+            let kept: T = self._storage.get(left).unwrap()
+            let other: T = self._storage.get(right).unwrap()
+            self._storage.set(left, other)
+            self._storage.set(right, kept)
             left = left + 1
         }
     }
@@ -181,7 +186,7 @@ imply ArrayList<T> {
     {
         let mut index: usize = 0
         while index < self._length {
-            if self._items⁅index⁆ == value {
+            if self._storage.get(index).unwrap() == value {
                 return true
             }
 
@@ -194,25 +199,25 @@ imply ArrayList<T> {
     # 零拷贝视图：逻辑内容的只读窗口（`[0, length)`）。
     # 视图与列表共享底层存储；本列表随后扩容重分配时，旧视图仍指向旧存储。
     micro view(self): ArrayView<T> {
-        return ArrayView { _source: self._items, _offset: 0, _length: self._length }
+        return self._storage.window(self._length)
     }
 
-    # 冻结为定长 `[T]`：按逻辑长度精确分配并逐项复制。
+    # 冻结为定长 `[T]`：按逻辑长度精确取得容量载体并逐项显式初始化后终局化。
     # 这是显式的最终化拷贝（一次性），与逐 push 复制整表无关。
     micro to_array(self): [T] {
-        let mut frozen: [T] = std::collection::array::new::<T>(self._length)
+        let mut carrier: ArrayStorage<T> = ArrayStorage::with_capacity(self._length)
         let mut index: usize = 0
         while index < self._length {
-            frozen⁅index⁆ = self._items⁅index⁆
+            carrier.place(index, self._storage.get(index).unwrap())
             index = index + 1
         }
 
-        return frozen
+        return carrier.finalize()
     }
 
     # 倍增扩容：空载体从 4 起步，否则翻倍；`required` 之下不够时直接取 `required`。
     micro reserve_grow(mut self): unit {
-        let capacity: usize = self._items.length
+        let capacity: usize = self._storage.capacity()
         let required: usize = self._length + 1
         let mut next: usize = capacity * 2
         if capacity == 0 {
@@ -224,16 +229,17 @@ imply ArrayList<T> {
         self.grow_to(next)
     }
 
-    # 扩容到恰好 `next` 的载体：分配 + 逐项搬迁 + 换载体。
+    # 扩容到恰好 `next` 的容量：取新载体 + 逐项搬迁初始化 + 换载体。
+    # 逻辑区之外的旧槽位不搬迁——新载体上它们保持未初始化，读取被前沿挡住。
     micro grow_to(mut self, next: usize): unit {
-        let mut grown: [T] = std::collection::array::new::<T>(next)
+        let mut grown: ArrayStorage<T> = ArrayStorage::with_capacity(next)
         let mut index: usize = 0
         while index < self._length {
-            grown⁅index⁆ = self._items⁅index⁆
+            grown.place(index, self._storage.get(index).unwrap())
             index = index + 1
         }
 
-        self._items = grown
+        self._storage = grown
     }
 }
 
@@ -250,7 +256,7 @@ imply ArrayList<T>: std::operator::Cardinal {
             std::types::panic("Cardinal ⁅ ⁆ 越界：offset 超出元素个数")
         }
 
-        return self._items⁅offset⁆
+        return self._storage.get(offset).unwrap()
     }
 
     # 0 基索引写入，只改元素不改元素个数；越界结构化失败，不许静默丢弃写入。
@@ -259,7 +265,7 @@ imply ArrayList<T>: std::operator::Cardinal {
             std::types::panic("Cardinal ⁅ ⁆= 越界：offset 超出元素个数")
         }
 
-        self._items⁅offset⁆ = value
+        self._storage.set(offset, value)
     }
 
     # 与 `⁅ ⁆` 同源：命名方法形态，互为委托，不维护第二套索引访问逻辑。
@@ -349,9 +355,13 @@ imply ArrayList<T>: std::iterator::FromIterator {
         where I: std::iterator::Iterator<Item = T>
     {
         let mut result: Self = Self::new(0)
-        while iter.has_next() {
-            let item: T = iter.next().unwrap()
-            result.push(item)
+        while true {
+            let item: Option<T> = iter.next()
+            if item.is_none() {
+                break
+            }
+
+            result.push(item.unwrap())
         }
 
         return result
@@ -361,12 +371,8 @@ imply ArrayList<T>: std::iterator::FromIterator {
 imply ArrayListIterator<T>: std::iterator::Iterator {
     type Item = T;
 
-    micro has_next(self) -> bool {
-        return self._index < self._list.length()
-    }
-
     micro next(mut self): Option<T> {
-        if !self.has_next() {
+        if self._index >= self._list.length() {
             return None
         }
 

@@ -1,8 +1,3 @@
-<% match arch %>
-<% case "clr" %>
-namespace std.iterator;
-# CLR: function-valued iterator adapters deferred (field call → DynamicInvoke).
-<% else %>
 namespace std.iterator;
 
 structure TakeWhileIterator<T, I> {
@@ -14,15 +9,8 @@ structure TakeWhileIterator<T, I> {
 imply TakeWhileIterator<T, I>: Iterator {
     type Item = T;
 
-    micro has_next(self): bool
-        where I: Iterator<Item = T>
-    {
-        if self._done {
-            return false
-        }
-        return self._iter.has_next()
-    }
-
+    # 谓词失败的元素被消费且不产出——这是 `take_while` 的语义事实；此后本迭代器
+    # 不再触碰底层。结束与否由底层 `next` 的 `Option` 决定，不预先探测。
     micro next(mut self): Option<T>
         where I: Iterator<Item = T>
     {
@@ -30,18 +18,17 @@ imply TakeWhileIterator<T, I>: Iterator {
             return None
         }
 
-        if !self._iter.has_next() {
+        let item: Option<T> = self._iter.next()
+        if item.is_none() {
             return None
         }
 
-        let item: T = self._iter.next().unwrap()
-        if self._predicate(item) {
-            return Some(item)
+        let value: T = item.unwrap()
+        if self._predicate(value) {
+            return Some(value)
         }
 
         self._done = true
         return None
     }
 }
-
-<% end %>

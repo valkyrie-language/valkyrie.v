@@ -17,9 +17,9 @@ private micro array_host_set<T>(array: [T], index: usize, value: T): unit {
     __array_jvm_set::<T>(array, index, value)
 }
 
-[host_provider(std::collection::array::new)]
-private micro array_host_new<T>(length: usize): [T] {
-    return __array_jvm_new::<T>(length)
+[host_provider(std::collection::array::allocate)]
+private micro array_host_allocate<T>(capacity: usize): [T] {
+    return __array_jvm_new::<T>(capacity)
 }
 
 [jvm("java.lang.reflect.Array", "getLength"), pure]

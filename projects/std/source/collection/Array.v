@@ -45,23 +45,24 @@ imply Array<T> {
     }
 
     # 拼接：返回新数组，元素按 `self` 后 `other` 的顺序复制，两端均不被改写。
+    # 新数组经容量载体逐项显式初始化后终局化，不读任何未初始化槽位。
     infix `++`(self, other: [T]): [T] {
         let left: usize = self.length()
         let right: usize = other.length()
-        let mut merged: [T] = std::collection::array::new::<T>(left + right)
+        let mut carrier: ArrayStorage<T> = ArrayStorage::with_capacity(left + right)
         let mut index: usize = 0
         while index < left {
-            merged⁅index⁆ = self⁅index⁆
+            carrier.place(index, self⁅index⁆)
             index = index + 1
         }
 
         let mut offset: usize = 0
         while offset < right {
-            merged⁅left + offset⁆ = other⁅offset⁆
+            carrier.place(left + offset, other⁅offset⁆)
             offset = offset + 1
         }
 
-        return merged
+        return carrier.finalize()
     }
 }
 
@@ -166,9 +167,13 @@ imply Array<T>: std::iterator::FromIterator {
     {
         # 定长数组只能整体落成：先经 `ArrayList` 原地追加累积，再一次性冻结拷贝。
         let mut buffer: ArrayList<T> = ArrayList::new(0)
-        while iter.has_next() {
-            let item: T = iter.next().unwrap()
-            buffer.push(item)
+        while true {
+            let item: Option<T> = iter.next()
+            if item.is_none() {
+                break
+            }
+
+            buffer.push(item.unwrap())
         }
 
         return buffer.to_array()
@@ -178,12 +183,8 @@ imply Array<T>: std::iterator::FromIterator {
 imply ArrayIterator<T>: std::iterator::Iterator {
     type Item = T;
 
-    micro has_next(self): bool {
-        return self._index < self._array.length()
-    }
-
     micro next(mut self): Option<T> {
-        if !self.has_next() {
+        if self._index >= self._array.length() {
             return None
         }
 

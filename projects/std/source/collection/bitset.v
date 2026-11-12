@@ -216,22 +216,6 @@ class BitSetIterator {
 imply BitSetIterator: std::iterator::Iterator {
     type Item = usize;
 
-    micro has_next(self): bool {
-        let total: usize = self._words.length() * 64
-        let mut index: usize = self._cursor
-        while index < total {
-            let word: u64 = self._words⁅index / 64⁆
-            let bit: usize = index % 64
-            if (word & ((1 as u64) << (bit as u64))) != 0 {
-                return true
-            }
-
-            index = index + 1
-        }
-
-        return false
-    }
-
     micro next(mut self): Option<usize> {
         let total: usize = self._words.length() * 64
         while self._cursor < total {

@@ -9,16 +9,7 @@ structure TakeIterator<T, I> {
 imply TakeIterator<T, I>: Iterator {
     type Item = T;
 
-    micro has_next(self): bool
-        where I: Iterator<Item = T>
-    {
-        if self._taken >= self._count {
-            return false
-        }
-
-        return self._iter.has_next()
-    }
-
+    # 配额耗尽即结束；配额未耗尽时，结束与否完全由底层 `next` 的 `Option` 决定。
     micro next(mut self): Option<T>
         where I: Iterator<Item = T>
     {

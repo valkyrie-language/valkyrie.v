@@ -1,8 +1,3 @@
-<% match arch %>
-<% case "clr" %>
-namespace std.iterator;
-# CLR: function-valued iterator adapters deferred (field call → DynamicInvoke).
-<% else %>
 namespace std.iterator;
 
 structure SkipWhileIterator<T, I> {
@@ -14,30 +9,27 @@ structure SkipWhileIterator<T, I> {
 imply SkipWhileIterator<T, I>: Iterator {
     type Item = T;
 
-    micro has_next(self): bool
-        where I: Iterator<Item = T>
-    {
-        return self._iter.has_next()
-    }
-
+    # 跳过前缀阶段逐项消费底层 `next` 的真实结果：底层提前结束就如实结束。
+    # 谓词对每个元素恰好执行一次；一旦谓词失败，前缀跳过完成，此后直通底层。
     micro next(mut self): Option<T>
         where I: Iterator<Item = T>
     {
         if !self._skipped {
-            while self._iter.has_next() {
-                let item: T = self._iter.next().unwrap()
-                if !self._predicate(item) {
+            while true {
+                let item: Option<T> = self._iter.next()
+                if item.is_none() {
                     self._skipped = true
-                    return Some(item)
+                    return None
+                }
+
+                let value: T = item.unwrap()
+                if !self._predicate(value) {
+                    self._skipped = true
+                    return Some(value)
                 }
             }
-
-            self._skipped = true
-            return None
         }
 
         return self._iter.next()
     }
 }
-
-<% end %>

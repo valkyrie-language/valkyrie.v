@@ -43,13 +43,13 @@ imply i64 {
     }
 
     # 半开区间 `[start, end)`；64 位目标 `isize = i64`，本 impl 同时服务 `isize`。
-    infix `..`(self, rhs: Self): std::types::I64Range {
-        return std::types::i64_range(self, rhs)
+    infix `..`(self, rhs: Self): std::types::Range {
+        return std::types::range(self, rhs)
     }
 
-    # 闭区间 `[start, end]`；声明侧就位，表达式形态待 `..=` token 落地。
-    infix `..=`(self, rhs: Self): std::types::I64InclusiveRange {
-        return std::types::i64_inclusive_range(self, rhs)
+    # 闭区间 `[start, end]`。
+    infix `..=`(self, rhs: Self): std::types::InclusiveRange {
+        return std::types::inclusive_range(self, rhs)
     }
 
     prefix `-`(self): Self {

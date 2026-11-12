@@ -3,13 +3,13 @@ namespace std.collection;
 # std.collection: BinaryHeap - 堆，序方向由实例决定
 #
 # `new()` 是小顶堆（元素自然序的最小值先出堆），`max()` 是大顶堆（自然序的
-# 最大值先出堆），`new_by(cmp)` 按调用方比较器建堆（负数表示前者先出堆）。
+# 最大值先出堆），`new_by(cmp)` 按调用方比较器建堆（`Less` 表示前者先出堆）。
 # 三者共用同一套上浮/下沉实现；`_cmp` 是唯一序判定来源，方向翻转只发生在
 # `comes_first` 这一处。`new()` / `max()` 需要 `T: Comparable`，`new_by` 不需要。
 
 class BinaryHeap<T> {
     data: ArrayList<T>
-    _cmp: micro(T, T) -> i32
+    _cmp: micro(T, T) -> std::operator::Ordering
     _descending: bool
 }
 
@@ -19,16 +19,8 @@ imply BinaryHeap<T> {
     {
         return Self {
             data: ArrayList::new(0),
-            _cmp: micro(a: T, b: T) -> i32 {
-                if a < b {
-                    return -1
-                }
-
-                if a > b {
-                    return 1
-                }
-
-                return 0
+            _cmp: micro(a: T, b: T) -> std::operator::Ordering {
+                return std::collection::natural_order(a, b)
             },
             _descending: false,
         }
@@ -40,24 +32,16 @@ imply BinaryHeap<T> {
     {
         return Self {
             data: ArrayList::new(0),
-            _cmp: micro(a: T, b: T) -> i32 {
-                if a < b {
-                    return -1
-                }
-
-                if a > b {
-                    return 1
-                }
-
-                return 0
+            _cmp: micro(a: T, b: T) -> std::operator::Ordering {
+                return std::collection::natural_order(a, b)
             },
             _descending: true,
         }
     }
 
-    # 比较器堆：比较器语义与 `sort` 一致（负数 / 零 / 正数）。
+    # 比较器堆：比较器语义与 `sort` 一致（三态序）。
     # 不要求 `T: Comparable`，因此 `f64` 等非全序元素也能建堆。
-    micro new_by(cmp: micro(T, T) -> i32): Self {
+    micro new_by(cmp: micro(T, T) -> std::operator::Ordering): Self {
         return Self {
             data: ArrayList::new(0),
             _cmp: cmp,
@@ -103,13 +87,19 @@ imply BinaryHeap<T> {
         self.data.clear()
     }
 
-    # 堆内唯一的序判定入口：`_cmp` 给出序，大顶堆在此翻转。
+    # 堆内唯一的序判定入口：`_cmp` 给出三态序，大顶堆在此翻转；
+    # `Unordered` 消费到即结构化失败，不做静默降级。
     private micro comes_first(self, left: T, right: T): bool {
-        let order: i32 = self._cmp(left, right)
-        if self._descending {
-            return order > 0
+        match self._cmp(left, right) {
+            case Less:
+                !self._descending
+            case Equal:
+                false
+            case Greater:
+                self._descending
+            case Unordered:
+                std::types::panic("BinaryHeap: 比较消费到 Unordered")
         }
-        return order < 0
     }
 
     micro sift_up(mut self, index: usize): unit {

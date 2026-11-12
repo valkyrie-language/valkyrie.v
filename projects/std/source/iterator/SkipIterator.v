@@ -9,32 +9,17 @@ structure SkipIterator<T, I> {
 imply SkipIterator<T, I>: Iterator {
     type Item = T;
 
-    micro has_next(self): bool
-        where I: Iterator<Item = T>
-    {
-        let mut iter: I = self._iter
-        let mut skipped: usize = self._skipped
-        while skipped < self._count {
-            if !iter.has_next() {
-                return false
-            }
-
-            iter.next()
-            skipped = skipped + 1
-        }
-
-        return iter.has_next()
-    }
-
+    # 跳过阶段逐项消费底层 `next`：底层提前结束就如实结束，不猜测还有元素。
     micro next(mut self): Option<T>
         where I: Iterator<Item = T>
     {
         while self._skipped < self._count {
-            if !self._iter.has_next() {
+            let dropped: Option<T> = self._iter.next()
+            if dropped.is_none() {
+                self._skipped = self._count
                 return None
             }
 
-            self._iter.next()
             self._skipped = self._skipped + 1
         }
 

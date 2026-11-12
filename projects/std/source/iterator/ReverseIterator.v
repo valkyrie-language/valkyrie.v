@@ -1,7 +1,8 @@
 namespace std.iterator;
 
 # 逆序迭代器：缓冲源迭代器的全部产出，再按尾到头逐项交出。
-# 缓冲在构造期完成（`rev`），`has_next(self)` 只做只读游标判断。
+# 单向源无法从尾部起推进，逆序只能以先排空为代价；缓冲在构造期一次完成，
+# `next` 只做只读游标回退。
 structure ReverseIterator<T> {
     _buffer: std.collection.ArrayList<T>
     _index: usize
@@ -9,10 +10,6 @@ structure ReverseIterator<T> {
 
 imply ReverseIterator<T>: Iterator {
     type Item = T;
-
-    micro has_next(self): bool {
-        return self._index > 0
-    }
 
     micro next(mut self): Option<T> {
         if self._index == 0 {
@@ -25,16 +22,20 @@ imply ReverseIterator<T>: Iterator {
 }
 
 # 逆序适配入口：即时消费源迭代器，拒绝惰性填充。
-# `has_next(self)` 是只读接收者，不能在探测阶段持久扩容缓冲，因此先排空再产出。
-# 作为自由函数而非 trait 默认成员：默认成员里用关联类型 `Item` 构造泛型容器
-# 目前无法通过类型检查。
-micro rev<I, T>(source: I) -> ReverseIterator<T>
+# 作为自由函数而非 trait 默认成员：逆序需要物化全部产出，这是入口的领域代价，
+# 不伪装成零成本的适配器。
+micro reverse<I, T>(source: I) -> ReverseIterator<T>
     where I: Iterator<Item = T>
 {
     let mut iter: I = source
     let mut buffer: std::collection::ArrayList<T> = std::collection::ArrayList::new(0)
-    while iter.has_next() {
-        buffer.push(iter.next().unwrap())
+    while true {
+        let item: Option<T> = iter.next()
+        if item.is_none() {
+            break
+        }
+
+        buffer.push(item.unwrap())
     }
 
     return ReverseIterator {
