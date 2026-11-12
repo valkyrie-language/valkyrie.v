@@ -11,7 +11,7 @@ using std.terminal;
 ⍝ - 事件行为：AWSL lower 为每个 `@click` / `@change` 生成形如
 ⍝   `micro awsl_call_<name>(session: mut TuiSession) -> unit` 的处理函数，
 ⍝   构造控件时以函数值直接传入；不存在按导出名分派的字符串通道。
-⍝ - 绑定状态：脚本 `let mut` 中承担交互状态的绑定（布尔、单选组）
+⍝ - 绑定状态：脚本 `let mut` 中承担交互状态的绑定（布尔、单选组、整数）
 ⍝   以显示名登记到当前运行帧，换取会话内类型化槽句柄；
 ⍝   显示名只作登记身份，值类型由句柄类型固定。纯展示文本在重挂载时
 ⍝   由生成代码从产品 store 直接求值写入 `Text` 控件，不占用会话槽位。
@@ -38,6 +38,8 @@ structure AsgardTuiFrame {
     flag_handles: ArrayList<FlagBinding>
     choice_names: ArrayList<utf8>
     choice_handles: ArrayList<ChoiceBinding>
+    int_names: ArrayList<utf8>
+    int_handles: ArrayList<IntBinding>
 }
 
 imply AsgardTuiFrame {
@@ -46,7 +48,9 @@ imply AsgardTuiFrame {
             flag_names: ArrayList::new(16),
             flag_handles: ArrayList::new(16),
             choice_names: ArrayList::new(16),
-            choice_handles: ArrayList::new(16)
+            choice_handles: ArrayList::new(16),
+            int_names: ArrayList::new(16),
+            int_handles: ArrayList::new(16)
         }
     }
 
@@ -80,6 +84,21 @@ imply AsgardTuiFrame {
         return handle
     }
 
+    # 按显示名取整数槽句柄：帧内已登记则复用，未登记则在会话上分配并登记。
+    micro int(mut self, session: mut TuiSession, name: utf8, initial: i32) -> IntBinding {
+        let mut i: usize = 0
+        while i < self.int_names.length() {
+            if self.int_names.get((i + 1) as isize).unwrap() == name {
+                return self.int_handles.get((i + 1) as isize).unwrap()
+            }
+            i = i + 1
+        }
+        let handle: IntBinding = session.declare_int(initial)
+        self.int_names.push(name)
+        self.int_handles.push(handle)
+        return handle
+    }
+
     # 按显示名写布尔槽并重渲染；未登记的显示名是生成流程错误。
     micro patch_flag(mut self, session: mut TuiSession, name: utf8, on: bool) -> unit {
         let mut i: usize = 0
@@ -107,6 +126,20 @@ imply AsgardTuiFrame {
         }
         std::types::panic("AsgardTuiFrame.patch_choice: 当前运行帧未登记的绑定显示名")
     }
+
+    # 按显示名写整数槽并重渲染；未登记的显示名是生成流程错误。
+    micro patch_int(mut self, session: mut TuiSession, name: utf8, value: i32) -> unit {
+        let mut i: usize = 0
+        while i < self.int_names.length() {
+            if self.int_names.get((i + 1) as isize).unwrap() == name {
+                let handle: IntBinding = self.int_handles.get((i + 1) as isize).unwrap()
+                session.patch_int(handle, value)
+                return
+            }
+            i = i + 1
+        }
+        std::types::panic("AsgardTuiFrame.patch_int: 当前运行帧未登记的绑定显示名")
+    }
 }
 
 # 登记帧栈：`AsgardTuiBindings` 只是访问通道，不是共享状态本身——
@@ -128,7 +161,7 @@ singleton AsgardTuiBindings {
         }
     }
 
-    # 以下四个入口全部委托栈顶帧；运行边界之外调用显式 panic。
+    # 以下六个入口全部委托栈顶帧；运行边界之外调用显式 panic。
     micro flag(mut self, session: mut TuiSession, name: utf8, initial: bool) -> FlagBinding {
         let top: isize = self.frames.length() as isize
         if top == 0 {
@@ -168,6 +201,27 @@ singleton AsgardTuiBindings {
         }
         let mut frame: AsgardTuiFrame = self.frames.get(top).unwrap()
         frame.patch_choice(session, name, selected)
+        self.frames.set(top, frame)
+    }
+
+    micro int(mut self, session: mut TuiSession, name: utf8, initial: i32) -> IntBinding {
+        let top: isize = self.frames.length() as isize
+        if top == 0 {
+            std::types::panic("AsgardTuiBindings.int: 运行边界之外没有活动登记帧")
+        }
+        let mut frame: AsgardTuiFrame = self.frames.get(top).unwrap()
+        let handle: IntBinding = frame.int(session, name, initial)
+        self.frames.set(top, frame)
+        return handle
+    }
+
+    micro patch_int(mut self, session: mut TuiSession, name: utf8, value: i32) -> unit {
+        let top: isize = self.frames.length() as isize
+        if top == 0 {
+            std::types::panic("AsgardTuiBindings.patch_int: 运行边界之外没有活动登记帧")
+        }
+        let mut frame: AsgardTuiFrame = self.frames.get(top).unwrap()
+        frame.patch_int(session, name, value)
         self.frames.set(top, frame)
     }
 }
@@ -240,4 +294,8 @@ micro asgard_terminal_patch_flag(session: mut TuiSession, name: utf8, on: bool) 
 
 micro asgard_terminal_patch_choice(session: mut TuiSession, name: utf8, selected: utf8) -> unit {
     AsgardTuiBindings.patch_choice(session, name, selected)
+}
+
+micro asgard_terminal_patch_int(session: mut TuiSession, name: utf8, value: i32) -> unit {
+    AsgardTuiBindings.patch_int(session, name, value)
 }
