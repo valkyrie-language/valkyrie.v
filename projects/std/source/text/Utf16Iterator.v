@@ -49,9 +49,8 @@ imply Utf16Iterator: std::iterator::Iterator {
     }
 
     private micro code_unit_at(self, offset: usize) -> u16 {
-        # 与 `Utf16Text` 的码元索引合同同源：`⁅ ⁆` 给出承载码元值的 `char`
-        # （u32 码位载体，码元值 ≤ 0xFFFF），转回 `u16` 无损。
-        return self._text⁅offset⁆ as u16
+        # 与 `Utf16Text` 的码元索引合同同源：`⁅ ⁆` 直接给出 `u16` 码元。
+        return self._text⁅offset⁆
     }
 
     private micro is_high_surrogate(self, value: u16) -> bool {

@@ -128,21 +128,25 @@ micro `test utf16 cardinal read and write`() {
         panic("utf16 length failed")
     }
 
-    if (text⁅0⁆) as u32 != 104 {
+    let first: u16 = text⁅0⁆
+    if first as u32 != 104 {
         panic("utf16 cardinal first failed")
     }
 
-    if (text⁅4⁆) as u32 != 111 {
+    let last: u16 = text⁅4⁆
+    if last as u32 != 111 {
         panic("utf16 cardinal last failed")
     }
 
-    text⁅4⁆ = char::from(33)
+    text⁅4⁆ = 33 as u16
 
-    if (text⁅4⁆) as u32 != 33 {
+    let written: u16 = text⁅4⁆
+    if written as u32 != 33 {
         panic("utf16 cardinal write readback failed")
     }
 
-    if text.get_cardinal(4) as u32 != 33 {
+    let named: u16 = text.get_cardinal(4)
+    if named as u32 != 33 {
         panic("utf16 get_cardinal readback failed")
     }
 

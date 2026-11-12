@@ -104,11 +104,12 @@ micro `test utf16 code unit index space`() {
         panic("utf16 code unit length failed")
     }
 
-    if (text⁅1⁆) as u32 != 101 {
+    let unit: u16 = text⁅1⁆
+    if unit as u32 != 101 {
         panic("utf16 cardinal read failed")
     }
 
-    let second: char = text[2]
+    let second: u16 = text[2]
     if second as u32 != 108 {
         panic("utf16 ordinal read failed")
     }
@@ -122,13 +123,14 @@ micro `test utf16 code unit index space`() {
 micro `test utf16 code unit write readback`() {
     let mut text: utf16 = "hey"
 
-    text[2] = char::from(105)
+    text[2] = 105 as u16
 
     if text.length() != 3 {
         panic("utf16 ordinal write count failed")
     }
 
-    if (text⁅1⁆) as u32 != 105 {
+    let unit: u16 = text⁅1⁆
+    if unit as u32 != 105 {
         panic("utf16 ordinal write readback failed")
     }
 }

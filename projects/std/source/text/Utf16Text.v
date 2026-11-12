@@ -88,6 +88,7 @@ imply Utf16Text {
     }
 }
 
+# 码位视图：`Utf16Iterator` 把代理对合成为完整 `char` 码位，与码元索引合同分离。
 imply Utf16Text: std::iterator::IntoIterator {
     type Item = char;
     type Iter = Utf16Iterator;
@@ -98,49 +99,45 @@ imply Utf16Text: std::iterator::IntoIterator {
 }
 
 # 0 基码元索引读写合同：`⁅ ⁆` / `⁅ ⁆=` 与同源的 `get_cardinal` / `set_cardinal`。
-# 索引空间选定为 UTF-16 码元（code unit，与 `length` 的计数单位一致）。`char` 是
-# u32 码位载体，不是码元类型：码元读取把码元值无损加宽为 `char`（代理半区呈现为
-# D800–DFFF 范围的码位值，非分配字符）；astral 码点占两个码元（代理对），装不进
-# 单格码元，码元写入只接受单码元可容纳的码位。与 `Utf8Text` 的 0 基码点合同同构——
-# 都按各自 repr 的字符单位计，只是单位不同（UTF-16 码元、UTF-8 码点）；字素口径
-# 未来以显式视图 API 单独开，不混入本合同。元素个数由 `length` 承担，与本合同无关。
+# 索引空间选定为 UTF-16 码元（code unit，与 `length` 的计数单位一致），元素即
+# `u16` 码元本体，不是 `char` 码位：索引、长度与越界错误位置统一按码元空间；
+# 码位语义只由 `Utf16Iterator` 的显式代理对合成视图提供，本合同不掺入码位解释，
+# 也不设第二套索引空间。与 `Utf8Text` 的 0 基码点合同同构——都按各自 repr 的字符
+# 单位计，只是单位不同（UTF-16 码元、UTF-8 码点）；字素口径未来以显式视图 API
+# 单独开，不混入本合同。元素个数由 `length` 承担，与本合同无关。
 imply Utf16Text: std::operator::Cardinal {
-    type Element = char;
+    type Element = u16;
     type Index = usize;
 
     # 0 基码元索引自动取值；越界结构化失败（合同语义见 `std::operator::Cardinal`）。
     # 读取只此一份：直接落在 `_repr` 的 0 基数组合同，与 `⁅ ⁆=` 的 `array::set` 对称。
-    # 码元值（≤ 0xFFFF）无损加宽为 u32 码位载体的 `char`。
-    suffix `⁅ ⁆`(self, offset: usize): char {
+    # 返回裸 `u16` 码元；代理半区以原值呈现，不在这里合成码位。
+    suffix `⁅ ⁆`(self, offset: usize): u16 {
         if offset >= self.length() {
             std::types::panic("Utf16Text ⁅ ⁆ 越界：offset 超出元素个数")
         }
 
-        return std::collection::array::get(self._repr, offset) as char
+        return std::collection::array::get(self._repr, offset)
     }
 
     # 0 基 code unit 索引写入，只改元素不改元素个数；越界结构化失败，不许静默丢弃写入。
-    # `char` 是 u32 码位：astral 码位超出单格码元值域，截断写入即静默错值，结构化失败；
-    # 完整 astral 码位经文本级 API 编码为代理对落盘，不走单格码元写。
-    suffix `⁅ ⁆=`(mut self, offset: usize, value: char): unit {
+    # 参数即 `u16` 码元，天然落在码元值域内，不设码位范围判定；完整 astral 码位的
+    # 写入属字符级 API（以 `char` 为参、内部做代理对拆分），不经单格码元写。
+    suffix `⁅ ⁆=`(mut self, offset: usize, value: u16): unit {
         if offset >= self.length() {
             std::types::panic("Utf16Text ⁅ ⁆= 越界：offset 超出元素个数")
         }
 
-        if (value as u32) > 0xFFFF {
-            std::types::panic("Utf16Text ⁅ ⁆= 码位超出码元：astral 码位须经文本级 API 编码为代理对")
-        }
-
-        std::collection::array::set(self._repr, offset, value as u16)
+        std::collection::array::set(self._repr, offset, value)
     }
 
     # 与 `⁅ ⁆` 同源：命名方法形态，互为委托，不维护第二套索引访问逻辑。
-    micro get_cardinal(self, offset: usize): char {
+    micro get_cardinal(self, offset: usize): u16 {
         return self⁅offset⁆
     }
 
     # 与 `⁅ ⁆=` 同源：命名方法形态，互为委托。
-    micro set_cardinal(mut self, offset: usize, value: char): unit {
+    micro set_cardinal(mut self, offset: usize, value: u16): unit {
         self⁅offset⁆ = value
     }
 }
@@ -150,10 +147,10 @@ imply Utf16Text: std::operator::Cardinal {
 # 的 0 基码元偏移，本 impl 不重复存储访问逻辑。
 imply Utf16Text: std::operator::Ordinal {
     type Index = isize;
-    type Element = char;
+    type Element = u16;
 
-    # 序数 1 基，裸 `char` 读取；越界结构化失败。
-    suffix `[ ]`(self, ordinal: isize): char {
+    # 序数 1 基，裸 `u16` 码元读取；越界结构化失败。
+    suffix `[ ]`(self, ordinal: isize): u16 {
         if ordinal < 1 || ordinal > self.length() as isize {
             std::types::panic("Ordinal [ ] 越界：序数超出 [1, 元素个数]")
         }
@@ -162,7 +159,7 @@ imply Utf16Text: std::operator::Ordinal {
     }
 
     # 越界写结构化失败，不许静默丢弃写入。
-    suffix `[ ]=`(mut self, ordinal: isize, value: char): unit {
+    suffix `[ ]=`(mut self, ordinal: isize, value: u16): unit {
         if ordinal < 1 || ordinal > self.length() as isize {
             std::types::panic("Ordinal [ ]= 越界：序数超出 [1, 元素个数]")
         }
@@ -171,7 +168,7 @@ imply Utf16Text: std::operator::Ordinal {
     }
 
     # 命名读路径：可恢复形态，越界返回 `None`。
-    micro get(self, ordinal: isize): Option<char> {
+    micro get(self, ordinal: isize): Option<u16> {
         if ordinal < 1 || ordinal > self.length() as isize {
             return None
         }
@@ -180,7 +177,7 @@ imply Utf16Text: std::operator::Ordinal {
     }
 
     # 与 `[ ]=` 同源：命名方法形态，互为委托。
-    micro set(mut self, ordinal: isize, value: char): unit {
+    micro set(mut self, ordinal: isize, value: u16): unit {
         self[ordinal] = value
     }
 }
