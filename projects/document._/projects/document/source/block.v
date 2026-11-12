@@ -51,7 +51,6 @@ unite BlockKind {
     QuoteBlock {
         content: [Block]
     }
-    [constructor]
     ThematicBreak
     [constructor]
     ImageBlock {

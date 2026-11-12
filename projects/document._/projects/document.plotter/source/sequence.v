@@ -37,7 +37,6 @@ unite PlotSeqEvent {
     SeqFrameElse {
         label: utf8
     }
-    [constructor]
     SeqFrameEnd
 }
 
