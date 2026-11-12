@@ -47,7 +47,7 @@ micro decode_wasm(data: [i32]) -> WasmBinaryResult<WasmBinaryModule> {
             let mut elements: [WasmBinaryElement] = []
             let mut codes: [WasmBinaryCode] = []
             let mut data_segments: [WasmBinaryData] = []
-            let mut custom_sections: [WasmBinaryCustomSection] = []
+            let mut custom_sections: ArrayList<WasmBinaryCustomSection> = ArrayList::new(0)
 
             while offset < data.length {
                 match wasm_read_u8(data, offset) {
@@ -63,7 +63,7 @@ micro decode_wasm(data: [i32]) -> WasmBinaryResult<WasmBinaryModule> {
                                 if section_id == 0 {
                                     match decode_wasm_custom_section(data, offset, section_size) {
                                         case Fine(cs_result):
-                                            push(custom_sections, cs_result.value)
+                                            custom_sections.push(cs_result.value)
                                             offset = offset + section_size
                                         case Fail(error):
                                             offset = offset + section_size
@@ -180,7 +180,7 @@ micro decode_wasm(data: [i32]) -> WasmBinaryResult<WasmBinaryModule> {
                 elements: elements,
                 codes: codes,
                 data_segments: data_segments,
-                custom_sections: custom_sections
+                custom_sections: custom_sections.to_array()
             })
         case Fail(error):
             return Fail(error)
@@ -224,19 +224,19 @@ micro decode_wasm_type_section(data: [i32], offset: usize) -> WasmBinaryResult<W
         case Fine(count_result):
             let count: u32 = count_result.value
             let mut pos: usize = offset + count_result.consumed
-            let mut types: [WasmBinaryFuncType] = []
+            let mut types: ArrayList<WasmBinaryFuncType> = ArrayList::new(count as usize)
             let mut i: u32 = 0
             while i < count {
                 match decode_wasm_func_type(data, pos) {
                     case Fine(ft_result):
-                        push(types, ft_result.value)
+                        types.push(ft_result.value)
                         pos = ft_result.next_offset
                     case Fail(error):
                         return Fail(error)
                 }
                 i = i + 1
             }
-            return Fine(wasm_decoded(types, pos))
+            return Fine(wasm_decoded(types.to_array(), pos))
         case Fail(error):
             return Fail(error)
     }
@@ -256,12 +256,12 @@ micro decode_wasm_func_type(data: [i32], offset: usize) -> WasmBinaryResult<Wasm
                 case Fine(param_count_result):
                     let param_count: u32 = param_count_result.value
                     pos = pos + param_count_result.consumed
-                    let mut parameters: [utf8] = []
+                    let mut parameters: ArrayList<utf8> = ArrayList::new(param_count as usize)
                     let mut pi: u32 = 0
                     while pi < param_count {
                         match decode_wasm_value_type(data, pos) {
                             case Fine(vt_result):
-                                push(parameters, vt_result.value)
+                                parameters.push(vt_result.value)
                                 pos = vt_result.next_offset
                             case Fail(error):
                                 return Fail(error)
@@ -273,12 +273,12 @@ micro decode_wasm_func_type(data: [i32], offset: usize) -> WasmBinaryResult<Wasm
                         case Fine(result_count_result):
                             let result_count: u32 = result_count_result.value
                             pos = pos + result_count_result.consumed
-                            let mut results: [utf8] = []
+                            let mut results: ArrayList<utf8> = ArrayList::new(result_count as usize)
                             let mut ri: u32 = 0
                             while ri < result_count {
                                 match decode_wasm_value_type(data, pos) {
                                     case Fine(vt_result):
-                                        push(results, vt_result.value)
+                                        results.push(vt_result.value)
                                         pos = vt_result.next_offset
                                     case Fail(error):
                                         return Fail(error)
@@ -287,8 +287,8 @@ micro decode_wasm_func_type(data: [i32], offset: usize) -> WasmBinaryResult<Wasm
                             }
 
                             return Fine(wasm_decoded(WasmBinaryFuncType {
-                                parameters: parameters,
-                                results: results
+                                parameters: parameters.to_array(),
+                                results: results.to_array()
                             }, pos))
                         case Fail(error):
                             return Fail(error)
@@ -352,19 +352,19 @@ micro decode_wasm_import_section(data: [i32], offset: usize) -> WasmBinaryResult
         case Fine(count_result):
             let count: u32 = count_result.value
             let mut pos: usize = offset + count_result.consumed
-            let mut imports: [WasmBinaryImport] = []
+            let mut imports: ArrayList<WasmBinaryImport> = ArrayList::new(count as usize)
             let mut i: u32 = 0
             while i < count {
                 match decode_wasm_import(data, pos) {
                     case Fine(imp_result):
-                        push(imports, imp_result.value)
+                        imports.push(imp_result.value)
                         pos = imp_result.next_offset
                     case Fail(error):
                         return Fail(error)
                 }
                 i = i + 1
             }
-            return Fine(wasm_decoded(imports, pos))
+            return Fine(wasm_decoded(imports.to_array(), pos))
         case Fail(error):
             return Fail(error)
     }
@@ -453,19 +453,19 @@ micro decode_wasm_function_section(data: [i32], offset: usize) -> WasmBinaryResu
         case Fine(count_result):
             let count: u32 = count_result.value
             let mut pos: usize = offset + count_result.consumed
-            let mut indices: [u32] = []
+            let mut indices: ArrayList<u32> = ArrayList::new(count as usize)
             let mut i: u32 = 0
             while i < count {
                 match leb128_decode_u32(data, pos) {
                     case Fine(idx_result):
-                        push(indices, idx_result.value)
+                        indices.push(idx_result.value)
                         pos = pos + idx_result.consumed
                     case Fail(error):
                         return Fail(error)
                 }
                 i = i + 1
             }
-            return Fine(wasm_decoded(indices, pos))
+            return Fine(wasm_decoded(indices.to_array(), pos))
         case Fail(error):
             return Fail(error)
     }
@@ -476,19 +476,19 @@ micro decode_wasm_table_section(data: [i32], offset: usize) -> WasmBinaryResult<
         case Fine(count_result):
             let count: u32 = count_result.value
             let mut pos: usize = offset + count_result.consumed
-            let mut tables: [WasmBinaryTable] = []
+            let mut tables: ArrayList<WasmBinaryTable> = ArrayList::new(count as usize)
             let mut i: u32 = 0
             while i < count {
                 match decode_wasm_table_type(data, pos) {
                     case Fine(tt_result):
-                        push(tables, WasmBinaryTable { table_type: tt_result.value })
+                        tables.push(WasmBinaryTable { table_type: tt_result.value })
                         pos = tt_result.next_offset
                     case Fail(error):
                         return Fail(error)
                 }
                 i = i + 1
             }
-            return Fine(wasm_decoded(tables, pos))
+            return Fine(wasm_decoded(tables.to_array(), pos))
         case Fail(error):
             return Fail(error)
     }
@@ -518,19 +518,19 @@ micro decode_wasm_memory_section(data: [i32], offset: usize) -> WasmBinaryResult
         case Fine(count_result):
             let count: u32 = count_result.value
             let mut pos: usize = offset + count_result.consumed
-            let mut memories: [WasmBinaryMemory] = []
+            let mut memories: ArrayList<WasmBinaryMemory> = ArrayList::new(count as usize)
             let mut i: u32 = 0
             while i < count {
                 match decode_wasm_limits(data, pos) {
                     case Fine(lim_result):
-                        push(memories, WasmBinaryMemory { limits: lim_result.value })
+                        memories.push(WasmBinaryMemory { limits: lim_result.value })
                         pos = lim_result.next_offset
                     case Fail(error):
                         return Fail(error)
                 }
                 i = i + 1
             }
-            return Fine(wasm_decoded(memories, pos))
+            return Fine(wasm_decoded(memories.to_array(), pos))
         case Fail(error):
             return Fail(error)
     }
@@ -541,7 +541,7 @@ micro decode_wasm_global_section(data: [i32], offset: usize) -> WasmBinaryResult
         case Fine(count_result):
             let count: u32 = count_result.value
             let mut pos: usize = offset + count_result.consumed
-            let mut globals: [WasmBinaryGlobal] = []
+            let mut globals: ArrayList<WasmBinaryGlobal> = ArrayList::new(count as usize)
             let mut i: u32 = 0
             while i < count {
                 match decode_wasm_global_type(data, pos) {
@@ -550,7 +550,7 @@ micro decode_wasm_global_section(data: [i32], offset: usize) -> WasmBinaryResult
                         pos = gt_result.next_offset
                         match decode_wasm_init_expr(data, pos) {
                             case Fine(expr_result):
-                                push(globals, WasmBinaryGlobal {
+                                globals.push(WasmBinaryGlobal {
                                     global_type: global_type,
                                     init_bytes: expr_result.value
                                 })
@@ -563,7 +563,7 @@ micro decode_wasm_global_section(data: [i32], offset: usize) -> WasmBinaryResult
                 }
                 i = i + 1
             }
-            return Fine(wasm_decoded(globals, pos))
+            return Fine(wasm_decoded(globals.to_array(), pos))
         case Fail(error):
             return Fail(error)
     }
@@ -590,18 +590,18 @@ micro decode_wasm_global_type(data: [i32], offset: usize) -> WasmBinaryResult<Wa
 }
 
 micro decode_wasm_init_expr(data: [i32], offset: usize) -> WasmBinaryResult<WasmDecoded<[i32]>> {
-    let mut result: [i32] = []
+    let mut result: ArrayList<i32> = ArrayList::new(0)
     let mut pos: usize = offset
 
     while pos < data.length {
         match wasm_read_u8(data, pos) {
             case Fine(opcode_result):
                 let opcode: i32 = opcode_result.value
-                push(result, opcode)
+                result.push(opcode)
                 pos = pos + 1
 
                 if opcode == 11 {
-                    return Fine(wasm_decoded(result, pos))
+                    return Fine(wasm_decoded(result.to_array(), pos))
                 }
 
                 if opcode == 65 {
@@ -643,7 +643,7 @@ micro decode_wasm_export_section(data: [i32], offset: usize) -> WasmBinaryResult
         case Fine(count_result):
             let count: u32 = count_result.value
             let mut pos: usize = offset + count_result.consumed
-            let mut exports: [WasmBinaryExport] = []
+            let mut exports: ArrayList<WasmBinaryExport> = ArrayList::new(count as usize)
             let mut i: u32 = 0
             while i < count {
                 match wasm_read_name(data, pos) {
@@ -661,7 +661,7 @@ micro decode_wasm_export_section(data: [i32], offset: usize) -> WasmBinaryResult
                                         let index: u32 = idx_result.value
                                         pos = pos + idx_result.consumed
 
-                                        push(exports, WasmBinaryExport {
+                                        exports.push(WasmBinaryExport {
                                             name: name,
                                             kind: kind,
                                             index: index
@@ -677,7 +677,7 @@ micro decode_wasm_export_section(data: [i32], offset: usize) -> WasmBinaryResult
                 }
                 i = i + 1
             }
-            return Fine(wasm_decoded(exports, pos))
+            return Fine(wasm_decoded(exports.to_array(), pos))
         case Fail(error):
             return Fail(error)
     }
@@ -688,7 +688,7 @@ micro decode_wasm_element_section(data: [i32], offset: usize) -> WasmBinaryResul
         case Fine(count_result):
             let count: u32 = count_result.value
             let mut pos: usize = offset + count_result.consumed
-            let mut elements: [WasmBinaryElement] = []
+            let mut elements: ArrayList<WasmBinaryElement> = ArrayList::new(count as usize)
             let mut i: u32 = 0
             while i < count {
                 match leb128_decode_u32(data, pos) {
@@ -728,12 +728,12 @@ micro decode_wasm_element_section(data: [i32], offset: usize) -> WasmBinaryResul
                             case Fine(val_count_result):
                                 let val_count: u32 = val_count_result.value
                                 pos = pos + val_count_result.consumed
-                                let mut init_values: [u32] = []
+                                let mut init_values: ArrayList<u32> = ArrayList::new(val_count as usize)
                                 let mut vi: u32 = 0
                                 while vi < val_count {
                                     match leb128_decode_u32(data, pos) {
                                         case Fine(val_result):
-                                            push(init_values, val_result.value)
+                                            init_values.push(val_result.value)
                                             pos = pos + val_result.consumed
                                         case Fail(error):
                                             return Fail(error)
@@ -741,10 +741,10 @@ micro decode_wasm_element_section(data: [i32], offset: usize) -> WasmBinaryResul
                                     vi = vi + 1
                                 }
 
-                                push(elements, WasmBinaryElement {
+                                elements.push(WasmBinaryElement {
                                     table_index: table_index,
                                     offset_bytes: offset_bytes,
-                                    init_values: init_values
+                                    init_values: init_values.to_array()
                                 })
                             case Fail(error):
                                 return Fail(error)
@@ -754,7 +754,7 @@ micro decode_wasm_element_section(data: [i32], offset: usize) -> WasmBinaryResul
                 }
                 i = i + 1
             }
-            return Fine(wasm_decoded(elements, pos))
+            return Fine(wasm_decoded(elements.to_array(), pos))
         case Fail(error):
             return Fail(error)
     }
@@ -765,19 +765,19 @@ micro decode_wasm_code_section(data: [i32], offset: usize) -> WasmBinaryResult<W
         case Fine(count_result):
             let count: u32 = count_result.value
             let mut pos: usize = offset + count_result.consumed
-            let mut codes: [WasmBinaryCode] = []
+            let mut codes: ArrayList<WasmBinaryCode> = ArrayList::new(count as usize)
             let mut i: u32 = 0
             while i < count {
                 match decode_wasm_code(data, pos) {
                     case Fine(code_result):
-                        push(codes, code_result.value)
+                        codes.push(code_result.value)
                         pos = code_result.next_offset
                     case Fail(error):
                         return Fail(error)
                 }
                 i = i + 1
             }
-            return Fine(wasm_decoded(codes, pos))
+            return Fine(wasm_decoded(codes.to_array(), pos))
         case Fail(error):
             return Fail(error)
     }
@@ -794,7 +794,7 @@ micro decode_wasm_code(data: [i32], offset: usize) -> WasmBinaryResult<WasmDecod
                 case Fine(local_count_result):
                     let local_count: u32 = local_count_result.value
                     pos = pos + local_count_result.consumed
-                    let mut locals: [WasmBinaryLocal] = []
+                    let mut locals: ArrayList<WasmBinaryLocal> = ArrayList::new(local_count as usize)
                     let mut li: u32 = 0
                     while li < local_count {
                         match leb128_decode_u32(data, pos) {
@@ -803,7 +803,7 @@ micro decode_wasm_code(data: [i32], offset: usize) -> WasmBinaryResult<WasmDecod
                                 pos = pos + n_result.consumed
                                 match decode_wasm_value_type(data, pos) {
                                     case Fine(vt_result):
-                                        push(locals, WasmBinaryLocal {
+                                        locals.push(WasmBinaryLocal {
                                             count: n,
                                             value_type: vt_result.value
                                         })
@@ -822,7 +822,7 @@ micro decode_wasm_code(data: [i32], offset: usize) -> WasmBinaryResult<WasmDecod
                         case Fine(body_result):
                             return Fine(wasm_decoded(WasmBinaryCode {
                                 body_size: body_size,
-                                locals: locals,
+                                locals: locals.to_array(),
                                 body: body_result.value
                             }, pos + remaining))
                         case Fail(error):
@@ -841,7 +841,7 @@ micro decode_wasm_data_section(data: [i32], offset: usize) -> WasmBinaryResult<W
         case Fine(count_result):
             let count: u32 = count_result.value
             let mut pos: usize = offset + count_result.consumed
-            let mut data_segments: [WasmBinaryData] = []
+            let mut data_segments: ArrayList<WasmBinaryData> = ArrayList::new(count as usize)
             let mut i: u32 = 0
             while i < count {
                 match leb128_decode_u32(data, pos) {
@@ -884,7 +884,7 @@ micro decode_wasm_data_section(data: [i32], offset: usize) -> WasmBinaryResult<W
 
                                 match wasm_read_bytes(data, pos, data_size as usize) {
                                     case Fine(bytes_result):
-                                        push(data_segments, WasmBinaryData {
+                                        data_segments.push(WasmBinaryData {
                                             memory_index: memory_index,
                                             offset_bytes: offset_bytes,
                                             initializer: bytes_result.value
@@ -901,7 +901,7 @@ micro decode_wasm_data_section(data: [i32], offset: usize) -> WasmBinaryResult<W
                 }
                 i = i + 1
             }
-            return Fine(wasm_decoded(data_segments, pos))
+            return Fine(wasm_decoded(data_segments.to_array(), pos))
         case Fail(error):
             return Fail(error)
     }

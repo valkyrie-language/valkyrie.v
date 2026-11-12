@@ -147,14 +147,14 @@ micro wasm_read_bytes(data: [i32], offset: usize, count: usize) -> WasmBinaryRes
     if offset + count > data.length {
         return Fail(wasm_binary_diagnostic("读取字节数组时数据不足", offset))
     }
-    let mut result: [i32] = []
+    let mut result: ArrayList<i32> = ArrayList::new(count)
     let mut i: usize = 0
     while i < count {
-        push(result, data[offset + i])
+        result.push(data[offset + i])
         i = i + 1
     }
     return Fine(Leb128Decoded {
-        value: result,
+        value: result.to_array(),
         consumed: count
     })
 }

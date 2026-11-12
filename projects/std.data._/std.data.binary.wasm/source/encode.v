@@ -5,8 +5,11 @@ namespace std.data.binary.wasm;
 # Bytes are i32 0..255 (same convention as ClassFile encode).
 # Opcode / section / valtype bytes: `opcode.v` + `opcodes.v`. Emitters call typed micros only.
 
+# 缓冲区追加一律走正式合同：`Array<T>` 的 `++`（返回新数组，两端不改写）
+# 承载函数式拼接，`ArrayList::push` 承载局部可变累积；不存在无声明的
+# 自由 `push` 调用。
+
 micro wasm_push_u8(buf: [i32], value: i32) -> [i32] {
-    let mut out: [i32] = buf
     let mut v: i32 = value
     if v < 0 {
         v = 0
@@ -14,18 +17,11 @@ micro wasm_push_u8(buf: [i32], value: i32) -> [i32] {
     if v > 255 {
         v = v % 256
     }
-    out = push(out, v)
-    return out
+    return buf ++ [v]
 }
 
 micro wasm_push_bytes(buf: [i32], bytes: [i32]) -> [i32] {
-    let mut out: [i32] = buf
-    let mut i: usize = 0
-    while i < bytes.length() {
-        out = push(out, bytes⁅i⁆)
-        i = i + 1
-    }
-    return out
+    return buf ++ bytes
 }
 
 # Floor-div by 128 (arithmetic toward −∞) for SLEB128.
@@ -52,25 +48,25 @@ micro wasm_low7_i32(value: i32) -> i32 {
 }
 
 micro wasm_encode_uleb128(value: u32) -> [i32] {
-    let mut out: [i32] = []
+    let mut out: ArrayList<i32> = ArrayList::new(5)
     let mut v: u32 = value
     let mut more: bool = true
     while more {
         let low: u32 = v % 128
         v = v / 128
         if v == 0 {
-            out = push(out, low as i32)
+            out.push(low as i32)
             more = false
         }
         else {
-            out = push(out, (low + 128) as i32)
+            out.push((low + 128) as i32)
         }
     }
-    return out
+    return out.to_array()
 }
 
 micro wasm_encode_sleb128_i32(value: i32) -> [i32] {
-    let mut out: [i32] = []
+    let mut out: ArrayList<i32> = ArrayList::new(5)
     let mut v: i32 = value
     let mut more: bool = true
     while more {
@@ -78,14 +74,14 @@ micro wasm_encode_sleb128_i32(value: i32) -> [i32] {
         v = wasm_ashr7_i32(v)
         let sign_set: bool = byte >= 64
         if (v == 0 && !sign_set) || (v == -1 && sign_set) {
-            out = push(out, byte)
+            out.push(byte)
             more = false
         }
         else {
-            out = push(out, byte + 128)
+            out.push(byte + 128)
         }
     }
-    return out
+    return out.to_array()
 }
 
 # 名字区 = u32 字节长度 + UTF-8 字节序列（export / import names）。
@@ -95,13 +91,13 @@ micro wasm_encode_sleb128_i32(value: i32) -> [i32] {
 # 不存在静默损坏路径。
 micro wasm_utf8_name_bytes(text: utf8) -> [i32] {
     let repr: [u8] = text.bytes()
-    let mut out: [i32] = []
+    let mut out: ArrayList<i32> = ArrayList::new(repr.length())
     let mut index: usize = 0
     while index < repr.length() {
-        out = push(out, repr⁅index⁆ as i32)
+        out.push(repr⁅index⁆ as i32)
         index = index + 1
     }
-    return out
+    return out.to_array()
 }
 
 micro wasm_encode_name(text: utf8) -> [i32] {
