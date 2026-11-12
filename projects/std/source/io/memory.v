@@ -38,7 +38,7 @@ micro bytes_writer() -> BytesWriter {
 }
 
 imply BytesWriter: Writer {
-    micro write(mut self, bytes: ArrayView<u8>) -> Result<usize, IoError> {
+    micro write(mut self, bytes: ArrayView<u8>) -> Result<usize, WriteFailure> {
         let total: usize = bytes.length
         let mut index: usize = 0
         while index < total {

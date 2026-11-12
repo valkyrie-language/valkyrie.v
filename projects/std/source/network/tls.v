@@ -2,7 +2,7 @@
 
 namespace std.network.tls;
 
-using std.io::{Reader, Writer, IoError, io_closed};
+using std.io::{Reader, Writer, IoError, WriteFailure, io_closed};
 using std.network::{NetHandle, TcpStream};
 using std.types::{Result, Option, Some, None, Fine, Fail};
 
@@ -150,11 +150,19 @@ imply TlsStream: Reader {
 }
 
 imply TlsStream: Writer {
-    micro write(mut self, bytes: ArrayView<u8>) -> Result<usize, IoError> {
+    micro write(mut self, bytes: ArrayView<u8>) -> Result<usize, WriteFailure> {
         if !self._open {
-            return Fail { error: io_closed() }
+            return Fail { error: WriteFailure { absorbed: 0, error: io_closed() } }
         }
-        return tls_write(self._session, bytes)
+        let step: Result<usize, IoError> = tls_write(self._session, bytes)
+        match step {
+            case Fine(n):
+                return Fine { value: n }
+            case Fail(error):
+                # 记录层失败不报告部分吸收：吸收量按保守 0 归属，
+                # 恢复点由 `write_all` 统一给出。
+                return Fail { error: WriteFailure { absorbed: 0, error: error } }
+        }
     }
 
     # 本层无 std 侧缓冲：写出即交记录层，`flush` 恒为成功；

@@ -19,12 +19,13 @@ trait Reader {
 
 # 恰好读满 `count` 字节；流提前结束（短读）时以 `EndOfStream` 失败，
 # 已读到的前缀随失败丢弃（调用方需要部分前缀时应自行循环 `read`）。
-micro read_exact<R>(reader: R, count: usize) -> Result<[u8], IoError> {
-    let mut cursor: R = reader
+# 读端以 `mut` 借用进入：游标推进直接落在调用方持有的实例上，
+# 不按值复制泛型读端（与 `write_all` 同一状态归属口径）。
+micro read_exact<R>(mut reader: R, count: usize) -> Result<[u8], IoError> {
     let mut collected: ArrayList<u8> = ArrayList::new(count)
     while collected.length < count {
         let remaining: usize = count - collected.length
-        let chunk_result: Result<[u8], IoError> = cursor.read(remaining)
+        let chunk_result: Result<[u8], IoError> = reader.read(remaining)
         match chunk_result {
             case Fine(chunk): {
                 if chunk.length == 0 {
@@ -43,15 +44,15 @@ micro read_exact<R>(reader: R, count: usize) -> Result<[u8], IoError> {
     return Fine { value: collected.to_array() }
 }
 
-# 读到流尽为止，返回全部字节。
-micro read_to_end<R>(reader: R) -> Result<[u8], IoError> {
-    let mut cursor: R = reader
+# 读到流尽为止，返回全部字节。读端同样以 `mut` 借用进入，
+# 耗尽状态留在调用方实例上。
+micro read_to_end<R>(mut reader: R) -> Result<[u8], IoError> {
     let mut collected: ArrayList<u8> = ArrayList::new(0)
     # 固定读取块大小：组合子层的默认调度粒度，与具体源无关。
     let chunk_size: usize = 4096
     let mut reading: bool = true
     while reading {
-        let chunk_result: Result<[u8], IoError> = cursor.read(chunk_size)
+        let chunk_result: Result<[u8], IoError> = reader.read(chunk_size)
         match chunk_result {
             case Fine(chunk): {
                 if chunk.length == 0 {
@@ -75,7 +76,7 @@ micro read_to_end<R>(reader: R) -> Result<[u8], IoError> {
 # 读到流尽并按 UTF-8 桥接为文本（`std.text` 的 `Utf8Text::from_bytes`）。
 # 桥接是字节到文本的显式入口，构造即严格验证：输入不是合法 UTF-8 时
 # 解码诊断口径归 `std.text`，本层把它收敛为 `InvalidEncoding` 结构化失败。
-micro read_to_text<R>(reader: R) -> Result<utf8, IoError> {
+micro read_to_text<R>(mut reader: R) -> Result<utf8, IoError> {
     let bytes_result: Result<[u8], IoError> = read_to_end(reader)
     match bytes_result {
         case Fine(bytes):

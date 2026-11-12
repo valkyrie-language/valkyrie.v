@@ -91,11 +91,19 @@ imply File: Reader {
 }
 
 imply File: Writer {
-    micro write(mut self, bytes: ArrayView<u8>) -> Result<usize, IoError> {
+    micro write(mut self, bytes: ArrayView<u8>) -> Result<usize, WriteFailure> {
         if !self._open {
-            return Fail { error: io_closed() }
+            return Fail { error: WriteFailure { absorbed: 0, error: io_closed() } }
         }
-        return fs_write(self._handle, bytes)
+        let step: Result<usize, IoError> = fs_write(self._handle, bytes)
+        match step {
+            case Fine(n):
+                return Fine { value: n }
+            case Fail(error):
+                # 宿主写失败不报告部分吸收：吸收量按保守 0 归属，
+                # 恢复点由 `write_all` 统一给出。
+                return Fail { error: WriteFailure { absorbed: 0, error: error } }
+        }
     }
 
     micro flush(mut self) -> Option<IoError> {

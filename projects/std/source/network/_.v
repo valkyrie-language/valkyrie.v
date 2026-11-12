@@ -2,7 +2,7 @@
 
 namespace std.network;
 
-using std.io::{Reader, Writer, IoError, io_closed};
+using std.io::{Reader, Writer, IoError, WriteFailure, io_closed};
 using std.types::{Result, Option, Some, None, Fine, Fail};
 
 # 分层合同：
@@ -133,11 +133,19 @@ imply TcpStream: Reader {
 }
 
 imply TcpStream: Writer {
-    micro write(mut self, bytes: ArrayView<u8>) -> Result<usize, IoError> {
+    micro write(mut self, bytes: ArrayView<u8>) -> Result<usize, WriteFailure> {
         if !self._open {
-            return Fail { error: io_closed() }
+            return Fail { error: WriteFailure { absorbed: 0, error: io_closed() } }
         }
-        return net_write(self._handle, bytes)
+        let step: Result<usize, IoError> = net_write(self._handle, bytes)
+        match step {
+            case Fine(n):
+                return Fine { value: n }
+            case Fail(error):
+                # 传输层失败不报告部分吸收：吸收量按保守 0 归属，
+                # 恢复点由 `write_all` 统一给出。
+                return Fail { error: WriteFailure { absorbed: 0, error: error } }
+        }
     }
 
     # 本层无内部缓冲：写出即交底层，`flush` 恒为成功；
