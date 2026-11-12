@@ -13,19 +13,21 @@ namespace std.terminal;
 ⍝ 不参与身份判定，不存在"字符串真值"这类语义。
 
 # 布尔状态槽句柄：身份由会话分配（`declare_flag`），值语义固定为 bool。
-# `owner` 是分配会话的身份记号：句柄只在同一 `owner` 的会话内可读写，
-# 跨会话误用（A 会话的槽 0 递给 B 会话）在访问处被拒绝，不静默命中
-# 同名槽位。句柄只由 `declare_flag` / `declare_choice` 产出，作者面
-# 不手工构造。
+# `owner` 是分配会话的槽存储对象引用（`SessionSlots`，引用类型）：每次
+# `TuiSession::new` 分配独立存储，活跃作用域内确定唯一——同一 tick 创建
+# 的两个会话也持有不同对象，句柄只在同一 `owner` 的会话内可读写，跨会话
+# 误用（A 会话的槽 0 递给 B 会话）在访问处按引用同一性拒绝，不静默命中
+# 同名槽位。身份不取自熵、时钟或顶级可变变量（02 §4.3）。句柄只由
+# `declare_flag` / `declare_choice` / `declare_int` 产出，作者面不手工构造。
 structure FlagBinding {
-    owner: u64
+    owner: SessionSlots
     slot: usize
 }
 
 # 选项状态槽句柄：身份由会话分配（`declare_choice`），值语义固定为当前选中项。
 # `owner` 语义同 `FlagBinding`。
 structure ChoiceBinding {
-    owner: u64
+    owner: SessionSlots
     slot: usize
 }
 
@@ -35,7 +37,7 @@ structure ChoiceBinding {
 # 载体冒充可负语义，也不借 `i64` 宽载体折叠类型化设计。
 # `owner` 语义同 `FlagBinding`。
 structure IntBinding {
-    owner: u64
+    owner: SessionSlots
     slot: usize
 }
 

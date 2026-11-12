@@ -1,15 +1,24 @@
 namespace std.terminal;
 
-using std.random::{entropy};
 using std.types::{Option, Some, None};
 
 # ────────── 终端会话 ──────────
+# 状态槽存储：引用类型，每次 `TuiSession::new` 分配独立对象。
+# 它同时是会话的身份载体——句柄 `owner` 持有的就是这一对象引用，
+# owner 校验即引用同一性判定：活跃作用域内确定唯一（不同会话必是
+# 不同分配），不依赖熵、时钟或顶级可变变量（02 §4.3）。
+class SessionSlots {
+    flags: ArrayList<bool>
+    choices: ArrayList<utf8>
+    ints: ArrayList<i32>
+}
+
 ⍝ 会话生命周期合同（本模块的语义事实，不是实现细节）：
 ⍝ - 创建：`TuiSession::new()` 产出空会话，不触碰终端。状态槽由
 ⍝   `declare_flag` / `declare_choice` / `declare_int` 分配，句柄身份是
-⍝   「会话记号 + 槽位序号」：记号在构造时取自宿主熵源
-⍝   （`std::random::entropy`），每个会话唯一；句柄只在分配它的会话内
-⍝   有效，跨会话误用在读写处一律拒绝。
+⍝   「槽存储对象引用 + 槽位序号」：存储对象在构造时随会话分配，
+⍝   每个会话唯一；句柄只在分配它的会话内有效，跨会话误用在读写处
+⍝   按引用同一性一律拒绝。
 ⍝ - 挂载：`mount` 把控件树渲染为帧并重建焦点表，可反复调用（重挂载）；
 ⍝   挂载本身不进入终端特殊状态。
 ⍝ - 运行：`run` 进入备用屏、渲染首帧、启动事件循环。运行期间重入 `run`
@@ -21,19 +30,16 @@ using std.types::{Option, Some, None};
 ⍝   不提供替换或读取"全局运行时"的通道；共享可变状态只能经会话的
 ⍝   类型化状态槽表达。
 
-# 会话状态：控件树 + 类型化状态槽 + 渲染期焦点表 + 终端尺寸。
+# 会话状态：控件树 + 类型化状态槽存储 + 渲染期焦点表 + 终端尺寸。
 structure TuiSession {
     roots: ArrayList<Widget>
-    flag_slots: ArrayList<bool>
-    choice_slots: ArrayList<utf8>
-    int_slots: ArrayList<i32>
+    slots: SessionSlots
     focusables: ArrayList<Focusable>
     focus_index: usize
     term_rows: i32
     term_cols: i32
     help_text: utf8
     running: bool
-    identity: u64
     failure_reason: Option<utf8>
 }
 
@@ -41,89 +47,91 @@ imply TuiSession {
     micro new() -> Self {
         return TuiSession {
             roots: ArrayList::new(16),
-            flag_slots: ArrayList::new(16),
-            choice_slots: ArrayList::new(16),
-            int_slots: ArrayList::new(16),
+            slots: SessionSlots {
+                flags: ArrayList::new(16),
+                choices: ArrayList::new(16),
+                ints: ArrayList::new(16)
+            },
             focusables: ArrayList::new(64),
             focus_index: 0,
             term_rows: 24,
             term_cols: 80,
             help_text: "Arrows/hjkl: navigate | Enter/Space: activate | Tab: next | Esc: quit",
             running: false,
-            identity: entropy(),
             failure_reason: None
         }
     }
 
     # 分配布尔状态槽，返回类型化句柄；槽位初值由调用方给出。
     micro declare_flag(mut self, initial: bool) -> FlagBinding {
-        let slot: usize = self.flag_slots.length()
-        self.flag_slots.push(initial)
-        return FlagBinding { owner: self.identity, slot: slot }
+        let slot: usize = self.slots.flags.length()
+        self.slots.flags.push(initial)
+        return FlagBinding { owner: self.slots, slot: slot }
     }
 
     # 分配选项状态槽，返回类型化句柄；槽位初值为当前选中项显示值。
     micro declare_choice(mut self, initial: utf8) -> ChoiceBinding {
-        let slot: usize = self.choice_slots.length()
-        self.choice_slots.push(initial)
-        return ChoiceBinding { owner: self.identity, slot: slot }
+        let slot: usize = self.slots.choices.length()
+        self.slots.choices.push(initial)
+        return ChoiceBinding { owner: self.slots, slot: slot }
     }
 
     # 分配整数状态槽，返回类型化句柄；槽位初值为带符号显示值（可为负）。
     micro declare_int(mut self, initial: i32) -> IntBinding {
-        let slot: usize = self.int_slots.length()
-        self.int_slots.push(initial)
-        return IntBinding { owner: self.identity, slot: slot }
+        let slot: usize = self.slots.ints.length()
+        self.slots.ints.push(initial)
+        return IntBinding { owner: self.slots, slot: slot }
     }
 
-    # 句柄归属校验：`owner` 与本会话记号不符即契约违反——A 会话的
-    # 槽位号在 B 会话里可能指向另一格，静默命中就是把误用伪装成成功。
+    # 句柄归属校验：`owner` 引用与本会话槽存储不是同一对象即契约违反——
+    # A 会话的槽位号在 B 会话里可能指向另一格，静默命中就是把误用伪装成
+    # 成功。判定依据是引用同一性，不是任何整数值相等（02 §4.3）。
     private micro check_flag_owner(self, binding: FlagBinding) -> unit {
-        if binding.owner != self.identity {
+        if binding.owner != self.slots {
             std::types::panic("TuiSession: FlagBinding 不属于本会话，拒绝跨会话读写")
         }
     }
 
     private micro check_choice_owner(self, binding: ChoiceBinding) -> unit {
-        if binding.owner != self.identity {
+        if binding.owner != self.slots {
             std::types::panic("TuiSession: ChoiceBinding 不属于本会话，拒绝跨会话读写")
         }
     }
 
     private micro check_int_owner(self, binding: IntBinding) -> unit {
-        if binding.owner != self.identity {
+        if binding.owner != self.slots {
             std::types::panic("TuiSession: IntBinding 不属于本会话，拒绝跨会话读写")
         }
     }
 
     micro flag(self, binding: FlagBinding) -> bool {
         self.check_flag_owner(binding)
-        return self.flag_slots.get((binding.slot + 1) as isize).unwrap()
+        return self.slots.flags.get((binding.slot + 1) as isize).unwrap()
     }
 
     micro choice(self, binding: ChoiceBinding) -> utf8 {
         self.check_choice_owner(binding)
-        return self.choice_slots.get((binding.slot + 1) as isize).unwrap()
+        return self.slots.choices.get((binding.slot + 1) as isize).unwrap()
     }
 
     micro int(self, binding: IntBinding) -> i32 {
         self.check_int_owner(binding)
-        return self.int_slots⁅binding.slot⁆
+        return self.slots.ints⁅binding.slot⁆
     }
 
     micro set_flag(mut self, binding: FlagBinding, on: bool) -> unit {
         self.check_flag_owner(binding)
-        self.flag_slots.set((binding.slot + 1) as isize, on)
+        self.slots.flags.set((binding.slot + 1) as isize, on)
     }
 
     micro set_choice(mut self, binding: ChoiceBinding, selected: utf8) -> unit {
         self.check_choice_owner(binding)
-        self.choice_slots.set((binding.slot + 1) as isize, selected)
+        self.slots.choices.set((binding.slot + 1) as isize, selected)
     }
 
     micro set_int(mut self, binding: IntBinding, value: i32) -> unit {
         self.check_int_owner(binding)
-        self.int_slots⁅binding.slot⁆ = value
+        self.slots.ints⁅binding.slot⁆ = value
     }
 
     micro toggle_flag(mut self, binding: FlagBinding) -> unit {
