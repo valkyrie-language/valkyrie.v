@@ -27,11 +27,13 @@ imply Stack<T> {
     micro clear(mut self): unit {
         self.data.clear()
     }
+    # 自顶向下遍历：索引取 `usize` 且只在本文件内递减，越界不可能发生；
+    # 元素经 0 基 `⁅ ⁆` 合同直接读取（不是 1 基序数 `get`）。
     micro iter(self, f: micro(T) -> unit): unit {
-        let mut i: i32 = self.data.length() as i32 - 1
-        while i >= 0 {
-            f(self.data.get(i as isize))
-            i = i - 1
+        let mut index: usize = self.length()
+        while index > 0 {
+            index = index - 1
+            f(self.data⁅index⁆)
         }
     }
 }
