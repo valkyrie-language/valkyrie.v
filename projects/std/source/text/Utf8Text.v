@@ -1,7 +1,8 @@
 namespace std.text;
 
-# Portable Utf8Text: [host_contract] surfaces bind to std.adaptor.* via Legion resolver.
-# Target-specific glue (wasm env, CLR, …) lives only in adaptor packages — no arch metaprogramming here.
+# Utf8Text 的可移植语义合同：[host_contract] 面在 std 声明签名与口径，
+# 实现体由各 target 的 adaptor provider 绑定；未绑定 provider 的 target
+# 在 provider 选择门禁处结构化失败，std 侧不以近似实现冒充。
 
 [primitive("std::text::utf8")]
 class Utf8Text {
@@ -19,10 +20,23 @@ imply Utf8Text {
         return Self { _repr: [] }
     }
 
-    micro from_bytes(bytes: [u8]) -> Self {
-        return Self { _repr: bytes }
+    # 严格入口：整个字节序列必须通过 `validate_utf8`——意外续字节、截断序列、
+    # 过长编码、代理区 D800–DFFF 与超过 U+10FFFF 的码位全部拒绝，非法输入
+    # 结构化失败，不进入文本值域。
+    micro from_bytes(bytes: [u8]) -> Result<Self, Utf8DecodeError> {
+        let checked: Result<unit, Utf8DecodeError> = validate_utf8(bytes)
+        match checked {
+            case Fine(value):
+                return Fine { value: Self { _repr: bytes } }
+            case Fail(error):
+                return Fail { error: error }
+        }
     }
 
+    # 前置条件：`bytes` 已是良构 UTF-8（例如由已验证文本重建的字节区间、
+    # 或编码内核产出的 ASCII/合法序列）。调用方负责证明该前提；违反前置
+    # 条件会把非法数据扩散进类型不变量。
+    [unsafe]
     micro from_bytes_unchecked(bytes: [u8]) -> Self {
         return Self { _repr: bytes }
     }
@@ -32,7 +46,7 @@ imply Utf8Text {
     }
 
     # 字节视图：显式按字节读取内部 UTF-8 存储，与码点索引空间（`Cardinal`/`Ordinal`）分离。
-    # 码元、字素、字形各有自己的显式视图/API（本类型暂无），不把多种索引口径塞进同一个 `Index`。
+    # 码元、字素、字形各有自己的显式视图/API，不把多种索引口径塞进同一个 `Index`。
     micro bytes(self): [u8] {
         return self._repr
     }
@@ -49,7 +63,8 @@ imply Utf8Text {
     }
 
     # `start`（字节偏移）处码点的 UTF-8 宽度（1..4），O(1)；越界返回 0。
-    # 低层解码原语，供 `character_at` 与迭代器共用（单一实现来源）。
+    # 推进宽度 oracle：`length`、`trim`、`replace`、`byte_indicates` 与迭代器共用
+    # （单一实现来源）；码点解码本身收口到 `std.text.encoding` 的 `decode_char_at`。
     micro char_width_at(self, start: usize) -> usize {
         if start >= self._repr.length() {
             return 0
@@ -76,34 +91,13 @@ imply Utf8Text {
     }
 
     # 按字节偏移解码一个码点为 `char`（`start` 必须是码点边界，由调用点保证），O(1)。
-    # 解码逻辑只此一份：`character_at`、序数合同与迭代器全部经由本方法。
+    # 解码逻辑收口到 `std.text.encoding` 的 `decode_char_at`（唯一实现来源）；
+    # 本方法是类型不变量下的裸视图：内部存储只经严格验证或编码内核构造，
+    # 边界处解码不可能失败，`unwrap` 不可达。
+    # `character_at`、序数合同与迭代器全部经由本方法。
     micro character_at_byte(self, start: usize) -> char {
-        let first: u8 = self._repr⁅start⁆
-        let width: usize = self.char_width_at(start)
-        let mut code_point: u32 = 0
-        if width == 1 {
-            code_point = first as u32
-        }
-        else if width == 2 && start + 1 < self._repr.length() {
-            code_point = ((first as u32) & 0x1F) << 6
-            code_point = code_point | ((self._repr⁅start + 1⁆ as u32) & 0x3F)
-        }
-        else if width == 3 && start + 2 < self._repr.length() {
-            code_point = ((first as u32) & 0x0F) << 12
-            code_point = code_point | (((self._repr⁅start + 1⁆ as u32) & 0x3F) << 6)
-            code_point = code_point | ((self._repr⁅start + 2⁆ as u32) & 0x3F)
-        }
-        else if width == 4 && start + 3 < self._repr.length() {
-            code_point = ((first as u32) & 0x07) << 18
-            code_point = code_point | (((self._repr⁅start + 1⁆ as u32) & 0x3F) << 12)
-            code_point = code_point | (((self._repr⁅start + 2⁆ as u32) & 0x3F) << 6)
-            code_point = code_point | ((self._repr⁅start + 3⁆ as u32) & 0x3F)
-        }
-        else {
-            code_point = first as u32
-        }
-
-        return code_point as char
+        let decoded: Result<(char, usize), Utf8DecodeError> = decode_char_at(self._repr, start)
+        return decoded.unwrap().0
     }
 
     # 取第 `index` 个码点（0 基）解码为 `char`。定位需从头扫描，单次 O(n)——
@@ -221,6 +215,7 @@ imply Utf8Text {
         }
 
         # 直接按字节区间重建，避免 `slice` 的别名返回值穿越 impl 边界。
+        # 起止都落在码点边界上，区间是已验证文本的子序列，重建无需再校验。
         let mut bytes: ArrayList<u8> = ArrayList::new(end_byte - start_byte)
         let mut index: usize = start_byte
         while index < end_byte {
@@ -228,21 +223,18 @@ imply Utf8Text {
             index = index + 1
         }
 
-        return Utf8Text::from_bytes(bytes.to_array())
+        return Utf8Text::from_bytes_unchecked(bytes.to_array())
     }
 
     # Unicode 默认全映射、locale 无关（不做土耳其语 `I→ı`）。
-    # std 只保留签名；实现由 `unicode.case`（UCD 版本钉死在该包）经宿主 provider 提供，
-    # 各 target 的 adaptor 负责绑定。未绑定 provider 的 target 退回本 shell，行为等同恒等映射。
+    # std 只声明签名与语义口径；实现由 `unicode.case`（UCD 版本钉死在该包）经宿主
+    # provider 提供，各 target 的 adaptor 负责绑定。未绑定合法 provider 的 target 上，
+    # 可达调用在编译边界的 provider 选择门禁结构化失败——std 侧不以恒等映射冒充大小写。
     [host_contract]
-    micro to_lower(self) -> utf8 {
-        return self
-    }
+    micro to_lower(self) -> utf8
 
     [host_contract]
-    micro to_upper(self) -> utf8 {
-        return self
-    }
+    micro to_upper(self) -> utf8
 
     # 从左到右、非重叠、全部替换；`new_value` 可为空，即删除匹配段。
     # `old_value` 为空（0 码点）时返回 `self`，不做任何插入——这是对 Rust
@@ -286,7 +278,9 @@ imply Utf8Text {
             index = index + 1
         }
 
-        return Utf8Text::from_bytes(bytes.to_array())
+        # 输出由「已验证文本的码点对齐片段」与「已验证的 new_value」拼接而成，
+        # 每个片段自身良构，拼接保持良构，重建无需再校验。
+        return Utf8Text::from_bytes_unchecked(bytes.to_array())
     }
 
     micro split(self, separator: utf8) -> [utf8] {
@@ -712,12 +706,8 @@ micro byte_indicates_from(text: &Utf8Text, offset: usize) -> Utf8ByteIndicator {
 imply Utf8ByteIndicator: std::iterator::Iterator {
     type Item = (usize, char);
 
-    micro has_next(self) -> bool {
-        return self.offset < self.text.byte_length()
-    }
-
     micro next(mut self) -> Option<(usize, char)> {
-        if !self.has_next() {
+        if self.offset >= self.text.byte_length() {
             return None
         }
 
@@ -729,22 +719,11 @@ imply Utf8ByteIndicator: std::iterator::Iterator {
 }
 
 # `char`（32 位无符号码位）的 UTF-8 编码：1 至 4 字节。
-# astral 标量（> U+FFFF）按 4 字节编码，不做代理对合成，与 `Utf8Builder.append` 同源。
+# 编码内核收口到 `std.text.encoding`（`encode_char`），与 `Utf8Builder.append` 同源；
+# astral 标量（> U+FFFF）按 4 字节编码，不做代理对合成。
+# 非 Unicode 标量码位（代理项、> U+10FFFF）在编码边界显式失败，不产出畸形字节。
 micro encode_char_as_utf8(code: char): utf8 {
-    let value: u32 = code as u32
-    if value <= 0x7F {
-        return Utf8Text::from_bytes([value as u8])
-    }
-
-    if value <= 0x7FF {
-        return Utf8Text::from_bytes([(0xC0 + (value >> 6)) as u8, (0x80 + (value & 0x3F)) as u8])
-    }
-
-    if value <= 0xFFFF {
-        return Utf8Text::from_bytes([(0xE0 + (value >> 12)) as u8, (0x80 + ((value >> 6) & 0x3F)) as u8, (0x80 + (value & 0x3F)) as u8])
-    }
-
-    return Utf8Text::from_bytes([(0xF0 + (value >> 18)) as u8, (0x80 + ((value >> 12) & 0x3F)) as u8, (0x80 + ((value >> 6) & 0x3F)) as u8, (0x80 + (value & 0x3F)) as u8])
+    return Utf8Text::from_bytes_unchecked(encode_char(code))
 }
 
 imply Utf8Text: std::operator::Equal {

@@ -19,12 +19,8 @@ imply Utf8Iterator: std::iterator::Iterator {
         return self._offset
     }
 
-    micro has_next(self) -> bool {
-        return self._offset < self._text.byte_length()
-    }
-
     micro next(mut self) -> Option<char> {
-        if !self.has_next() {
+        if self._offset >= self._text.byte_length() {
             return None
         }
 

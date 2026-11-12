@@ -36,7 +36,8 @@ imply Utf8Builder {
     }
 
     ⍝ 追加一个字符：按 UTF-8 规则把码位编码为 1..4 个字节。
-    ⍝ `char` 没有 `to_bytes` 成员；位运算一律走 `bit_and` / `bit_or` / `bit_shift_right` 具名方法。
+    ⍝ 编码内核收口到 `std.text.encoding`（`encode_char`）；非 Unicode 标量码位
+    ⍝ 在编码边界显式失败，不产出畸形字节。
     micro append(mut self, c: char): unit {
         push_char(self.bytes, c)
     }
@@ -74,7 +75,10 @@ imply Utf8Builder {
         return self
     }
 
-    ⍝ 消耗构造器，生成不可变文本
+    ⍝ 消耗构造器，生成不可变文本。
+    ⍝ 类型不变量：字节只经三条通道进入——编码内核（`push_char`，标量已验证）、
+    ⍝ 已验证文本（`append(&Utf8Text)`）与十进制内核（ASCII 数字），
+    ⍝ 故产物良构，直接走 unchecked 重建。
     micro build(self) -> Utf8Text {
         return Utf8Text::from_bytes_unchecked(self.bytes.to_array())
     }
@@ -87,56 +91,24 @@ imply Utf8Builder {
         self.append(text)
     }
 
-    ⍝ 追加有符号整数的十进制表示（不含前导零；`-2147483648` 等边界按 i64 规则处理）
+    ⍝ 追加有符号整数的十进制表示（不含前导零）：与 `Display` 共用唯一整数
+    ⍝ 格式化内核（`format.v` 的 `write_decimal_i64`）；最小负数（`i64::MIN`）
+    ⍝ 走无符号幅值路径，不先取负、不回绕。
     micro append_i64(mut self, value: i64): unit {
-        if value == 0 {
-            self.bytes.push(48)
-            return
-        }
-
-        let mut v: i64 = value
-        if v < 0 {
-            self.bytes.push(45)
-            v = -v
-        }
-
-        let mut digits: ArrayList<u8> = ArrayList::new(21)
-        while v > 0 {
-            let digit: u8 = (v % 10) as u8
-            digits.push(48 + digit)
-            v = v / 10
-        }
-
-        let mut index: usize = digits.length()
-        while index > 0 {
-            index = index - 1
-            # 倒数下标 `index ∈ [0, digits.length() - 1]`，界内明确，`⁅ ⁆` 自动取值不会越界。
-            self.bytes.push(digits⁅index⁆)
-        }
+        write_decimal_i64(self.bytes, value)
     }
 }
 
 
-⍝ `append` 与 `prepend` 共用的 UTF-8 码位编码唯一点。
+⍝ `append` 与 `prepend` 共用的 UTF-8 码位编码点：直接消费 `std.text.encoding`
+⍝ 的 `encode_char`（唯一编码内核），本文件不再内联第二份位运算编码。
+⍝ 非 Unicode 标量码位（代理项、> U+10FFFF）在 `encode_char` 处显式失败。
 private micro push_char(mut bytes: ArrayList<u8>, c: char): unit {
-    let code: u32 = c as u32
-    if code <= 127 {
-        bytes.push(code as u8)
-    }
-    else if code <= 2047 {
-        bytes.push((192 + code.bit_shift_right(6)) as u8)
-        bytes.push((128 + code.bit_and(63)) as u8)
-    }
-    else if code <= 65535 {
-        bytes.push((224 + code.bit_shift_right(12)) as u8)
-        bytes.push((128 + code.bit_shift_right(6).bit_and(63)) as u8)
-        bytes.push((128 + code.bit_and(63)) as u8)
-    }
-    else {
-        bytes.push((240 + code.bit_shift_right(18)) as u8)
-        bytes.push((128 + code.bit_shift_right(12).bit_and(63)) as u8)
-        bytes.push((128 + code.bit_shift_right(6).bit_and(63)) as u8)
-        bytes.push((128 + code.bit_and(63)) as u8)
+    let encoded: [u8] = encode_char(c)
+    let mut index: usize = 0
+    while index < encoded.length() {
+        bytes.push(encoded⁅index⁆)
+        index = index + 1
     }
 }
 

@@ -12,8 +12,7 @@ namespace std.text;
 # - 整数十进制、`bool`、`char`、`utf8` 全部纯 V，零 host 依赖。
 # - `usize` / `isize` 是目标别名，不单独写 impl；覆盖由别名目标类型（`u64` /
 #   `i64` 或 32 位目标上的 `u32` / `i32`）的 impl 继承。
-# - `i128` / `u128` 暂缺：std 尚未声明这两种宽度的算术与比较算子，无法在 V 层
-#   做十进制拆分，故不写「假装能显示」的实现。
+# - `i128` / `u128` 无 `Display` 实现：本包不承诺其十进制渲染合同。
 # - 浮点（`f32` / `f64`）在 `float_display.v`：位模式经 `to_bits` 拆分指数与
 #   尾数，最短可回读十进制按精确算术逐位产出；不以每目标 host 原语替代。
 
@@ -39,11 +38,14 @@ imply char: Display {
     }
 }
 
-# 无符号十进制：逐位取余后倒序拼字节，不做本地化、不加前导零。
-private micro decimal_u64(value: u64) -> utf8 {
+# ── 唯一整数十进制内核 ──
+# `Display` 与 `Utf8Builder` 共用：十进制位直接产出进字节缓冲，只此一份实现。
+
+# 无符号幅值路径：逐位取余、倒序写入缓冲；不做本地化、不加前导零。
+micro write_decimal_u64(mut bytes: ArrayList<u8>, value: u64): unit {
     if value == 0 {
-        let zero: [u8] = [48]
-        return Utf8Text::from_bytes(zero)
+        bytes.push(48)
+        return
     }
 
     let mut digits: ArrayList<u8> = ArrayList::new(20)
@@ -53,26 +55,40 @@ private micro decimal_u64(value: u64) -> utf8 {
         rest = rest / 10
     }
 
-    let mut bytes: ArrayList<u8> = ArrayList::new(digits.length())
     let mut index: usize = digits.length()
     while index > 0 {
         index = index - 1
         bytes.push(digits⁅index⁆)
     }
-
-    return Utf8Text::from_bytes(bytes.to_array())
 }
 
-# 有符号十进制：负号单独写入，绝对值按 `u64` 走。最小负数不能直接取负，
-# 先抬到 `value + 1` 再取负，避开了 `-MIN` 的溢出。
-private micro decimal_i64(value: i64) -> utf8 {
+# 有符号十进制：负号单独写入，幅值一律走无符号路径。
+# 最小负数不能先取负——`-MIN` 在补码下回绕——因此先抬到 `value + 1`
+# 再取负（该中间量可表示），在 `u64` 上补回 1 得到完整幅值。
+micro write_decimal_i64(mut bytes: ArrayList<u8>, value: i64): unit {
     if value >= 0 {
-        return decimal_u64(value as u64)
+        write_decimal_u64(bytes, value as u64)
+        return
     }
 
+    bytes.push(45)
     let lifted: i64 = value + 1
     let magnitude: u64 = ((-lifted) as u64) + 1
-    return "-" ++ decimal_u64(magnitude)
+    write_decimal_u64(bytes, magnitude)
+}
+
+# 无符号十进制文本：内核产出 ASCII 数字，构造即合法 UTF-8。
+private micro decimal_u64(value: u64) -> utf8 {
+    let mut bytes: ArrayList<u8> = ArrayList::new(20)
+    write_decimal_u64(bytes, value)
+    return Utf8Text::from_bytes_unchecked(bytes.to_array())
+}
+
+# 有符号十进制文本：与 `decimal_u64` 共用内核，边界同上。
+private micro decimal_i64(value: i64) -> utf8 {
+    let mut bytes: ArrayList<u8> = ArrayList::new(21)
+    write_decimal_i64(bytes, value)
+    return Utf8Text::from_bytes_unchecked(bytes.to_array())
 }
 
 imply i8: Display {

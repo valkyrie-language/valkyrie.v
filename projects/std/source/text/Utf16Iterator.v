@@ -19,45 +19,19 @@ imply Utf16Iterator: std::iterator::Iterator {
         return self._offset
     }
 
-    micro has_next(self) -> bool {
-        return self._offset < self.code_unit_length()
-    }
-
+    # 码位视图：代理对合成收口到 `std.text.encoding` 的 `decode_utf16_at`
+    # （唯一实现来源，本文件不再写第二份合成/判定逻辑）。
+    # 落单代理项显式失败：迭代器协议没有错误通道，非法配对序列 panic，
+    # 绝不把代理半区原值冒充码位产出；可恢复解码直接走 `decode_utf16_at`。
     micro next(mut self) -> Option<char> {
-        if !self.has_next() {
+        let units: [u16] = self._text.units()
+        if self._offset >= units.length() {
             return None
         }
 
-        let first: u16 = self.code_unit_at(self._offset)
-        if self.is_high_surrogate(first) && self._offset + 1 < self.code_unit_length() {
-            let second: u16 = self.code_unit_at(self._offset + 1)
-            if self.is_low_surrogate(second) {
-                let high: u32 = (first as u32) - 0xD800
-                let low: u32 = (second as u32) - 0xDC00
-                let code_point: u32 = 0x10000 + (high << 10) + low
-                self._offset = self._offset + 2
-                return Some(code_point as char)
-            }
-        }
-
-        self._offset = self._offset + 1
-        return Some(first as char)
-    }
-
-    private micro code_unit_length(self) -> usize {
-        return self._text.length() as usize
-    }
-
-    private micro code_unit_at(self, offset: usize) -> u16 {
-        # 与 `Utf16Text` 的码元索引合同同源：`⁅ ⁆` 直接给出 `u16` 码元。
-        return self._text⁅offset⁆
-    }
-
-    private micro is_high_surrogate(self, value: u16) -> bool {
-        return value >= 0xD800 && value <= 0xDBFF
-    }
-
-    private micro is_low_surrogate(self, value: u16) -> bool {
-        return value >= 0xDC00 && value <= 0xDFFF
+        let decoded: Result<(char, usize), Utf16DecodeError> = decode_utf16_at(units, self._offset)
+        let pair: (char, usize) = decoded.unwrap()
+        self._offset = self._offset + pair.1
+        return Some(pair.0)
     }
 }

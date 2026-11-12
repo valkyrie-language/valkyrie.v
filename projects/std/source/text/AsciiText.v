@@ -118,14 +118,15 @@ imply AsciiText: Text {
         return self.view(span).to_text()
     }
 
-    micro to_utf8(self) -> utf8 {
-        # 安全性： 任何合法的 ascii 文本都可以转换为 utf8 文本
+    # 具体化为 UTF-8 文本：经 `Utf8Text::from_bytes` 的严格验证合同。
+    # ASCII 子集天然良构；越界字节按 UTF-8 解码合同给出结构化诊断。
+    micro to_utf8(self) -> Result<utf8, Utf8DecodeError> {
         return Utf8Text::from_bytes(self._bytes)
     }
 
     micro to_utf16(self) -> utf16 {
         # ASCII 字节与 UTF-16 码元一一对应：每个字节直接落成一个 `u16` 码元，
-        # 不重新解码、不经 utf8 中转，也不依赖尚不存在的 `[u8].chars`。
+        # 不重新解码、不经 utf8 中转。
         let mut units: ArrayList<u16> = ArrayList::new(self._bytes.length())
         let mut index: usize = 0
         while index < self._bytes.length() {
@@ -134,10 +135,6 @@ imply AsciiText: Text {
         }
 
         return Utf16Text::from_units(units.to_array())
-    }
-
-    micro to_c_str(self) -> c_str {
-        # todo: 实现 c_str 转换
     }
 }
 
@@ -164,12 +161,8 @@ imply AsciiText: std::iterator::IntoIterator {
 imply AsciiIterator: std::iterator::Iterator {
     type Item = char;
 
-    micro has_next(self): bool {
-        return self._offset < self._text._bytes.length()
-    }
-
     micro next(mut self): Option<char> {
-        if !self.has_next() {
+        if self._offset >= self._text._bytes.length() {
             return None
         }
 

@@ -7,9 +7,16 @@ class Utf16Text {
 }
 
 imply Utf16Text {
-    # 由码元数组直接落成文本；与 `Utf8Text::from_bytes` 对称，不做额外校验。
+    # 由码元数组直接落成文本：码元是 UTF-16 的原始表示，标量配对是否良构
+    # 不是类型不变量；落单代理项由码位视图（`chars` → `decode_utf16_at`）
+    # 结构化失败，码元视图（`⁅ ⁆` / `units`）始终按码元原样呈现。
     micro from_units(units: [u16]) -> Self {
         return Utf16Text { _repr: units }
+    }
+
+    # 码元视图：显式按码元读取内部 UTF-16 存储，与码位视图分离。
+    micro units(self) -> [u16] {
+        return self._repr
     }
 
     [host_contract]
@@ -67,7 +74,8 @@ imply Utf16Text {
     }
 }
 
-# 码位视图：`Utf16Iterator` 把代理对合成为完整 `char` 码位，与码元索引合同分离。
+# 码位视图：`Utf16Iterator` 经 `std.text.encoding` 的 `decode_utf16_at` 把代理对
+# 合成为完整 `char` 码位，与码元索引合同分离；落单代理项在该视图显式失败。
 imply Utf16Text: std::iterator::IntoIterator {
     type Item = char;
     type Iter = Utf16Iterator;

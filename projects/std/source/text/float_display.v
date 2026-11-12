@@ -18,7 +18,14 @@ class FloatBig {
 
 imply FloatBig {
     micro new(): Self {
-        return FloatBig { _limbs: std::collection::array::new::<u32>(40) }
+        let mut storage: std::collection::ArrayStorage<u32> = std::collection::ArrayStorage::<u32>::with_capacity(40)
+        let mut index: usize = 0
+        while index < 40 {
+            storage.initialize(0 as u32)
+            index = index + 1
+        }
+
+        return FloatBig { _limbs: storage.finalize() }
     }
 
     micro clone(self): Self {
@@ -248,7 +255,8 @@ imply FloatDigits {
             }
         }
 
-        return Utf8Text::from_bytes(bytes.to_array())
+        # 输出只由 ASCII 数字、'-' 与 '.' 构成，构造即合法 UTF-8，免重验证。
+        return Utf8Text::from_bytes_unchecked(bytes.to_array())
     }
 }
 
@@ -411,9 +419,8 @@ private micro binary_float_digits(
 
 private micro display_float64(value: f64) -> utf8 {
     let bits: u64 = value.to_bits()
-    # 符号位掩码 `2^63` 不以 `2^31 * 2^32` 相乘构造：`u64` 乘法在部分目标上按
-    # 有符号中间量做溢出检查，`2^63` 会越界。这里用 `2^62` 分块，中间量不超过
-    # `2^63 - 1`。
+    # 符号位以 `2^62` 常量分块拆位：全部中间量保持在可表示范围内，
+    # 不构造会越出无符号 64 位表示的乘积。
     let half: u64 = 4611686018427387904 as u64
     let fraction_scale: u64 = 4503599627370496 as u64
     let block: u64 = bits / half
