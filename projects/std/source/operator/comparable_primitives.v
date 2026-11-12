@@ -128,7 +128,7 @@ imply bool: Comparable {
     }
 }
 
-# char 没有 `<`：显式拓宽到 u32（u16 code unit，值域完全保持），
+# char 没有 `<`：显式拓宽到 u32（char 运行载体是 32 位无符号码位，值域完全保持），
 # 再比较 u32 的既有 `<`。这是转换，不是复用 char 的算子。
 imply char: Comparable {
     micro compare(self, other: Self): Ordering {
