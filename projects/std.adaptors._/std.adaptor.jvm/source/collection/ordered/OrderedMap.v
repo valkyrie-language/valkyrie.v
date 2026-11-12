@@ -43,18 +43,6 @@ private micro ordered_map_contains_key<K, V>(map: OrderedMap<K, V>, key: K): boo
     return __ordered_map_jvm_contains_key(map, key)
 }
 
-[host_provider(std::collection::OrderedMap::keys)]
-[inline(always)]
-private micro ordered_map_keys<K, V>(map: OrderedMap<K, V>): List<K> {
-    return __ordered_map_jvm_list_from_any::<K>(__ordered_map_jvm_keys(map))
-}
-
-[host_provider(std::collection::OrderedMap::values)]
-[inline(always)]
-private micro ordered_map_values<K, V>(map: OrderedMap<K, V>): List<V> {
-    return __ordered_map_jvm_list_from_any::<V>(__ordered_map_jvm_values(map))
-}
-
 [host_provider(std::collection::OrderedMap::length)]
 [inline(always)]
 private micro ordered_map_length<K, V>(map: OrderedMap<K, V>): usize {
@@ -88,17 +76,8 @@ private micro __ordered_map_jvm_put<K, V>(map: OrderedMap<K, V>, key: K, value: 
 [jvm("java.util.LinkedHashMap", "remove")]
 private micro __ordered_map_jvm_remove<K, V>(map: OrderedMap<K, V>, key: K): any { }
 
-[jvm("java.util.LinkedHashMap", "keySet"), pure]
-private micro __ordered_map_jvm_keys<K, V>(map: OrderedMap<K, V>): any { }
-
-[jvm("java.util.LinkedHashMap", "values"), pure]
-private micro __ordered_map_jvm_values<K, V>(map: OrderedMap<K, V>): any { }
-
 [jvm("java.util.LinkedHashMap", "size"), pure]
 private micro __ordered_map_jvm_length<K, V>(map: OrderedMap<K, V>): usize { }
 
 [jvm("java.util.LinkedHashMap", "clear")]
 private micro __ordered_map_jvm_clear<K, V>(map: OrderedMap<K, V>): unit { }
-
-[jvm("java.util.ArrayList", "<init>")]
-private micro __ordered_map_jvm_list_from_any<T>(items: any): ArrayList<T> { }

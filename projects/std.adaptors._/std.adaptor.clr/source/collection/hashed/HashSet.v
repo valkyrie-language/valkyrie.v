@@ -33,12 +33,6 @@ private micro hash_set_clear<T>(set: HashSet<T>): unit {
     __hash_set_clr_clear(set)
 }
 
-[host_provider(std::collection::HashSet::to_list)]
-[inline(always)]
-private micro hash_set_to_list<T>(set: HashSet<T>): List<T> {
-    return __hash_set_clr_list_from_any::<T>(set)
-}
-
 [host_provider(std::collection::HashSet::new)]
 [inline(always)]
 private micro hash_set_new<T>(): HashSet<T> {
@@ -62,6 +56,3 @@ private micro __hash_set_clr_length<T>(set: HashSet<T>): usize { }
 
 [clr("System.Collections", "System.Collections.Generic.HashSet`1", "Clear")]
 private micro __hash_set_clr_clear<T>(set: HashSet<T>): unit { }
-
-[clr("System.Collections", "System.Collections.Generic.List`1", ".ctor")]
-private micro __hash_set_clr_list_from_any<T>(items: any): ArrayList<T> { }

@@ -30,12 +30,6 @@ private micro hash_set_clear<T>(set: std.collection.HashSet<T>): unit {
     __hash_set_jvm_clear(set)
 }
 
-[host_provider(std::collection::HashSet::to_list)]
-[inline(always)]
-private micro hash_set_to_list<T>(set: std.collection.HashSet<T>): std.collection.List<T> {
-    return __hash_set_jvm_list_from_any::<T>(set)
-}
-
 [host_provider(std::collection::HashSet::new)]
 [inline(always)]
 private micro hash_set_new<T>(): std.collection.HashSet<T> {
@@ -59,6 +53,3 @@ private micro __hash_set_jvm_length<T>(set: std.collection.HashSet<T>): usize { 
 
 [jvm("java.util.HashSet", "clear")]
 private micro __hash_set_jvm_clear<T>(set: std.collection.HashSet<T>): unit { }
-
-[jvm("java.util.ArrayList", "<init>")]
-private micro __hash_set_jvm_list_from_any<T>(items: any): std.collection.ArrayList<T> { }

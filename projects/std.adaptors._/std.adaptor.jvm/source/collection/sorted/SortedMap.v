@@ -43,18 +43,6 @@ private micro sorted_map_contains_key<K, V>(map: SortedMap<K, V>, key: K): bool 
     return __sorted_map_jvm_contains_key(map, key)
 }
 
-[host_provider(std::collection::SortedMap::keys)]
-[inline(always)]
-private micro sorted_map_keys<K, V>(map: SortedMap<K, V>): List<K> {
-    return __sorted_map_jvm_list_from_any::<K>(__sorted_map_jvm_keys(map))
-}
-
-[host_provider(std::collection::SortedMap::values)]
-[inline(always)]
-private micro sorted_map_values<K, V>(map: SortedMap<K, V>): List<V> {
-    return __sorted_map_jvm_list_from_any::<V>(__sorted_map_jvm_values(map))
-}
-
 [host_provider(std::collection::SortedMap::length)]
 [inline(always)]
 private micro sorted_map_length<K, V>(map: SortedMap<K, V>): usize {
@@ -93,12 +81,3 @@ private micro __sorted_map_jvm_length<K, V>(map: SortedMap<K, V>): usize { }
 
 [jvm("java.util.TreeMap", "clear")]
 private micro __sorted_map_jvm_clear<K, V>(map: SortedMap<K, V>): unit { }
-
-[jvm("java.util.TreeMap", "keySet"), pure]
-private micro __sorted_map_jvm_keys<K, V>(map: SortedMap<K, V>): any { }
-
-[jvm("java.util.TreeMap", "values"), pure]
-private micro __sorted_map_jvm_values<K, V>(map: SortedMap<K, V>): any { }
-
-[jvm("java.util.ArrayList", "<init>")]
-private micro __sorted_map_jvm_list_from_any<T>(items: any): ArrayList<T> { }

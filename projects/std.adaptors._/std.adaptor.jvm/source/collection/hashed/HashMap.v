@@ -41,18 +41,6 @@ private micro hash_map_contains_key<K, V>(map: std.collection.HashMap<K, V>, key
     return __hash_map_jvm_contains_key(map, key)
 }
 
-[host_provider(std::collection::HashMap::keys)]
-[inline(always)]
-private micro hash_map_keys<K, V>(map: std.collection.HashMap<K, V>): std.collection.List<K> {
-    return __hash_map_jvm_list_from_any::<K>(__hash_map_jvm_keys(map))
-}
-
-[host_provider(std::collection::HashMap::values)]
-[inline(always)]
-private micro hash_map_values<K, V>(map: std.collection.HashMap<K, V>): std.collection.List<V> {
-    return __hash_map_jvm_list_from_any::<V>(__hash_map_jvm_values(map))
-}
-
 [host_provider(std::collection::HashMap::length)]
 [inline(always)]
 private micro hash_map_length<K, V>(map: std.collection.HashMap<K, V>): usize {
@@ -91,12 +79,3 @@ private micro __hash_map_jvm_length<K, V>(map: std.collection.HashMap<K, V>): us
 
 [jvm("java.util.HashMap", "clear")]
 private micro __hash_map_jvm_clear<K, V>(map: std.collection.HashMap<K, V>): unit { }
-
-[jvm("java.util.HashMap", "keySet"), pure]
-private micro __hash_map_jvm_keys<K, V>(map: std.collection.HashMap<K, V>): any { }
-
-[jvm("java.util.HashMap", "values"), pure]
-private micro __hash_map_jvm_values<K, V>(map: std.collection.HashMap<K, V>): any { }
-
-[jvm("java.util.ArrayList", "<init>")]
-private micro __hash_map_jvm_list_from_any<T>(items: any): std.collection.ArrayList<T> { }

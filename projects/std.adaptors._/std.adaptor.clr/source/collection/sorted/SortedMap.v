@@ -43,18 +43,6 @@ private micro sorted_map_contains_key<K, V>(map: SortedMap<K, V>, key: K): bool 
     return __sorted_map_clr_contains_key(map, key)
 }
 
-[host_provider(std::collection::SortedMap::keys)]
-[inline(always)]
-private micro sorted_map_keys<K, V>(map: SortedMap<K, V>): List<K> {
-    return __sorted_map_clr_list_from_any::<K>(__sorted_map_clr_keys(map))
-}
-
-[host_provider(std::collection::SortedMap::values)]
-[inline(always)]
-private micro sorted_map_values<K, V>(map: SortedMap<K, V>): List<V> {
-    return __sorted_map_clr_list_from_any::<V>(__sorted_map_clr_values(map))
-}
-
 [host_provider(std::collection::SortedMap::length)]
 [inline(always)]
 private micro sorted_map_length<K, V>(map: SortedMap<K, V>): usize {
@@ -93,12 +81,3 @@ private micro __sorted_map_clr_length<K, V>(map: SortedMap<K, V>): usize { }
 
 [clr("System.Collections", "System.Collections.Generic.SortedDictionary`2", "Clear")]
 private micro __sorted_map_clr_clear<K, V>(map: SortedMap<K, V>): unit { }
-
-[clr("System.Collections", "System.Collections.Generic.SortedDictionary`2", "get_Keys"), pure]
-private micro __sorted_map_clr_keys<K, V>(map: SortedMap<K, V>): any { }
-
-[clr("System.Collections", "System.Collections.Generic.SortedDictionary`2", "get_Values"), pure]
-private micro __sorted_map_clr_values<K, V>(map: SortedMap<K, V>): any { }
-
-[clr("System.Collections", "System.Collections.Generic.List`1", ".ctor")]
-private micro __sorted_map_clr_list_from_any<T>(items: any): ArrayList<T> { }

@@ -32,12 +32,6 @@ private micro ordered_set_clear<T>(set: OrderedSet<T>): unit {
     __ordered_set_jvm_clear(set)
 }
 
-[host_provider(std::collection::OrderedSet::to_list)]
-[inline(always)]
-private micro ordered_set_to_list<T>(set: OrderedSet<T>): List<T> {
-    return __ordered_set_jvm_list_from_any::<T>(set)
-}
-
 [host_provider(std::collection::OrderedSet::new)]
 [inline(always)]
 private micro ordered_set_new<T>(): OrderedSet<T> {
@@ -61,6 +55,3 @@ private micro __ordered_set_jvm_length<T>(set: OrderedSet<T>): usize { }
 
 [jvm("java.util.LinkedHashSet", "clear")]
 private micro __ordered_set_jvm_clear<T>(set: OrderedSet<T>): unit { }
-
-[jvm("java.util.ArrayList", "<init>")]
-private micro __ordered_set_jvm_list_from_any<T>(items: any): ArrayList<T> { }

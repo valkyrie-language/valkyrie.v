@@ -43,18 +43,6 @@ private micro hash_map_contains_key<K, V>(map: HashMap<K, V>, key: K): bool {
     return __hash_map_clr_contains_key(map, key)
 }
 
-[host_provider(std::collection::HashMap::keys)]
-[inline(always)]
-private micro hash_map_keys<K, V>(map: HashMap<K, V>): List<K> {
-    return __hash_map_clr_list_from_any::<K>(__hash_map_clr_keys(map))
-}
-
-[host_provider(std::collection::HashMap::values)]
-[inline(always)]
-private micro hash_map_values<K, V>(map: HashMap<K, V>): List<V> {
-    return __hash_map_clr_list_from_any::<V>(__hash_map_clr_values(map))
-}
-
 [host_provider(std::collection::HashMap::length)]
 [inline(always)]
 private micro hash_map_length<K, V>(map: HashMap<K, V>): usize {
@@ -92,12 +80,3 @@ private micro __hash_map_clr_length<K, V>(map: HashMap<K, V>): usize { }
 
 [clr("System.Collections", "System.Collections.Generic.Dictionary`2", "Clear")]
 private micro __hash_map_clr_clear<K, V>(map: HashMap<K, V>): unit { }
-
-[clr("System.Collections", "System.Collections.Generic.Dictionary`2", "get_Keys"), pure]
-private micro __hash_map_clr_keys<K, V>(map: HashMap<K, V>): any { }
-
-[clr("System.Collections", "System.Collections.Generic.Dictionary`2", "get_Values"), pure]
-private micro __hash_map_clr_values<K, V>(map: HashMap<K, V>): any { }
-
-[clr("System.Collections", "System.Collections.Generic.List`1", ".ctor")]
-private micro __hash_map_clr_list_from_any<T>(items: any): ArrayList<T> { }

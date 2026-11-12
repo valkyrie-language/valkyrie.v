@@ -32,12 +32,6 @@ private micro sorted_set_clear<T>(set: SortedSet<T>): unit {
     __sorted_set_jvm_clear(set)
 }
 
-[host_provider(std::collection::SortedSet::to_list)]
-[inline(always)]
-private micro sorted_set_to_list<T>(set: SortedSet<T>): List<T> {
-    return __sorted_set_jvm_list_from_any::<T>(set)
-}
-
 [host_provider(std::collection::SortedSet::new)]
 [inline(always)]
 private micro sorted_set_new<T>(): SortedSet<T> {
@@ -61,6 +55,3 @@ private micro __sorted_set_jvm_length<T>(set: SortedSet<T>): usize { }
 
 [jvm("java.util.TreeSet", "clear")]
 private micro __sorted_set_jvm_clear<T>(set: SortedSet<T>): unit { }
-
-[jvm("java.util.ArrayList", "<init>")]
-private micro __sorted_set_jvm_list_from_any<T>(items: any): ArrayList<T> { }

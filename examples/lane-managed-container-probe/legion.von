@@ -1,0 +1,12 @@
+{
+    name: "lane_managed_container_probe",
+    version: "0.1.0",
+    description: "JVM/CLR managed lane 容器（std HashMap/ArrayList 默认体）探针",
+    dependencies: {
+        "std": { version: "workspace" }
+    },
+    build: [
+        { target: "clr", msil: true },
+        { target: "jvm-openjdk-unknown-managed" }
+    ]
+}
