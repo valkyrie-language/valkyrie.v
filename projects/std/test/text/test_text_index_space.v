@@ -3,16 +3,16 @@ micro `test utf8 codepoint index read`() {
     let text: utf8 = "你好世界"
 
     # 索引空间是码点：0 基 `⁅ ⁆`（`Cardinal`）与 1 基 `[ ]`（`Ordinal`）同口径。
-    if (text⁅0⁆) as u32 != 0x4F60 {
+    if (text⁅0⁆) != '你' {
         panic("utf8 codepoint cardinal first failed")
     }
 
-    if (text⁅3⁆) as u32 != 0x754C {
+    if (text⁅3⁆) != '界' {
         panic("utf8 codepoint cardinal last failed")
     }
 
     let second: char = text[2]
-    if second as u32 != 0x597D {
+    if second != '好' {
         panic("utf8 codepoint ordinal read failed")
     }
 }
@@ -42,7 +42,7 @@ micro `test utf8 codepoint write readback`() {
     let mut text: utf8 = "abc"
 
     # 1 基写：把 `b`（1 字节）替换为 `你`（3 字节标量）；码点个数不变，字节长度改变。
-    text[2] = char::from(0x4F60)
+    text[2] = '你'
 
     if text.length() != 3 {
         panic("utf8 ordinal write count failed")
@@ -52,12 +52,12 @@ micro `test utf8 codepoint write readback`() {
         panic("utf8 ordinal write byte length failed")
     }
 
-    if (text⁅1⁆) as u32 != 0x4F60 {
+    if (text⁅1⁆) != '你' {
         panic("utf8 ordinal write cardinal readback failed")
     }
 
     let third: char = text[3]
-    if third as u32 != 99 {
+    if third != 'c' {
         panic("utf8 ordinal write tail failed")
     }
 }
@@ -81,16 +81,16 @@ micro `test utf8 byte view`() {
         panic("utf8 bytes view length failed")
     }
 
-    if (bytes⁅0⁆) != 0xE4 {
+    if (bytes⁅0⁆) != 0xE4 as u8 {
         panic("utf8 bytes view first byte failed")
     }
 
     # `byte_at` 是裸 `u8`：界内直接读，越界结构化失败（没有 `Option` 形态）。
-    if text.byte_at(0) != 0xE4 {
+    if text.byte_at(0) != 0xE4 as u8 {
         panic("utf8 byte_at first failed")
     }
 
-    if text.byte_at(3) != 0xE5 {
+    if text.byte_at(3) != 0xE5 as u8 {
         panic("utf8 byte_at second scalar start failed")
     }
 }
@@ -105,12 +105,12 @@ micro `test utf16 code unit index space`() {
     }
 
     let unit: u16 = text⁅1⁆
-    if unit as u32 != 101 {
+    if unit != 'e' as u16 {
         panic("utf16 cardinal read failed")
     }
 
     let second: u16 = text[2]
-    if second as u32 != 108 {
+    if second != 'l' as u16 {
         panic("utf16 ordinal read failed")
     }
 
@@ -123,14 +123,14 @@ micro `test utf16 code unit index space`() {
 micro `test utf16 code unit write readback`() {
     let mut text: utf16 = "hey"
 
-    text[2] = 105 as u16
+    text[2] = 'i' as u16
 
     if text.length() != 3 {
         panic("utf16 ordinal write count failed")
     }
 
     let unit: u16 = text⁅1⁆
-    if unit as u32 != 105 {
+    if unit != 'i' as u16 {
         panic("utf16 ordinal write readback failed")
     }
 }

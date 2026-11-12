@@ -1,5 +1,7 @@
 namespace std.text;
 
+using std.types::{Result, Fine, Fail};
+
 ⍝ ────────── 共享编码内核 ──────────
 ⍝ 码点与 UTF-8 字节序列、UTF-16 码元序列之间双向转换的唯一实现来源：
 ⍝ `Utf8Text`、`Utf16Text`、`Utf8Builder` 与各字符视图全部消费本模块，
@@ -283,8 +285,8 @@ micro hex_encode(bytes: [u8]) -> utf8 {
 # 半字节 → 小写十六进制字符（'0'..'9'、'a'..'f'）。
 private micro hex_digit(nibble: u32) -> u8 {
     if nibble < 10 {
-        return (48 + nibble) as u8
+        return b'0' + nibble as u8
     }
 
-    return (87 + nibble) as u8
+    return b'a' + (nibble - 10) as u8
 }

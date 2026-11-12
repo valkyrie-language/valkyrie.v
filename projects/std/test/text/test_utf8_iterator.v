@@ -1,8 +1,8 @@
-using std.text::{utf8, Utf8Text, Utf8Iterator};
+using std.text::{utf8, Utf8Iterator};
 
 [test]
 micro `test utf8 iterator`() {
-    let value: utf8 = Utf8Text::from_bytes([65, 194, 162, 228, 189, 160, 240, 159, 152, 128])
+    let value: utf8 = "A¢你😀"
     let mut iter: Utf8Iterator = Utf8Iterator::new(value)
 
     if !iter.has_next() {
@@ -18,7 +18,7 @@ micro `test utf8 iterator`() {
         panic("utf8 iterator first next test failed")
     }
 
-    if first.unwrap() as u32 != 0x41 {
+    if first.unwrap() != 'A' {
         panic("utf8 iterator first value test failed")
     }
 
@@ -31,7 +31,7 @@ micro `test utf8 iterator`() {
         panic("utf8 iterator second next test failed")
     }
 
-    if second.unwrap() as u32 != 0xA2 {
+    if second.unwrap() != '¢' {
         panic("utf8 iterator second value test failed")
     }
 
@@ -44,7 +44,7 @@ micro `test utf8 iterator`() {
         panic("utf8 iterator third next test failed")
     }
 
-    if third.unwrap() as u32 != 0x4F60 {
+    if third.unwrap() != '你' {
         panic("utf8 iterator third value test failed")
     }
 
@@ -57,7 +57,7 @@ micro `test utf8 iterator`() {
         panic("utf8 iterator fourth next test failed")
     }
 
-    if fourth.unwrap() as u32 != 0x1F600 {
+    if fourth.unwrap() != '😀' {
         panic("utf8 iterator fourth value test failed")
     }
 
@@ -72,7 +72,7 @@ micro `test utf8 iterator`() {
 
 [test]
 micro `test utf8 iterator empty`() {
-    let value: utf8 = Utf8Text::from_bytes([])
+    let value: utf8 = ""
     let mut iter: Utf8Iterator = Utf8Iterator::new(value)
 
     if iter.has_next() {

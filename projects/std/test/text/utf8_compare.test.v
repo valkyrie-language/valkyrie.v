@@ -7,11 +7,11 @@ using std.text::Utf8Text;
 
 [test]
 micro `test utf8 comparable byte order`() {
-    let abc: Utf8Text = Utf8Text::from_bytes([97 as u8, 98 as u8, 99 as u8])
-    let abd: Utf8Text = Utf8Text::from_bytes([97 as u8, 98 as u8, 100 as u8])
-    let prefix: Utf8Text = Utf8Text::from_bytes([97 as u8, 98 as u8])
-    let upper: Utf8Text = Utf8Text::from_bytes([90 as u8])
-    let lower: Utf8Text = Utf8Text::from_bytes([97 as u8])
+    let abc: Utf8Text = "abc"
+    let abd: Utf8Text = "abd"
+    let prefix: Utf8Text = "ab"
+    let upper: Utf8Text = "Z"
+    let lower: Utf8Text = "a"
 
     if !(abc < abd) {
         panic("utf8 byte order less test failed")

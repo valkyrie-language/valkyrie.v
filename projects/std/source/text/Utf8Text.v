@@ -16,10 +16,6 @@ structure SplitParts {
 }
 
 imply Utf8Text {
-    micro new(capacity: usize) -> Self {
-        return Self { _repr: [] }
-    }
-
     # 严格入口：整个字节序列必须通过 `validate_utf8`——意外续字节、截断序列、
     # 过长编码、代理区 D800–DFFF 与超过 U+10FFFF 的码位全部拒绝，非法输入
     # 结构化失败，不进入文本值域。
@@ -366,18 +362,18 @@ imply Utf8Text {
     }
 
     # 严格宿主切片：越界区间由宿主结构化失败，不做任何截断。
+    # 索引单位是标量（码点）计数，载体为 `usize`：索引空间由 std 合同定义，
+    # 目标 VM 的槽位宽度只在 adaptor provider 内部窄化，不回流到作者面。
     # 各 lane 用自身宿主实现覆盖；默认实现按标量边界逐字节拷贝，越界显式失败。
     [host_contract]
-    micro host_slice(self, start: i32, count: i32) -> utf8 {
+    micro host_slice(self, start: usize, count: usize) -> utf8 {
         let scalar_length: usize = self.length()
-        let begin: usize = start as usize
-        let take: usize = count as usize
-        if begin > scalar_length || take > scalar_length - begin {
+        if start > scalar_length || count > scalar_length - start {
             std::types::panic("Utf8Text host_slice 越界：start/count 超出标量范围")
         }
 
-        let start_byte: usize = self.byte_offset(begin)
-        let end_byte: usize = self.byte_offset(begin + take)
+        let start_byte: usize = self.byte_offset(start)
+        let end_byte: usize = self.byte_offset(start + count)
         let mut bytes: ArrayList<u8> = ArrayList::new(0)
         let mut index: usize = start_byte
         while index < end_byte {
@@ -405,7 +401,7 @@ imply Utf8Text {
             take = remaining
         }
 
-        return self.host_slice(begin as i32, take as i32)
+        return self.host_slice(begin, take)
     }
 
     # 严格路径：`start` 超过长度或 `count` 超过剩余标量数时返回 `None`，不做截断。
@@ -420,7 +416,7 @@ imply Utf8Text {
             return None
         }
 
-        return Some(self.host_slice(start as i32, count as i32))
+        return Some(self.host_slice(start, count))
     }
 
     private micro byte_offset(self, char_index: usize) -> usize {
@@ -779,13 +775,12 @@ imply Utf8Text: std::operator::Comparable {
 
         let mut index: usize = 0
         while index < limit {
-            # 字节扩宽到 `i32` 再比较：无符号字节序不变，也不依赖 `u8` 比较算子的宿主 provider。
-            let left_byte: i32 = (left⁅index⁆) as i32
-            let right_byte: i32 = (right⁅index⁆) as i32
-            if left_byte < right_byte {
+            # 字节按无符号值直接比较：`u8` 的先后即 UTF-8 字节字典序，
+            # 不把字节扩宽到其他整数载体来绕开算子。
+            if left⁅index⁆ < right⁅index⁆ {
                 return std::operator::Ordering.Less
             }
-            if left_byte > right_byte {
+            if left⁅index⁆ > right⁅index⁆ {
                 return std::operator::Ordering.Greater
             }
             index = index + 1

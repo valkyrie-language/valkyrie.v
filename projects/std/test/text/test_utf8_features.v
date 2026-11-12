@@ -1,6 +1,6 @@
 [test]
 micro `test utf8 text features`() {
-    let value: utf8 = Utf8Text::from_bytes([104, 101, 108, 108, 111])
+    let value: utf8 = "hello"
 
     if value.is_empty() {
         panic("utf8 is_empty test failed")
@@ -14,19 +14,19 @@ micro `test utf8 text features`() {
         panic("utf8 length test failed")
     }
 
-    if !value.contains(Utf8Text::from_bytes([101, 108, 108])) {
+    if !value.contains("ell") {
         panic("utf8 contains test failed")
     }
 
-    if !value.starts_with(Utf8Text::from_bytes([104, 101])) {
+    if !value.starts_with("he") {
         panic("utf8 starts_with test failed")
     }
 
-    if !value.ends_with(Utf8Text::from_bytes([108, 111])) {
+    if !value.ends_with("lo") {
         panic("utf8 ends_with test failed")
     }
 
-    if value.index_of(Utf8Text::from_bytes([108, 108])) != Some(2) {
+    if value.index_of("ll") != Some(2) {
         panic("utf8 index_of test failed")
     }
 
@@ -35,12 +35,12 @@ micro `test utf8 text features`() {
         panic("utf8 substring length test failed")
     }
 
-    if !part.equals(Utf8Text::from_bytes([101, 108, 108])) {
+    if !part.equals("ell") {
         panic("utf8 substring equals test failed")
     }
 
-    let merged: utf8 = value.concat(Utf8Text::from_bytes([33]))
-    if !merged.ends_with(Utf8Text::from_bytes([33])) {
+    let merged: utf8 = value.concat("!")
+    if !merged.ends_with("!") {
         panic("utf8 concat test failed")
     }
 }

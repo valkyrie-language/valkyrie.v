@@ -44,14 +44,14 @@ imply char: Display {
 # 无符号幅值路径：逐位取余、倒序写入缓冲；不做本地化、不加前导零。
 micro write_decimal_u64(mut bytes: ArrayList<u8>, value: u64): unit {
     if value == 0 {
-        bytes.push(48)
+        bytes.push(b'0')
         return
     }
 
     let mut digits: ArrayList<u8> = ArrayList::new(20)
     let mut rest: u64 = value
     while rest > 0 {
-        digits.push(48 + (rest % 10) as u8)
+        digits.push(b'0' + (rest % 10) as u8)
         rest = rest / 10
     }
 
@@ -71,7 +71,7 @@ micro write_decimal_i64(mut bytes: ArrayList<u8>, value: i64): unit {
         return
     }
 
-    bytes.push(45)
+    bytes.push(b'-')
     let lifted: i64 = value + 1
     let magnitude: u64 = ((-lifted) as u64) + 1
     write_decimal_u64(bytes, magnitude)

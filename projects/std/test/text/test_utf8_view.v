@@ -1,7 +1,7 @@
 [test]
 micro `test utf8 view full and slice`() {
-    let value: utf8 = Utf8Text::from_bytes([104, 101, 108, 108, 111])
-    let view: Utf8View = Utf8View::new(value)
+    let value: utf8 = "hello"
+    let view: Utf8View = Utf8View::full(value)
 
     if view.is_empty() {
         panic("utf8 view is_empty test failed")
@@ -16,18 +16,18 @@ micro `test utf8 view full and slice`() {
         panic("utf8 view full span test failed")
     }
 
-    let part: Utf8Text = view.slice(TextSpan {
+    let part: Utf8Text = view.view(TextSpan {
         offset: 1,
         length: 3,
-    })
-    if !part.equals(Utf8Text::from_bytes([101, 108, 108])) {
+    }).to_text().unwrap()
+    if !part.equals("ell") {
         panic("utf8 view slice test failed")
     }
 }
 
 [test]
 micro `test utf8 view nested span`() {
-    let value: utf8 = Utf8Text::from_bytes([104, 101, 108, 108, 111])
+    let value: utf8 = "hello"
     let view: Utf8View = Utf8View::new(value, TextSpan {
         offset: 1,
         length: 3,
@@ -42,14 +42,14 @@ micro `test utf8 view nested span`() {
         panic("utf8 view nested span test failed")
     }
 
-    if !nested.to_text().equals(Utf8Text::from_bytes([108])) {
+    if !nested.to_text().unwrap().equals("l") {
         panic("utf8 view nested to_text test failed")
     }
 }
 
 [test]
 micro `test utf8 view clamp`() {
-    let value: utf8 = Utf8Text::from_bytes([104, 101, 108, 108, 111])
+    let value: utf8 = "hello"
     let view: Utf8View = Utf8View::new(value, TextSpan {
         offset: 3,
         length: 10,
@@ -60,9 +60,7 @@ micro `test utf8 view clamp`() {
         panic("utf8 view clamp span test failed")
     }
 
-    if !view.to_text().equals(Utf8Text::from_bytes([108, 111])) {
+    if !view.to_text().unwrap().equals("lo") {
         panic("utf8 view clamp to_text test failed")
     }
 }
-
-

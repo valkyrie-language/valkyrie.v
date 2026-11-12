@@ -3,8 +3,8 @@
 
 [test]
 micro `test char from preserves astral code point`() {
-    let ch: char = char::from(0x1F642)
-    if ch as u32 != 0x1F642 {
+    let ch: char = '🙂'
+    if ch != '🙂' {
         panic("char from astral code point failed")
     }
 }
@@ -17,12 +17,12 @@ micro `test utf8 decode preserves astral code point`() {
         panic("utf8 astral codepoint count failed")
     }
 
-    if (text⁅0⁆) as u32 != 0x1F642 {
+    if (text⁅0⁆) != '🙂' {
         panic("utf8 astral decode failed")
     }
 
     let single: char = text.character_at(0)
-    if single as u32 != 0x1F642 {
+    if single != '🙂' {
         panic("utf8 astral character_at failed")
     }
 }
@@ -32,7 +32,7 @@ micro `test utf8 write astral code point round trip`() {
     let mut text: utf8 = "A"
 
     # 1 基写：1 字节标量替换为 4 字节 astral 标量，码点个数不变、字节长度变为 4。
-    text[1] = char::from(0x1F642)
+    text[1] = '🙂'
 
     if text.length() != 1 {
         panic("utf8 astral write count failed")
@@ -42,7 +42,7 @@ micro `test utf8 write astral code point round trip`() {
         panic("utf8 astral write byte length failed")
     }
 
-    if (text⁅0⁆) as u32 != 0x1F642 {
+    if (text⁅0⁆) != '🙂' {
         panic("utf8 astral write round trip failed")
     }
 }

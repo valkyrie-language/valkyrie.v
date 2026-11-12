@@ -97,6 +97,12 @@ imply Utf8Builder {
     micro append_i64(mut self, value: i64): unit {
         write_decimal_i64(self.bytes, value)
     }
+
+    ⍝ 追加无符号整数的十进制表示（不含前导零）：与 `Display` 共用同一整数
+    ⍝ 格式化内核（`format.v` 的 `write_decimal_u64`）。
+    micro append_u64(mut self, value: u64): unit {
+        write_decimal_u64(self.bytes, value)
+    }
 }
 
 

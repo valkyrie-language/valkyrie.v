@@ -18,7 +18,7 @@ micro `test utf16 iterator`() {
         panic("utf16 iterator first next test failed")
     }
 
-    if first.unwrap() as u32 != 0x41 {
+    if first.unwrap() != 'A' {
         panic("utf16 iterator first value test failed")
     }
 
@@ -31,7 +31,7 @@ micro `test utf16 iterator`() {
         panic("utf16 iterator second next test failed")
     }
 
-    if second.unwrap() as u32 != 0x1F600 {
+    if second.unwrap() != '😀' {
         panic("utf16 iterator second value test failed")
     }
 
@@ -44,7 +44,7 @@ micro `test utf16 iterator`() {
         panic("utf16 iterator third next test failed")
     }
 
-    if third.unwrap() as u32 != 0x42 {
+    if third.unwrap() != 'B' {
         panic("utf16 iterator third value test failed")
     }
 
