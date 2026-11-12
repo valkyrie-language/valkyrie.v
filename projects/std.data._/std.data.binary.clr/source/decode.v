@@ -1,5 +1,7 @@
 namespace std.data.binary.clr;
 
+using std.text::{Utf8Builder};
+
 structure ClrDecoded<T> {
     value: T
 
@@ -13,7 +15,26 @@ micro clr_decoded<T>(value: T, next_offset: usize) -> ClrDecoded<T> {
     }
 }
 
+# 原始字节域入口验证：`[i32]` 只是字节载体，每个元素必须落在 0..=255。
+# 越界元素不是字节，必须在入口失败，不得被 `as u32` / `as u16` 静默截断后进入解码。
+micro clr_first_non_byte_index(data: [i32]) -> usize {
+    let mut index: usize = 0
+    while index < data.length {
+        let value: i32 = data[index]
+        if value < 0 || value > 255 {
+            return index
+        }
+        index = index + 1
+    }
+    return data.length
+}
+
 micro decode_clr(data: [i32]) -> ClrBinaryResult<ClrBinaryModule> {
+    let bad_index: usize = clr_first_non_byte_index(data)
+    if bad_index < data.length {
+        return Fail(clr_binary_diagnostic("原始字节域入口非法：元素不是 0..=255 的字节", bad_index))
+    }
+
     if data.length < 128 {
         return Fail(clr_binary_diagnostic("CLR 数据过短，至少需要 128 字节", 0))
     }
@@ -157,8 +178,8 @@ micro decode_clr_data_directory(data: [i32], opt_header_start: usize, opt_header
 
     match clr_read_u16_le(data, opt_header_start) {
         case Fine(magic):
-            let number_of_rva_offset: usize
-            let dir_start_offset: usize
+            let number_of_rva_offset: usize;
+            let dir_start_offset: usize;
 
             if magic == 0x10b {
                 number_of_rva_offset = opt_header_start + 92
@@ -305,49 +326,10 @@ micro clr_header_version_string(header: ClrClrHeader) -> utf8 {
 }
 
 micro clr_u16_to_string(value: u16) -> utf8 {
-    if value == 0 {
-        return "0"
-    }
-    let mut result: utf8 = ""
-    let mut v: u16 = value
-    while v > 0 {
-        let digit: u16 = v % 10
-        let ch: utf8 = clr_digit_char(digit)
-        result = ch + result
-        v = v / 10
-    }
-    return result
-}
-
-micro clr_digit_char(digit: u16) -> utf8 {
-    if digit == 0 {
-        return "0"
-    }
-    if digit == 1 {
-        return "1"
-    }
-    if digit == 2 {
-        return "2"
-    }
-    if digit == 3 {
-        return "3"
-    }
-    if digit == 4 {
-        return "4"
-    }
-    if digit == 5 {
-        return "5"
-    }
-    if digit == 6 {
-        return "6"
-    }
-    if digit == 7 {
-        return "7"
-    }
-    if digit == 8 {
-        return "8"
-    }
-    return "9"
+    # 十进制文本委托 `Utf8Builder.append_u64` 的唯一整数内核。
+    let mut builder: Utf8Builder = Utf8Builder::new(5)
+    builder.append_u64(value as u64)
+    return builder.build()
 }
 
 micro decode_clr_metadata(data: [i32], metadata_offset: usize) -> ClrBinaryResult<ClrDecoded<ClrMetadata>> {
@@ -781,7 +763,7 @@ micro decode_clr_typedefs(data: [i32], table_stream: ClrTableStream, string_heap
 
                 push(types, ClrTypeDef {
                     name: "Type",
-                    namespace: "",
+                    namespace_name: "",
                     attr_flags: attr_flags,
                     extends_index: extends_index,
                     field_list_start: field_list_start,

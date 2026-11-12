@@ -89,7 +89,7 @@ structure ClrTable {
 structure ClrTypeDef {
     name: utf8
 
-    namespace: utf8
+    namespace_name: utf8
 
     attr_flags: u32
 

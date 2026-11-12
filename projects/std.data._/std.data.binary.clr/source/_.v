@@ -100,8 +100,8 @@ micro clr_check_pe_magic(data: [i32], offset: usize) -> bool {
     if offset + 4 > data.length {
         return false
     }
-    return data[offset] == 80
-        && data[offset + 1] == 69
+    return data[offset] == b'P'
+        && data[offset + 1] == b'E'
         && data[offset + 2] == 0
         && data[offset + 3] == 0
 }
@@ -110,8 +110,8 @@ micro clr_check_dos_magic(data: [i32], offset: usize) -> bool {
     if offset + 2 > data.length {
         return false
     }
-    return data[offset] == 77
-        && data[offset + 1] == 90
+    return data[offset] == b'M'
+        && data[offset + 1] == b'Z'
 }
 
 micro clr_metadata_signature() -> u32 {
