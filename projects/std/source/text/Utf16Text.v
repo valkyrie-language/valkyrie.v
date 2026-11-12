@@ -25,63 +25,42 @@ imply Utf16Text {
         return false
     }
 
-    # 以下方法均为宿主契约：std 只声明签名与语义口径（索引空间为 UTF-16 码元）。
-    # 提供真实宿主字符串能力的目标在其 adaptor 绑定 provider；未绑定合法 provider 时，
-    # 本 shell 显式失败，不以占位返回值冒充未交付的能力。
+    # 以下方法均为宿主契约：std 只声明签名与语义口径（索引空间为 UTF-16 码元），
+    # 不携带实现体。提供真实宿主字符串能力的目标在其 adaptor 绑定 provider；
+    # 未绑定合法 provider 的目标上，可达调用在编译边界的 provider 选择门禁
+    # （unbound-contract）结构化失败，std 侧不以运行期 panic shell 冒充该门。
     [host_contract]
-    micro slice(self, start: usize, count: usize) -> utf16 {
-        std::types::panic("Utf16Text slice 无合法 provider：当前目标未提供 UTF-16 切片能力")
-    }
+    micro slice(self, start: usize, count: usize) -> utf16
 
     [host_contract]
-    micro concat(self, other: utf16) -> utf16 {
-        std::types::panic("Utf16Text concat 无合法 provider：当前目标未提供 UTF-16 拼接能力")
-    }
+    micro concat(self, other: utf16) -> utf16
 
     [host_contract]
-    micro contains(self, value: utf16) -> bool {
-        std::types::panic("Utf16Text contains 无合法 provider：当前目标未提供 UTF-16 包含判定能力")
-    }
+    micro contains(self, value: utf16) -> bool
 
     [host_contract]
-    micro starts_with(self, prefix: utf16) -> bool {
-        std::types::panic("Utf16Text starts_with 无合法 provider：当前目标未提供 UTF-16 前缀判定能力")
-    }
+    micro starts_with(self, prefix: utf16) -> bool
 
     [host_contract]
-    micro ends_with(self, suffix: utf16) -> bool {
-        std::types::panic("Utf16Text ends_with 无合法 provider：当前目标未提供 UTF-16 后缀判定能力")
-    }
+    micro ends_with(self, suffix: utf16) -> bool
 
     [host_contract]
-    micro index_of(self, value: utf16) -> Option<usize> {
-        std::types::panic("Utf16Text index_of 无合法 provider：当前目标未提供 UTF-16 查找能力")
-    }
+    micro index_of(self, value: utf16) -> Option<usize>
 
     [host_contract]
-    micro trim(self) -> utf16 {
-        std::types::panic("Utf16Text trim 无合法 provider：当前目标未提供 UTF-16 裁剪能力")
-    }
+    micro trim(self) -> utf16
 
     [host_contract]
-    micro to_lower(self) -> utf16 {
-        std::types::panic("Utf16Text to_lower 无合法 provider：当前目标未提供 UTF-16 小写映射能力")
-    }
+    micro to_lower(self) -> utf16
 
     [host_contract]
-    micro to_upper(self) -> utf16 {
-        std::types::panic("Utf16Text to_upper 无合法 provider：当前目标未提供 UTF-16 大写映射能力")
-    }
+    micro to_upper(self) -> utf16
 
     [host_contract]
-    micro replace(self, old_value: utf16, new_value: utf16) -> utf16 {
-        std::types::panic("Utf16Text replace 无合法 provider：当前目标未提供 UTF-16 替换能力")
-    }
+    micro replace(self, old_value: utf16, new_value: utf16) -> utf16
 
     [host_contract]
-    micro equals(self, other: utf16) -> bool {
-        std::types::panic("Utf16Text equals 无合法 provider：当前目标未提供 UTF-16 相等判定能力")
-    }
+    micro equals(self, other: utf16) -> bool
 
     micro chars(self) -> Utf16Iterator {
         return Utf16Iterator::new(self)
