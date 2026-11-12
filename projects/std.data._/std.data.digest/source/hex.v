@@ -5,12 +5,12 @@ namespace std.data.digest;
 # `digest_hex_text` 给出——hex 字符全部落在 ASCII（< 0x80），构造即良构，
 # 走 `from_bytes_unchecked` 并在此写明不变量。
 
-# 半字节 -> 小写 hex 字符（'0'..'9' = 48+x，'a'..'f' = 87+x）。
+# 半字节 -> 小写 hex 字符（'0'..'9' 与 'a'..'f'）。
 micro digest_hex_digit(nibble: u64) -> u8 {
     if nibble < 10 {
-        return (48 + nibble) as u8
+        return b'0' + nibble as u8
     }
-    return (87 + nibble) as u8
+    return b'a' + (nibble - 10) as u8
 }
 
 micro digest_hex(bytes: [u8]) -> [u8] {
