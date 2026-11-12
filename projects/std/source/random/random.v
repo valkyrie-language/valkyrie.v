@@ -1,5 +1,7 @@
 namespace std.random;
 
+using std.types::{Result, Fine, Fail};
+
 # std.random — 宿主能力边界：熵源与生成器合同。
 #
 # 本包只定义能力与合同，不定义算法：
@@ -79,15 +81,38 @@ micro next_i32<G>(mut generator: G, max_exclusive: i32) -> i32
     return next_u64_below(generator, max_exclusive as u64) as i32
 }
 
-# `[min, max)`；退化区间（`max <= min`）恒返回 `min`。
-micro next_range<G>(mut generator: G, min: i32, max: i32) -> i32
+# 范围取样失败种类（结构化）。
+enums RandomRangeErrorKind {
+    # 非法区间：`max <= min`，跨度不存在或为负。
+    InvalidRange
+}
+
+structure RandomRangeError {
+    kind: RandomRangeErrorKind
+}
+
+micro random_invalid_range() -> RandomRangeError {
+    return RandomRangeError { kind: InvalidRange }
+}
+
+# `[min, max)` 均匀取样。
+# 跨度在能完整表示它的更宽数值域（i64）计算：i32 端点差值可能溢出
+# （如 `min = i32::MIN, max = i32::MAX` 时 `max - min` 回绕），宽域下
+# `span = max - min` 至多 2^32-1，可无损落入 u64 再经无偏拒绝采样取样，
+# 结果映回 i32 必落在 `[min, max)` 内。
+# 非法区间（`max <= min`）结构化失败，不静默返回 `min`。
+micro next_range<G>(mut generator: G, min: i32, max: i32) -> Result<i32, RandomRangeError>
     where G: Generator
 {
-    if max <= min {
-        return min
+    let low: i64 = min as i64
+    let high: i64 = max as i64
+    if high <= low {
+        return Fail { error: random_invalid_range() }
     }
 
-    return min + next_i32(generator, max - min)
+    let span: u64 = (high - low) as u64
+    let pick: u64 = next_u64_below(generator, span)
+    return Fine { value: (low + pick as i64) as i32 }
 }
 
 micro next_bool<G>(mut generator: G) -> bool

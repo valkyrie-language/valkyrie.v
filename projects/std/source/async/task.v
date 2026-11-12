@@ -1,88 +1,146 @@
 namespace std.async;
 
+using std.types::{Option, Some, None};
+
 # std.async: 异步任务最小面
-# 提供 Future / Promise / CancellationToken / CancellationSource / spawn / delay / sleep / yield 的最小定义，
-# 作为语言级异步并发语义的真实承载体。
+# 提供 Poll / Future / Promise / Task / CancellationToken / CancellationSource
+# 与调度、计时、让出合同的定义，作为语言级异步并发语义的真实承载体。
+
+⍝ 轮询终态：三值类型，完成、未决、取消互不混同。
+⍝ `Ready` 直接携带产出值——不存在「先说可取、再取空槽」的两步协议；
+⍝ `Cancelled` 是独立终态，取消后的任务永远不会产出 `Ready`。
+[tag(PollKind)]
+unite Poll<T> {
+    ⍝ 尚未完成，可继续轮询。
+    [tag(0)]
+    [constructor]
+    Pending,
+    ⍝ 已完成，携带产出值。
+    [tag(1)]
+    [constructor]
+    Ready {
+        ⍝ 异步产出
+        output: T,
+    },
+    ⍝ 已取消的终态，无产出。
+    [tag(2)]
+    [constructor]
+    Cancelled,
+}
 
 ⍝ 异步结果的抽象协议。
-⍝ 定义异步值的最小接口：通过 `poll` 查询就绪状态，通过 `output` 显式取出结果值。
-⍝ 该协议取代了旧的“布尔 poll + 编译器脑补输出值”隐式约定，使结果恢复显式且可验证。
+⍝ `poll` 是唯一的推进与观察入口：每次调用返回当前三值状态；
+⍝ 就绪值随 `Ready` 一并给出，无独立的取值步骤。
 trait Future {
     ⍝ Future 完成后产出的结果类型。
     type Output
 
-    ⍝ 查询当前 Future 是否已进入终态（就绪）。
-    ⍝ 返回 true 表示可调用 `output` 取出结果；返回 false 表示尚未完成。
-    micro poll(mut self): bool
+    ⍝ 查询当前状态：`Pending` / `Ready(output)` / `Cancelled`。
+    micro poll(mut self): Poll<Output>
+}
 
-    ⍝ 取出已完成的结果值。
-    ⍝ 调用前应确保 `poll` 已返回 true；对未完成或已取消的 Future 调用行为未定义。
-    micro output(self): Output
+⍝ 完成侧状态机：未决、已产出、已取消三态，终态不可逆。
+enums PromiseState {
+    Pending
+    Resolved
+    Cancelled
 }
 
 ⍝ 单赋值的可完成异步值，是 `Future` 的具体拥有型实现。
-⍝ 持有值槽、完成标志与取消标志，支持通过 `resolve` 写入结果或通过 `cancel` 取消。
-class Promise<T> {
-    ⍝ 已写入的结果值，完成前为 `None`。
-    _value: Option<T>
+⍝ 运行时交付终态只经 `resolve` / `cancel` 协议写入；执行器不得读写
+⍝ `_state`、`_slot` 等内部字段——终态的唯一事实来源是本协议。
+structure Promise<T> {
+    ⍝ 当前状态机位置。
+    _state: PromiseState
 
-    ⍝ 是否已进入终态（已写入结果或已取消）。
-    _done: bool
-
-    ⍝ 是否已被取消。
-    _cancelled: bool
+    ⍝ 已写入的结果值；`Resolved` 态下必为 `Some`（不变量由 `resolve` 维护）。
+    _slot: Option<T>
 }
 
 imply Promise<T>: Future {
     ⍝ Promise 的结果类型即为所持有的值类型 T。
     type Output = T
 
-    ⍝ 构造一个未完成、未取消的空 Promise。
+    ⍝ 构造一个未决、未取消的空 Promise。
     micro new(): Self {
         return Promise {
-            _value: None,
-            _done: false,
-            _cancelled: false,
+            _state: Pending,
+            _slot: None,
         }
     }
 
-    ⍝ 写入结果值并标记完成，使 Promise 进入终态。
-    ⍝ 若 Promise 已进入终态则忽略后续写入，保证单赋值语义。
+    ⍝ 写入结果值并进入 `Resolved` 终态。
+    ⍝ 单赋值语义：首个终态生效，已处于终态时后续写入被忽略。
     micro resolve(mut self, value: T): unit {
-        if self._done {
-            return
+        match self._state {
+            case Pending: {
+                self._slot = Some::<T>(value)
+                self._state = Resolved
+            }
+            else: {
+                return
+            }
         }
-        self._value = Some::<T>(value)
-        self._done = true
     }
 
-    ⍝ 查询是否已进入终态（已写入结果或已取消）。
-    micro poll(mut self): bool {
-        return self._done
-    }
-
-    ⍝ 取出已写入的结果值。
-    ⍝ 调用前应确保 `poll` 已返回 true；对已取消但未写入值的 Promise 调用会触发 panic。
-    micro output(self): T {
-        let value: Option<T> = self._value
-        return value.unwrap()
-    }
-
-    ⍝ 请求取消该 Promise，将其标记为已取消并进入终态。
-    ⍝ 若 Promise 已进入终态则忽略取消请求。
+    ⍝ 请求取消：未决态直接进入 `Cancelled` 终态；已是终态则忽略。
+    ⍝ 取消后 `poll` 恒产出 `Cancelled`，不存在取到空槽的路径。
     micro cancel(mut self): unit {
-        if self._done {
-            return
+        match self._state {
+            case Pending: {
+                self._slot = None
+                self._state = Cancelled
+            }
+            else: {
+                return
+            }
         }
-        self._cancelled = true
-        self._done = true
     }
 
-    ⍝ 查询该 Promise 是否已被取消。
-    ⍝ 取消感知的 await/block 在 `poll` 返回 true 后调用本方法，
-    ⍝ 若返回 true 则跳过会触发 panic 的 `output`，直接以 null/unit 完成恢复。
-    micro is_cancelled(self): bool {
-        return self._cancelled
+    ⍝ 三值终态查询；就绪值随 `Ready` 一并产出。
+    micro poll(mut self): Poll<T> {
+        match self._state {
+            case Cancelled: {
+                return Cancelled
+            }
+            case Resolved: {
+                return Ready { output: self._slot.unwrap() }
+            }
+            case Pending: {
+                return Pending
+            }
+        }
+    }
+}
+
+⍝ 任务句柄：调度产出的 join 载体，本身即 `Future`。
+⍝ 持有完成侧 `Promise` 与协作取消的 `CancellationToken`；
+⍝ join 即轮询其 `Future`，取消传播即触发 token 并落终态。
+structure Task<T> {
+    _completion: Promise<T>
+    _token: CancellationToken
+}
+
+imply Task<T>: Future {
+    type Output = T
+
+    micro poll(mut self): Poll<T> {
+        return self._completion.poll()
+    }
+}
+
+imply Task<T> {
+    ⍝ 请求取消：先拉起 token（协作式取消传播给正在执行的任务体），
+    ⍝ 完成侧随即进入 `Cancelled` 终态——首个终态生效，任务体之后的
+    ⍝ `resolve` 被忽略，`poll` 不再产出 `Ready`。
+    micro cancel(mut self): unit {
+        self._token.cancel()
+        self._completion.cancel()
+    }
+
+    ⍝ 暴露协作取消 token，供任务体在协作点观察。
+    micro token(self): CancellationToken {
+        return self._token
     }
 }
 
@@ -137,28 +195,37 @@ imply CancellationSource {
     }
 }
 
-⍝ 在异步运行时上调度执行一个任务。
-⍝ 该函数为 host contract：具体调度行为由宿主运行时提供。
-[host_contract]
-micro spawn(task: micro() -> unit): unit {
-    task()
+⍝ 异步能力失败种类（结构化）。
+enums AsyncErrorKind {
+    ⍝ 时长参数非法（负值）。
+    InvalidDuration
+    ⍝ 运行时底层失败，未细分。
+    Failed
 }
 
-⍝ 让当前任务延迟指定毫秒后再恢复，交出控制权。
-⍝ 该函数为 host contract：具体的计时与调度由宿主运行时提供。
-[host_contract]
-micro delay(ms: i32): unit {
-    return
+structure AsyncError {
+    kind: AsyncErrorKind
 }
 
-⍝ 让当前任务休眠指定毫秒后再恢复，语义与 `delay` 一致。
-⍝ 该函数为 host contract：保留独立命名以对齐 spec 的 sleep 语义。
-[host_contract]
-micro sleep(ms: i32): unit {
-    return
+micro async_error(kind: AsyncErrorKind) -> AsyncError {
+    return AsyncError { kind: kind }
 }
 
-⍝ 让出当前任务的执行控制权，允许运行时调度其他任务。
-micro yield(): unit {
-    delay(0)
-}
+# ── 运行时合同 ────────────────────────────────────────────────────────
+# 调度、计时、让出是宿主执行器的正式合同：无默认体、无同步兜底。
+# 未绑定执行器的目标在计划阶段结构化失败——未交付能力显式不可用，
+# 绝不以「就地同步执行任务体」或「立即返回的假睡眠」冒充并发语义。
+# 执行器交付任务终态只经 `Promise::resolve` / `Promise::cancel` 协议。
+
+⍝ 调度：任务体拿到协作取消 token 与完成侧 Promise，在其上交付终态；
+⍝ 返回的 `Task` 是 join 与取消传播的句柄。
+[host_contract]
+micro spawn<T>(body: micro(CancellationToken, Promise<T>) -> unit): Task<T>
+
+⍝ 计时：真实睡眠 `ms` 毫秒后恢复；非正时长结构化失败。
+[host_contract]
+micro sleep(ms: i64): Option<AsyncError>
+
+⍝ 让出：交还执行控制权，允许运行时调度其他任务。
+[host_contract]
+micro yield_now(): Option<AsyncError>

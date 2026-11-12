@@ -73,13 +73,18 @@ micro read_to_end<R>(reader: R) -> Result<[u8], IoError> {
 }
 
 # 读到流尽并按 UTF-8 桥接为文本（`std.text` 的 `Utf8Text::from_bytes`）。
-# 桥接是字节到文本的显式入口；输入不是合法 UTF-8 时的诊断口径归
-# `std.text` 的解码合同，本层不做校验。
+# 桥接是字节到文本的显式入口，构造即严格验证：输入不是合法 UTF-8 时
+# 解码诊断口径归 `std.text`，本层把它收敛为 `InvalidEncoding` 结构化失败。
 micro read_to_text<R>(reader: R) -> Result<utf8, IoError> {
     let bytes_result: Result<[u8], IoError> = read_to_end(reader)
     match bytes_result {
         case Fine(bytes):
-            return Fine { value: std::text::Utf8Text::from_bytes(bytes) }
+            match std::text::Utf8Text::from_bytes(bytes) {
+                case Fine(text):
+                    return Fine { value: text }
+                case Fail(decoding):
+                    return Fail { error: io_invalid_encoding() }
+            }
         case Fail(error):
             return Fail { error: error }
     }

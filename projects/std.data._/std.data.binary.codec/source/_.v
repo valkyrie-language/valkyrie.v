@@ -1,7 +1,7 @@
 namespace std.data.binary.codec;
 
-using std.data::{DataOutcome, data_outcome_of, data_outcome_partial, data_outcome_has_errors, data_outcome_diagnostics, data_outcome_value_or};
-using std.diagnostic::{Diagnostic, Error, Span, new_diagnostic, new_span};
+using std.data::{DataOutcome, data_outcome_of, data_outcome_partial, data_outcome_value_or};
+using std.diagnostic::{Error, Span, new_diagnostic, new_span};
 
 # std.data.binary.codec — 二进制字节编解码能力层。
 #
@@ -115,7 +115,8 @@ trait DataBitReader {
     # 读单比特（0/1）。
     micro read_bit(mut self) -> DataOutcome<u8>
 
-    # 读 `width` 个连续比特（宽度不超过 64）。
+    # 读 `width` 个连续比特（宽度不超过 64）。剩余位数不足时按包级合同
+    # 失败：游标零推进，不产出部分值。
     micro read_bits(mut self, width: usize) -> DataOutcome<u64>
 }
 
@@ -275,20 +276,19 @@ imply DataBitCursor: DataBitReader {
         if self.byte_index >= self.view.length {
             return codec_input_exhausted(0 as u8, self.view.base + self.byte_index)
         }
-        # u8 无目标 provider 的位移/比较，经 u64 载道取值后截回。
-        let byte: u64 = self.view.bytes⁅self.view.base + self.byte_index⁆ as u64
-        let bit: u64 = match self.order {
+        let byte: u8 = self.view.bytes⁅self.view.base + self.byte_index⁆
+        let bit: u8 = match self.order {
             case LeastSignificantBitFirst:
-                (byte >> self.bit_index) & 1
+                (byte >> self.bit_index) & (1 as u8)
             case MostSignificantBitFirst:
-                (byte >> (7 - self.bit_index)) & 1
+                (byte >> (7 - self.bit_index)) & (1 as u8)
         }
         self.bit_index = self.bit_index + 1
         if self.bit_index == 8 {
             self.bit_index = 0
             self.byte_index = self.byte_index + 1
         }
-        return data_outcome_of(bit as u8)
+        return data_outcome_of(bit)
     }
 
     micro read_bits(mut self, width: usize) -> DataOutcome<u64> {
@@ -299,21 +299,19 @@ imply DataBitCursor: DataBitReader {
                 [new_diagnostic("std.data.codec.invalid_bit_width", Error, "单次读取位宽超过 64", span)]
             )
         }
+        # 越界前置校验：按当前位位点算出剩余位数（不变量：字节消费完时
+        # bit_index 已归零，故 byte_index == length 时 bit_index 为 0）。
+        # 剩余不足即失败，游标零推进——与包级合同一致，绝不逐位推进真实
+        # 游标后返回部分值。
+        let bits_left: usize = (self.view.length - self.byte_index) * 8 - self.bit_index
+        if width > bits_left {
+            return codec_input_exhausted(0 as u64, self.view.base + self.byte_index)
+        }
         let mut value: u64 = 0
         let mut consumed: usize = 0
-        let mut diagnostics: [Diagnostic] = []
         while consumed < width {
+            # 前置校验保证循环内每步必然在界内，读取必成功。
             let step: DataOutcome<u8> = self.read_bit()
-            if data_outcome_has_errors(step) {
-                # 越界发生在第 consumed 位：聚合诊断并带值返回部分结果。
-                let inner: [Diagnostic] = data_outcome_diagnostics(step)
-                let mut at: usize = 0
-                while at < inner.length() {
-                    diagnostics = diagnostics.push(inner⁅at⁆)
-                    at = at + 1
-                }
-                return data_outcome_partial(value, diagnostics)
-            }
             let bit: u64 = data_outcome_value_or(step, 0 as u8) as u64
             match self.order {
                 case LeastSignificantBitFirst:
@@ -342,16 +340,16 @@ micro data_bit_writer(order: DataBitOrder) -> DataBitWriter {
 }
 
 imply DataBitWriter {
-    # 写单比特。u8 无目标 provider 的位移，经 u64 载道组装后截回。
+    # 写单比特：原生 u8 位宽直接组装。
     micro write_bit(mut self, bit: u8) -> unit {
-        let low: u64 = (bit as u64) & 1
-        let placed: u64 = match self.order {
+        let low: u8 = bit & (1 as u8)
+        let placed: u8 = match self.order {
             case LeastSignificantBitFirst:
-                (self.current as u64) | (low << self.used)
+                self.current | (low << self.used)
             case MostSignificantBitFirst:
-                (self.current as u64) | (low << (7 - self.used))
+                self.current | (low << (7 - self.used))
         }
-        self.current = placed as u8
+        self.current = placed
         self.used = self.used + 1
         if self.used == 8 {
             self.bytes = self.bytes.push(self.current)

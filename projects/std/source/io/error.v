@@ -17,6 +17,8 @@ enums IoErrorKind {
     InvalidInput
     # 底层失败，未细分。
     Failed
+    # 字节桥接为文本时不是合法 UTF-8：字节到文本的显式转换层失败。
+    InvalidEncoding
 }
 
 structure IoError {
@@ -50,6 +52,9 @@ micro io_error_code(error: IoError) -> i64 {
         case Failed: {
             return 5
         }
+        case InvalidEncoding: {
+            return 6
+        }
     }
 }
 
@@ -73,4 +78,8 @@ micro io_invalid_input() -> IoError {
 
 micro io_failed() -> IoError {
     return IoError { kind: Failed }
+}
+
+micro io_invalid_encoding() -> IoError {
+    return IoError { kind: InvalidEncoding }
 }
