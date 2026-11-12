@@ -77,23 +77,30 @@ micro leb128_decode_i32(data: [i32], offset: usize) -> WasmBinaryResult<Leb128De
         let byte: i32 = data[pos]
         let byte_val: u32 = byte as u32
         let low_bits: u32 = byte_val % 128
+        let has_more: bool = byte_val >= 128
+
+        # 第 5 组（shift=28）只有 bit 3 以下承载数值：bit 4..6 必须全部等于
+        # bit 3（符号扩展位），混合取值即越过 i32 值域。与 unsigned 分支的
+        # 末组越界拒收合同一致；非最小编码（多余符号组）两侧同样接受。
+        if shift == 28 && low_bits > 7 && low_bits < 120 {
+            return Fail(wasm_binary_diagnostic("LEB128 有符号编码溢出，超过 i32 范围", offset))
+        }
 
         # 每组贡献 `low_bits * 2^shift`：移位是位域语义，不是乘 128 的次数。
-        result = result + ((low_bits << shift) as i32)
+        # 末组先掩掉符号扩展位——其贡献是 2^32 的整数倍，mod 2^32 消没，
+        # 回绕累加即终值，无需再减。
+        let mut payload: u32 = low_bits
+        if shift == 28 {
+            payload = low_bits % 16
+        }
+        result = result + ((payload << shift) as i32)
 
         pos = pos + 1
 
-        if byte_val < 128 {
-            if shift < 31 && (low_bits % 64) >= 32 {
-                let mut sign_mult: i32 = -1
-                let mut sign_shift: u32 = shift + 7
-                let mut sign_val: i32 = 1
-                let mut si: u32 = 0
-                while si < sign_shift {
-                    sign_val = sign_val * 2
-                    si = si + 1
-                }
-                result = result + sign_mult * sign_val
+        if !has_more {
+            # 符号位是末组 bit 6（不是 bit 5）：置位时真实值 = 累加值 − 2^(shift+7)。
+            if shift < 28 && low_bits >= 64 {
+                result = result - (((1 as u32) << (shift + 7)) as i32)
             }
             return Fine(Leb128Decoded {
                 value: result,
