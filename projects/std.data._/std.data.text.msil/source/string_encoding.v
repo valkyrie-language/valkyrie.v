@@ -51,7 +51,6 @@ micro render_msil_ldstr_from_utf8_source(utf8_source: utf8) -> MsilParseResult<u
     while pending.is_some() {
         let ch: char = pending.unwrap().1
         pending = iter.next()
-        let code: u32 = ch as u32
 
         # 码点 → UTF-16 码元（经编码能力，astral 走代理对）→ 小端字节，供 bytearray 形态消费。
         let units: [u16] = std::text::encode_utf16(ch)
@@ -78,7 +77,7 @@ micro render_msil_ldstr_from_utf8_source(utf8_source: utf8) -> MsilParseResult<u
         } else if ch == '\r' {
             escaped.append('\\')
             escaped.append('r')
-        } else if code >= 32 && code <= 126 {
+        } else if ch >= ' ' && ch <= '~' {
             escaped.append(ch)
         } else {
             needs_utf16_bytearray = true
@@ -94,6 +93,7 @@ micro render_msil_ldstr_from_utf8_source(utf8_source: utf8) -> MsilParseResult<u
                 line.append(' ')
             }
             line.append(std::text::hex_encode([le_bytes⁅i⁆]))
+            i = i + 1
         }
         line.append(")")
         return Fine(line.build())

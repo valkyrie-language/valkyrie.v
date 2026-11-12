@@ -1,42 +1,16 @@
 namespace std.data.text.msil;
 
+using std.text::{Utf8Builder};
+
 # Render typed MSIL → ILASM text (subset). Full opcode table grows with CLR lane.
 # Call/newobj/ldfld operands must carry full type names (no short-name rewrite here).
 
-micro render_digit(d: i64) -> utf8 {
-    if d == 0 { return "0" }
-    if d == 1 { return "1" }
-    if d == 2 { return "2" }
-    if d == 3 { return "3" }
-    if d == 4 { return "4" }
-    if d == 5 { return "5" }
-    if d == 6 { return "6" }
-    if d == 7 { return "7" }
-    if d == 8 { return "8" }
-    if d == 9 { return "9" }
-    return "0"
-}
-
 micro render_i64_text(value: i64) -> utf8 {
-    if value == 0 {
-        return "0"
-    }
-    let mut n: i64 = value
-    let mut neg: bool = false
-    if n < 0 {
-        neg = true
-        n = 0 - n
-    }
-    let mut out: utf8 = ""
-    while n > 0 {
-        let d: i64 = n % 10
-        out = render_digit(d) + out
-        n = n / 10
-    }
-    if neg {
-        out = "-" + out
-    }
-    return out
+    # 有符号十进制委托 `Utf8Builder.append_i64` 的唯一整数内核：最小负数走
+    # 无符号幅值路径，不在本文件复制取负逻辑。
+    let mut builder: Utf8Builder = Utf8Builder::new(21)
+    builder.append_i64(value)
+    return builder.build()
 }
 
 micro render_msil_type(ty: MsilType) -> utf8 {

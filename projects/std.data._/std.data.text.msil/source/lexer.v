@@ -272,7 +272,7 @@ micro lex_msil(source: utf8) -> MsilParseResult<[MsilToken]> {
             continue
         }
 
-        if ch == "{" || ch == "}" || ch == "(" || ch == ")" || ch == ";" || ch == ":"
+        if ch == "\{" || ch == "\}" || ch == "(" || ch == ")" || ch == ";" || ch == ":"
             || ch == "," || ch == "[" || ch == "]" || ch == "=" {
             let start: usize = pos
             let start_line: usize = line
