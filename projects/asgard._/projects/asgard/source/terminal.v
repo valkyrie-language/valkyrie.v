@@ -12,28 +12,45 @@ using std.terminal;
 ⍝   `micro awsl_call_<name>(session: mut TuiSession) -> unit` 的处理函数，
 ⍝   构造控件时以函数值直接传入；不存在按导出名分派的字符串通道。
 ⍝ - 绑定状态：脚本 `let mut` 中承担交互状态的绑定（布尔、单选组）
-⍝   以显示名登记到 `AsgardTuiBindings`，换取会话内类型化槽句柄；
+⍝   以显示名登记到当前运行帧，换取会话内类型化槽句柄；
 ⍝   显示名只作登记身份，值类型由句柄类型固定。纯展示文本在重挂载时
 ⍝   由生成代码从产品 store 直接求值写入 `Text` 控件，不占用会话槽位。
-⍝ - 生命周期：`asgard_terminal_run` 显式创建并持有会话，登记表随
-⍝   每次运行开始/结束重置；会话以参数传给生成处理函数，无进程级隐式单例。
+⍝ - 生命周期：`asgard_terminal_run` 显式创建并持有会话，并为每次运行
+⍝   压入一张全新的登记帧、运行返回时弹出；登记表按运行（即会话）
+⍝   作用域组织，不存在跨运行共享、逐次重置的同一张表。
+⍝   会话以参数传给生成处理函数，无进程级隐式会话单例。
+⍝
+⍝ 重入与并发政策（登记帧栈的语义事实）：
+⍝ - 重入：同一会话运行期间再次 `run` 是 `std.terminal` 会话合同违反
+⍝   （panic），产品不另行兜底；嵌套运行（回调内启动子会话）合法，
+⍝   子运行持有自己的登记帧，帧按调用栈 LIFO 进出，父子帧互不可见，
+⍝   子帧显示名与父帧重名不构成冲突（句柄落在各自会话的槽位上）。
+⍝ - 并发：登记帧栈不是线程安全结构；产品合同为单线程事件循环，
+⍝   跨线程并发会话不受支持。
+⍝ - 边界：登记帧只在一次 `asgard_terminal_run` 存续期间有效；
+⍝   运行边界之外构造控件或按显示名补丁是生成流程错误，显式 panic，
+⍝   不做静默兜底。
 
-# 显示名 → 类型化槽句柄登记表。句柄身份跨重挂载稳定；本表只在一次
-# `asgard_terminal_run` 期间有效，运行结束即重置。
-singleton AsgardTuiBindings {
-    mut flag_names: ArrayList<utf8>;
-    mut flag_handles: ArrayList<FlagBinding>;
-    mut choice_names: ArrayList<utf8>;
-    mut choice_handles: ArrayList<ChoiceBinding>;
+# 登记帧：一次运行（一个会话）一张表，条目为显示名 → 类型化槽句柄。
+# 句柄身份在帧内跨重挂载稳定；帧随运行创建与销毁，不跨会话共享。
+structure AsgardTuiFrame {
+    flag_names: ArrayList<utf8>
+    flag_handles: ArrayList<FlagBinding>
+    choice_names: ArrayList<utf8>
+    choice_handles: ArrayList<ChoiceBinding>
+}
 
-    micro reset(mut self): unit {
-        self.flag_names.clear()
-        self.flag_handles.clear()
-        self.choice_names.clear()
-        self.choice_handles.clear()
+imply AsgardTuiFrame {
+    micro new() -> Self {
+        return AsgardTuiFrame {
+            flag_names: ArrayList::new(16),
+            flag_handles: ArrayList::new(16),
+            choice_names: ArrayList::new(16),
+            choice_handles: ArrayList::new(16)
+        }
     }
 
-    # 按显示名取布尔槽句柄：已登记则复用，未登记则在会话上分配并登记。
+    # 按显示名取布尔槽句柄：帧内已登记则复用，未登记则在会话上分配并登记。
     micro flag(mut self, session: mut TuiSession, name: utf8, initial: bool) -> FlagBinding {
         let mut i: usize = 0
         while i < self.flag_names.length() {
@@ -48,7 +65,7 @@ singleton AsgardTuiBindings {
         return handle
     }
 
-    # 按显示名取选项槽句柄：已登记则复用，未登记则在会话上分配并登记。
+    # 按显示名取选项槽句柄：帧内已登记则复用，未登记则在会话上分配并登记。
     micro choice(mut self, session: mut TuiSession, name: utf8, initial: utf8) -> ChoiceBinding {
         let mut i: usize = 0
         while i < self.choice_names.length() {
@@ -64,7 +81,7 @@ singleton AsgardTuiBindings {
     }
 
     # 按显示名写布尔槽并重渲染；未登记的显示名是生成流程错误。
-    micro patch_flag(mut self, session: mut TuiSession, name: utf8, on: bool): unit {
+    micro patch_flag(mut self, session: mut TuiSession, name: utf8, on: bool) -> unit {
         let mut i: usize = 0
         while i < self.flag_names.length() {
             if self.flag_names.get((i + 1) as isize).unwrap() == name {
@@ -74,11 +91,11 @@ singleton AsgardTuiBindings {
             }
             i = i + 1
         }
-        std::types::panic("AsgardTuiBindings.patch_flag: 未登记的绑定显示名")
+        std::types::panic("AsgardTuiFrame.patch_flag: 当前运行帧未登记的绑定显示名")
     }
 
     # 按显示名写选项槽并重渲染；未登记的显示名是生成流程错误。
-    micro patch_choice(mut self, session: mut TuiSession, name: utf8, selected: utf8): unit {
+    micro patch_choice(mut self, session: mut TuiSession, name: utf8, selected: utf8) -> unit {
         let mut i: usize = 0
         while i < self.choice_names.length() {
             if self.choice_names.get((i + 1) as isize).unwrap() == name {
@@ -88,7 +105,70 @@ singleton AsgardTuiBindings {
             }
             i = i + 1
         }
-        std::types::panic("AsgardTuiBindings.patch_choice: 未登记的绑定显示名")
+        std::types::panic("AsgardTuiFrame.patch_choice: 当前运行帧未登记的绑定显示名")
+    }
+}
+
+# 登记帧栈：`AsgardTuiBindings` 只是访问通道，不是共享状态本身——
+# 每张表的生命周期绑定到它自己的运行，没有任何表跨运行存活或跨会话共享。
+# 所有查询与补丁只作用于栈顶帧，即当前正在运行的那个会话。
+singleton AsgardTuiBindings {
+    mut frames: ArrayList<AsgardTuiFrame>;
+
+    # 运行边界开始：压入全新登记帧。
+    micro begin_frame(mut self) -> unit {
+        self.frames.push(AsgardTuiFrame::new())
+    }
+
+    # 运行边界结束：弹出栈顶帧。帧数失衡是生成流程错误。
+    micro end_frame(mut self) -> unit {
+        let popped: Option<AsgardTuiFrame> = self.frames.pop()
+        if popped.is_none() {
+            std::types::panic("AsgardTuiBindings.end_frame: 登记帧栈失衡")
+        }
+    }
+
+    # 以下四个入口全部委托栈顶帧；运行边界之外调用显式 panic。
+    micro flag(mut self, session: mut TuiSession, name: utf8, initial: bool) -> FlagBinding {
+        let top: isize = self.frames.length() as isize
+        if top == 0 {
+            std::types::panic("AsgardTuiBindings.flag: 运行边界之外没有活动登记帧")
+        }
+        let mut frame: AsgardTuiFrame = self.frames.get(top).unwrap()
+        let handle: FlagBinding = frame.flag(session, name, initial)
+        self.frames.set(top, frame)
+        return handle
+    }
+
+    micro choice(mut self, session: mut TuiSession, name: utf8, initial: utf8) -> ChoiceBinding {
+        let top: isize = self.frames.length() as isize
+        if top == 0 {
+            std::types::panic("AsgardTuiBindings.choice: 运行边界之外没有活动登记帧")
+        }
+        let mut frame: AsgardTuiFrame = self.frames.get(top).unwrap()
+        let handle: ChoiceBinding = frame.choice(session, name, initial)
+        self.frames.set(top, frame)
+        return handle
+    }
+
+    micro patch_flag(mut self, session: mut TuiSession, name: utf8, on: bool) -> unit {
+        let top: isize = self.frames.length() as isize
+        if top == 0 {
+            std::types::panic("AsgardTuiBindings.patch_flag: 运行边界之外没有活动登记帧")
+        }
+        let mut frame: AsgardTuiFrame = self.frames.get(top).unwrap()
+        frame.patch_flag(session, name, on)
+        self.frames.set(top, frame)
+    }
+
+    micro patch_choice(mut self, session: mut TuiSession, name: utf8, selected: utf8) -> unit {
+        let top: isize = self.frames.length() as isize
+        if top == 0 {
+            std::types::panic("AsgardTuiBindings.patch_choice: 运行边界之外没有活动登记帧")
+        }
+        let mut frame: AsgardTuiFrame = self.frames.get(top).unwrap()
+        frame.patch_choice(session, name, selected)
+        self.frames.set(top, frame)
     }
 }
 
@@ -124,7 +204,7 @@ micro awsl_item(label: utf8, on_select: micro(mut TuiSession) -> unit) -> Widget
     return Item { label: label, on_select: on_select }
 }
 
-# 复选框：`name` 是脚本绑定显示名，句柄经登记表换取，跨重挂载身份稳定。
+# 复选框：`name` 是脚本绑定显示名，句柄经当前运行帧换取，跨重挂载身份稳定。
 micro awsl_checkbox(label: utf8, name: utf8, initial: bool, session: mut TuiSession) -> Widget {
     return Checkbox { label: label, state: AsgardTuiBindings.flag(session, name, initial) }
 }
@@ -136,22 +216,24 @@ micro awsl_radio(label: utf8, name: utf8, option: utf8, session: mut TuiSession)
 # ── 生成流程入口 ──
 
 # 主入口：`build` 为 codegen 生成的控件树构造函数，接收会话以分配状态槽。
-# 会话由本函数显式创建、挂载、运行；登记表随运行边界重置。
+# 会话与登记帧由本函数显式创建，帧随运行边界压入与弹出；
+# 嵌套运行各自持有独立帧，互不影响。
 micro asgard_terminal_run(build: micro(mut TuiSession) -> ArrayList<Widget>) -> i32 {
-    AsgardTuiBindings.reset()
+    AsgardTuiBindings.begin_frame()
     let mut session: TuiSession = TuiSession::new()
     session.mount(build(session))
     let code: i32 = session.run()
-    AsgardTuiBindings.reset()
+    AsgardTuiBindings.end_frame()
     return code
 }
 
 # 重挂载入口：生成处理函数改完产品 store 后调用，重建控件树并刷新帧。
+# 只在运行边界内有效（栈顶帧即当前会话的登记表）。
 micro asgard_terminal_remount(session: mut TuiSession, build: micro(mut TuiSession) -> ArrayList<Widget>) -> unit {
     session.mount(build(session))
 }
 
-# 补丁入口：按显示名更新类型化槽并重渲染（值类型由登记时固定）。
+# 补丁入口：按显示名更新当前会话的类型化槽并重渲染（值类型由登记时固定）。
 micro asgard_terminal_patch_flag(session: mut TuiSession, name: utf8, on: bool) -> unit {
     AsgardTuiBindings.patch_flag(session, name, on)
 }
