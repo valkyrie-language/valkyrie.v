@@ -17,7 +17,7 @@ private micro array_host_set<T>(array: [T], index: usize, value: T): unit {
     __array_clr_set::<T>(array, index, value)
 }
 
-[host_provider(std::collection::array::allocate)]
+[host_provider(std::collection::__array_slots)]
 private micro array_host_allocate<T>(capacity: usize): [T] {
     return __array_clr_new::<T>(capacity)
 }

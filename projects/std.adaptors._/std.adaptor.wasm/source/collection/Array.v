@@ -8,7 +8,7 @@ namespace std.adaptor.wasm.collection;
 # `ref.cast` + GC 数组指令，与 MIR `ArrayNew`/`ArrayGet`/`ArraySet`/`ArrayLength`
 # 臂共用同一发射器。声明形状与冻结计划不符、未知助记符或缺 provider 均结构化失败。
 
-[host_provider(std::collection::array::allocate), wasm_operator("array.new"), pure]
+[host_provider(std::collection::__array_slots), wasm_operator("array.new"), pure]
 private micro array_host_allocate<T>(capacity: usize): [T] { }
 
 [host_provider(std::collection::array::length), wasm_operator("array.length"), pure]

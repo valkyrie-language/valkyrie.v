@@ -3,7 +3,7 @@ namespace std.collection;
 # ArrayStorage：带初始化范围标记的容量存储。
 #
 # 容量与有效性分离：
-# - `_slots` 是 host 分配的容量载体（`std.collection.array::allocate`），槽位不是元素；
+# - `_slots` 是 host 分配的容量载体（本文件私有合同 `__array_slots`），槽位不是元素；
 # - `_initialized` 是初始化前沿：只有 `[0, _initialized)` 是有效元素，前沿之外
 #   的槽位禁止当普通 `[T]` 读出。
 #
@@ -12,8 +12,18 @@ namespace std.collection;
 # - `set`：已初始化区域内的覆写，不改变前沿。
 # `place` 按偏移自动择其一，供序列容器追加/搬移使用。
 #
-# 分配与 GC 语义归 host provider（载体经 `array::allocate` 取得）；有效性语义
-# 收归 std（本类型的前沿账目）。
+# 分配与 GC 语义归 host provider（载体经 `__array_slots` 取得）；有效性语义
+# 收归 std（本类型的前沿账目）。槽位载体不是作者可见的公共出口：分配合同
+# 声明为本文件私有，作者面只有 `ArrayStorage`——未初始化 `[T]` 不经任何
+# 公共 API 流入可读上下文（01 §4.16 存储有效性）。
+
+# 容量槽位载体的分配：私有 host 合同，provider 由目标 adaptor 绑定。
+# 返回载体只允许立即收进 `ArrayStorage` 的前沿账目；把它当可读 `[T]`
+# 在初始化前沿之外取值是合同违例。缺 provider 时计划阶段结构化失败，
+# 不得空体成功或链接豁免。
+[host_contract]
+private micro __array_slots<T>(capacity: usize): [T]
+
 class ArrayStorage<T> {
     _slots: [T]
     _initialized: usize
@@ -22,7 +32,7 @@ class ArrayStorage<T> {
 imply ArrayStorage<T> {
     # 取得 `capacity` 个容量槽位；一个都未初始化。
     micro with_capacity(capacity: usize): Self {
-        return ArrayStorage { _slots: std::collection::array::allocate::<T>(capacity), _initialized: 0 }
+        return ArrayStorage { _slots: __array_slots::<T>(capacity), _initialized: 0 }
     }
 
     # 容量（槽位总数）。
