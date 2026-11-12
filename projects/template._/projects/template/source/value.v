@@ -240,9 +240,10 @@ micro template_stringify_json(value: TemplateValue) -> utf8 {
     }
 }
 
-# 双引号字符文本：Oak 尚不支持 `"` 的字符串转义字面量，按字节构造（34='"'）。
+# 双引号字符文本：经 `std.text` 编码内核把 `'"'` 字符直接编码为 UTF-8 文本，
+# 构造点收口在唯一内核，不再按码值字节表手工构造。
 micro template_double_quote() -> utf8 {
-    return std::text::Utf8Text::from_bytes([34])
+    return std::text::encode_char_as_utf8('"')
 }
 
 # ── 数字文本化 ──
