@@ -13,33 +13,28 @@ namespace std.data.digest;
 # 校验和族（crc32/adler32）的 word 是 u32；SHA-2 族的 word 是 [u8]（原始摘要字节）。
 # 一次性形态 digest_<alg>(bytes) 全部委托流式三件套，不维护第二套实现。
 #
-# 常数纪律：多项式、模数、种子、K 表一律用具名零参函数表达（语言暂无顶层常量
-# 声明），不散落裸数字；数值是算法自身常数（SHA K 表为前若干素数立方根小数部
-# 的高 32/64 位，生成规则属算法定义），非规避写法。
-#
-# 载道说明（后端缺陷，非语义绕行）：wasm 后端把 `u32 >> n` 错误 lowering 成左旋
-# （最小复现：`0x12345678 >> 3` 产出 rol 结果 `0x91A2B3C0` 而非 `0x02468ACF`）。
-# 凡含逻辑右移的 32 位算法（crc32、sha256）一律以 u64 载道并显式掩码保持 32 位
-# 语义；缺陷修复后可机械改回 u32 载道。
+# 常数纪律：多项式、模数、种子、K 表一律用具名零参函数表达，不散落裸数字；
+# 数值是算法自身常数（SHA K 表为前若干素数立方根小数部的高 32/64 位，生成规则
+# 属算法定义）。
 
 # CRC-32（ISO 3309 / ITU-T V.42 / gzip / zip 同款反射形）。
 # 反射形标准多项式（算法固有常数）。
-micro crc32_polynomial() -> u64 {
-    return 0xEDB88320
+micro crc32_polynomial() -> u32 {
+    return 0xEDB88320 as u32
 }
 
-# 全 1 掩码：初始值与输出取反共用。VM 无按位取反指令，取反以 `^ 全 1` 表达。
-micro crc32_all_ones() -> u64 {
-    return 0xFFFFFFFF
+# 初始值：全 1 寄存器（算法固有常数）。
+micro crc32_initial() -> u32 {
+    return 0xFFFFFFFF as u32
 }
 
-# CRC-32 流式状态：`crc` 是已并入初值、未取反的工作寄存器（u64 载道，值域 < 2^32）。
+# CRC-32 流式状态：`crc` 是已并入初值、未取反的工作寄存器。
 structure DigestCrc32 {
-    crc: u64
+    crc: u32
 }
 
 micro digest_crc32_new() -> DigestCrc32 {
-    return DigestCrc32 { crc: crc32_all_ones() }
+    return DigestCrc32 { crc: crc32_initial() }
 }
 
 imply DigestCrc32 {
@@ -47,7 +42,7 @@ imply DigestCrc32 {
         let length: usize = bytes.length()
         let mut index: usize = 0
         while index < length {
-            let byte: u64 = bytes⁅index⁆ as u64
+            let byte: u32 = bytes⁅index⁆ as u32
             self.crc = self.crc ^ byte
             let mut bit: usize = 0
             while bit < 8 {
@@ -64,7 +59,7 @@ imply DigestCrc32 {
     }
 
     micro finalize(self) -> u32 {
-        return (self.crc ^ crc32_all_ones()) as u32
+        return self.crc.bit_not()
     }
 }
 

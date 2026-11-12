@@ -47,7 +47,7 @@ imply u64 {
         return std::types::range(self, rhs)
     }
 
-    # 闭区间 `[start, end]`；声明侧就位，表达式形态待 `..=` token 落地。
+    # 闭区间 `[start, end]`。
     infix `..=`(self, rhs: Self): std::types::InclusiveRange {
         return std::types::inclusive_range(self, rhs)
     }
@@ -92,13 +92,11 @@ imply u64 {
         self.bit_shift_right(rhs)
     }
 
-    # 全 1 掩码以 hi/lo 组合表达：编译器对超 i64 上限的 64 位十六进制字面量溢栈。
     bit_not(self): Self {
-        self.bit_xor(((0xFFFFFFFF as u64) << 32) | (0xFFFFFFFF as u64))
+        self.bit_xor(0xFFFFFFFFFFFFFFFF as u64)
     }
 
     # 位元查询：位宽由 `u64` 的 64 位定义，全 0 的前导/尾随零均为 64。
-    # 最高位掩码同样以 hi/lo 组合表达，不写超 i64 上限的字面量。
     micro count_ones(self): u32 {
         let mut value: u64 = self
         let mut total: u32 = 0
@@ -116,7 +114,7 @@ imply u64 {
 
         let mut value: u64 = self
         let mut count: u32 = 0
-        let top: u64 = (0x80000000 as u64) << 32
+        let top: u64 = 0x8000000000000000 as u64
         while (value & top) == 0 as u64 {
             value = value << (1 as u64)
             count = count + 1
@@ -138,8 +136,8 @@ imply u64 {
         return count
     }
 
-    # 位序反转：64 位宽内最低位成为最高位。只用 `&` / `<<` / `|` 逐位搬移，
-    # 不依赖右移（wasm 上 `>>` 仍被 lower 成左旋）。
+    # 位序反转：64 位宽内最低位成为最高位。自低向高逐位扫描，
+    # 每轮把源位搬到结果高位。
     micro reverse_bits(self): Self {
         let mut result: u64 = 0 as u64
         let mut source_mask: u64 = 1 as u64
