@@ -44,10 +44,12 @@ enums PromiseState {
     Cancelled
 }
 
-⍝ 单赋值的可完成异步值，是 `Future` 的具体拥有型实现。
+⍝ 单赋值的共享完成资源：引用类型。生产侧（任务体收到的 `Promise`）与
+⍝ join 侧（`Task` 持有的 `_completion`）指向同一对象，观察同一完成事实
+⍝ ——完成不依赖值结构体的意外共享，也不靠执行器改写私有字段（02 §4.3）。
 ⍝ 运行时交付终态只经 `resolve` / `cancel` 协议写入；执行器不得读写
 ⍝ `_state`、`_slot` 等内部字段——终态的唯一事实来源是本协议。
-structure Promise<T> {
+class Promise<T> {
     ⍝ 当前状态机位置。
     _state: PromiseState
 
@@ -112,8 +114,8 @@ imply Promise<T>: Future {
 }
 
 ⍝ 任务句柄：调度产出的 join 载体，本身即 `Future`。
-⍝ 持有完成侧 `Promise` 与协作取消的 `CancellationToken`；
-⍝ join 即轮询其 `Future`，取消传播即触发 token 并落终态。
+⍝ 持有完成侧 `Promise` 引用与协作取消的 `CancellationToken`；
+⍝ join 即轮询同一完成资源，取消传播即触发 token 并落终态。
 structure Task<T> {
     _completion: Promise<T>
     _token: CancellationToken
