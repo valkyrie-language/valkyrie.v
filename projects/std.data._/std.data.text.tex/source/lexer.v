@@ -23,8 +23,7 @@ using std.text::{Utf8ByteIndicator, byte_indicates};
 # 本段无转义解码内容，故不需要 builder（解码内容用 builder 的合同见 wit/von 字符串）。
 
 micro tex_is_letter(ch: char) -> bool {
-    let code: u32 = ch as u32
-    return (code >= 65 && code <= 90) || (code >= 97 && code <= 122)
+    return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z')
 }
 
 # 结构命令名 → token 类：表驱动（数据而非控制流）；未收录者归 `Command`。
@@ -41,15 +40,14 @@ micro tex_command_table() -> HashMap<utf8, TexTokenKind> {
 }
 
 micro tex_is_digit(ch: char) -> bool {
-    let code: u32 = ch as u32
-    return code >= 48 && code <= 57
+    return ch >= '0' && ch <= '9'
 }
 
 micro tex_is_operator(ch: char) -> bool {
     return ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '='
         || ch == '(' || ch == ')' || ch == '[' || ch == ']' || ch == '<' || ch == '>'
         || ch == ',' || ch == ';' || ch == ':' || ch == '!' || ch == '?' || ch == '|'
-        || ch == '.' || ch as u32 == 39
+        || ch == '.' || ch == '\''
 }
 
 micro tex_lex(source: DataSource, settings: DataSettings) -> DataOutcome<[DataToken<TexTokenKind>]> {

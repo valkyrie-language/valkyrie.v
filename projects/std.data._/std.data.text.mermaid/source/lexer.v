@@ -22,7 +22,7 @@ micro mermaid_lex_text(text: utf8) -> DataOutcome<[DataToken<MermaidTokenKind>]>
 }
 
 micro mermaid_is_text_char(ch: char) -> bool {
-    if ch == ' ' || ch == '\t' || ch == '\n' || ch as u32 == 13 {
+    if ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r' {
         return false
     }
     if ch == '-' || ch == '>' || ch == '<' || ch == '|' || ch == '[' || ch == ']' || ch == ':' || ch == '%' || ch == '(' || ch == ')' || ch == '{' || ch == '}' {
@@ -41,9 +41,9 @@ micro mermaid_scan(text: utf8) -> DataOutcome<[DataToken<MermaidTokenKind>]> {
         let ch: char = pending.unwrap().1
         let start: usize = index
         index = index + 1
-        if ch == '\n' || ch as u32 == 13 {
+        if ch == '\n' || ch == '\r' {
             let look: Option<(usize, char)> = iter.next()
-            if ch as u32 == 13 && look.is_some() && look.unwrap().1 == '\n' {
+            if ch == '\r' && look.is_some() && look.unwrap().1 == '\n' {
                 index = index + 1
                 pending = iter.next()
             } else {

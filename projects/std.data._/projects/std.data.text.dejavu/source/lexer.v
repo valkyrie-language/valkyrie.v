@@ -66,8 +66,7 @@ micro template_is_horizontal_whitespace(c: char) -> bool {
     return c == ' ' || c == '\t'
 }
 
-# Unicode 空白：ASCII 段用字符比较；133/160/8192-8202/8232/8233/8239/12288 无
-# 字符字面量拼写，是码点表而非字符比较，保留数值范围。
+# Unicode 空白：全部以字符字面量表达（含 `\uXXXX` 转义），不维护码点数值表。
 micro template_is_unicode_whitespace(c: char) -> bool {
     if c >= '\t' && c <= '\r' {
         return true
@@ -75,14 +74,13 @@ micro template_is_unicode_whitespace(c: char) -> bool {
     if c == ' ' {
         return true
     }
-    let code_point: u32 = c as u32
-    if code_point == 133 || code_point == 160 {
+    if c == '\u0085' || c == '\u00A0' {
         return true
     }
-    if code_point >= 8192 && code_point <= 8202 {
+    if c >= '\u2000' && c <= '\u200A' {
         return true
     }
-    return code_point == 8232 || code_point == 8233 || code_point == 8239 || code_point == 12288
+    return c == '\u2028' || c == '\u2029' || c == '\u202F' || c == '\u3000'
 }
 
 micro template_is_newline(c: char) -> bool {

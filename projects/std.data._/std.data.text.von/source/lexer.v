@@ -19,14 +19,12 @@ micro is_von_whitespace(ch: char) -> bool {
 }
 
 micro is_von_digit(ch: char) -> bool {
-    let code: u32 = ch as u32
-    return code >= 48 && code <= 57
+    return ch >= '0' && ch <= '9'
 }
 
 micro is_von_identifier_start(ch: char) -> bool {
-    let code: u32 = ch as u32
-    return (code >= 97 && code <= 122)
-        || (code >= 65 && code <= 90)
+    return (ch >= 'a' && ch <= 'z')
+        || (ch >= 'A' && ch <= 'Z')
         || ch == '_'
 }
 

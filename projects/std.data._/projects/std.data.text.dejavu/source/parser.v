@@ -1233,8 +1233,8 @@ imply TemplateParser {
         while looping {
             if self.at_end() {
                 let position: usize = self.end_position()
-                children = push(children, data_cst_missing(new_span(position, position), "缺少 `}`"))
-                self.diagnose("template.parse.unclosed_expression", "对象字面量缺少 `}`", position, position)
+                children = push(children, data_cst_missing(new_span(position, position), "缺少 `\}`"))
+                self.diagnose("template.parse.unclosed_expression", "对象字面量缺少 `\}`", position, position)
                 looping = false
                 continue
             }
