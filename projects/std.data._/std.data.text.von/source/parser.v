@@ -62,7 +62,7 @@ micro parse_von_value(tokens: [VonToken], index: usize) -> VonParseResult<VonPar
 }
 
 micro parse_von_object(tokens: [VonToken], index: usize) -> VonParseResult<VonParsedValue> {
-    let mut fields: [VonField] = []
+    let mut fields: ArrayList<VonField> = ArrayList::new(0)
     let mut current: usize = index + 1
 
     while true {
@@ -70,7 +70,7 @@ micro parse_von_object(tokens: [VonToken], index: usize) -> VonParseResult<VonPa
         match token.kind {
             case RightBrace:
                 return Fine(VonParsedValue {
-                    value: Object(fields),
+                    value: Object(fields.to_array()),
                     next_index: current + 1
                 })
             case EndOfFile:
@@ -94,7 +94,7 @@ micro parse_von_object(tokens: [VonToken], index: usize) -> VonParseResult<VonPa
 
         match parse_von_value(tokens, current) {
             case Fine(parsed):
-                push(fields, new_von_field(key, parsed.value))
+                fields.push(new_von_field(key, parsed.value))
                 current = parsed.next_index
             case Fail(error):
                 return Fail(error)
@@ -114,7 +114,7 @@ micro parse_von_object(tokens: [VonToken], index: usize) -> VonParseResult<VonPa
 }
 
 micro parse_von_array(tokens: [VonToken], index: usize) -> VonParseResult<VonParsedValue> {
-    let mut items: [VonValue] = []
+    let mut items: ArrayList<VonValue> = ArrayList::new(0)
     let mut current: usize = index + 1
 
     while true {
@@ -122,7 +122,7 @@ micro parse_von_array(tokens: [VonToken], index: usize) -> VonParseResult<VonPar
         match token.kind {
             case RightBracket:
                 return Fine(VonParsedValue {
-                    value: Array(items),
+                    value: Array(items.to_array()),
                     next_index: current + 1
                 })
             case EndOfFile:
@@ -132,7 +132,7 @@ micro parse_von_array(tokens: [VonToken], index: usize) -> VonParseResult<VonPar
 
         match parse_von_value(tokens, current) {
             case Fine(parsed):
-                push(items, parsed.value)
+                items.push(parsed.value)
                 current = parsed.next_index
             case Fail(error):
                 return Fail(error)

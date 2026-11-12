@@ -113,7 +113,7 @@ imply VonLexCursor {
 }
 
 micro lex_von(source: utf8) -> VonParseResult<[VonToken]> {
-    let mut tokens: [VonToken] = []
+    let mut tokens: ArrayList<VonToken> = ArrayList::new(0)
     let mut cursor: VonLexCursor = von_lex_cursor_new(source)
 
     while !cursor.at_end() {
@@ -136,44 +136,44 @@ micro lex_von(source: utf8) -> VonParseResult<[VonToken]> {
 
         if ch == '{' {
             cursor.advance()
-            push(tokens, new_von_marker_token(LeftBrace, start, cursor.position))
+            tokens.push(new_von_marker_token(LeftBrace, start, cursor.position))
             continue
         }
 
         if ch == '}' {
             cursor.advance()
-            push(tokens, new_von_marker_token(RightBrace, start, cursor.position))
+            tokens.push(new_von_marker_token(RightBrace, start, cursor.position))
             continue
         }
 
         if ch == '[' {
             cursor.advance()
-            push(tokens, new_von_marker_token(LeftBracket, start, cursor.position))
+            tokens.push(new_von_marker_token(LeftBracket, start, cursor.position))
             continue
         }
 
         if ch == ']' {
             cursor.advance()
-            push(tokens, new_von_marker_token(RightBracket, start, cursor.position))
+            tokens.push(new_von_marker_token(RightBracket, start, cursor.position))
             continue
         }
 
         if ch == ':' {
             cursor.advance()
-            push(tokens, new_von_marker_token(Colon, start, cursor.position))
+            tokens.push(new_von_marker_token(Colon, start, cursor.position))
             continue
         }
 
         if ch == ',' {
             cursor.advance()
-            push(tokens, new_von_marker_token(Comma, start, cursor.position))
+            tokens.push(new_von_marker_token(Comma, start, cursor.position))
             continue
         }
 
         if ch == '''"''' {
             match cursor.lex_string(start) {
                 case Fine(text):
-                    push(tokens, new_von_token(StringLiteral, text, start, cursor.position))
+                    tokens.push(new_von_token(StringLiteral, text, start, cursor.position))
                     continue
                 case Fail(error):
                     return Fail(error)
@@ -185,7 +185,7 @@ micro lex_von(source: utf8) -> VonParseResult<[VonToken]> {
             while !cursor.at_end() && (is_von_digit(cursor.peek().unwrap()) || cursor.peek_is('-') || cursor.peek_is('.')) {
                 cursor.advance()
             }
-            push(tokens, new_von_token(NumberLiteral, source.slice(start, cursor.position - start), start, cursor.position))
+            tokens.push(new_von_token(NumberLiteral, source.slice(start, cursor.position - start), start, cursor.position))
             continue
         }
 
@@ -196,9 +196,9 @@ micro lex_von(source: utf8) -> VonParseResult<[VonToken]> {
             }
             let text: utf8 = source.slice(start, cursor.position - start)
             if text == "true" || text == "false" {
-                push(tokens, new_von_token(BooleanLiteral, text, start, cursor.position))
+                tokens.push(new_von_token(BooleanLiteral, text, start, cursor.position))
             } else {
-                push(tokens, new_von_token(Identifier, text, start, cursor.position))
+                tokens.push(new_von_token(Identifier, text, start, cursor.position))
             }
             continue
         }
@@ -206,6 +206,6 @@ micro lex_von(source: utf8) -> VonParseResult<[VonToken]> {
         return Fail(new_von_diagnostic("存在无法识别的 VON 字符", start, start + 1))
     }
 
-    push(tokens, eof_von_token(cursor.position))
-    return Fine(tokens)
+    tokens.push(eof_von_token(cursor.position))
+    return Fine(tokens.to_array())
 }
