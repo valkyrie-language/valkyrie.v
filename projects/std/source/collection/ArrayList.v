@@ -380,4 +380,10 @@ imply ArrayListIterator<T>: std::iterator::Iterator {
         self._index = self._index + 1
         return Some(value)
     }
+
+    # 幂等观察：迭代器持有列表副本，逻辑长度在迭代期间只读——纯计算直接判定，
+    # 不触碰元素、不推进游标，重复调用答案不变。
+    micro has_next(mut self): bool {
+        return self._index < self._list.length()
+    }
 }

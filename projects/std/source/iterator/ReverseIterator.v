@@ -19,6 +19,12 @@ imply ReverseIterator<T>: Iterator {
         self._index = self._index - 1
         return self._buffer.get((self._index + 1) as isize)
     }
+
+    # 幂等观察：产出已全部物化进缓冲，`next` 的结局只由游标决定——
+    # 纯计算直接判定，不触碰缓冲、不推进游标，重复调用答案不变。
+    micro has_next(mut self): bool {
+        return self._index != 0
+    }
 }
 
 # 逆序适配入口：即时消费源迭代器，拒绝惰性填充。

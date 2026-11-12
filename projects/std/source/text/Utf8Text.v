@@ -682,10 +682,12 @@ imply Utf8Text: std::operator::Ordinal {
 structure Utf8ByteIndicator {
     text: &Utf8Text
     offset: usize
+    _peek: Option<(usize, char)>
+    _peeked: bool
 }
 
 micro byte_indicates(text: &Utf8Text) -> Utf8ByteIndicator {
-    return Utf8ByteIndicator { text: text, offset: 0 }
+    return Utf8ByteIndicator { text: text, offset: 0, _peek: None, _peeked: false }
 }
 
 # 从指定字节偏移起步（切片/回退重扫用）：`offset` 必须落在码点边界；
@@ -700,13 +702,21 @@ micro byte_indicates_from(text: &Utf8Text, offset: usize) -> Utf8ByteIndicator {
             std::types::panic("byte_indicates_from 的 offset 不在码点边界")
         }
     }
-    return Utf8ByteIndicator { text: text, offset: offset }
+    return Utf8ByteIndicator { text: text, offset: offset, _peek: None, _peeked: false }
 }
 
 imply Utf8ByteIndicator: std::iterator::Iterator {
     type Item = (usize, char);
 
     micro next(mut self) -> Option<(usize, char)> {
+        if self._peeked {
+            self._peeked = false
+            let cached: Option<(usize, char)> = self._peek
+            let empty: Option<(usize, char)> = None
+            self._peek = empty
+            return cached
+        }
+
         if self.offset >= self.text.byte_length() {
             return None
         }
@@ -715,6 +725,23 @@ imply Utf8ByteIndicator: std::iterator::Iterator {
         let ch: char = self.text.character_at_byte(start)
         self.offset = self.offset + self.text.char_width_at(start)
         return Some((start, ch))
+    }
+
+    # 幂等观察：一格缓存。缓存空时恰好解码一个 `(偏移, 字符)` 存入缓存并推进偏移；
+    # 重复调用命中缓存，不再解码、不再推进。
+    micro has_next(mut self): bool {
+        if !self._peeked {
+            if self.offset < self.text.byte_length() {
+                let start: usize = self.offset
+                let ch: char = self.text.character_at_byte(start)
+                self.offset = self.offset + self.text.char_width_at(start)
+                self._peek = Some((start, ch))
+            }
+
+            self._peeked = true
+        }
+
+        return self._peek.is_some()
     }
 }
 

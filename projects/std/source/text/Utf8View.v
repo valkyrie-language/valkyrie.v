@@ -1,14 +1,15 @@
 namespace std.text;
 
-⍝ ────────── 不可变文本视图 ──────────
-⍝ 视图是对 `Utf8Text` 的引用加一个区间，极轻量。
+⍝ ────────── 不可变字节窗口视图 ──────────
+⍝ 视图是对 `Utf8Text` 的引用加一个字节区间，极轻量。
 ⍝ 因为 `Utf8Text` 不可变且为引用类型，视图始终有效。
-⍝ 两类视图严格区分：
-⍝ - `Utf8View` 是有效文本视图——起止必须落在码点边界，覆盖区间恒为整段码点；
-⍝ - `Utf8ByteWindow` 是任意字节窗口——任何字节区间都合法（字节级搬运、
-⍝   调试转储用），具体化为文本必须经严格验证。
+⍝ `Utf8View` 是字节窗口：任意字节范围都合法（字节级搬运、调试转储用），
+⍝ 起止不要求落在码点边界，构造不验证边界。
+⍝ 字节窗口具体化为有效文本必须经 `to_text` 严格验证：校验 span 两端落在
+⍝ 码点边界、区间内全部序列为良构 UTF-8，返回 `Result`——禁止把半个码点
+⍝ 重新包装为有效文本。需要「构造即边界良构」时用显式严格构造入口 `try_new`。
 
-⍝ 文本视图构造的失败类别：携带出错端点的字节位置。
+⍝ 严格构造视图的失败类别：携带出错端点的字节位置。
 unite Utf8ViewError {
     ⍝ 区间起点落在续字节（0x80..0xBF）上
     [constructor]
@@ -24,13 +25,13 @@ unite Utf8ViewError {
 structure Utf8View {
     ⍝ 指向底层不可变文本，永远有效
     text: &Utf8Text,
-    ⍝ 视图覆盖的字节范围：起止都落在码点边界上（类型不变量）
+    ⍝ 窗口覆盖的字节范围：任意区间合法（构造时越界收敛到文本有效范围）
     span: TextSpan,
 }
 
 imply Utf8View {
-    ⍝ 全区间视图：整段文本本身就是码点对齐的有效区间
-    micro new(text: &Utf8Text) -> Self {
+    ⍝ 全区间窗口：整段文本本身就是窗口。
+    micro full(text: &Utf8Text) -> Self {
         return Self {
             text: text,
             span: TextSpan {
@@ -40,7 +41,35 @@ imply Utf8View {
         }
     }
 
-    ⍝ 严格构造：起点必须是码点边界、终点必须恰好与码点边界重合，
+    ⍝ 字节窗口构造：任意字节范围都合法，不验证码点边界；
+    ⍝ 越界区间收敛到文本有效范围（起点不越过文末，长度不越过剩余量）。
+    micro new(text: &Utf8Text, span: TextSpan) -> Self {
+        let full_length: usize = text.byte_length()
+        if span.offset >= full_length {
+            return Self {
+                text: text,
+                span: TextSpan {
+                    offset: full_length,
+                    length: 0,
+                }
+            }
+        }
+
+        let mut length: usize = span.length
+        if span.offset + length > full_length {
+            length = full_length - span.offset
+        }
+
+        return Self {
+            text: text,
+            span: TextSpan {
+                offset: span.offset,
+                length: length,
+            }
+        }
+    }
+
+    ⍝ 显式严格构造：起点必须是码点边界、终点必须恰好与码点边界重合，
     ⍝ 否则结构化失败——不收敛、不截断、不漂移到最近边界。
     micro try_new(text: &Utf8Text, span: TextSpan) -> Result<Self, Utf8ViewError> {
         let size: usize = text.byte_length()
@@ -90,81 +119,17 @@ imply Utf8View {
         return self.span.length == 0
     }
 
-    ⍝ 对视图自身再取相对区间（同样按有效文本视图验证）
-    micro try_view(self, span: TextSpan) -> Result<Utf8View, Utf8ViewError> {
-        return Utf8View::try_new(self.text, TextSpan {
+    ⍝ 对窗口自身再取相对字节窗口（任意区间合法，构造同规则收敛）
+    micro view(self, span: TextSpan) -> Utf8View {
+        return Utf8View::new(self.text, TextSpan {
             offset: self.span.offset + span.offset,
             length: span.length,
         })
     }
 
-    ⍝ 具体化为文本：经严格 UTF-8 验证返回 `Result`。
-    ⍝ 视图不变量保证区间良构，验证是该入口的合同形态，不走信任捷径。
-    micro to_text(self) -> Result<Utf8Text, Utf8DecodeError> {
-        let mut bytes: ArrayList<u8> = ArrayList::new(self.span.length)
-        let end: usize = self.span.offset + self.span.length
-        let mut index: usize = self.span.offset
-        while index < end {
-            bytes.push(self.text._repr⁅index⁆)
-            index = index + 1
-        }
-
-        return Utf8Text::from_bytes(bytes.to_array())
-    }
-}
-
-⍝ ────────── 任意字节窗口 ──────────
-⍝ 不要求起止落在码点边界：任何字节区间都是合法窗口，越界区间收敛到有效范围。
-⍝ 窗口只承诺字节语义；需要文本语义时用 `to_text` 显式验证，或改走 `Utf8View`。
-structure Utf8ByteWindow {
-    ⍝ 指向底层不可变文本，永远有效
-    text: &Utf8Text,
-    ⍝ 窗口覆盖的字节范围（任意区间）
-    span: TextSpan,
-}
-
-imply Utf8ByteWindow {
-    micro new(text: &Utf8Text, span: TextSpan) -> Self {
-        let full_length: usize = text.byte_length()
-        if span.offset >= full_length {
-            return Self {
-                text: text,
-                span: TextSpan {
-                    offset: full_length,
-                    length: 0,
-                }
-            }
-        }
-
-        let mut length: usize = span.length
-        if span.offset + length > full_length {
-            length = full_length - span.offset
-        }
-
-        return Self {
-            text: text,
-            span: TextSpan {
-                offset: span.offset,
-                length: length,
-            }
-        }
-    }
-
-    micro span(self) -> TextSpan {
-        return self.span
-    }
-
-    micro byte_length(self) -> usize {
-        return self.span.length
-    }
-
-    micro is_empty(self) -> bool {
-        return self.span.length == 0
-    }
-
-    ⍝ 对窗口自身再取相对字节窗口
-    micro view(self, span: TextSpan) -> Utf8ByteWindow {
-        return Utf8ByteWindow::new(self.text, TextSpan {
+    ⍝ 对窗口自身再取相对区间（按码点边界严格验证）
+    micro try_view(self, span: TextSpan) -> Result<Utf8View, Utf8ViewError> {
+        return Utf8View::try_new(self.text, TextSpan {
             offset: self.span.offset + span.offset,
             length: span.length,
         })
@@ -183,8 +148,33 @@ imply Utf8ByteWindow {
         return bytes.to_array()
     }
 
-    ⍝ 具体化为文本：任意字节窗口可能截断码点序列，必须经严格验证
+    ⍝ 具体化为文本：字节窗口可能截断码点序列，必须经严格验证返回 `Result`，
+    ⍝ 禁止把半个码点重新包装为有效文本。
+    ⍝ 先校验 span 两端落在码点边界（起始非续字节、结束不落多字节序列中间），
+    ⍝ 错误携带底层文本的绝对字节位置；再交由 `Utf8Text::from_bytes` 唯一严格
+    ⍝ 构造器对区间内完整序列逐类别判定（内部即 `validate_utf8`/`decode_char_at`）。
     micro to_text(self) -> Result<Utf8Text, Utf8DecodeError> {
+        let end: usize = self.span.offset + self.span.length
+
+        ⍝ 起点边界：非空窗口的首字节不得是续字节（0x80..0xBF）
+        if self.span.offset < end {
+            let lead: u32 = self.text.byte_at(self.span.offset) as u32
+            if (lead & 0xC0) == 0x80 {
+                return Fail { error: UnexpectedContinuation { position: self.span.offset } }
+            }
+        }
+
+        ⍝ 终点边界：自起点逐码点前进，任一序列不得越过窗口终点
+        let mut cursor: usize = self.span.offset
+        while cursor < end {
+            let width: usize = self.text.char_width_at(cursor)
+            if cursor + width > end {
+                return Fail { error: Truncated { position: cursor } }
+            }
+
+            cursor = cursor + width
+        }
+
         return Utf8Text::from_bytes(self.to_bytes())
     }
 }

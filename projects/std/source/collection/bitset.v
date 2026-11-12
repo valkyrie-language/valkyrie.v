@@ -203,7 +203,7 @@ imply BitSet {
 
     # 置位下标（0 基）升序迭代；迭代器持有 words 快照，之后原位图变化不影响它。
     micro iter(self) -> BitSetIterator {
-        return BitSetIterator { _words: self.words.to_array(), _cursor: 0 }
+        return BitSetIterator { _words: self.words.to_array(), _cursor: 0, _peek: None, _peeked: false }
     }
 }
 
@@ -211,12 +211,22 @@ imply BitSet {
 class BitSetIterator {
     _words: [u64]
     _cursor: usize
+    _peek: Option<usize>
+    _peeked: bool
 }
 
 imply BitSetIterator: std::iterator::Iterator {
     type Item = usize;
 
     micro next(mut self): Option<usize> {
+        if self._peeked {
+            self._peeked = false
+            let cached: Option<usize> = self._peek
+            let empty: Option<usize> = None
+            self._peek = empty
+            return cached
+        }
+
         let total: usize = self._words.length() * 64
         while self._cursor < total {
             let index: usize = self._cursor
@@ -229,6 +239,28 @@ imply BitSetIterator: std::iterator::Iterator {
         }
 
         return None
+    }
+
+    # 幂等观察：一格缓存。缓存空时沿唯一扫描路径前进到下一个置位（或扫尽），
+    # 结果存入缓存；重复调用命中缓存，游标不会双份前进。
+    micro has_next(mut self): bool {
+        if !self._peeked {
+            let total: usize = self._words.length() * 64
+            while self._cursor < total {
+                let index: usize = self._cursor
+                let word: u64 = self._words⁅index / 64⁆
+                let bit: usize = index % 64
+                self._cursor = index + 1
+                if (word & ((1 as u64) << (bit as u64))) != 0 {
+                    self._peek = Some(index)
+                    break
+                }
+            }
+
+            self._peeked = true
+        }
+
+        return self._peek.is_some()
     }
 }
 

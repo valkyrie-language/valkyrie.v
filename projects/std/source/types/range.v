@@ -84,6 +84,14 @@ imply Range<T>: std::iterator::Iterator {
         self.start = current.successor()
         return Some(current)
     }
+
+    # 幂等观察：区间结局只由端点对决定——纯计算直接判定，
+    # 不推进 `start`，重复调用答案不变。
+    micro has_next(mut self): bool
+        where T: Step & std::operator::Comparable
+    {
+        return self.start < self.end
+    }
 }
 
 imply Range<T>: std::iterator::IntoIterator {
@@ -113,6 +121,18 @@ imply InclusiveRange<T>: std::iterator::Iterator {
 
         self._has_last = false
         return Some(self._range.end)
+    }
+
+    # 幂等观察：半开部分未耗尽，或末值标记仍在，`next` 就会返回 `Some`——
+    # 纯计算直接判定，不推进任何状态，重复调用答案不变。
+    micro has_next(mut self): bool
+        where T: Step & std::operator::Comparable
+    {
+        if self._range.start < self._range.end {
+            return true
+        }
+
+        return self._has_last
     }
 }
 

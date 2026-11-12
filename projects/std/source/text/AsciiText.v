@@ -8,6 +8,8 @@ structure AsciiText {
 class AsciiIterator {
     _text: &AsciiText
     _offset: usize
+    _peek: Option<char>
+    _peeked: bool
 }
 
 ⍝ ────────── 不可变 ASCII 视图 ──────────
@@ -145,6 +147,8 @@ imply AsciiText {
         return AsciiIterator {
             _text: self,
             _offset: 0,
+            _peek: None,
+            _peeked: false,
         }
     }
 }
@@ -162,6 +166,14 @@ imply AsciiIterator: std::iterator::Iterator {
     type Item = char;
 
     micro next(mut self): Option<char> {
+        if self._peeked {
+            self._peeked = false
+            let cached: Option<char> = self._peek
+            let empty: Option<char> = None
+            self._peek = empty
+            return cached
+        }
+
         if self._offset >= self._text._bytes.length() {
             return None
         }
@@ -169,5 +181,21 @@ imply AsciiIterator: std::iterator::Iterator {
         let value: char = self._text._bytes⁅self._offset⁆ as char
         self._offset = self._offset + 1
         return Some(value)
+    }
+
+    # 幂等观察：一格缓存。缓存空时恰好取一个字符存入缓存并推进偏移；
+    # 重复调用命中缓存，不再推进。
+    micro has_next(mut self): bool {
+        if !self._peeked {
+            if self._offset < self._text._bytes.length() {
+                let value: char = self._text._bytes⁅self._offset⁆ as char
+                self._offset = self._offset + 1
+                self._peek = Some(value)
+            }
+
+            self._peeked = true
+        }
+
+        return self._peek.is_some()
     }
 }

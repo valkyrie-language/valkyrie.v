@@ -192,4 +192,10 @@ imply ArrayIterator<T>: std::iterator::Iterator {
         self._index = self._index + 1
         return Some(value)
     }
+
+    # 幂等观察：数组是定长快照，`next` 的结局只由游标决定——纯计算直接判定，
+    # 不触碰元素、不推进游标，重复调用答案不变。
+    micro has_next(mut self): bool {
+        return self._index < self._array.length()
+    }
 }
