@@ -29,6 +29,16 @@ structure ChoiceBinding {
     slot: usize
 }
 
+# 整数状态槽句柄：身份由会话分配（`declare_int`），值语义固定为带符号 `i32`。
+# 承载值是响应式显示量而非容器索引/计数：索引与槽位序号按 01 §4.16 用
+# `usize`，值本身取产品整数通道真实的带符号域——显示值可为负，不用无符号
+# 载体冒充可负语义，也不借 `i64` 宽载体折叠类型化设计。
+# `owner` 语义同 `FlagBinding`。
+structure IntBinding {
+    owner: u64
+    slot: usize
+}
+
 # 控件树节点：变体即种类，字段即该种类的全部所需。
 unite Widget {
     # 纵向容器
