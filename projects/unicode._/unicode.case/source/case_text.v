@@ -125,7 +125,11 @@ micro text_to_lower(value: std.text.Utf8Text) -> std.text.Utf8Text {
         cursor = cursor + width
     }
 
-    return std.text::Utf8Text::from_bytes(bytes.to_array())
+    # 构造点收口 `from_bytes_unchecked`，前置条件可证：缓冲字节只出自
+    # `push_code_point`/`push_special`（对良构文本码位与 UCD 表码位的 UTF-8
+    # 编码——simple 映射与 SpecialCasing 目标均非代理区）与 `push_raw`
+    # （原样拷贝已验证文本的 4 字节序列），产物必为良构 UTF-8。
+    return std.text::Utf8Text::from_bytes_unchecked(bytes.to_array())
 }
 
 micro text_to_upper(value: std.text.Utf8Text) -> std.text.Utf8Text {
@@ -153,5 +157,7 @@ micro text_to_upper(value: std.text.Utf8Text) -> std.text.Utf8Text {
         cursor = cursor + width
     }
 
-    return std.text::Utf8Text::from_bytes(bytes.to_array())
+    # 构造点收口 `from_bytes_unchecked`，良构依据同 `text_to_lower`：
+    # 字节全部出自编码内核产出或已验证文本的原样拷贝。
+    return std.text::Utf8Text::from_bytes_unchecked(bytes.to_array())
 }
