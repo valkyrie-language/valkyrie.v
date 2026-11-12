@@ -1,6 +1,25 @@
 namespace std.data.binary.wasm;
 
+# 原始字节域入口验证：`[i32]` 只是字节载体，每个元素必须落在 0..=255。
+# 越界元素不是字节，必须在入口失败，不得被 `as u32` / `as u8` 静默截断后进入解码。
+micro wasm_first_non_byte_index(data: [i32]) -> usize {
+    let mut index: usize = 0
+    while index < data.length {
+        let value: i32 = data[index]
+        if value < 0 || value > 255 {
+            return index
+        }
+        index = index + 1
+    }
+    return data.length
+}
+
 micro decode_wasm(data: [i32]) -> WasmBinaryResult<WasmBinaryModule> {
+    let bad_index: usize = wasm_first_non_byte_index(data)
+    if bad_index < data.length {
+        return Fail(wasm_binary_diagnostic("原始字节域入口非法：元素不是 0..=255 的字节", bad_index))
+    }
+
     if data.length < 8 {
         return Fail(wasm_binary_diagnostic("WASM 数据过短，至少需要 8 字节头部", 0))
     }

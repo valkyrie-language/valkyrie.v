@@ -40,13 +40,13 @@ micro leb128_decode_u32(data: [i32], offset: usize) -> WasmBinaryResult<Leb128De
         let low_bits: u32 = byte_val % 128
         let has_more: bool = byte_val >= 128
 
-        let mut mult: u32 = 1
-        let mut s: u32 = 0
-        while s < shift {
-            mult = mult * 128
-            s = s + 1
+        # 第 5 组（shift=28）只允许保留 4 位：`low_bits` 超出 0x0F 即越过 u32 值域。
+        if shift == 28 && low_bits > 15 {
+            return Fail(wasm_binary_diagnostic("LEB128 编码溢出，超过 u32 范围", offset))
         }
-        result = result + low_bits * mult
+
+        # 每组贡献 `low_bits * 2^shift`：移位是位域语义，不是乘 128 的次数。
+        result = result + (low_bits << shift)
 
         pos = pos + 1
 
@@ -78,13 +78,8 @@ micro leb128_decode_i32(data: [i32], offset: usize) -> WasmBinaryResult<Leb128De
         let byte_val: u32 = byte as u32
         let low_bits: u32 = byte_val % 128
 
-        let mut mult: u32 = 1
-        let mut s: u32 = 0
-        while s < shift {
-            mult = mult * 128
-            s = s + 1
-        }
-        result = result + (low_bits * mult) as i32
+        # 每组贡献 `low_bits * 2^shift`：移位是位域语义，不是乘 128 的次数。
+        result = result + ((low_bits << shift) as i32)
 
         pos = pos + 1
 
@@ -207,9 +202,9 @@ micro wasm_check_magic(data: [i32], offset: usize) -> bool {
         return false
     }
     return data[offset] == 0
-        && data[offset + 1] == 97
-        && data[offset + 2] == 115
-        && data[offset + 3] == 109
+        && data[offset + 1] == b'a'
+        && data[offset + 2] == b's'
+        && data[offset + 3] == b'm'
 }
 
 micro wasm_value_type_name(code: i32) -> utf8 {
