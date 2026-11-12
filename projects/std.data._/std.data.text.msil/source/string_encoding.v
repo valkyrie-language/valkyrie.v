@@ -1,5 +1,7 @@
 namespace std.data.text.msil;
 
+using std.text::{Utf8ByteIndicator, byte_indicates, Utf8Builder};
+
 # Host string encoding contracts (do not conflate):
 # - Language `utf8` / `Utf8Text`: UTF-8 storage in std; `length` / `slice` / `index_of`
 #   are Unicode **scalar** indices (not UTF-8 byte offsets, not UTF-16 code units).
@@ -14,110 +16,93 @@ namespace std.data.text.msil;
 # Indexing: never treat UTF-8 byte offsets as UTF-16 code-unit indices (or reverse)
 # across an interop boundary without an explicit transcoder.
 
+⍝ `ldstr` 渲染合同（码点是唯一扫描单位，不设语料白名单）：
+⍝ - 源文本必须先经 `std::text::validate_utf8` 严格校验；非法序列结构化失败
+⍝   （`Fail` 诊断），绝不降级为 `?` 占位。
+⍝ - 全部码点落在 cooked 可表达集（可打印 ASCII + 反斜杠/双引号/制表/换行/回车
+⍝   转义）时渲染带引号字符串；任一码点超出该集，整串改由
+⍝   `bytearray (UTF-16LE hex)` 形式渲染——两种形态都是无损表示，不混排。
+⍝ - bytearray 形态下每个码点经 `std::text::encode_utf16` 得到 UTF-16 码元
+⍝   （astral 平面走代理对），按小端拆字节，逐字节经 `std::text::hex_encode`
+⍝   编码、空格分隔。任何 Unicode 标量都可编码，无“不可编码后猜测输出”。
+⍝ - 扫描游标与诊断 span 为码点口径；字节偏移只出现在 `byte_indicates` 内部。
+
 micro msil_quote_char() -> utf8 {
     # Cooked strings reject `\"`; use Unicode escape for U+0022.
     return "\u{22}"
 }
 
-micro msil_hex2_u8(n: i32) -> utf8 {
-    let mut v: i32 = n
-    if v < 0 {
-        v = 0
-    }
-    if v > 255 {
-        v = 255
-    }
-    let hi: i32 = v / 16
-    let lo: i32 = v % 16
-    let digits: utf8 = "0123456789ABCDEF"
-    return digits.slice(hi, 1) + digits.slice(lo, 1)
-}
-
-# One BMP code point as UTF-16LE hex pair (language `utf8` scalar held as one V char).
-micro msil_utf16le_hex_bmp(ch: utf8) -> utf8 {
-    if ch == "⁅" {
-        return "45 20"
-    }
-    if ch == "⁆" {
-        return "46 20"
-    }
-    if ch == "\u{09}" {
-        return "09 00"
-    }
-    if ch == "\u{0a}" {
-        return "0A 00"
-    }
-    if ch == "\u{0d}" {
-        return "0D 00"
-    }
-    let mut map: utf8 = " !"
-    map = map + msil_quote_char()
-    map = map + "#$%&"
-    map = map + "\u{27}"
-    map = map + "()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ["
-    map = map + "\u{5c}"
-    map = map + "]^_"
-    map = map + "\u{60}"
-    map = map + "abcdefghijklmnopqrstuvwxyz"
-    map = map + "{|}~"
-    let idx: i32 = map.index_of(ch)
-    if idx >= 0 {
-        return msil_hex2_u8(idx + 32) + " 00"
-    }
-    return "3F 00"
-}
-
 # Render CLR `ldstr` from language UTF-8 source text → UTF-16 string heap form.
-micro render_msil_ldstr_from_utf8_source(utf8_source: utf8) -> utf8 {
-    let mut ascii: utf8 = "\u{09}\u{0a}\u{0d} !#$%&()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_abcdefghijklmnopqrstuvwxyz{}~"
-    ascii = ascii + msil_quote_char()
-    ascii = ascii + "\u{5c}\u{27}\u{60}|"
-    let mut escaped: utf8 = ""
-    let mut bytearray_hex: utf8 = ""
+# 不可编码输入（源文本非合法 UTF-8）以 `MsilParseResult::Fail` 结构化失败。
+micro render_msil_ldstr_from_utf8_source(utf8_source: utf8) -> MsilParseResult<utf8> {
+    match std::text::validate_utf8(utf8_source.bytes()) {
+        case Fine(ok): {
+        }
+        case Fail(error):
+            return Fail(new_msil_diagnostic("ldstr 源文本不是合法 UTF-8，无法编码为字符串堆内容", 0, utf8_source.length()))
+    }
+
+    let mut iter: Utf8ByteIndicator = byte_indicates(utf8_source)
+    let mut escaped: Utf8Builder = Utf8Builder::new(utf8_source.byte_length())
+    let mut le_bytes: ArrayList<u8> = ArrayList::new(utf8_source.length() * 2)
     let mut needs_utf16_bytearray: bool = false
-    let mut i: i32 = 0
-    let backslash: utf8 = "\\"
-    while i < utf8_source.length() {
-        let ch: utf8 = utf8_source.slice(i, 1)
-        if ch == "⁅" || ch == "⁆" {
+    let mut pending: Option<(usize, char)> = iter.next()
+
+    while pending.is_some() {
+        let ch: char = pending.unwrap().1
+        pending = iter.next()
+        let code: u32 = ch as u32
+
+        # 码点 → UTF-16 码元（经编码能力，astral 走代理对）→ 小端字节，供 bytearray 形态消费。
+        let units: [u16] = std::text::encode_utf16(ch)
+        let mut u: usize = 0
+        while u < units.length {
+            let unit: u32 = units[u] as u32
+            le_bytes.push((unit % 256) as u8)
+            le_bytes.push((unit / 256) as u8)
+            u = u + 1
+        }
+
+        if ch == '\\' {
+            escaped.append('\\')
+            escaped.append('\\')
+        } else if ch == '''"''' {
+            escaped.append('\\')
+            escaped.append('''"''')
+        } else if ch == '\n' {
+            escaped.append('\\')
+            escaped.append('n')
+        } else if ch == '\t' {
+            escaped.append('\\')
+            escaped.append('t')
+        } else if ch == '\r' {
+            escaped.append('\\')
+            escaped.append('r')
+        } else if code >= 32 && code <= 126 {
+            escaped.append(ch)
+        } else {
             needs_utf16_bytearray = true
         }
-        if ch == backslash {
-            escaped = escaped + backslash + backslash
-        }
-        else if ch == msil_quote_char() {
-            escaped = escaped + backslash + msil_quote_char()
-        }
-        else if ch == "\u{0a}" {
-            escaped = escaped + backslash + "n"
-        }
-        else if ch == "\u{09}" {
-            escaped = escaped + backslash + "t"
-        }
-        else if ch == "\u{0d}" {
-            escaped = escaped + backslash + "r"
-        }
-        else if ascii.contains(ch) {
-            escaped = escaped + ch
-        }
-        else {
-            needs_utf16_bytearray = true
-            escaped = escaped + "?"
-        }
-        if bytearray_hex.length() > 0 {
-            bytearray_hex = bytearray_hex + " "
-        }
-        bytearray_hex = bytearray_hex + msil_utf16le_hex_bmp(ch)
-        i = i + 1
     }
+
     if needs_utf16_bytearray {
-        let mut line: utf8 = "bytearray ("
-        line = line + bytearray_hex
-        line = line + ")"
-        return line
+        let mut line: Utf8Builder = Utf8Builder::new(le_bytes.length() * 3 + 16)
+        line.append("bytearray (")
+        let mut i: usize = 0
+        while i < le_bytes.length() {
+            if i > 0 {
+                line.append(' ')
+            }
+            line.append(std::text::hex_encode([le_bytes⁅i⁆]))
+        }
+        line.append(")")
+        return Fine(line.build())
     }
-    let mut quoted: utf8 = msil_quote_char()
-    quoted = quoted + escaped
-    quoted = quoted + msil_quote_char()
-    return quoted
+
+    let cooked: utf8 = escaped.build()
+    let mut quoted: Utf8Builder = Utf8Builder::new(cooked.byte_length() + 2)
+    quoted.append(msil_quote_char())
+    quoted.append(cooked)
+    quoted.append(msil_quote_char())
+    return Fine(quoted.build())
 }

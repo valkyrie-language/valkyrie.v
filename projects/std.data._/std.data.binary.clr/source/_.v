@@ -1,9 +1,12 @@
 namespace std.data.binary.clr;
 
 using std.diagnostic::{Diagnostic, Error, new_diagnostic, new_span};
+using std.text::{Utf8Builder};
 
 # 诊断类型收敛到 `std.diagnostic::Diagnostic`（统一合同，不再各自定义）。
-# 旧轨包：诊断码表随错误容许改造补齐，暂以单码占位。
+# 位置单位合同：本包所有 `offset` / 诊断 span 一律为 PE/元数据流字节偏移；
+# 产出的 `utf8` 值内部是 UTF-8 存储，其 `length()` / `slice()` 为码点口径。
+# 两套坐标系只在 `Utf8Text` 显式视图（`bytes` / `byte_at`）处转换，不得互相冒充。
 
 [tag(ClrBinaryResultKind)]
 unite ClrBinaryResult<T> {
@@ -61,83 +64,36 @@ micro clr_read_bytes(data: [i32], offset: usize, count: usize) -> ClrBinaryResul
     return Fine(result)
 }
 
+# 严格 UTF-8 解码：`[offset, offset+length)` 区域逐码点经 `std::text::decode_char_at`
+# 消费（唯一 UTF-8 解码事实来源），任何非法序列（代理码位编码、过长编码、
+# 截断序列、越界首字节）都结构化失败——不做 ASCII 白名单映射、不以占位字符冒充成功。
 micro clr_read_utf8(data: [i32], offset: usize, length: usize) -> ClrBinaryResult<utf8> {
     match clr_read_bytes(data, offset, length) {
-        case Fine(bytes):
-            let mut text: utf8 = ""
-            loop byte in bytes {
-                text = text + clr_byte_to_char(byte)
+        case Fine(bytes_i32):
+            let mut raw: ArrayList<u8> = ArrayList::new(length)
+            let mut i: usize = 0
+            while i < bytes_i32.length {
+                raw.push(bytes_i32[i] as u8)
+                i = i + 1
             }
-            return Fine(text)
+
+            let bytes: [u8] = raw.to_array()
+            let mut builder: Utf8Builder = Utf8Builder::new(length)
+            let mut cursor: usize = 0
+            while cursor < bytes.length {
+                match std::text::decode_char_at(bytes, cursor) {
+                    case Fine(decoded):
+                        builder.append(decoded.0)
+                        cursor = cursor + decoded.1
+                    case Fail(error):
+                        return Fail(clr_binary_diagnostic("UTF-8 区域不是合法编码，无法解码为文本", offset + cursor))
+                }
+            }
+
+            return Fine(builder.build())
         case Fail(error):
             return Fail(error)
     }
-}
-
-micro clr_byte_to_char(byte: i32) -> utf8 {
-    if byte == 32 {
-        return " "
-    }
-    if byte == 46 {
-        return "."
-    }
-    if byte == 45 {
-        return "-"
-    }
-    if byte == 95 {
-        return "_"
-    }
-    if byte == 36 {
-        return "$"
-    }
-    if byte == 35 {
-        return "#"
-    }
-    if byte == 126 {
-        return "~"
-    }
-    if byte == 124 {
-        return "|"
-    }
-    if byte == 60 {
-        return "<"
-    }
-    if byte == 62 {
-        return ">"
-    }
-    if byte == 43 {
-        return "+"
-    }
-    if byte == 61 {
-        return "="
-    }
-    if byte == 96 {
-        return "`"
-    }
-    if byte >= 48 && byte <= 57 {
-        let digits: utf8 = "0123456789"
-        return clr_char_at(digits, byte - 48)
-    }
-    if byte >= 65 && byte <= 90 {
-        let chars: utf8 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        return clr_char_at(chars, byte - 65)
-    }
-    if byte >= 97 && byte <= 122 {
-        let chars: utf8 = "abcdefghijklmnopqrstuvwxyz"
-        return clr_char_at(chars, byte - 97)
-    }
-    return "?"
-}
-
-micro clr_char_at(text: utf8, idx: i32) -> utf8 {
-    let mut i: i32 = 0
-    while i <= idx {
-        if i == idx {
-            return ""
-        }
-        i = i + 1
-    }
-    return ""
 }
 
 micro clr_check_pe_magic(data: [i32], offset: usize) -> bool {

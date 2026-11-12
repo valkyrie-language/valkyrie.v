@@ -1,9 +1,12 @@
 namespace std.data.binary.wasm;
 
 using std.diagnostic::{Diagnostic, Error, new_diagnostic, new_span};
+using std.text::{Utf8Builder};
 
 # 诊断类型收敛到 `std.diagnostic::Diagnostic`（统一合同，不再各自定义）。
-# 旧轨包：诊断码表随错误容许改造补齐，暂以单码占位。
+# 位置单位合同：本包所有 `offset` / `consumed` / 诊断 span 一律为二进制流字节偏移；
+# 产出的 `utf8` 值内部是 UTF-8 存储，其 `length()` / `slice()` 为码点口径。
+# 两套坐标系只在 `Utf8Text` 显式视图（`bytes` / `byte_at`）处转换，不得互相冒充。
 
 [tag(WasmBinaryResultKind)]
 unite WasmBinaryResult<T> {
@@ -154,6 +157,9 @@ micro wasm_read_bytes(data: [i32], offset: usize, count: usize) -> WasmBinaryRes
     })
 }
 
+# 名字区 = LEB128 长度 + UTF-8 字节。严格解码：逐码点经 `std::text::decode_char_at`
+# 消费（唯一 UTF-8 解码事实来源），任何非法序列（代理码位编码、过长编码、
+# 截断序列、越界首字节）都结构化失败——不静默跳过、不以占位字符冒充成功。
 micro wasm_read_name(data: [i32], offset: usize) -> WasmBinaryResult<Leb128Decoded<utf8>> {
     match leb128_decode_u32(data, offset) {
         case Fine(length_result):
@@ -161,17 +167,28 @@ micro wasm_read_name(data: [i32], offset: usize) -> WasmBinaryResult<Leb128Decod
             let str_offset: usize = offset + length_result.consumed
             match wasm_read_bytes(data, str_offset, length) {
                 case Fine(bytes_result):
-                    let mut text: utf8 = ""
+                    let mut raw: ArrayList<u8> = ArrayList::new(length)
                     let mut i: usize = 0
                     while i < bytes_result.value.length {
-                        let byte_val: i32 = bytes_result.value[i]
-                        if byte_val >= 32 && byte_val < 127 {
-                            text = text + byte_to_char(byte_val)
-                        }
+                        raw.push(bytes_result.value[i] as u8)
                         i = i + 1
                     }
+
+                    let bytes: [u8] = raw.to_array()
+                    let mut builder: Utf8Builder = Utf8Builder::new(length)
+                    let mut cursor: usize = 0
+                    while cursor < bytes.length {
+                        match std::text::decode_char_at(bytes, cursor) {
+                            case Fine(decoded):
+                                builder.append(decoded.0)
+                                cursor = cursor + decoded.1
+                            case Fail(error):
+                                return Fail(wasm_binary_diagnostic("名字区域不是合法 UTF-8，无法解码为文本", str_offset + cursor))
+                        }
+                    }
+
                     return Fine(Leb128Decoded {
-                        value: text,
+                        value: builder.build(),
                         consumed: length_result.consumed + bytes_result.consumed
                     })
                 case Fail(error):
@@ -180,49 +197,6 @@ micro wasm_read_name(data: [i32], offset: usize) -> WasmBinaryResult<Leb128Decod
         case Fail(error):
             return Fail(error)
     }
-}
-
-micro byte_to_char(byte: i32) -> utf8 {
-    if byte == 32 {
-        return " "
-    }
-    if byte == 95 {
-        return "_"
-    }
-    if byte == 46 {
-        return "."
-    }
-    if byte == 36 {
-        return "$"
-    }
-    if byte >= 48 && byte <= 57 {
-        let digits: utf8 = "0123456789"
-        let idx: i32 = byte - 48
-        return digit_at(digits, idx)
-    }
-    if byte >= 65 && byte <= 90 {
-        let chars: utf8 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        let idx: i32 = byte - 65
-        return digit_at(chars, idx)
-    }
-    if byte >= 97 && byte <= 122 {
-        let chars: utf8 = "abcdefghijklmnopqrstuvwxyz"
-        let idx: i32 = byte - 97
-        return digit_at(chars, idx)
-    }
-    return "?"
-}
-
-micro digit_at(text: utf8, idx: i32) -> utf8 {
-    let mut i: i32 = 0
-    let mut result: utf8 = ""
-    while i <= idx {
-        if i == idx {
-            return ""
-        }
-        i = i + 1
-    }
-    return result
 }
 
 structure WasmConstants {
