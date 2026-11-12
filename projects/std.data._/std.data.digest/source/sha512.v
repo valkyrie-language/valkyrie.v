@@ -4,8 +4,10 @@ namespace std.data.digest;
 # 64 位字以 u64 原生承载：加法回绕即算法语义的 mod 2^64，右移/旋转移位
 # 都是 u64 上的逻辑位移。
 #
-# 块内布局：消息按 128 字节分块；`pending` 存未满一块的尾巴，`total` 记总字节数
-# （finalize 时换算成比特长度写尾，高 64 位恒 0）。
+# 块内布局：消息按 128 字节分块；`pending` 存未满一块的尾巴，`total_bits` 以
+# 64 位数值域累计比特长度（finalize 直接写尾；算法的长度字段是 128 位大端，
+# 高 64 位恒 0——小于 2^61 字节的消息恒在该不变量内，32 位目标上 usize 先乘 8
+# 会回绕，故累计不以字节数承载）。
 
 # 初始哈希值：前 8 个素数平方根小数部的高 64 位（算法固有常数）。
 micro sha512_initial() -> [u64] {
@@ -75,15 +77,16 @@ micro sha512_maj(a: u64, b: u64, c: u64) -> u64 {
 }
 
 # SHA-512 流式状态：`lanes` 是 8 个 64 位工作变量，`pending` 是未满一块的
-# 尾字节，`total` 是已接收总字节数。
+# 尾字节，`total_bits` 是已接收输入的累计比特长度（算法规定的数值域内，
+# 与指针位宽无关）。
 structure DigestSha512 {
     lanes: [u64]
     pending: [u8]
-    total: usize
+    total_bits: u64
 }
 
 micro digest_sha512_new() -> DigestSha512 {
-    return DigestSha512 { lanes: sha512_initial(), pending: [], total: 0 }
+    return DigestSha512 { lanes: sha512_initial(), pending: [], total_bits: 0 }
 }
 
 # 处理一个 128 字节块（block 恰为 128 字节由调用点保证）。
@@ -187,7 +190,7 @@ imply DigestSha512 {
             self.pending = self.pending.push(bytes⁅index⁆)
             index = index + 1
         }
-        self.total = self.total + length
+        self.total_bits = self.total_bits + (length as u64) * 8
         while self.pending.length() >= 128 {
             self.lanes = sha512_compress(self.lanes, sha512_head_block(self.pending))
             self.pending = sha512_take_block(self.pending)
@@ -195,9 +198,9 @@ imply DigestSha512 {
     }
 
     # 读出 64 字节原始摘要。填充：0x80、清零至距块尾 16 字节、128 位大端比特
-    # 长度（高 64 位恒 0，低 64 位为 total*8）。
+    # 长度（高 64 位恒 0，低 64 位为累计的 `total_bits`）。
     micro finalize(mut self) -> [u8] {
-        let bit_length: u64 = (self.total * 8) as u64
+        let bit_length: u64 = self.total_bits
         self.pending = self.pending.push(0x80 as u8)
         while self.pending.length() % 128 != 112 {
             self.pending = self.pending.push(0 as u8)

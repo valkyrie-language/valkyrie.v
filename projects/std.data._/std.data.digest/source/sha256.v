@@ -5,8 +5,10 @@ namespace std.data.digest;
 # 32 位字以 u32 原生承载：加法回绕、逻辑右移、循环右移都是 mod 2^32 语义，
 # 与 FIPS 180-4 的字定义一致。
 #
-# 块内布局：消息按 64 字节分块；`pending` 存未满一块的尾巴，`total` 记总字节数
-# （finalize 时换算成比特长度写尾）。w 调度、K 表、H 初值均为算法固有常数。
+# 块内布局：消息按 64 字节分块；`pending` 存未满一块的尾巴，`total_bits` 以
+# 算法规定的 64 位数值域累计比特长度（finalize 直接写尾；地址与单次缓冲长度
+# 才用 usize，32 位目标上 usize 承载不了累计长度，先乘 8 会回绕）。
+# w 调度、K 表、H 初值均为算法固有常数。
 
 # 初始哈希值：前 8 个素数平方根小数部的高 32 位（算法固有常数）。
 micro sha256_initial() -> [u32] {
@@ -62,15 +64,16 @@ micro sha256_maj(a: u32, b: u32, c: u32) -> u32 {
 }
 
 # SHA-256 流式状态：`lanes` 是 8 个 32 位工作变量，`pending` 是未满一块的
-# 尾字节，`total` 是已接收总字节数。
+# 尾字节，`total_bits` 是已接收输入的累计比特长度（算法规定的 u64 数值域，
+# 与指针位宽无关）。
 structure DigestSha256 {
     lanes: [u32]
     pending: [u8]
-    total: usize
+    total_bits: u64
 }
 
 micro digest_sha256_new() -> DigestSha256 {
-    return DigestSha256 { lanes: sha256_initial(), pending: [], total: 0 }
+    return DigestSha256 { lanes: sha256_initial(), pending: [], total_bits: 0 }
 }
 
 # 处理一个 64 字节块（block 恰为 64 字节由调用点保证）。
@@ -169,7 +172,7 @@ imply DigestSha256 {
             self.pending = self.pending.push(bytes⁅index⁆)
             index = index + 1
         }
-        self.total = self.total + length
+        self.total_bits = self.total_bits + (length as u64) * 8
         while self.pending.length() >= 64 {
             self.lanes = sha256_compress(self.lanes, sha256_head_block(self.pending))
             self.pending = sha256_take_block(self.pending)
@@ -178,7 +181,7 @@ imply DigestSha256 {
 
     # 读出 32 字节原始摘要。填充：0x80、清零至距块尾 8 字节、大端 64 位比特长度。
     micro finalize(mut self) -> [u8] {
-        let bit_length: u64 = (self.total * 8) as u64
+        let bit_length: u64 = self.total_bits
         self.pending = self.pending.push(0x80 as u8)
         while self.pending.length() % 64 != 56 {
             self.pending = self.pending.push(0 as u8)
