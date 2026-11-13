@@ -6,6 +6,8 @@ using asgard.ui.host;
 using asgard.ui.wire;
 using asgard.ui.ir;
 using asgard.ui.runtime;
+using std.text::Utf8DecodeError;
+using std.types::{Result, Fine};
 
 class WindowsUiHost {
     executable: [u8]
@@ -16,10 +18,10 @@ micro windows_host_from_executable(exe: [u8]): WindowsUiHost {
     return WindowsUiHost { executable: exe, tree: create_view_tree() }
 }
 
-micro windows_load_ir(host: WindowsUiHost): [UiComponent] {
+micro windows_load_ir(host: WindowsUiHost): Result<[UiComponent], Utf8DecodeError> {
     let section: [u8] = find_asgard_ui_section(host.executable)
     if section.length == 0 {
-        return []
+        return Fine { value: [] }
     }
     return decode_package(section)
 }

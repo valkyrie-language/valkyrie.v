@@ -2,12 +2,18 @@
 
 using asgard.ui.wire;
 using asgard.ui.ir;
+using std.types::{Fine, Fail};
 
 [test]
 micro `decode empty is empty`() {
-    let components: [UiComponent] = decode_package([])
-    if components.length != 0 {
-        panic("decode_package([]) should be empty")
+    let components: Result<[UiComponent], std.text::Utf8DecodeError> = decode_package([])
+    match components {
+        case Fine(loaded):
+            if loaded.length != 0 {
+                panic("decode_package([]) should be empty")
+            }
+        case Fail(error):
+            panic("decode_package([]) must not fail")
     }
 }
 
@@ -23,9 +29,14 @@ micro `find section empty is empty`() {
 micro `header magic alone is not a package`() {
     # ASGARDUI (8 bytes) alone — too short for a valid package body
     let data: [u8] = [0x41, 0x53, 0x47, 0x41, 0x52, 0x44, 0x55, 0x49]
-    let components: [UiComponent] = decode_package(data)
-    if components.length != 0 {
-        panic("magic-only payload should not decode components")
+    let components: Result<[UiComponent], std.text::Utf8DecodeError> = decode_package(data)
+    match components {
+        case Fine(loaded):
+            if loaded.length != 0 {
+                panic("magic-only payload should not decode components")
+            }
+        case Fail(error):
+            panic("magic-only payload must decode to empty, not fail")
     }
 }
 
@@ -36,8 +47,13 @@ micro `empty package with magic and zero count`() {
         0x41, 0x53, 0x47, 0x41, 0x52, 0x44, 0x55, 0x49,
         0x00, 0x00, 0x00, 0x00
     ]
-    let components: [UiComponent] = decode_package(data)
-    if components.length != 0 {
-        panic("zero-count package should yield empty component list")
+    let components: Result<[UiComponent], std.text::Utf8DecodeError> = decode_package(data)
+    match components {
+        case Fine(loaded):
+            if loaded.length != 0 {
+                panic("zero-count package should yield empty component list")
+            }
+        case Fail(error):
+            panic("zero-count package must not fail")
     }
 }

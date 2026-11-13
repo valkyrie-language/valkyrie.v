@@ -6,6 +6,8 @@ using asgard.ui.host;
 using asgard.ui.wire;
 using asgard.ui.ir;
 using asgard.ui.runtime;
+using std.text::Utf8DecodeError;
+using std.types::{Result, Fine};
 
 class MacOsUiHost {
     executable: [u8]
@@ -16,10 +18,10 @@ micro macos_host_from_executable(exe: [u8]): MacOsUiHost {
     return MacOsUiHost { executable: exe, tree: create_view_tree() }
 }
 
-micro macos_load_ir(host: MacOsUiHost): [UiComponent] {
+micro macos_load_ir(host: MacOsUiHost): Result<[UiComponent], Utf8DecodeError> {
     let section: [u8] = find_asgard_ui_section(host.executable)
     if section.length == 0 {
-        return []
+        return Fine { value: [] }
     }
     return decode_package(section)
 }
