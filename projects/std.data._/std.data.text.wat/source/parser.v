@@ -37,15 +37,15 @@ micro parse_wat_tokens(tokens: [WatToken]) -> WatParseResult<WatModule> {
                         else: return Fail(wat_unexpected(tokens, i))
                     }
 
-                    let mut imports: [WatImport] = []
-                    let mut exports: [WatExport] = []
-                    let mut functions: [WatFunction] = []
-                    let mut memories: [WatMemory] = []
-                    let mut tables: [WatTable] = []
-                    let mut globals: [WatGlobal] = []
-                    let mut data_segments: [WatDataSegment] = []
-                    let mut type_definitions: [WatTypeDefinition] = []
-                    let mut elem_segments: [WatElemSegment] = []
+                    let mut imports: ArrayList<WatImport> = ArrayList::new(0)
+                    let mut exports: ArrayList<WatExport> = ArrayList::new(0)
+                    let mut functions: ArrayList<WatFunction> = ArrayList::new(0)
+                    let mut memories: ArrayList<WatMemory> = ArrayList::new(0)
+                    let mut tables: ArrayList<WatTable> = ArrayList::new(0)
+                    let mut globals: ArrayList<WatGlobal> = ArrayList::new(0)
+                    let mut data_segments: ArrayList<WatDataSegment> = ArrayList::new(0)
+                    let mut type_definitions: ArrayList<WatTypeDefinition> = ArrayList::new(0)
+                    let mut elem_segments: ArrayList<WatElemSegment> = ArrayList::new(0)
                     let mut start_function: utf8 = ""
 
                     while i < tokens.length {
@@ -60,39 +60,39 @@ micro parse_wat_tokens(tokens: [WatToken]) -> WatParseResult<WatModule> {
                                 match wat_peek(tokens, i).kind {
                                     case FuncKeyword:
                                         let result = parse_wat_func(tokens, i)?
-                                                push(functions, result.value)
+                                                functions.push(result.value)
                                                 i = result.next_index
                                     case TypeKeyword:
                                         let result = parse_wat_type_def(tokens, i)?
-                                                push(type_definitions, result.value)
+                                                type_definitions.push(result.value)
                                                 i = result.next_index
                                     case ImportKeyword:
                                         let result = parse_wat_import(tokens, i)?
-                                                push(imports, result.value)
+                                                imports.push(result.value)
                                                 i = result.next_index
                                     case ExportKeyword:
                                         let result = parse_wat_export(tokens, i)?
-                                                push(exports, result.value)
+                                                exports.push(result.value)
                                                 i = result.next_index
                                     case MemoryKeyword:
                                         let result = parse_wat_memory(tokens, i)?
-                                                push(memories, result.value)
+                                                memories.push(result.value)
                                                 i = result.next_index
                                     case TableKeyword:
                                         let result = parse_wat_table(tokens, i)?
-                                                push(tables, result.value)
+                                                tables.push(result.value)
                                                 i = result.next_index
                                     case GlobalKeyword:
                                         let result = parse_wat_global(tokens, i)?
-                                                push(globals, result.value)
+                                                globals.push(result.value)
                                                 i = result.next_index
                                     case DataKeyword:
                                         let result = parse_wat_data(tokens, i)?
-                                                push(data_segments, result.value)
+                                                data_segments.push(result.value)
                                                 i = result.next_index
                                     case ElemKeyword:
                                         let result = parse_wat_elem(tokens, i)?
-                                                push(elem_segments, result.value)
+                                                elem_segments.push(result.value)
                                                 i = result.next_index
                                     case StartKeyword:
                                         i = i + 1
@@ -115,15 +115,15 @@ micro parse_wat_tokens(tokens: [WatToken]) -> WatParseResult<WatModule> {
 
                     return Fine(WatModule {
                         name: module_name,
-                        imports: imports,
-                        exports: exports,
-                        functions: functions,
-                        memories: memories,
-                        tables: tables,
-                        globals: globals,
-                        data_segments: data_segments,
-                        type_definitions: type_definitions,
-                        elem_segments: elem_segments,
+                        imports: imports.to_array(),
+                        exports: exports.to_array(),
+                        functions: functions.to_array(),
+                        memories: memories.to_array(),
+                        tables: tables.to_array(),
+                        globals: globals.to_array(),
+                        data_segments: data_segments.to_array(),
+                        type_definitions: type_definitions.to_array(),
+                        elem_segments: elem_segments.to_array(),
                         start_function: start_function
                     })
 }

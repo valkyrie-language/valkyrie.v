@@ -107,7 +107,7 @@ micro is_wat_dotted_opcode(word: utf8) -> bool {
 }
 
 micro lex_wat(source: utf8) -> WatParseResult<[WatToken]> {
-    let mut tokens: [WatToken] = []
+    let mut tokens: ArrayList<WatToken> = ArrayList::new(0)
     let mut pos: usize = 0
     let mut line: usize = 1
     let mut col: usize = 1
@@ -133,7 +133,7 @@ micro lex_wat(source: utf8) -> WatParseResult<[WatToken]> {
             while pos < length && source[pos] != "\n" {
                 pos = pos + 1
             }
-            push(tokens, new_wat_token(Comment(""), start, pos, start_line, start_col))
+            tokens.push(new_wat_token(Comment(""), start, pos, start_line, start_col))
             continue
         }
 
@@ -156,7 +156,7 @@ micro lex_wat(source: utf8) -> WatParseResult<[WatToken]> {
                     }
                 }
             }
-            push(tokens, new_wat_token(Comment(""), start, pos, start_line, start_col))
+            tokens.push(new_wat_token(Comment(""), start, pos, start_line, start_col))
             continue
         }
 
@@ -166,7 +166,7 @@ micro lex_wat(source: utf8) -> WatParseResult<[WatToken]> {
             let start_col: usize = col
             pos = pos + 1
             col = col + 1
-            push(tokens, new_wat_token(Punctuation(ch), start, pos, start_line, start_col))
+            tokens.push(new_wat_token(Punctuation(ch), start, pos, start_line, start_col))
             continue
         }
 
@@ -185,7 +185,7 @@ micro lex_wat(source: utf8) -> WatParseResult<[WatToken]> {
                     break
                 }
             }
-            push(tokens, new_wat_token(Identifier(text), start, pos, start_line, start_col))
+            tokens.push(new_wat_token(Identifier(text), start, pos, start_line, start_col))
             continue
         }
 
@@ -212,7 +212,7 @@ micro lex_wat(source: utf8) -> WatParseResult<[WatToken]> {
                 text = text + '''"'''
                 pos = pos + 1
             }
-            push(tokens, new_wat_token(String(text), start, pos, start_line, start_col))
+            tokens.push(new_wat_token(String(text), start, pos, start_line, start_col))
             continue
         }
 
@@ -236,7 +236,7 @@ micro lex_wat(source: utf8) -> WatParseResult<[WatToken]> {
                     break
                 }
             }
-            push(tokens, new_wat_token(Number(text), start, pos, start_line, start_col))
+            tokens.push(new_wat_token(Number(text), start, pos, start_line, start_col))
             continue
         }
 
@@ -257,13 +257,13 @@ micro lex_wat(source: utf8) -> WatParseResult<[WatToken]> {
 
             if is_wat_keyword(text) {
                 let kind: WatTokenKind = wat_keyword_kind(text)
-                push(tokens, new_wat_token(kind, start, pos, start_line, start_col))
+                tokens.push(new_wat_token(kind, start, pos, start_line, start_col))
             } else if is_wat_value_type(text) {
-                push(tokens, new_wat_token(Identifier(text), start, pos, start_line, start_col))
+                tokens.push(new_wat_token(Identifier(text), start, pos, start_line, start_col))
             } else if is_wat_plain_opcode(text) || is_wat_dotted_opcode(text) {
-                push(tokens, new_wat_token(Opcode(text), start, pos, start_line, start_col))
+                tokens.push(new_wat_token(Opcode(text), start, pos, start_line, start_col))
             } else {
-                push(tokens, new_wat_token(Identifier(text), start, pos, start_line, start_col))
+                tokens.push(new_wat_token(Identifier(text), start, pos, start_line, start_col))
             }
             continue
         }
@@ -271,8 +271,8 @@ micro lex_wat(source: utf8) -> WatParseResult<[WatToken]> {
         return Fail(new_wat_diagnostic("存在无法识别的 WAT 字符", pos, pos + 1))
     }
 
-    push(tokens, eof_wat_token(pos, line, col))
-    return Fine(tokens)
+    tokens.push(eof_wat_token(pos, line, col))
+    return Fine(tokens.to_array())
 }
 
 micro is_wat_digit(ch: utf8) -> bool {
