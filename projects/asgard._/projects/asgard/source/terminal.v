@@ -19,6 +19,10 @@ using std.terminal;
 ⍝   压入一张全新的登记帧、运行返回时弹出；登记表按运行（即会话）
 ⍝   作用域组织，不存在跨运行共享、逐次重置的同一张表。
 ⍝   会话以参数传给生成处理函数，无进程级隐式会话单例。
+⍝ - 帧归属：每张登记帧在压栈时记录所属会话的槽存储对象引用；
+⍝   全部 singleton 入口先做引用同一性校验（与 `std.terminal` 句柄
+⍝   owner 校验同一判定）——「一帧对应一会话」是运行期强制事实，
+⍝   不只依赖调用约定。错会话/错帧访问显式 panic，不做静默兜底。
 ⍝
 ⍝ 重入与并发政策（登记帧栈的语义事实）：
 ⍝ - 重入：同一会话运行期间再次 `run` 是 `std.terminal` 会话合同违反
@@ -30,10 +34,17 @@ using std.terminal;
 ⍝ - 边界：登记帧只在一次 `asgard_terminal_run` 存续期间有效；
 ⍝   运行边界之外构造控件或按显示名补丁是生成流程错误，显式 panic，
 ⍝   不做静默兜底。
+⍝ - 异常退出合同：`build` / 回调内的 panic 会跳过 `end_frame`，登记帧栈
+⍝   失衡与备用屏归还同样依赖语言正式资源作用域机制（06 §1.30 拒收 5、
+⍝   条目 49）——产品不引入顶级可变变量或按类型名特判伪造兜底；
+⍝   正常路径（quit / EOF / 读取失败）经 `session.run` 的唯一收尾点弹出帧。
 
 # 登记帧：一次运行（一个会话）一张表，条目为显示名 → 类型化槽句柄。
 # 句柄身份在帧内跨重挂载稳定；帧随运行创建与销毁，不跨会话共享。
+# `owner` 是所属会话的槽存储引用：singleton 入口据此校验
+# 「传入会话即当前运行帧的会话」，引用同一性判定与 std 句柄校验一致。
 structure AsgardTuiFrame {
+    owner: SessionSlots
     flag_names: ArrayList<utf8>
     flag_handles: ArrayList<FlagBinding>
     choice_names: ArrayList<utf8>
@@ -43,8 +54,9 @@ structure AsgardTuiFrame {
 }
 
 imply AsgardTuiFrame {
-    micro new() -> Self {
+    micro new(owner: SessionSlots) -> Self {
         return AsgardTuiFrame {
+            owner: owner,
             flag_names: ArrayList::new(16),
             flag_handles: ArrayList::new(16),
             choice_names: ArrayList::new(16),
@@ -54,8 +66,17 @@ imply AsgardTuiFrame {
         }
     }
 
+    # 帧归属校验：传入会话的槽存储与本帧所有者不是同一对象即契约违反——
+    # 父帧句柄经子帧补丁、或子会话句柄落到父帧，都会静默命中错误槽位。
+    private micro check_owner(self, session: mut TuiSession) -> unit {
+        if self.owner != session.slots {
+            std::types::panic("AsgardTuiFrame: 会话不属于当前运行帧，拒绝登记与补丁")
+        }
+    }
+
     # 按显示名取布尔槽句柄：帧内已登记则复用，未登记则在会话上分配并登记。
     micro flag(mut self, session: mut TuiSession, name: utf8, initial: bool) -> FlagBinding {
+        self.check_owner(session)
         let mut i: usize = 0
         while i < self.flag_names.length() {
             if self.flag_names.get((i + 1) as isize).unwrap() == name {
@@ -71,6 +92,7 @@ imply AsgardTuiFrame {
 
     # 按显示名取选项槽句柄：帧内已登记则复用，未登记则在会话上分配并登记。
     micro choice(mut self, session: mut TuiSession, name: utf8, initial: utf8) -> ChoiceBinding {
+        self.check_owner(session)
         let mut i: usize = 0
         while i < self.choice_names.length() {
             if self.choice_names.get((i + 1) as isize).unwrap() == name {
@@ -86,6 +108,7 @@ imply AsgardTuiFrame {
 
     # 按显示名取整数槽句柄：帧内已登记则复用，未登记则在会话上分配并登记。
     micro int(mut self, session: mut TuiSession, name: utf8, initial: i32) -> IntBinding {
+        self.check_owner(session)
         let mut i: usize = 0
         while i < self.int_names.length() {
             if self.int_names.get((i + 1) as isize).unwrap() == name {
@@ -101,6 +124,7 @@ imply AsgardTuiFrame {
 
     # 按显示名写布尔槽并重渲染；未登记的显示名是生成流程错误。
     micro patch_flag(mut self, session: mut TuiSession, name: utf8, on: bool) -> unit {
+        self.check_owner(session)
         let mut i: usize = 0
         while i < self.flag_names.length() {
             if self.flag_names.get((i + 1) as isize).unwrap() == name {
@@ -115,6 +139,7 @@ imply AsgardTuiFrame {
 
     # 按显示名写选项槽并重渲染；未登记的显示名是生成流程错误。
     micro patch_choice(mut self, session: mut TuiSession, name: utf8, selected: utf8) -> unit {
+        self.check_owner(session)
         let mut i: usize = 0
         while i < self.choice_names.length() {
             if self.choice_names.get((i + 1) as isize).unwrap() == name {
@@ -129,6 +154,7 @@ imply AsgardTuiFrame {
 
     # 按显示名写整数槽并重渲染；未登记的显示名是生成流程错误。
     micro patch_int(mut self, session: mut TuiSession, name: utf8, value: i32) -> unit {
+        self.check_owner(session)
         let mut i: usize = 0
         while i < self.int_names.length() {
             if self.int_names.get((i + 1) as isize).unwrap() == name {
@@ -148,9 +174,9 @@ imply AsgardTuiFrame {
 singleton AsgardTuiBindings {
     mut frames: ArrayList<AsgardTuiFrame>;
 
-    # 运行边界开始：压入全新登记帧。
-    micro begin_frame(mut self) -> unit {
-        self.frames.push(AsgardTuiFrame::new())
+    # 运行边界开始：压入绑定到所属会话的全新登记帧。
+    micro begin_frame(mut self, owner: SessionSlots) -> unit {
+        self.frames.push(AsgardTuiFrame::new(owner))
     }
 
     # 运行边界结束：弹出栈顶帧。帧数失衡是生成流程错误。
@@ -273,8 +299,8 @@ micro awsl_radio(label: utf8, name: utf8, option: utf8, session: mut TuiSession)
 # 会话与登记帧由本函数显式创建，帧随运行边界压入与弹出；
 # 嵌套运行各自持有独立帧，互不影响。
 micro asgard_terminal_run(build: micro(mut TuiSession) -> ArrayList<Widget>) -> i32 {
-    AsgardTuiBindings.begin_frame()
     let mut session: TuiSession = TuiSession::new()
+    AsgardTuiBindings.begin_frame(session.slots)
     session.mount(build(session))
     let code: i32 = session.run()
     AsgardTuiBindings.end_frame()
