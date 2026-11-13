@@ -77,7 +77,8 @@ flowchart LR
 
 - `std.dom`、`std.storage`、`std.fetch`、`std.timer` 更接近 `browser` / `web host` 能力
 - `std.console`、`std.math`、`std.json`、`std.crypto` 更接近通用计算能力
-- `std.fs`、`std.process`、`std.net` 这类能力如果未来加入，也必须显式声明宿主前提
+- `std.process`、`std.net` 这类能力如果未来加入，也必须显式声明宿主前提
+- 文件字节 I/O 只有 `std.io` 一套正式资源合同（`open_file` / `read_file` / `write_file`），由各 lane adaptor 绑定宿主；不存在并行的整文件通道
 
 如果目标是 `wasm-browser`，则 web 相关模块可以通过对应 adaptor 打开；如果目标是纯 `native` 或受限 `wasi`，则必须由 `validate` 明确确认哪些能力可用、哪些能力禁止。
 

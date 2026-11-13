@@ -6,8 +6,8 @@ using std.types::{Result, Option};
 #
 # `BytesReader` 把一段 `[u8]` 包装成 `Reader`（读端）；
 # `BytesWriter` 把写出聚合到内部 `ArrayList<u8>` 缓冲（写端），
-# 经 `written_bytes` 冻结取回。二者是测试、编解码管线与 `std.vfs`
-# 内存后端的共用底座，不涉及任何宿主能力。
+# 经 `written_bytes` 冻结取回。二者是测试、编解码管线与内存后端的
+# 共用底座，不涉及任何宿主能力。
 
 structure BytesReader {
     _bytes: [u8]

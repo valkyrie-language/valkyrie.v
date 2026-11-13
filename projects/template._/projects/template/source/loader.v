@@ -4,7 +4,7 @@ using std.diagnostic::{Diagnostic, Error, diagnostic_code, new_diagnostic, new_s
 using std.data::{DataOutcome, data_outcome_diagnostics, data_outcome_failed, data_outcome_has_errors, data_outcome_of, data_outcome_partial, data_outcome_value_or};
 
 # 加载段（纯策略）：模板引用 -> 源条目命中。模板源访问一律经 source.v 的
-# 窄接口（待 std.vfs 落地后替换其实现）；本文件不含目录实现假设。
+# 窄接口（待 虚拟文件系统层（待定案） 落地后替换其实现）；本文件不含目录实现假设。
 #
 # path-v1（策略合同）：
 # - 引用三态：scheme（`<root>:<path>`）、相对（`./`/`../` 前缀）、裸路径。

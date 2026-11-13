@@ -11,7 +11,8 @@ using std.types::{Result};
 # （对本 trait 的任何实现一致可用），实现方只需提供 `read`。
 #
 # 本层不认识路径、不认识文件系统：字节来源由实现方决定
-# （内存字节串、文件、套接字、解码管道均可）。文件系统入口在 `std.fs`。
+# （内存字节串、文件、套接字、解码管道均可）。文件资源入口在 `std.io` 的
+# `open_file` / `read_file` / `write_file`。
 
 trait Reader {
     micro read(mut self, max: usize) -> Result<[u8], IoError>

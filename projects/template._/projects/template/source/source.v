@@ -2,10 +2,10 @@ namespace template;
 
 using std.data.text::{TemplateDocument};
 
-# 模板源窄接口（待 std.vfs 落地后整体替换）。
+# 模板源窄接口（待 虚拟文件系统层（待定案） 落地后整体替换）。
 #
 # 策略层（loader.v）与装配层（assemble.v）只经本文件的函数访问模板源，
-# 不再直接读取 `TemplateCatalog` 字段。当前实现为内存目录；std.vfs 落地后
+# 不再直接读取 `TemplateCatalog` 字段。当前实现为内存目录；虚拟文件系统层（待定案） 落地后
 # 本文件替换为 vfs provider 适配，接口签名与策略层不变。
 #
 # 接口面：root 枚举/查找、条目探测（精确 root+path）、条目枚举/取下。
