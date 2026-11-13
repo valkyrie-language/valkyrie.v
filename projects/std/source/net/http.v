@@ -268,6 +268,71 @@ micro validate_framing(headers: [HttpHeader], body_length: usize) -> Option<Http
     return None
 }
 
+# 报文模型验证（02 §4.3，与分帧验证同一入口家族）：请求线与状态行的
+# 字段完整性 —— 请求行三段均不得携带 CR/LF 或空格（空格伪造报文边界），
+# target 必须是 origin-form；Host 非空且无 CR/LF/空格；reason 无 CR/LF。
+micro validate_request_line(method: HttpMethod, host: utf8, target: utf8) -> Option<HttpError> {
+    if target.length == 0 {
+        return Some(Malformed { detail: "请求 target 为空" })
+    }
+    let target_bytes: [u8] = Utf8Text::bytes(target)
+    if target_bytes⁅0⁆ != b'/' {
+        return Some(Malformed { detail: "请求 target 不是 origin-form（必须以 `/` 开头）" })
+    }
+    if contains_line_break(target) || contains_space(target) {
+        return Some(Malformed { detail: "请求 target 携带 CR/LF/空格注入" })
+    }
+    if host.length == 0 {
+        return Some(Malformed { detail: "Host 为空" })
+    }
+    if contains_line_break(host) || contains_space(host) {
+        return Some(Malformed { detail: "Host 携带 CR/LF/空格注入" })
+    }
+    return None
+}
+
+micro validate_status_line(status: u16, reason: utf8) -> Option<HttpError> {
+    if contains_line_break(reason) {
+        return Some(Malformed { detail: "reason phrase 携带 CR/LF 注入" })
+    }
+    if status > 999 {
+        return Some(Malformed { detail: "状态码越出三位十进制域" })
+    }
+    return None
+}
+
+# 实体规则由方法与状态唯一决定（本层唯一的判定点，调用点不维护平行特判）：
+# HEAD 请求与 1xx/204/304 响应不得携带实体。
+micro method_allows_body(method: HttpMethod) -> bool {
+    if method == HttpMethod::Head {
+        return false
+    }
+    return true
+}
+
+micro status_allows_body(status: u16) -> bool {
+    if status < 200 {
+        return false
+    }
+    if status == 204 || status == 304 {
+        return false
+    }
+    return true
+}
+
+# 字段含空格即请求行/头边界被伪造（RFC 5234 可见字符域之外的分帧噪音）。
+micro contains_space(value: utf8) -> bool {
+    let bytes: [u8] = Utf8Text::bytes(value)
+    let mut index: usize = 0
+    while index < bytes.length {
+        if bytes⁅index⁆ == b' ' {
+            return true
+        }
+        index = index + 1
+    }
+    return false
+}
+
 micro push_text(out: ArrayList<u8>, text: utf8) -> unit {
     let bytes: [u8] = Utf8Text::bytes(text)
     let mut index: usize = 0
@@ -358,12 +423,20 @@ micro version_from_token(token: utf8) -> Option<HttpVersion> {
 
 # 请求线 + Host + 附加头 + Content-Length + 空行 + 实体字节。
 # `Content-Length` 恒显式给出（零实体时为 0），分帧不依赖连接关闭。
+# 写出前经统一报文验证：分帧、请求线/Host 字段、方法实体规则。
 micro write_request<W>(mut writer: W, request: HttpRequest) -> Option<HttpError>
     where W: Writer
 {
     let framing: Option<HttpError> = validate_framing(request.headers, request.body.length)
     if framing.is_some() {
         return framing
+    }
+    let request_line: Option<HttpError> = validate_request_line(request.method, request.host, request.target)
+    if request_line.is_some() {
+        return request_line
+    }
+    if !method_allows_body(request.method) && request.body.length != 0 {
+        return Some(Malformed { detail: "HEAD 请求不允许携带实体" })
     }
     let mut out: ArrayList<u8> = ArrayList::new(256)
     push_text(out, method_token(request.method))
@@ -407,6 +480,13 @@ micro write_response<W>(mut writer: W, response: HttpResponse) -> Option<HttpErr
     let framing: Option<HttpError> = validate_framing(response.headers, response.body.length)
     if framing.is_some() {
         return framing
+    }
+    let status_line: Option<HttpError> = validate_status_line(response.status, response.reason)
+    if status_line.is_some() {
+        return status_line
+    }
+    if !status_allows_body(response.status) && response.body.length != 0 {
+        return Some(Malformed { detail: "1xx/204/304 响应不允许携带实体" })
     }
     let mut out: ArrayList<u8> = ArrayList::new(256)
     push_text(out, version_token(response.version))
