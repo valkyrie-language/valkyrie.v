@@ -46,24 +46,27 @@ imply AsciiView: Text {
         return self.span.length == 0
     }
 
+    ⍝ 对窗口自身再取相对字节窗口：先对父窗口剩余量判界，再换算绝对偏移——
+    ⍝ 子窗口不得逃出父窗口，与底层文本是否还有余量无关；固定宽回绕不存在
+    ⍝ 相加后再判界的逃逸路径（与 `Utf8View::view` 同规则，02 §4.3）。
     micro view(self, span: TextSpan) -> AsciiView {
-        let view_end: usize = self.end_offset()
-        let start: usize = self.span.offset + span.offset
-        if start >= view_end {
-            return AsciiView {
-                text: self.text,
-                span: TextSpan { offset: view_end, length: 0 },
-            }
+        let mut offset: usize = span.offset
+        if offset > self.span.length {
+            offset = self.span.length
         }
 
+        let remaining: usize = self.span.length - offset
         let mut length: usize = span.length
-        if start + length > view_end {
-            length = view_end - start
+        if length > remaining {
+            length = remaining
         }
 
         return AsciiView {
             text: self.text,
-            span: TextSpan { offset: start, length: length },
+            span: TextSpan {
+                offset: self.span.offset + offset,
+                length: length,
+            },
         }
     }
 
