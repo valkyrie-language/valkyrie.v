@@ -284,7 +284,6 @@ legion lint --format pretty --color always
 |:---|:---|
 | `legion run <script>` | 执行清单中定义的脚本 |
 | `legion run <micro>` | 编译并运行 `[main] micro` 入口函数 |
-| `legion run --nyar <file>` | 运行 .odin 字节码文件 |
 | `legion run --list` | 列出所有可用脚本和入口函数 |
 | `legion run --hook <name>` | 执行生命周期钩子 |
 | `legion run --env KEY1=VALUE1,KEY2=VALUE2` | 带环境变量执行 |
