@@ -284,7 +284,7 @@ legion lint --format pretty --color always
 |:---|:---|
 | `legion run <script>` | 执行清单中定义的脚本 |
 | `legion run <micro>` | 编译并运行 `[main] micro` 入口函数 |
-| `legion run --nyar <file>` | 运行 .nyar 字节码文件 |
+| `legion run --nyar <file>` | 运行 .odin 字节码文件 |
 | `legion run --list` | 列出所有可用脚本和入口函数 |
 | `legion run --hook <name>` | 执行生命周期钩子 |
 | `legion run --env KEY1=VALUE1,KEY2=VALUE2` | 带环境变量执行 |
@@ -488,7 +488,7 @@ micro fib_30() -> unit {
 ```mermaid
 flowchart TD
     Cache[.cache/test/]
-    Nyar[nyar/test.if_expression/test_if_expression.nyar]
+    Nyar[nyar/test.if_expression/test_if_expression.odin]
     Clr[clr/test.if_expression/test_if_expression.dll]
     JVM[jvm/test.if_expression/test_if_expression.class]
 
@@ -510,7 +510,7 @@ flowchart TD
 
 | 后端家族 | Runner 类型 | 执行方式 | 外部依赖 |
 |:---|:---|:---|:---|
-| OVM | VM Runner | 加载 `.nyar` 产物并执行 | 无 |
+| OVM | VM Runner | 加载 `.odin` 产物并执行 | 无 |
 | CLR | CLR Runner | 调用宿主命令执行托管产物 | CLR 宿主环境 |
 | JVM | JVM Runner | 调用宿主命令执行 JVM 产物 | JVM 宿主环境 |
 | WASM (Node) | Node Runner | 调用 `node` 执行宿主入口 | Node.js |

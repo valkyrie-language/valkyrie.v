@@ -77,7 +77,7 @@ arch-impl-spec[-abi]
 | `aarch64` | 64 位 ARM 原生执行 | ELF / Mach-O |
 | `wasm32` | 32 位 WebAssembly | `.wasm` |
 | `wasm64` | 64 位 WebAssembly | `.wasm` |
-| `ovm` | OVM 字节码 | `.nyar` |
+| `ovm` | OVM 字节码 | `.odin` |
 | `gnosis` | GnosisVM 字节码 | `.gnosis` |
 | `clr` | CLR 托管执行模型（IL + 运行时） | `.dll` / `.exe` |
 | `jvm` | JVM 托管执行模型 | `.class` / `.jar` |

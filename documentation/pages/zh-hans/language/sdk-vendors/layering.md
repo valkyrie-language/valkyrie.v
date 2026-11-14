@@ -127,7 +127,7 @@ flowchart LR
     Dotnet[projects/sdk.dotnet]
     JVM[projects/sdk.jvm]
     WASI[projects/sdk.wasi]
-    Nyar[projects/sdk.nyar]
+    Nyar[projects/sdk.odin]
 
     classDef phase fill:#f6f9fc,stroke:#8a9aad,stroke-width:1.2px,color:#1f2937;
     classDef boundary fill:#fff8e8,stroke:#d6a93d,stroke-width:1.2px,color:#5c4400;

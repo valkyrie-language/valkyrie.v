@@ -103,7 +103,7 @@ micro __jvm_set_request_method(conn: i32, method: utf8): unit
 - `[wasi]`
 
 这些特性标注不知道 `bind`，也不做项目选择，它们只表达宿主调用约定。
-这些特性标注本身就是 `bind` 语义的具体载体，由 `nyar` 在编译期收集并下沉到后续 IR / backend。
+这些特性标注本身就是 `bind` 语义的具体载体，由 Valkyrie 语义前端收集，由语言与目标适配器降低为目标调用合同。
 
 ## 推荐语义规则
 
@@ -159,7 +159,7 @@ micro __wx_request(req: Request): Response
 3. 根据有效依赖闭包和 `sdk-vendor` 过滤候选实现。
 4. 若候选集唯一，则直接自动绑定。
 5. 对唯一候选实现继续收集其上的 `[js_builtin]` / `[clr]` / `[jvm]` / `[wasi]` / `[ovm]` 等 `bind` 属性。
-6. 由 `nyar` 把这些 `bind` 属性下沉到后续 `MIR/LIR/backend` 所需的宿主调用信息。
+6. 由 Valkyrie 前端验证这些 `bind` 属性，再由语言与目标适配器生成目标私有计划及 LIR 所需的宿主调用信息。
 7. 若候选集不唯一，则直接报冲突诊断，而不是再引入额外配置语义。
 
 ## 签名兼容规则

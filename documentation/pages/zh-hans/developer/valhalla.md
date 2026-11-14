@@ -1,6 +1,6 @@
 # 瓦尓哈拉 (Valhalla) 注册表
 
-瓦尓哈拉是 Nyar 组织的专用二进制注册表，承载 `.nyar` 字节码与源码分发包。不同于 npm/jsr 等传统注册表，瓦尓哈拉是一个**可自托管、去中心化可部署**的信任根注册表。
+瓦尓哈拉是 Nyar 组织的专用二进制注册表，承载 `.odin` 字节码与源码分发包。不同于 npm/jsr 等传统注册表，瓦尓哈拉是一个**可自托管、去中心化可部署**的信任根注册表。
 
 > 瓦尓哈拉，为永恒而存储。
 
@@ -21,7 +21,7 @@
 |:---|:---|:---|
 | `/api/packages/{name}/manifest` | GET | 获取版本清单和元数据 |
 | `/api/packages?query=` | GET | 搜索包 |
-| `/api/packages/{name}/versions/{version}/download` | GET | 下载 `.nyar` + 源码 |
+| `/api/packages/{name}/versions/{version}/download` | GET | 下载 `.odin` + 源码 |
 | `/api/packages/{name}/versions` | PUT | 发布新版本（需 Ed25519 签名） |
 
 ## 认证

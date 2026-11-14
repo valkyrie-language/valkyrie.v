@@ -239,12 +239,12 @@ micro wasi_clock_time_get(clock_id: i32, precision: i64, time: i32): i32
 
 | 注解 | 语义 | 适用平台 | 示例 |
 |:---|:---|:---|:---|
-| `[import("module")]` | 动态导入 `.nyar` 模块 | OVM | `[import("std.math")]` |
-| `[export]` | 导出为 `.nyar` 模块符号 | OVM | `[export]` |
+| `[import("module")]` | 动态导入 `.odin` 模块 | OVM | `[import("std.math")]` |
+| `[export]` | 导出为 `.odin` 模块符号 | OVM | `[export]` |
 
-#### `[import("module")]` — 动态导入 `.nyar` 模块
+#### `[import("module")]` — 动态导入 `.odin` 模块
 
-在运行时动态加载 `.nyar` 模块，获取其导出符号。参数为模块名。
+在运行时动态加载 `.odin` 模块，获取其导出符号。参数为模块名。
 
 ```v
 [import("std.math")]
@@ -254,9 +254,9 @@ micro math_module: i32
 micro physics_module: i32
 ```
 
-#### `[export]` — 导出为 `.nyar` 模块符号
+#### `[export]` — 导出为 `.odin` 模块符号
 
-标记函数或声明为公开导出，编译到 `.nyar` 模块时其他模块可通过 `[import]` 引用。
+标记函数或声明为公开导出，编译到 `.odin` 模块时其他模块可通过 `[import]` 引用。
 
 ```v
 [export]

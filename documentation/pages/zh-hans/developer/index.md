@@ -52,7 +52,7 @@ flowchart TD
 
 ## 贡献前先记住
 
-- 统一的是语义主线，不是统一物理 `IR`
+- 每个语言拥有语义与 IR，跨语言共享工具协议，目标拥有私有 LIR
 - `std` 只表达统一语义，平台差异放到 `std.adaptor.*`
 - target 必须按 family 分流，不继续维护“所有后端都能吃”的兼容壳
 - 后端必须先 `validate` 再 `compile`
