@@ -5,7 +5,7 @@ CLR 的 IL、metadata 与托管对象表示由目标私有计划表达，不改�
 ## 输入合同
 
 ```text
-Canonical + RepresentationPlan → CLR TargetExecutionPlan
+已验证的语言 IR / residual → 语言与目标适配器 → CLR 私有计划与 LIR
   → pre-encode validation → PE/CLI format encoding → assembly
 ```
 
@@ -16,3 +16,5 @@ runtime 只消费产物，不依赖 AST/frontend；正式编译不能以 body_so
 ## 验收
 
 缺调用、签名、layout 或能力在所属边界失败。程序集格式正确不代表真实入口与题意通过；须执行实际产物。专题合同不宣称完整 CLR 或自举已经实现。
+
+普通函数与合成包装共用本目标 LIR 验证和编码。动态语义通过显式语言 runtime 合同承载，不能由编码器推测。

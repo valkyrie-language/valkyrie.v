@@ -1,6 +1,6 @@
 # 目标家族契约
 
-本文定义 `valkyrie.v` 各 target family 的长期边界。它解决的不是“语义怎么写”，而是“哪类输入可以进入哪条路线、必须在何处失败、最终交付什么”。
+本文定义 `valkyrie.v` 五类主目标（Wasm、CLR、JVM、OVM、native）的长期边界。WASI 是 Wasm 宿主，Shader 是独立专题扩展，均不另设公共语言 IR。它解决的不是“语义怎么写”，而是“哪类输入可以进入哪条路线、必须在何处失败、最终交付什么”。
 
 ## 总原则
 
@@ -9,12 +9,12 @@
 - family 只消费自己的 `Backend Input`
 - family 不重新解释语言语义
 - family 必须先 `validate` 再 `compile`
-- family 不支持的开放语义必须编译期硬失败
+- 动态语义由显式语言 runtime/residual 合同承载，缺少承载能力必须编译期失败
 - family 的成功结果必须统一落到 `ArtifactSet`
 
 ```mermaid
 flowchart TD
-    Partition[Partition 后输入]
+    Partition[语言 IR 或 residual]
     Lane[Family Lane]
     BackendInput[Backend Input]
     Validate[Validate]
@@ -24,10 +24,10 @@ flowchart TD
     CLR[CLR]
     JVM[JVM]
     WASM[WASM Browser/Node]
-    WASI[WASI]
+    WASI[WASI 宿主]
     Native[Native]
     OVM[OVM]
-    Shader[Shader]
+    Shader[Shader 专题扩展]
 
     Partition --> Lane --> BackendInput --> Validate --> Compile --> ArtifactSet
     Lane --> CLR
@@ -62,7 +62,7 @@ flowchart TD
 
 ### 典型交付
 
-- `.nyar`
+- `.odin`
 - 调试符号
 - 运行契约
 
@@ -198,3 +198,5 @@ flowchart TD
 ## 一句话原则
 
 `valkyrie.v` 不是“一个统一大 backend 去尽量适配所有 target”，而是“每个 target family 明确边界、明确输入、明确失败点、明确交付物”。
+
+语言与目标适配器负责本语言 IR 或 residual 到目标私有计划和 LIR 的降低。普通函数与合成包装共用 LIR 编码。OVM 的 `.odin` 由 OdinVM 执行，其余目标直接进入各自产物链。LegendVM 提供语言解释器的专门化支撑，不能与 OdinVM 混为一层。native 宿主扩展还须满足各自 Node-API 或 CPython bridge 合同。

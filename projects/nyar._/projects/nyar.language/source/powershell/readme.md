@@ -6,7 +6,7 @@
 
 - 面向 `PowerShell` 脚本与命令模型的解析与前端分析
 - 负责把 `PowerShell` 语义接入 `nyar` 元优化体系
-- 作为 `PowerShell` 到 `nyar` 公共语义层之间的前端桥接
+- 作为 `PowerShell` 语义与 Nyar 可复用工具之间的接入层
 
 ## 适合承载什么
 

@@ -11,8 +11,8 @@ flowchart TD
     Compiler["Compiler：工程语义入口"]
     Oak["Oak：parser / recovery / CST formatter"]
     Frontend["语言 frontend：binding / type / call / evidence"]
-    Nyar["Nyar：验证 / 优化 / 表示 / lowering"]
-    Format["Acorn 外部格式 / Nyar bytecode"]
+    Nyar["Nyar：变换 / 分析 / 优化 / 专门化工具"]
+    Format["目标格式 / OVM .odin"]
     CLI --> PM
     CLI --> Compiler
     Compiler --> Oak

@@ -56,3 +56,9 @@
 - 禁止把 `native` 路线退化成文本汇编中间态
 - 禁止把某个平台的格式细节提升为全部 family 的公共结构
 - 禁止把链接、打包、宿主启动逻辑塞进同一个巨型对象
+
+## 宿主扩展
+
+语言与 native 适配器将本语言 IR 或 residual 降低到 ISA/ABI 专属计划和 LIR。普通函数与合成包装共用 LIR 验证和编码，随后完成目标文件与 native 链接。
+
+`.node` 由 Node-API bridge 加 native 链接组成；`.pyd` 或扩展 `.so` 由 CPython bridge 加 native 链接组成。注册入口、值转换、异常、资源所有权、线程和宿主生命周期必须分别定义，不能只替换动态库后缀。宿主桥不替代语言 runtime，native 不经 `.odin`。

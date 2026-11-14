@@ -6,8 +6,8 @@
 
 - Oak 负责 lexer/parser、CST/AST、恢复诊断及源码 formatter。
 - Valkyrie frontend 负责规范语义、绑定、类型、实例/evidence 需求、HIR 和 Semantic MIR。
-- Nyar 负责通用验证、优化、表示及 backend lowering framework。
-- Acorn 负责外部二进制格式；nyar-bytecode 负责 Nyar 字节码。
+- Nyar 提供可复用变换、分析、优化和专门化工具，语言与目标分别拥有语义和物理表示。
+- Acorn 负责适用的外部二进制格式；OVM 目标编码 `.odin` 供 OdinVM 执行。
 - Legion 负责工程 graph、逐文件输入、Compiler 调用、cache 与 ArtifactStore。
 - core/std 定义语言基础与库行为，adaptor 定义目标实现，由 linker 选择。
 

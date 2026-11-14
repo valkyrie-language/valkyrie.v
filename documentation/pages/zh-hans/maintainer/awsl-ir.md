@@ -146,4 +146,4 @@ flowchart TD
 
 ## 一句话原则
 
-`AWSL` 可以有自己的前置转换，但最终必须回到统一语义主线，再在 `Partition` 后进入各自 family。
+`AWSL` 的前置转换由产品包负责，生成 Valkyrie 程序时进入 Valkyrie 自有语义与 MIR，再通过对应目标适配器降低。不能据此要求其他语言使用 Valkyrie MIR。

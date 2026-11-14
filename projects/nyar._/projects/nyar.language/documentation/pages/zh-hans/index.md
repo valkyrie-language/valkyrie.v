@@ -4,7 +4,6 @@
 
 ## 目录
 
-- [nyar 元优化体系](./meta-optimization.md)
 - [前端契约](./frontend-contract.md)
 - [工作流](./workflow.md)
 - [源码布局](./source-layout.md)
@@ -12,7 +11,7 @@
 ## 范围
 
 - 说明 `nyar.language` 在整个 `valkyrie.v` / `nyar` 体系中的定位
-- 说明多语言前端如何接入并共享 `nyar` 的 `OA / EGraph / PE`
+- 说明多语言前端如何按需使用 Nyar 的变换、分析、优化及专门化工具
 - 说明 `projects/nyar.language/source/*` 的组织方式与边界
 
 ## 不在本文档内展开的内容

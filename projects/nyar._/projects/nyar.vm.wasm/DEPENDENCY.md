@@ -1,19 +1,9 @@
-# nyar.vm.wasm — dependency direction
+# wasm runtime dependency direction
 
-This package is a **runtime/host shell** for Wasm / WASI artifacts.
+A language owns its IR and semantics. A language-to-target adapter lowers verified language IR or a specialized residual into a target-private plan and LIR. The target validates and encodes Wasm artifacts, then the runtime/host package loads them.
 
-Correct direction:
+The runtime must not depend on language AST packages or call a compiler to repair missing facts. Ordinary functions and synthetic wrappers use the same target LIR encoder. Dynamic behavior requires an explicit language-runtime contract. Unsupported runtime requirements fail explicitly.
 
-```
-canonical Compiler → TargetExecutionPlan → .wasm (+ JS glue | wasip2/wasip3 CM)
-                                      ↓
-                                 nyar.vm.wasm
-```
+Nyar supplies reusable transformation, analysis, optimization and specialization tools. It does not require a universal language MIR. Only the OVM target emits `.odin` for OdinVM.
 
-Rules:
-- `nyar.vm.wasm` must **not** depend on `nyar.language` or AST packages.
-- The target backend owns only encoding of the compiler-provided private plan and host shells.
-- VM runs/loads artifacts; it does not lower language AST.
-- V-side canonical Compiler is not connected; source-to-artifact construction fails explicitly.
-
-Status: documentation shell only (no V sources yet).
+This package is a documentation/host shell. These responsibilities do not establish that the V-side source compiler or every target capability is implemented.

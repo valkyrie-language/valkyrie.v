@@ -1,25 +1,7 @@
-# nyar 文档
+# Nyar 工具核心
 
-`nyar` 文档只负责说明元优化核心本身，不负责具体语言前端的组织方式。
+Nyar 提供可复用变换、分析、优化、部分求值和残余化工具。语言拥有自己的 IR、操作语义及优化合法性；平台拥有私有计划、包装、LIR 与编码。共享工具不规定一个覆盖所有语言和平台的操作枚举。
 
-## 范围
+OA、EGraph 和 PE 是可组合的机制，不能分别替代 IR、阶段验证或平台 lowering。动态语言的解释器属于语言包，LegendVM 提供解释和专门化支撑；第一投影生成保留未知运行输入和必要 runtime 的 residual。OdinVM 则执行 OVM 目标的 `.odin`，其他平台不经此格式。
 
-- `OA` 如何替代统一大 `IR`
-- `EGraph` 如何作为共享优化体系替代传统 `pass pipeline`
-- `PE` 如何承担静态化与特化，并挤压传统 `lowering`
-- `nyar` 核心公共协议与长期边界
-
-## 不在这里展开的内容
-
-- 某个具体语言前端的目录组织
-- 某个具体前端如何解析、绑定和产生诊断
-- 工具层如何组织 `CLI` 工作流
-
-## 与 `nyar.language` 的区别
-
-- `projects/nyar/documentation/pages/zh-hans`：写 `nyar` 元优化核心
-- `projects/nyar.language/documentation/pages/zh-hans`：写多语言前端如何接入 `nyar`
-
-## 原则
-
-`nyar` 是内核，不是某个语言的私有后端。
+这些职责是架构合同，具体能力以实现和对应提交的真实执行证据为准。

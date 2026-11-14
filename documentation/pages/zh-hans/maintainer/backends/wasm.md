@@ -5,7 +5,7 @@ Wasm 编码与 Node、浏览器、WASI 宿主能力分开。具体 target/profil
 ## 输入合同
 
 ```text
-Canonical + RepresentationPlan → Wasm TargetExecutionPlan
+已验证的语言 IR / residual → 语言与目标适配器 → Wasm 私有计划与 LIR
   → pre-encode validation → format encoding
   → Wasm artifact + signature-driven glue
 ```
@@ -17,3 +17,5 @@ Wasm typeidx、local、table 和 rec-group 属于 backend。语言类型、完�
 ## 验收
 
 所有编码入口统一验证 callable、签名、carrier、layout 与 payload，缺事实结构化失败。有效 Wasm 还须验证本次 artifact digest、非空 export、真实 invoke、签名驱动参数/返回值及全部题意用例。wrapper 启动或单个 smoke 不证明交付。
+
+普通函数与合成包装共用本目标 LIR 验证和编码。动态语义通过显式语言 runtime 合同承载，不能由编码器推测。

@@ -363,20 +363,8 @@ legion test
 
 ---
 
-## 与 OVM.cs 的关系
+## 编译与运行职责
 
-```mermaid
-flowchart TD
-    subgraph Distro["valkyrie.v/ 发行版 — 用户可见的 .v 源码"]
-        VV[".v 源码"]
-    end
-    subgraph Engine["OVM.cs/projects/ — .NET 编译运行时引擎"]
-        NC["Nyar.Core<br/>EGraph 优化器"]
-        NA["Nyar.Assembler<br/>多后端代码生成"]
-        NV["Nyar.VM<br/>OVM 运行时"]
-        TL["tools/legion<br/>包管理 + 构建工具"]
-    end
-    Distro -- " 编译依赖 " --> Engine
-```
+本仓提供 Valkyrie 语言源码与标准库。Rust 编译工具链位于 `nyar-vm.rs`，符合性夹具位于 `valkyrie.rs`。语言语义与 MIR 由 Valkyrie 自己拥有；Nyar 提供可复用变换、分析、优化和专门化工具。
 
-`valkyrie.v` 是"什么"，`OVM.cs/projects/` 是"怎么做"。前者定义 Valkyrie 生态的形态，后者提供运行它的引擎。
+Wasm、CLR、JVM、OVM 和 native 各自拥有目标计划、包装及 LIR。LegendVM 提供语言自有解释器的专门化支撑；OdinVM 执行 OVM 的 `.odin`。其他目标直接进入各自产物链。合同与实现状态须分别判断，详见 [编译与运行架构](documentation/pages/zh-hans/developer/architecture.md)。

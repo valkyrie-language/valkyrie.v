@@ -82,7 +82,7 @@ flowchart LR
 
 ## 当前长期方向
 
-- 统一语义主线
+- Valkyrie 语言语义及目标适配边界
 - target family 分流
 - family 专用 `Backend Input`
 - 后端 `validate + compile`

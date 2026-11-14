@@ -1,12 +1,9 @@
-# nyar.vm.clr — dependency direction
+# clr runtime dependency direction
 
-```
-canonical Compiler → TargetExecutionPlan → typed MSIL / PE
-    → nyar.vm.clr
-```
+A language owns its IR and semantics. A language-to-target adapter lowers verified language IR or a specialized residual into a target-private plan and LIR. The target validates and encodes MSIL / PE artifacts, then the runtime/host package loads them.
 
-- VM must **not** depend on `nyar.language` or AST packages; it only consumes artifacts.
-- CLR lowering consumes only the formal `TargetExecutionPlan` produced by the compiler boundary.
-- Formal isomorphic path only. Do **not** document `clr_body_lowering` / `body_source→MSIL` or type-name special-case emit as the architecture.
+The runtime must not depend on language AST packages or call a compiler to repair missing facts. Ordinary functions and synthetic wrappers use the same target LIR encoder. Dynamic behavior requires an explicit language-runtime contract. Unsupported runtime requirements fail explicitly.
 
-Status: documentation shell only (no V sources yet).
+Nyar supplies reusable transformation, analysis, optimization and specialization tools. It does not require a universal language MIR. Only the OVM target emits `.odin` for OdinVM.
+
+This package is a documentation/host shell. These responsibilities do not establish that the V-side source compiler or every target capability is implemented.
