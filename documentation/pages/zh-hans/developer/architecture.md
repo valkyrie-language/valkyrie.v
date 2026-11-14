@@ -8,6 +8,12 @@ Valkyrie、TypeScript、Python、Lua 各自拥有语言语义、诊断和 IR。V
 
 Nyar 提供可复用的变换、分析、优化、部分求值和残余化工具。共享遍历协议、图算法和优化机制不要求共享语言操作枚举。语言定义优化合法性及可观察行为，目标定义物理表示和指令合法性。OA、EGraph 和 PE 可以组合使用，不能分别取代语言 IR、全部阶段或目标 lowering。
 
+## `.nyar` 程序集与分析结果
+
+Valkyrie 通过 `.nyar` 程序集发布多个语言 package/module、实现体及其分析事实，由 Legion 管理程序集依赖。语言 package/module、程序集与 npm 等运输包分别承担源码组织、编译分发与运输职责；`.dll/.wasm/.jar/.odin` 是目标执行制品。
+
+所有类别的 Nyar 分析结果均允许通过 `.nyar` 发布并在生态内共享，包括语言 IR/MIR 的正式表示、类型/绑定、调用/依赖图、effect、优化和残余程序。每类结果保留其语言/分析 owner、持久身份、输入依赖与生产者身份、合同版本和适用条件；目标相关假设附着于对应结果。消费者验证后按理解范围复用，失效结果按完整正式输入合法重算，不能猜补缺失语义。允许分享不要求每个程序集包含全部结果，不要求其它语言采用 Valkyrie MIR。
+
 ## 动态语言与 LegendVM
 
 Python、Lua 和动态 TypeScript 由语言包拥有解释器 `I_L`，程序为 `P`。Futamura 第一投影为 `S(I_L, P) = R_L,P`：专门化器固定程序，生成仍接收未知运行输入的残余程序。LegendVM 提供 guest 解释、专门化和运行支撑，不集中实现各语言的 AST tree walk。
