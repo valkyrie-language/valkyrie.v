@@ -8,6 +8,11 @@ namespace std.collection;
 # 落子（O(1)），满时按倍增扩容（摊还 O(1)）。`clear` 只重置逻辑长度、保留
 # 存储。扩容拿到的是容量槽位而非伪有效 `T`：新载体逐项显式初始化后才对读开放。
 # 只有 `ArrayList` 承载可变序列语义；定长 `[T]` 不提供 push/pop/reserve/clear。
+#
+# `[host_projection]`：声明本类型在跨 ABI 边界投影为宿主序列（Array+container）。
+# 这是声明式授权，不是形状推断：目标层只在已声明为序列的类型内部按布局事实
+# 定位 backing array 与计数槽位，未声明的引用聚合一律走不透明实例句柄。
+[host_projection]
 class ArrayList<T> {
     _storage: ArrayStorage<T>
     _length: usize
