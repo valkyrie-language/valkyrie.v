@@ -65,19 +65,3 @@ imply char: std::operator::Equal {
         return !(self == rhs)
     }
 }
-
-imply char: std::operator::Comparable {
-    # 序按码位自然序：分类与大小写平移都表达为字面量区间比较，
-    # 依赖本 impl 提供的 `>` / `>=` / `<` / `<=`。
-    micro compare(self, rhs: Self): std::operator::Ordering {
-        let left: u32 = self as u32
-        let right: u32 = rhs as u32
-        if left < right {
-            return std::operator::Ordering.Less
-        }
-        if left > right {
-            return std::operator::Ordering.Greater
-        }
-        return std::operator::Ordering.Equal
-    }
-}

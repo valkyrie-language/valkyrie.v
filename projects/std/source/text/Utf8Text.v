@@ -20,7 +20,7 @@ imply Utf8Text {
     # 过长编码、代理区 D800–DFFF 与超过 U+10FFFF 的码位全部拒绝，非法输入
     # 结构化失败，不进入文本值域。
     micro from_bytes(bytes: [u8]) -> Result<Self, Utf8DecodeError> {
-        let checked: Result<unit, Utf8DecodeError> = validate_utf8(bytes)
+        let checked: Result<usize, Utf8DecodeError> = validate_utf8(bytes)
         match checked {
             case Fine(value):
                 return Fine { value: Self { _repr: bytes } }

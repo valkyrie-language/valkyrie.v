@@ -178,7 +178,9 @@ micro decode_char_at(bytes: [u8], start: usize) -> Result<(char, usize), Utf8Dec
 }
 
 # 严格 UTF-8 全串校验：逐码点走 `decode_char_at`，首个非法序列即结构化失败。
-micro validate_utf8(bytes: [u8]) -> Result<unit, Utf8DecodeError> {
+# 成功载荷是已验证的字节长度：避免 `Result<unit, E>` 的零尺寸载荷（wasm 物理槽
+# 不能承载 unit），同时把「整串已被完整消费」这一事实交给调用方。
+micro validate_utf8(bytes: [u8]) -> Result<usize, Utf8DecodeError> {
     let size: usize = bytes.length()
     let mut position: usize = 0
     while position < size {
@@ -191,7 +193,7 @@ micro validate_utf8(bytes: [u8]) -> Result<unit, Utf8DecodeError> {
         }
     }
 
-    return Fine { value: () }
+    return Fine { value: size }
 }
 
 # char → UTF-8（可恢复形态）：非 Unicode 标量码位显式失败，不产出编码。

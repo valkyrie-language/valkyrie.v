@@ -6,6 +6,14 @@
 
 namespace std.adaptor.windows.console;
 
+⍝ UTF-8 → UTF-16 的宿主转换合同：Windows 原生适配器由宿主绑定实现，
+⍝ 语言侧只声明签名，避免在 console 提供者里引用未声明符号。
+[host_contract]
+micro utf8_to_utf16(message: utf8): utf16
+
+[host_contract]
+micro utf16_length(message: utf16): i32
+
 [host_provider(std::console::write)]
 micro print(msg: utf8): unit {
     let handle: i32 = win_get_std_handle(-11)
@@ -16,9 +24,12 @@ micro print(msg: utf8): unit {
 [host_provider(std::console::write_line)]
 micro print_line(msg: utf8): unit {
     let handle: i32 = win_get_std_handle(-11)
-    let line: utf8 = utf8_concat(msg, "\n")
-    let msg16: utf16 = utf8_to_utf16(line)
+    let msg16: utf16 = utf8_to_utf16(msg)
     win_write_console(handle, msg16, utf16_length(msg16))
+    # 换行独立写出：本适配器不引入未声明的拼接合同，宿主转换与写出各走一次，
+    # 与 `print` 共用同一条 UTF-16 通道。
+    let newline16: utf16 = utf8_to_utf16("\n")
+    win_write_console(handle, newline16, utf16_length(newline16))
 }
 
 [host_provider(std::console::error_line)]

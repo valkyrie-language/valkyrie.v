@@ -12,6 +12,9 @@
     build: [
         {
             target: "ovm"
+        },
+        {
+            target: "x86_64-unknown-linux-gnu"
         }
     ],
     engines: {

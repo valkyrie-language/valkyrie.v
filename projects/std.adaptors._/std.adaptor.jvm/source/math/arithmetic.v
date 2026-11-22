@@ -179,8 +179,8 @@ micro u32_lt(a: u32, b: u32): bool
 # 等值按位级等价绑定；无符号小于冻结为 `long.compare_less_than_unsigned`
 # （JVM 没有无符号 `lcmp`，backend 展开为符号位翻转序列）。
 # 加/减/乘按二进制补码与有符号同位型，直接复用 `long.*` 配方（非截断、非近似）。
-# 无符号除余需要 `Long.divideUnsigned`/`remainderUnsigned` 静态调用，配方层尚未冻结该形态，
-# 因此不声明 `__u64_div`/`__u64_rem`，保持结构化失败。
+# 无符号除余需要 `Long.divideUnsigned`/`remainderUnsigned` 静态调用，配方层已冻结为
+# `long.divide_unsigned`/`long.remainder_unsigned`，因此直接声明 `__u64_div`/`__u64_rem`。
 
 [host_provider(std::primitive::__u64_add)]
 [jvm_operator("long.add")]
@@ -193,6 +193,14 @@ micro u64_sub(a: u64, b: u64): u64
 [host_provider(std::primitive::__u64_mul)]
 [jvm_operator("long.multiply")]
 micro u64_mul(a: u64, b: u64): u64
+
+[host_provider(std::primitive::__u64_div)]
+[jvm_operator("long.divide_unsigned")]
+micro u64_div(a: u64, b: u64): u64
+
+[host_provider(std::primitive::__u64_rem)]
+[jvm_operator("long.remainder_unsigned")]
+micro u64_rem(a: u64, b: u64): u64
 
 [host_provider(std::primitive::__u64_eq)]
 [jvm_operator("long.compare_equal")]
