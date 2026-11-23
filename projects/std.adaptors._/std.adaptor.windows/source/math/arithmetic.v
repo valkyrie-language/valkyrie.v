@@ -2,7 +2,7 @@ namespace std.adaptor.windows.math;
 
 # std.adaptor.windows: core 算术 host contract 的 x86-64 绑定
 # `[x86_64_operator]` 只声明 ISA 助记符，机器码由 machine backend 在编译期按冻结配方编码。
-# 只声明后端已实现的载体：整数算术/位/移位/比较。浮点载体尚未进入 x86-64 冻结集。
+# 整数算术/位/移位/比较与 f32/f64 SSE2 载体都已进入 x86-64 冻结集。
 
 #region i32 算术
 
@@ -117,5 +117,42 @@ namespace std.adaptor.windows.math;
 [host_provider(std::primitive::__u64_eq)] [x86_64_operator("long.compare_equal")] micro u64_eq(a: u64, b: u64): bool
 
 [host_provider(std::primitive::__u64_lt)] [x86_64_operator("long.compare_less_than_unsigned")] micro u64_lt(a: u64, b: u64): bool
+
+#endregion
+
+#region f64 SSE2 算术
+
+# `xmm0/xmm1` 载体；比较按 IEEE 无序语义归一为 0/1，`neg` 翻转符号位保留 -0.0。
+[host_provider(std::primitive::__f64_add)] [x86_64_operator("double.add")] micro f64_add(a: f64, b: f64): f64
+
+[host_provider(std::primitive::__f64_sub)] [x86_64_operator("double.subtract")] micro f64_sub(a: f64, b: f64): f64
+
+[host_provider(std::primitive::__f64_mul)] [x86_64_operator("double.multiply")] micro f64_mul(a: f64, b: f64): f64
+
+[host_provider(std::primitive::__f64_div)] [x86_64_operator("double.divide")] micro f64_div(a: f64, b: f64): f64
+
+[host_provider(std::primitive::__f64_neg)] [x86_64_operator("double.negate")] micro f64_neg(a: f64): f64
+
+[host_provider(std::primitive::__f64_eq)] [x86_64_operator("double.compare_equal")] micro f64_eq(a: f64, b: f64): bool
+
+[host_provider(std::primitive::__f64_lt)] [x86_64_operator("double.compare_less_than")] micro f64_lt(a: f64, b: f64): bool
+
+#endregion
+
+#region f32 SSE2 算术
+
+[host_provider(std::primitive::__f32_add)] [x86_64_operator("float.add")] micro f32_add(a: f32, b: f32): f32
+
+[host_provider(std::primitive::__f32_sub)] [x86_64_operator("float.subtract")] micro f32_sub(a: f32, b: f32): f32
+
+[host_provider(std::primitive::__f32_mul)] [x86_64_operator("float.multiply")] micro f32_mul(a: f32, b: f32): f32
+
+[host_provider(std::primitive::__f32_div)] [x86_64_operator("float.divide")] micro f32_div(a: f32, b: f32): f32
+
+[host_provider(std::primitive::__f32_neg)] [x86_64_operator("float.negate")] micro f32_neg(a: f32): f32
+
+[host_provider(std::primitive::__f32_eq)] [x86_64_operator("float.compare_equal")] micro f32_eq(a: f32, b: f32): bool
+
+[host_provider(std::primitive::__f32_lt)] [x86_64_operator("float.compare_less_than")] micro f32_lt(a: f32, b: f32): bool
 
 #endregion
