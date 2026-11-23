@@ -2,7 +2,7 @@ namespace std.adaptor.windows.collection;
 
 # `std.collection.array` 合同经 x86-64 机器码目标 operator 绑定实现
 # （无 intrinsic、无名字表）：助记符在计划构造期冻结为数组计划（arity 与操作身份），
-# 机器后端按冻结表示发射——`[0]` 是元素个数，元素从 `+8` 起按 8 字节槽排列。
+# 机器后端按冻结表示发射——`[0]` 是元素个数、`[8]` 是分配字节数，元素从 `+16` 起按 8 字节槽排列。
 # 越界与初始化前沿等集合语义全部留在 `std`，本适配器只绑定机械读写与分配。
 
 [host_provider(std::collection::array::length)]
