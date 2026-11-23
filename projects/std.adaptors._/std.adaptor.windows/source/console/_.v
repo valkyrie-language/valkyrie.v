@@ -1,45 +1,33 @@
 # std.adaptor.windows: 控制台 IO
-# 封装 Win32 Console API 为统一 console 接口
-# Win32 控制台使用 UTF-16（WriteConsoleW）
-# 编码：内部 utf8 → Windows utf16
-# STD_OUTPUT_HANDLE = -11, STD_ERROR_HANDLE = -12
+# x86-64 机器码目标经 `console.write` operator 直接写出 UTF-8 原始字节：
+# 后端按冻结的数组合同把 `Utf8Text` gather 成连续字节，走 GetStdHandle + WriteFile，
+# 重定向管道与控制台句柄共用同一写出通道（写出前设控制台 UTF-8 代码页）。
+# STD_OUTPUT_HANDLE = -11, STD_ERROR_HANDLE = -12（GetStdHandle 伪句柄）。
 
 namespace std.adaptor.windows.console;
 
-⍝ UTF-8 → UTF-16 的宿主转换合同：Windows 原生适配器由宿主绑定实现，
-⍝ 语言侧只声明签名，避免在 console 提供者里引用未声明符号。
-[host_contract]
-micro utf8_to_utf16(message: utf8): utf16
-
-[host_contract]
-micro utf16_length(message: utf16): i32
-
 [host_provider(std::console::write)]
 micro print(msg: utf8): unit {
-    let handle: i32 = win_get_std_handle(-11)
-    let msg16: utf16 = utf8_to_utf16(msg)
-    win_write_console(handle, msg16, utf16_length(msg16))
+    __console_x86_64_write(-11, msg)
 }
 
 [host_provider(std::console::write_line)]
 micro print_line(msg: utf8): unit {
-    let handle: i32 = win_get_std_handle(-11)
-    let msg16: utf16 = utf8_to_utf16(msg)
-    win_write_console(handle, msg16, utf16_length(msg16))
-    # 换行独立写出：本适配器不引入未声明的拼接合同，宿主转换与写出各走一次，
-    # 与 `print` 共用同一条 UTF-16 通道。
-    let newline16: utf16 = utf8_to_utf16("\n")
-    win_write_console(handle, newline16, utf16_length(newline16))
+    __console_x86_64_write(-11, msg)
+    __console_x86_64_write(-11, "\n")
 }
 
 [host_provider(std::console::error_line)]
 micro print_err(msg: utf8): unit {
-    let handle: i32 = win_get_std_handle(-12)
-    let msg16: utf16 = utf8_to_utf16(msg)
-    win_write_console(handle, msg16, utf16_length(msg16))
+    __console_x86_64_write(-12, msg)
 }
 
 [host_provider(std::console::read_line)]
 micro read_line(): utf8 {
     return ""
 }
+
+# 机器后端冻结的控制台 operator：句柄按平台解释（Win64 伪句柄 / Linux fd），
+# 消息是 `Utf8Text` 对象；空体由后端按 `console.write` 计划展开。
+[x86_64_operator("console.write")]
+private micro __console_x86_64_write(handle: i64, message: utf8): unit { }
